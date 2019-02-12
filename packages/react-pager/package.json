@@ -1,0 +1,49 @@
+{
+  "name": "react-pager",
+  "version": "0.1.0",
+  "description": "",
+  "keywords": [
+    "react",
+    "pager",
+    "carousel"
+  ],
+  "homepage": "https://github.com/mingenesis/react-pager",
+  "bugs": "https://github.com/mingenesis/react-pager/issues",
+  "license": "MIT",
+  "author": "Zhu DeMing <mingenesis@qq.com>",
+  "contributors": [
+    "Chen SiHui <502672047@qq.com>"
+  ],
+  "main": "lib/index.js",
+  "module": "es/index.js",
+  "scripts": {
+    "build:commonjs": "BABEL_ENV=commonjs babel src --out-dir lib",
+    "build:es": "babel src --out-dir es",
+    "build:umd": "NODE_ENV=development rollup -c -o dist/react-pager.js",
+    "build:umd:min": "NODE_ENV=production rollup -c -o dist/react-pager.min.js",
+    "build": "yarn build:commonjs && yarn build:es && yarn build:umd && yarn build:umd:min",
+    "clean": "rimraf lib dist es coverage",
+    "prepare": "yarn clean && yarn build",
+    "lint": "eslint src test",
+    "test": "jest",
+    "coverage": "codecov"
+  },
+  "peerDependencies": {
+    "react": "^16.4.0"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@babel/cli": "^7.2.0",
+    "@babel/core": "^7.2.0",
+    "@babel/plugin-proposal-object-rest-spread": "^7.2.0",
+    "@babel/plugin-transform-runtime": "^7.2.0",
+    "@babel/preset-env": "^7.2.0",
+    "@babel/preset-react": "^7.0.0",
+    "rimraf": "^2.6.3",
+    "rollup": "^1.1.2",
+    "rollup-plugin-babel": "^4.3.2",
+    "rollup-plugin-node-resolve": "^4.0.0",
+    "rollup-plugin-replace": "^2.1.0",
+    "rollup-plugin-uglify": "^6.0.2"
+  }
+}
