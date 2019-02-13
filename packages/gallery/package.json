@@ -39,8 +39,7 @@
   },
   "dependencies": {
     "react-virtualized": "^9.21.0",
-    "react-move": "^5.1.0",
-    "clsx": "^1.0.1"
+    "react-move": "^5.1.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.2.0",

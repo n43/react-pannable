@@ -7,11 +7,15 @@ class App extends Component {
       <Gallery
         width={300}
         height={200}
-        cellRenderer={({ key, style }) => <div key={key} style={style} />}
-        columnCount={1}
-        rowCount={1}
-        columnWidth={100}
-        rowHeight={100}
+        renderer={({ key, index, style }) => {
+          const colors = ['#000', '#333', '#666', '#999', '#ccc'];
+          style.backgroundColor = colors[index];
+
+          return <div key={key} style={style} />;
+        }}
+        direction="row"
+        count={5}
+        inset={100}
       />
     );
   }
