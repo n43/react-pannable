@@ -4,9 +4,10 @@
     "packages/*"
   ],
   "scripts": {
-    "postinstall": "cd packages/react-pager && yarn build"
+    "postinstall": "cd packages/gallery && yarn build"
   },
   "dependencies": {
-    "react": "^16.4.0"
+    "react": "^16.4.0",
+    "react-dom": "^16.4.0"
   }
 }

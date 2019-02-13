@@ -7,14 +7,15 @@ const env = process.env.NODE_ENV;
 
 export default {
   input: 'src/index.js',
-  external: ['react'],
   output: {
     format: 'umd',
-    name: 'ReactPager',
+    name: 'ReactVirtualizedGallery',
     globals: {
       react: 'React',
+      'react-dom': 'ReactDOM',
     },
   },
+  external: ['react', 'react-dom'],
   plugins: [
     nodeResolve(),
     babel({

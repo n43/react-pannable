@@ -1,1 +1,1 @@
-# react-pager
+# react-virtualized-gallery

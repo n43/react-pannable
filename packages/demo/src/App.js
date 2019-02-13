@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import 'react-pager';
+import 'react-virtualized-gallery';
 
 class App extends Component {
   render() {

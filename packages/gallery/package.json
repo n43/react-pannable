@@ -1,14 +1,14 @@
 {
-  "name": "react-pager",
+  "name": "react-virtualized-gallery",
   "version": "0.1.0",
   "description": "",
   "keywords": [
     "react",
-    "pager",
-    "carousel"
+    "react-virtualized",
+    "gallery"
   ],
-  "homepage": "https://github.com/mingenesis/react-pager",
-  "bugs": "https://github.com/mingenesis/react-pager/issues",
+  "homepage": "https://github.com/n43/react-virtualized-gallery",
+  "bugs": "https://github.com/n43/react-virtualized-gallery/issues",
   "license": "MIT",
   "author": "Zhu DeMing <mingenesis@qq.com>",
   "contributors": [
@@ -19,8 +19,8 @@
   "scripts": {
     "build:commonjs": "BABEL_ENV=commonjs babel src --out-dir lib",
     "build:es": "babel src --out-dir es",
-    "build:umd": "NODE_ENV=development rollup -c -o dist/react-pager.js",
-    "build:umd:min": "NODE_ENV=production rollup -c -o dist/react-pager.min.js",
+    "build:umd": "NODE_ENV=development rollup -c -o dist/react-virtualized-gallery.js",
+    "build:umd:min": "NODE_ENV=production rollup -c -o dist/react-virtualized-gallery.min.js",
     "build": "yarn build:commonjs && yarn build:es && yarn build:umd && yarn build:umd:min",
     "clean": "rimraf lib dist es coverage",
     "prepare": "yarn clean && yarn build",
@@ -29,9 +29,13 @@
     "coverage": "codecov"
   },
   "peerDependencies": {
-    "react": "^16.4.0"
+    "react": "^16.4.0",
+    "react-dom": "^16.4.0"
   },
-  "dependencies": {},
+  "dependencies": {
+    "react-virtualized": "^9.21.0",
+    "react-move": "^5.1.0"
+  },
   "devDependencies": {
     "@babel/cli": "^7.2.0",
     "@babel/core": "^7.2.0",
