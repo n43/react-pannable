@@ -1,1 +1,3 @@
-console.log('Hello');
+import Gallery from './Gallery';
+
+export { Gallery };

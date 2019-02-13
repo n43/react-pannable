@@ -16,12 +16,17 @@
   ],
   "main": "lib/index.js",
   "module": "es/index.js",
+  "files": [
+    "dist",
+    "es",
+    "lib"
+  ],
   "scripts": {
     "build:commonjs": "BABEL_ENV=commonjs babel src --out-dir lib",
     "build:es": "babel src --out-dir es",
     "build:umd": "NODE_ENV=development rollup -c -o dist/react-virtualized-gallery.js",
     "build:umd:min": "NODE_ENV=production rollup -c -o dist/react-virtualized-gallery.min.js",
-    "build": "yarn build:commonjs && yarn build:es && yarn build:umd && yarn build:umd:min",
+    "build": "yarn build:commonjs && yarn build:es",
     "clean": "rimraf lib dist es coverage",
     "prepare": "yarn clean && yarn build",
     "lint": "eslint src test",
@@ -34,7 +39,8 @@
   },
   "dependencies": {
     "react-virtualized": "^9.21.0",
-    "react-move": "^5.1.0"
+    "react-move": "^5.1.0",
+    "clsx": "^1.0.1"
   },
   "devDependencies": {
     "@babel/cli": "^7.2.0",
@@ -46,6 +52,7 @@
     "rimraf": "^2.6.3",
     "rollup": "^1.1.2",
     "rollup-plugin-babel": "^4.3.2",
+    "rollup-plugin-commonjs": "^9.2.0",
     "rollup-plugin-node-resolve": "^4.0.0",
     "rollup-plugin-replace": "^2.1.0",
     "rollup-plugin-uglify": "^6.0.2"
