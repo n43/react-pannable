@@ -1,14 +1,13 @@
 {
-  "name": "react-virtualized-gallery",
+  "name": "react-pannable",
   "version": "0.1.0",
   "description": "",
   "keywords": [
     "react",
-    "react-virtualized",
-    "gallery"
+    "react-component"
   ],
-  "homepage": "https://github.com/n43/react-virtualized-gallery",
-  "bugs": "https://github.com/n43/react-virtualized-gallery/issues",
+  "homepage": "https://github.com/n43/react-pannable",
+  "bugs": "https://github.com/n43/react-pannable/issues",
   "license": "MIT",
   "author": "Zhu DeMing <mingenesis@qq.com>",
   "contributors": [
@@ -24,12 +23,12 @@
   "scripts": {
     "build:commonjs": "BABEL_ENV=commonjs babel src --out-dir lib",
     "build:es": "babel src --out-dir es",
-    "build:umd": "NODE_ENV=development rollup -c -o dist/react-virtualized-gallery.js",
-    "build:umd:min": "NODE_ENV=production rollup -c -o dist/react-virtualized-gallery.min.js",
-    "build": "yarn build:commonjs && yarn build:es",
+    "build:umd": "NODE_ENV=development rollup -c -o dist/react-pannable.js",
+    "build:umd:min": "NODE_ENV=production rollup -c -o dist/react-pannable.min.js",
+    "build": "yarn build:commonjs && yarn build:es && yarn build:umd && yarn build:umd:min",
     "clean": "rimraf lib dist es coverage",
-    "prepare": "yarn clean && yarn build",
-    "lint": "eslint src test",
+    "prepare": "yarn lint && yarn clean && yarn build",
+    "lint": "eslint src",
     "test": "jest",
     "coverage": "codecov"
   },
@@ -38,7 +37,6 @@
     "react-dom": "^16.4.0"
   },
   "dependencies": {
-    "react-virtualized": "^9.21.0",
     "react-move": "^5.1.0"
   },
   "devDependencies": {

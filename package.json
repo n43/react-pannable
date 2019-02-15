@@ -4,7 +4,7 @@
     "packages/*"
   ],
   "scripts": {
-    "postinstall": "cd packages/gallery && yarn build"
+    "postinstall": "cd packages/pannable && yarn prepare"
   },
   "dependencies": {
     "react": "^16.4.0",

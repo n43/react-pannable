@@ -10,7 +10,7 @@ export default {
   input: 'src/index.js',
   output: {
     format: 'umd',
-    name: 'ReactVirtualizedGallery',
+    name: 'ReactPannable',
     globals: {
       react: 'React',
       'react-dom': 'ReactDOM',

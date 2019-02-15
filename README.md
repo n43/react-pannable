@@ -1,1 +1,1 @@
-# react-virtualized-gallery
+# react-pannable

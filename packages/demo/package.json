@@ -1,11 +1,11 @@
 {
-  "name": "react-virtualized-gallery-demo",
+  "name": "react-pannable-demo",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
     "react": "^16.4.0",
     "react-dom": "^16.4.0",
-    "react-virtualized-gallery": "^0.1.0",
+    "react-pannable": "^0.1.0",
     "react-scripts": "2.1.5"
   },
   "scripts": {
