@@ -1,3 +1,4 @@
-import Pan from './Pan';
+import Pad from './Pad';
+import Pannable from './Pannable';
 
-export { Pan };
+export { Pad, Pannable };
