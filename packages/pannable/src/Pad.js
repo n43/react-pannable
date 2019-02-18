@@ -4,34 +4,82 @@ import Pannable from './Pannable';
 export default class Pad extends React.Component {
   state = {
     contentOffset: { x: 0, y: 0 },
+    dragging: false,
+    decelerating: false,
   };
 
-  _decelerateScroll(velocity) {
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.contentOffset !== this.state.contentOffset) {
+      const { onScroll } = this.props;
+      const { contentOffset, dragging, decelerating } = this.state;
+
+      if (onScroll) {
+        onScroll({ contentOffset, dragging, decelerating });
+      }
+    }
+  }
+
+  _decelerateScroll(velocity, contentOffset) {
+    const interval = 50.0;
+    const decelerationRate = 0.002;
+    let decelerating = false;
+
+    if (velocity.x !== 0 || velocity.y !== 0) {
+      decelerating = true;
+    }
+
+    this.setState({ contentOffset, decelerating, dragging: false });
+
+    if (!decelerating) {
+      return;
+    }
+
+    const calculateNext = (vx, ox, minOx) => {
+      const redirect = vx < 0 ? -1 : 1;
+      const time = Math.min((redirect * vx) / decelerationRate, interval);
+      let nvx = vx - redirect * decelerationRate * time;
+      const nox1 = ox + 0.5 * (vx + nvx) * time;
+      const nox2 = Math.max(minOx, Math.min(nox1, 0));
+
+      if (nox2 !== nox1) {
+        nvx = 0;
+      }
+
+      return { velocity: nvx, offset: nox2 };
+    };
+
     const { width, height, contentWidth, contentHeight } = this.props;
-    const interval = 50;
+    const resultX = calculateNext(
+      velocity.x,
+      contentOffset.x,
+      width - contentWidth
+    );
+    const resultY = calculateNext(
+      velocity.y,
+      contentOffset.y,
+      height - contentHeight
+    );
+
+    const nextVelocity = { x: resultX.velocity, y: resultY.velocity };
+    const nextContentOffset = { x: resultX.offset, y: resultY.offset };
+
+    if (this._decelerateScrollTimer) {
+      clearTimeout(this._decelerateScrollTimer);
+    }
 
     this._decelerateScrollTimer = setTimeout(() => {
-      const prevState = this.state;
-      const contentOffset = {
-        x: Math.max(
-          width - contentWidth,
-          Math.min(prevState.contentOffset.x + velocity.x * interval, 0)
-        ),
-        y: Math.max(
-          height - contentHeight,
-          Math.min(prevState.contentOffset.y + velocity.y * interval, 0)
-        ),
-      };
-
-      if (
-        prevState.contentOffset.x !== contentOffset.x ||
-        prevState.contentOffset.y !== contentOffset.y
-      ) {
-        this.setState({ contentOffset }, () => {
-          this._decelerateScroll(velocity);
-        });
-      }
+      this._decelerateScrollTimer = undefined;
+      this._decelerateScroll(nextVelocity, nextContentOffset);
     }, interval);
+  }
+
+  _autoAdjustContentOffset(offset) {
+    const { width, height, contentWidth, contentHeight } = this.props;
+
+    return {
+      x: Math.max(width - contentWidth, Math.min(offset.x, 0)),
+      y: Math.max(height - contentHeight, Math.min(offset.y, 0)),
+    };
   }
 
   _onDragStart = () => {
@@ -43,25 +91,22 @@ export default class Pad extends React.Component {
   };
 
   _onDragMove = ({ translation }) => {
-    const { width, height, contentWidth, contentHeight } = this.props;
-
-    this.setState({
-      contentOffset: {
-        x: Math.max(
-          width - contentWidth,
-          Math.min(this._startContentOffset.x + translation.x, 0)
-        ),
-        y: Math.max(
-          height - contentHeight,
-          Math.min(this._startContentOffset.y + translation.y, 0)
-        ),
-      },
+    const contentOffset = this._autoAdjustContentOffset({
+      x: this._startContentOffset.x + translation.x,
+      y: this._startContentOffset.y + translation.y,
     });
+
+    this.setState({ contentOffset, dragging: true, decelerating: false });
   };
 
-  _onDragEnd = ({ velocity }) => {
+  _onDragEnd = ({ velocity, translation }) => {
+    const contentOffset = this._autoAdjustContentOffset({
+      x: this._startContentOffset.x + translation.x,
+      y: this._startContentOffset.y + translation.y,
+    });
+
+    this._decelerateScroll(velocity, contentOffset);
     this._startContentOffset = undefined;
-    this._decelerateScroll(velocity);
   };
 
   render() {
