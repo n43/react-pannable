@@ -35,6 +35,10 @@ export default class Pad extends React.Component {
   }
 
   _onDragStart = () => {
+    if (this._decelerateScrollTimer) {
+      clearTimeout(this._decelerateScrollTimer);
+      this._decelerateScrollTimer = undefined;
+    }
     this._startContentOffset = this.state.contentOffset;
   };
 
