@@ -26,6 +26,7 @@ export default class Pannable extends React.Component {
       const touchEvt = evt.touches[0];
 
       if (this._shouldStart(touchEvt)) {
+        this._startXY = undefined;
         this._start(touchEvt);
       } else if (this.state.tracking) {
         this._move(touchEvt);
@@ -74,6 +75,7 @@ export default class Pannable extends React.Component {
     const { onMouseDown } = this.props;
 
     this._startXY = [evt.pageX, evt.pageY];
+    this._shouldPreventClick = false;
 
     if (onMouseDown) {
       onMouseDown(evt);
@@ -84,9 +86,12 @@ export default class Pannable extends React.Component {
 
     if (this._shouldStart(evt)) {
       evt.preventDefault();
+
+      this._startXY = undefined;
       this._start(evt);
     } else if (this.state.tracking) {
       evt.preventDefault();
+
       this._move(evt);
     }
 
@@ -100,6 +105,7 @@ export default class Pannable extends React.Component {
     this._startXY = undefined;
 
     if (this.state.tracking) {
+      this._shouldPreventClick = true;
       this._end(evt);
     }
 
@@ -121,7 +127,15 @@ export default class Pannable extends React.Component {
     }
   };
   _onClick = evt => {
-    evt.preventDefault();
+    const { onClick } = this.props;
+
+    if (this._shouldPreventClick) {
+      evt.preventDefault();
+    }
+
+    if (onClick) {
+      onClick(evt);
+    }
   };
 
   _shouldStart(evt) {
@@ -142,7 +156,6 @@ export default class Pannable extends React.Component {
   _start(evt) {
     const { onStart } = this.props;
 
-    this._startXY = undefined;
     this.setState({ tracking: true });
 
     if (onStart) {

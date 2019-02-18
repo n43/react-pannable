@@ -5,7 +5,11 @@ class App extends Component {
   render() {
     return (
       <Pad width={300} height={400}>
-        Hello <a href="https://baidu.com">World</a>!
+        Hello{' '}
+        <a href="https://baidu.com">
+          <span>Wo</span>rld
+        </a>
+        !
       </Pad>
     );
   }
