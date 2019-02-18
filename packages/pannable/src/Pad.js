@@ -6,6 +6,34 @@ export default class Pad extends React.Component {
     contentOffset: { x: 0, y: 0 },
   };
 
+  _decelerateScroll(velocity) {
+    const { width, height, contentWidth, contentHeight } = this.props;
+    const interval = 50;
+
+    this._decelerateScrollTimer = setTimeout(() => {
+      const prevState = this.state;
+      const contentOffset = {
+        x: Math.max(
+          width - contentWidth,
+          Math.min(prevState.contentOffset.x + velocity.x * interval, 0)
+        ),
+        y: Math.max(
+          height - contentHeight,
+          Math.min(prevState.contentOffset.y + velocity.y * interval, 0)
+        ),
+      };
+
+      if (
+        prevState.contentOffset.x !== contentOffset.x ||
+        prevState.contentOffset.y !== contentOffset.y
+      ) {
+        this.setState({ contentOffset }, () => {
+          this._decelerateScroll(velocity);
+        });
+      }
+    }, interval);
+  }
+
   _onDragStart = () => {
     this._startContentOffset = this.state.contentOffset;
   };
@@ -27,8 +55,9 @@ export default class Pad extends React.Component {
     });
   };
 
-  _onDragEnd = () => {
+  _onDragEnd = ({ velocity }) => {
     this._startContentOffset = undefined;
+    this._decelerateScroll(velocity);
   };
 
   render() {
