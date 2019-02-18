@@ -34,7 +34,7 @@ export default class Pad extends React.Component {
       return;
     }
 
-    const calculateDecelerate = (vx, ox, minOx) => {
+    function calculateDecelerate(vx, ox, minOx) {
       const redirect = vx < 0 ? -1 : 1;
       const time = Math.min((redirect * vx) / decelerationRate, interval);
       let nvx = vx - redirect * decelerationRate * time;
@@ -46,7 +46,7 @@ export default class Pad extends React.Component {
       }
 
       return { velocity: nvx, offset: nox2 };
-    };
+    }
 
     const { width, height, contentWidth, contentHeight } = this.props;
     const resultX = calculateDecelerate(
