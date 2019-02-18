@@ -19,7 +19,7 @@ export default class Pad extends React.Component {
     }
   }
 
-  _decelerateScroll(velocity, contentOffset) {
+  _decelerate(velocity, contentOffset) {
     const interval = 50.0;
     const decelerationRate = 0.002;
     let decelerating = false;
@@ -34,7 +34,7 @@ export default class Pad extends React.Component {
       return;
     }
 
-    const calculateNext = (vx, ox, minOx) => {
+    const calculateDecelerate = (vx, ox, minOx) => {
       const redirect = vx < 0 ? -1 : 1;
       const time = Math.min((redirect * vx) / decelerationRate, interval);
       let nvx = vx - redirect * decelerationRate * time;
@@ -49,12 +49,12 @@ export default class Pad extends React.Component {
     };
 
     const { width, height, contentWidth, contentHeight } = this.props;
-    const resultX = calculateNext(
+    const resultX = calculateDecelerate(
       velocity.x,
       contentOffset.x,
       width - contentWidth
     );
-    const resultY = calculateNext(
+    const resultY = calculateDecelerate(
       velocity.y,
       contentOffset.y,
       height - contentHeight
@@ -63,13 +63,13 @@ export default class Pad extends React.Component {
     const nextVelocity = { x: resultX.velocity, y: resultY.velocity };
     const nextContentOffset = { x: resultX.offset, y: resultY.offset };
 
-    if (this._decelerateScrollTimer) {
-      clearTimeout(this._decelerateScrollTimer);
+    if (this._decelerateTimer) {
+      clearTimeout(this._decelerateTimer);
     }
 
-    this._decelerateScrollTimer = setTimeout(() => {
-      this._decelerateScrollTimer = undefined;
-      this._decelerateScroll(nextVelocity, nextContentOffset);
+    this._decelerateTimer = setTimeout(() => {
+      this._decelerateTimer = undefined;
+      this._decelerate(nextVelocity, nextContentOffset);
     }, interval);
   }
 
@@ -83,9 +83,9 @@ export default class Pad extends React.Component {
   }
 
   _onDragStart = () => {
-    if (this._decelerateScrollTimer) {
-      clearTimeout(this._decelerateScrollTimer);
-      this._decelerateScrollTimer = undefined;
+    if (this._decelerateTimer) {
+      clearTimeout(this._decelerateTimer);
+      this._decelerateTimer = undefined;
     }
     this._startContentOffset = this.state.contentOffset;
   };
@@ -105,7 +105,7 @@ export default class Pad extends React.Component {
       y: this._startContentOffset.y + translation.y,
     });
 
-    this._decelerateScroll(velocity, contentOffset);
+    this._decelerate(velocity, contentOffset);
     this._startContentOffset = undefined;
   };
 

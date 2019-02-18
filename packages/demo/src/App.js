@@ -5,7 +5,7 @@ class App extends Component {
   renderContent() {
     const items = [];
 
-    for (let row = 0; row < 9; row++) {
+    for (let row = 0; row < 20; row++) {
       for (let column = 0; column < 9; column++) {
         const style = {
           position: 'absolute',
@@ -28,8 +28,8 @@ class App extends Component {
       <Pad
         width={300}
         height={600}
-        contentWidth={990}
-        contentHeight={990}
+        contentWidth={110 * 9}
+        contentHeight={110 * 20}
         contentStyle={{ position: 'relative' }}
       >
         {this.renderContent()}
