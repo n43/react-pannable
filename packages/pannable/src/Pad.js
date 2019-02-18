@@ -120,19 +120,23 @@ export default class Pad extends React.Component {
       children,
     } = this.props;
     const { contentOffset } = this.state;
-    const transform = `translate3d(${contentOffset.x}px, ${
+    const wrapperTransform = 'translate3d(0, 0, 0)';
+    const contentTransform = `translate3d(${contentOffset.x}px, ${
       contentOffset.y
     }px, 0)`;
     const wrapperStyles = {
+      position: 'relative',
       boxSizing: 'border-box',
       overflow: 'hidden',
+      transform: wrapperTransform,
+      WebkitTransform: wrapperTransform,
       width,
       height,
       ...style,
     };
     const contentStyles = {
-      transform,
-      WebkitTransform: transform,
+      transform: contentTransform,
+      WebkitTransform: contentTransform,
       width: contentWidth,
       height: contentHeight,
       ...contentStyle,

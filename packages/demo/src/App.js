@@ -27,7 +27,7 @@ class App extends Component {
     return (
       <Pad
         width={300}
-        height={400}
+        height={600}
         contentWidth={990}
         contentHeight={990}
         contentStyle={{ position: 'relative' }}
