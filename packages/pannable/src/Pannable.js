@@ -47,7 +47,6 @@ export default class Pannable extends React.Component {
 
       if (this._prepareStartXY) {
         this._prepareStartXY = undefined;
-        this._cancel(touchEvt);
       } else if (this.state.tracking) {
         this._end(touchEvt);
       }
@@ -65,7 +64,6 @@ export default class Pannable extends React.Component {
 
       if (this._prepareStartXY) {
         this._prepareStartXY = undefined;
-        this._cancel(touchEvt);
       } else if (this.state.tracking) {
         this._end(touchEvt);
       }
@@ -108,7 +106,6 @@ export default class Pannable extends React.Component {
 
     if (this._prepareStartXY) {
       this._prepareStartXY = undefined;
-      this._cancel(evt);
     } else if (this.state.tracking) {
       this._shouldPreventClick = true;
       this._end(evt);
@@ -123,7 +120,6 @@ export default class Pannable extends React.Component {
 
     if (this._prepareStartXY) {
       this._prepareStartXY = undefined;
-      this._cancel(evt);
     } else if (this.state.tracking) {
       this._end(evt);
     }
@@ -170,7 +166,6 @@ export default class Pannable extends React.Component {
 
     this._startXY = this._moveXY = { x: evt.pageX, y: evt.pageY };
     this._moveT = new Date().getTime();
-    console.log('onStart');
   }
 
   _move(evt) {
@@ -194,7 +189,6 @@ export default class Pannable extends React.Component {
     this._moveParams = params;
     this._moveXY = { x: evt.pageX, y: evt.pageY };
     this._moveT = now;
-    console.log('onMove', params.translation, params.velocity);
   }
 
   _end(evt) {
@@ -207,17 +201,6 @@ export default class Pannable extends React.Component {
     }
 
     this._startXY = this._moveXY = this._moveT = this._moveParams = undefined;
-    console.log('onEnd');
-  }
-
-  _cancel(evt) {
-    const { onCancel } = this.props;
-
-    if (onCancel) {
-      onCancel({ originEvent: evt });
-    }
-
-    console.log('onCancel');
   }
 
   render() {
