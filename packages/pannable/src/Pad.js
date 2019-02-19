@@ -6,6 +6,35 @@ import {
   cancelAnimationFrame,
 } from './utils/animationFrame';
 
+function calculateDecelerateLinear(vx, ox, w, cw) {
+  const decelerationRate = 0.002;
+  const redirect = vx < 0 ? -1 : 1;
+  const time = (redirect * vx) / decelerationRate;
+  let nvx, nox;
+
+  if (time > ANIMATION_INTERVAL) {
+    nvx = vx - redirect * decelerationRate * ANIMATION_INTERVAL;
+    nox =
+      ox +
+      (vx - 0.5 * redirect * decelerationRate * ANIMATION_INTERVAL) *
+        ANIMATION_INTERVAL;
+  } else {
+    nvx = 0;
+    nox = ox + 0.5 * vx * (vx / decelerationRate);
+  }
+
+  const nox2 = Math.max(w - cw, Math.min(nox, 0));
+
+  if (nox2 !== nox) {
+    nox = nox2;
+    nvx = 0;
+  }
+
+  return { velocity: nvx, offset: nox };
+}
+
+function calculateDeceleratePaging(vx, ox, w, cw) {}
+
 export default class Pad extends React.Component {
   state = {
     contentOffset: { x: 0, y: 0 },
@@ -24,13 +53,12 @@ export default class Pad extends React.Component {
     }
   }
 
-  _decelerateLinear(velocity, contentOffset) {
-    const decelerationRate = 0.002;
+  _decelerate({ velocity, contentOffset }) {
     let decelerating = false;
     let interval = 1000 / 60;
-    const now = new Date().getTime();
 
     if (this.lastAnimationTime) {
+      const now = new Date().getTime();
       interval = now - this.lastAnimationTime;
       this.lastAnimationTime = now;
     }
@@ -45,52 +73,33 @@ export default class Pad extends React.Component {
       return;
     }
 
-    function calculateDecelerateLinear(vx, ox, minOx) {
-      const redirect = vx < 0 ? -1 : 1;
-      const time = (redirect * vx) / decelerationRate;
-      let nvx, nox;
+    const {
+      width,
+      height,
+      contentWidth,
+      contentHeight,
+      pagingEnabled,
+    } = this.props;
+    const calculateDecelerate = pagingEnabled
+      ? calculateDeceleratePaging
+      : calculateDecelerateLinear;
+    const result = [
+      calculateDecelerate(velocity.x, contentOffset.x, width, contentWidth),
+      calculateDecelerate(velocity.y, contentOffset.y, height, contentHeight),
+    ];
+    const nextVelocity = { x: result[0].velocity, y: result[1].velocity };
+    const nextContentOffset = { x: result[0].offset, y: result[1].offset };
 
-      if (time > interval) {
-        nvx = vx - redirect * decelerationRate * interval;
-        nox =
-          ox + (vx - 0.5 * redirect * decelerationRate * interval) * interval;
-      } else {
-        nvx = 0;
-        nox = ox + 0.5 * vx * (vx / decelerationRate);
-      }
-
-      const nox2 = Math.max(minOx, Math.min(nox, 0));
-
-      if (nox2 !== nox) {
-        nox = nox2;
-        nvx = 0;
-      }
-
-      return { velocity: nvx, offset: nox };
+    if (this._deceleratingTimer) {
+      cancelAnimationFrame(this._deceleratingTimer);
     }
 
-    const { width, height, contentWidth, contentHeight } = this.props;
-    const resultX = calculateDecelerateLinear(
-      velocity.x,
-      contentOffset.x,
-      width - contentWidth
-    );
-    const resultY = calculateDecelerateLinear(
-      velocity.y,
-      contentOffset.y,
-      height - contentHeight
-    );
-
-    const nextVelocity = { x: resultX.velocity, y: resultY.velocity };
-    const nextContentOffset = { x: resultX.offset, y: resultY.offset };
-
-    if (this._decelerateTimer) {
-      cancelAnimationFrame(this._decelerateTimer);
-    }
-
-    this._decelerateTimer = requestAnimationFrame(() => {
-      this._decelerateTimer = undefined;
-      this._decelerateLinear(nextVelocity, nextContentOffset);
+    this._deceleratingTimer = requestAnimationFrame(() => {
+      this._deceleratingTimer = undefined;
+      this._decelerate({
+        velocity: nextVelocity,
+        contentOffset: nextContentOffset,
+      });
     });
   }
 
@@ -104,9 +113,9 @@ export default class Pad extends React.Component {
   }
 
   _onDragStart = () => {
-    if (this._decelerateTimer) {
-      cancelAnimationFrame(this._decelerateTimer);
-      this._decelerateTimer = undefined;
+    if (this._deceleratingTimer) {
+      cancelAnimationFrame(this._deceleratingTimer);
+      this._deceleratingTimer = undefined;
     }
     this._startContentOffset = this.state.contentOffset;
   };
@@ -126,10 +135,8 @@ export default class Pad extends React.Component {
       y: this._startContentOffset.y + translation.y,
     });
 
-    if (!this.props.pagingEnabled) {
-      this._decelerateLinear(velocity, contentOffset);
-    }
     this._startContentOffset = undefined;
+    this._decelerate({ velocity, contentOffset });
   };
 
   render() {
