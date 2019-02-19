@@ -4,7 +4,7 @@ const MIN_DISTANCE = 0;
 
 export default class Pannable extends React.Component {
   state = {
-    tracking: false,
+    dragging: false,
   };
 
   _onTouchStart = evt => {
@@ -29,7 +29,7 @@ export default class Pannable extends React.Component {
       if (this._shouldStart(touchEvt)) {
         this._prepareStartXY = undefined;
         this._start(touchEvt);
-      } else if (this.state.tracking) {
+      } else if (this.state.dragging) {
         this._move(touchEvt);
       }
     }
@@ -47,7 +47,7 @@ export default class Pannable extends React.Component {
 
       if (this._prepareStartXY) {
         this._prepareStartXY = undefined;
-      } else if (this.state.tracking) {
+      } else if (this.state.dragging) {
         this._end(touchEvt);
       }
     }
@@ -64,7 +64,7 @@ export default class Pannable extends React.Component {
 
       if (this._prepareStartXY) {
         this._prepareStartXY = undefined;
-      } else if (this.state.tracking) {
+      } else if (this.state.dragging) {
         this._end(touchEvt);
       }
     }
@@ -91,7 +91,7 @@ export default class Pannable extends React.Component {
 
       this._prepareStartXY = undefined;
       this._start(evt);
-    } else if (this.state.tracking) {
+    } else if (this.state.dragging) {
       evt.preventDefault();
 
       this._move(evt);
@@ -106,7 +106,7 @@ export default class Pannable extends React.Component {
 
     if (this._prepareStartXY) {
       this._prepareStartXY = undefined;
-    } else if (this.state.tracking) {
+    } else if (this.state.dragging) {
       this._shouldPreventClick = true;
       this._end(evt);
     }
@@ -120,7 +120,7 @@ export default class Pannable extends React.Component {
 
     if (this._prepareStartXY) {
       this._prepareStartXY = undefined;
-    } else if (this.state.tracking) {
+    } else if (this.state.dragging) {
       this._end(evt);
     }
 
@@ -158,7 +158,7 @@ export default class Pannable extends React.Component {
   _start(evt) {
     const { onStart } = this.props;
 
-    this.setState({ tracking: true });
+    this.setState({ dragging: true });
 
     if (onStart) {
       onStart({ originEvent: evt });
@@ -194,7 +194,7 @@ export default class Pannable extends React.Component {
   _end(evt) {
     const { onEnd } = this.props;
 
-    this.setState({ tracking: false });
+    this.setState({ dragging: false });
 
     if (onEnd) {
       onEnd({ ...this._moveParams, originEvent: evt });

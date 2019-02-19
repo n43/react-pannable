@@ -2,44 +2,37 @@ import React, { Component } from 'react';
 import { Pad } from 'react-pannable';
 
 class App extends Component {
-  renderColumns(flag) {
-    const columns = [];
+  renderContent() {
+    const items = [];
 
-    for (let idx = 0; idx < 9; idx++) {
-      const style = {
-        display: 'inline-block',
-        width: 60,
-        height: 60,
-        verticalAlign: 'top',
-        backgroundColor: (idx + flag) % 2 ? '#000' : '#ccc',
-      };
-      columns.push(<div key={idx} style={style} />);
+    for (let row = 0; row < 20; row++) {
+      for (let column = 0; column < 9; column++) {
+        const style = {
+          position: 'absolute',
+          top: row * 110,
+          left: column * 110,
+          width: 110,
+          height: 110,
+          backgroundColor: (row + column) % 2 ? '#000' : '#ccc',
+        };
+
+        items.push(<div key={row + '-' + column} style={style} />);
+      }
     }
 
-    return columns;
-  }
-
-  renderRows() {
-    const rows = [];
-
-    for (let idx = 0; idx < 9; idx++) {
-      const style = {
-        whiteSpace: 'nowrap',
-      };
-      rows.push(
-        <div key={idx} style={style}>
-          {this.renderColumns(idx % 2)}
-        </div>
-      );
-    }
-
-    return rows;
+    return items;
   }
 
   render() {
     return (
-      <Pad width={300} height={400} contentWidth={540} contentHeight={540}>
-        {this.renderRows()}
+      <Pad
+        width={300}
+        height={600}
+        contentWidth={110 * 9}
+        contentHeight={110 * 20}
+        contentStyle={{ position: 'relative' }}
+      >
+        {this.renderContent()}
       </Pad>
     );
   }
