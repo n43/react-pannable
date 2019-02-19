@@ -28,13 +28,12 @@ export default class Pad extends React.Component {
     const decelerationRate = 0.002;
     let decelerating = false;
     let interval = 1000 / 60;
+    const now = new Date().getTime();
 
     if (this.lastAnimationTime) {
-      const now = new Date().getTime();
       interval = now - this.lastAnimationTime;
       this.lastAnimationTime = now;
     }
-    console.log(interval);
     if (velocity.x !== 0 || velocity.y !== 0) {
       decelerating = true;
     }
