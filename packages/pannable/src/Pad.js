@@ -52,7 +52,6 @@ export default class Pad extends React.Component {
 
   _decelerate({ velocity, contentOffset }) {
     let decelerating = false;
-    this.lastAnimationTime = new Date().getTime();
 
     if (velocity.x !== 0 || velocity.y !== 0) {
       decelerating = true;
@@ -61,7 +60,6 @@ export default class Pad extends React.Component {
     this.setState({ contentOffset, decelerating, dragging: false });
 
     if (!decelerating) {
-      this.lastAnimationTime = undefined;
       return;
     }
 
@@ -69,16 +67,13 @@ export default class Pad extends React.Component {
       cancelAnimationFrame(this._deceleratingTimer);
     }
 
+    const startTime = new Date().getTime();
+
     this._deceleratingTimer = requestAnimationFrame(() => {
-      const now = new Date().getTime();
-      const interval = now - this.lastAnimationTime;
+      const interval = new Date().getTime() - startTime;
 
       this._deceleratingTimer = undefined;
-      this._decelerateWithInterval({
-        interval,
-        velocity,
-        contentOffset,
-      });
+      this._decelerateWithInterval({ interval, velocity, contentOffset });
     });
   }
 
