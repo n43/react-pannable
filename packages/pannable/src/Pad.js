@@ -1,6 +1,11 @@
 import React from 'react';
 import Pannable from './Pannable';
-import { translate3d } from './utils/transform';
+import styleSheet from './utils/styleSheet';
+import {
+  requestAnimationFrame,
+  cancelAnimationFrame,
+  ANIMATION_INTERVAL,
+} from './utils/animationFrame';
 
 export default class Pad extends React.Component {
   state = {
@@ -21,7 +26,6 @@ export default class Pad extends React.Component {
   }
 
   _decelerate(velocity, contentOffset) {
-    const interval = 50.0;
     const decelerationRate = 0.002;
     let decelerating = false;
 
@@ -40,10 +44,12 @@ export default class Pad extends React.Component {
       const time = (redirect * vx) / decelerationRate;
       let nvx, nox;
 
-      if (time > interval) {
-        nvx = vx - redirect * decelerationRate * interval;
+      if (time > ANIMATION_INTERVAL) {
+        nvx = vx - redirect * decelerationRate * ANIMATION_INTERVAL;
         nox =
-          ox + (vx - 0.5 * redirect * decelerationRate * interval) * interval;
+          ox +
+          (vx - 0.5 * redirect * decelerationRate * ANIMATION_INTERVAL) *
+            ANIMATION_INTERVAL;
       } else {
         nvx = 0;
         nox = ox + 0.5 * vx * (vx / decelerationRate);
@@ -75,13 +81,13 @@ export default class Pad extends React.Component {
     const nextContentOffset = { x: resultX.offset, y: resultY.offset };
 
     if (this._decelerateTimer) {
-      clearTimeout(this._decelerateTimer);
+      cancelAnimationFrame(this._decelerateTimer);
     }
 
-    this._decelerateTimer = setTimeout(() => {
+    this._decelerateTimer = requestAnimationFrame(() => {
       this._decelerateTimer = undefined;
       this._decelerate(nextVelocity, nextContentOffset);
-    }, interval);
+    });
   }
 
   _autoAdjustContentOffset(offset) {
@@ -131,24 +137,25 @@ export default class Pad extends React.Component {
       children,
     } = this.props;
     const { contentOffset } = this.state;
-    const wrapperTransform = translate3d(0, 0, 0);
-    const contentTransform = translate3d(contentOffset.x, contentOffset.y, 0);
-    const wrapperStyles = {
+    const wrapperTransform = 'translate3d(0, 0, 0)';
+    const contentTransform = `translate3d(${contentOffset.x}px, ${
+      contentOffset.y
+    }px, 0)`;
+    const wrapperStyles = styleSheet.create({
       position: 'relative',
       boxSizing: 'border-box',
       overflow: 'hidden',
       width,
       height,
-      ...wrapperTransform,
+      transform: wrapperTransform,
       ...style,
-    };
-    const contentStyles = {
+    });
+    const contentStyles = styleSheet.create({
       width: contentWidth,
       height: contentHeight,
-      ...contentTransform,
+      transform: contentTransform,
       ...contentStyle,
-    };
-
+    });
     return (
       <Pannable
         style={wrapperStyles}
