@@ -50,6 +50,13 @@ export default class Pad extends React.Component {
     }
   }
 
+  componentWillUnmount() {
+    if (this._deceleratingTimer) {
+      cancelAnimationFrame(this._deceleratingTimer);
+      this._deceleratingTimer = undefined;
+    }
+  }
+
   _decelerate({ velocity, contentOffset }) {
     let decelerating = false;
 
@@ -63,11 +70,11 @@ export default class Pad extends React.Component {
       return;
     }
 
+    const startTime = new Date().getTime();
+
     if (this._deceleratingTimer) {
       cancelAnimationFrame(this._deceleratingTimer);
     }
-
-    const startTime = new Date().getTime();
 
     this._deceleratingTimer = requestAnimationFrame(() => {
       const interval = new Date().getTime() - startTime;
