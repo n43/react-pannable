@@ -6,18 +6,15 @@ import {
   cancelAnimationFrame,
 } from './utils/animationFrame';
 
-function calculateDecelerateLinear(vx, ox, w, cw) {
+function calculateDecelerateLinear(interval, vx, ox, w, cw) {
   const decelerationRate = 0.002;
   const redirect = vx < 0 ? -1 : 1;
   const time = (redirect * vx) / decelerationRate;
   let nvx, nox;
 
-  if (time > ANIMATION_INTERVAL) {
-    nvx = vx - redirect * decelerationRate * ANIMATION_INTERVAL;
-    nox =
-      ox +
-      (vx - 0.5 * redirect * decelerationRate * ANIMATION_INTERVAL) *
-        ANIMATION_INTERVAL;
+  if (time > interval) {
+    nvx = vx - redirect * decelerationRate * interval;
+    nox = ox + (vx - 0.5 * redirect * decelerationRate * interval) * interval;
   } else {
     nvx = 0;
     nox = ox + 0.5 * vx * (vx / decelerationRate);
@@ -67,6 +64,21 @@ export default class Pad extends React.Component {
       return;
     }
 
+    if (this._deceleratingTimer) {
+      cancelAnimationFrame(this._deceleratingTimer);
+    }
+
+    this._deceleratingTimer = requestAnimationFrame(() => {
+      this._deceleratingTimer = undefined;
+      this._decelerateWithInterval({
+        interval: ANIMATION_INTERVAL,
+        velocity,
+        contentOffset,
+      });
+    });
+  }
+
+  _decelerateWithInterval({ interval, velocity, contentOffset }) {
     const {
       width,
       height,
@@ -77,23 +89,24 @@ export default class Pad extends React.Component {
     const calculateDecelerate = pagingEnabled
       ? calculateDeceleratePaging
       : calculateDecelerateLinear;
-    const result = [
-      calculateDecelerate(velocity.x, contentOffset.x, width, contentWidth),
-      calculateDecelerate(velocity.y, contentOffset.y, height, contentHeight),
-    ];
-    const nextVelocity = { x: result[0].velocity, y: result[1].velocity };
-    const nextContentOffset = { x: result[0].offset, y: result[1].offset };
+    const resultX = calculateDecelerate(
+      interval,
+      velocity.x,
+      contentOffset.x,
+      width,
+      contentWidth
+    );
+    const resultY = calculateDecelerate(
+      interval,
+      velocity.y,
+      contentOffset.y,
+      height,
+      contentHeight
+    );
 
-    if (this._deceleratingTimer) {
-      cancelAnimationFrame(this._deceleratingTimer);
-    }
-
-    this._deceleratingTimer = requestAnimationFrame(() => {
-      this._deceleratingTimer = undefined;
-      this._decelerate({
-        velocity: nextVelocity,
-        contentOffset: nextContentOffset,
-      });
+    this._decelerate({
+      velocity: { x: resultX.velocity, y: resultY.velocity },
+      contentOffset: { x: resultX.offset, y: resultY.offset },
     });
   }
 
