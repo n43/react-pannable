@@ -157,38 +157,57 @@ export default class Pannable extends React.Component {
 
   _start(evt) {
     const { onStart } = this.props;
+    const node = evt.currentTarget;
 
+    console.log('start', evt.pageY, node.offsetTop, node.offsetParent);
     this.setState({ dragging: true });
 
-    if (onStart) {
-      onStart({ originEvent: evt });
-    }
+    this._dragParams = {
+      translation: { x: 0, y: 0 },
+      velocity: { x: 0, y: 0 },
+      startXY: { x: evt.pageX, y: evt.pageY },
+      moveXY: { x: evt.pageX, y: evt.pageY },
+      moveT: new Date().getTime(),
+    };
 
-    this._startXY = this._moveXY = { x: evt.pageX, y: evt.pageY };
-    this._moveT = new Date().getTime();
+    if (onStart) {
+      onStart({
+        translation: this._dragParams.translation,
+        velocity: this._dragParams.velocity,
+        originEvent: evt,
+      });
+    }
   }
 
   _move(evt) {
     const { onMove } = this.props;
     const now = new Date().getTime();
-    const params = {
+
+    this._dragParams = {
+      ...this._dragParams,
       translation: {
-        x: evt.pageX - this._startXY.x,
-        y: evt.pageY - this._startXY.y,
+        x: evt.pageX - this._dragParams.startXY.x,
+        y: evt.pageY - this._dragParams.startXY.y,
       },
       velocity: {
-        x: (evt.pageX - this._moveXY.x) / (now - this._moveT),
-        y: (evt.pageY - this._moveXY.y) / (now - this._moveT),
+        x:
+          (evt.pageX - this._dragParams.moveXY.x) /
+          (now - this._dragParams.moveT),
+        y:
+          (evt.pageY - this._dragParams.moveXY.y) /
+          (now - this._dragParams.moveT),
       },
+      moveXY: { x: evt.pageX, y: evt.pageY },
+      moveT: now,
     };
 
     if (onMove) {
-      onMove({ ...params, originEvent: evt });
+      onMove({
+        translation: this._dragParams.translation,
+        velocity: this._dragParams.velocity,
+        originEvent: evt,
+      });
     }
-
-    this._moveParams = params;
-    this._moveXY = { x: evt.pageX, y: evt.pageY };
-    this._moveT = now;
   }
 
   _end(evt) {
@@ -197,10 +216,14 @@ export default class Pannable extends React.Component {
     this.setState({ dragging: false });
 
     if (onEnd) {
-      onEnd({ ...this._moveParams, originEvent: evt });
+      onEnd({
+        translation: this._dragParams.translation,
+        velocity: this._dragParams.velocity,
+        originEvent: evt,
+      });
     }
 
-    this._startXY = this._moveXY = this._moveT = this._moveParams = undefined;
+    this._dragParams = undefined;
   }
 
   render() {

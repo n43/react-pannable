@@ -25,15 +25,21 @@ class App extends Component {
 
   render() {
     return (
-      <Pad
-        width={300}
-        height={600}
-        contentWidth={110 * 9}
-        contentHeight={110 * 20}
-        contentStyle={{ position: 'relative' }}
-      >
-        {this.renderContent()}
-      </Pad>
+      <React.Fragment>
+        <div style={{ height: 500 }} />
+        <div>
+          <div style={{ height: 500 }} />
+          <Pad
+            width={300}
+            height={600}
+            contentWidth={110 * 9}
+            contentHeight={110 * 20}
+            contentStyle={{ position: 'relative' }}
+          >
+            {this.renderContent()}
+          </Pad>
+        </div>
+      </React.Fragment>
     );
   }
 }
