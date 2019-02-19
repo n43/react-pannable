@@ -55,13 +55,7 @@ export default class Pad extends React.Component {
 
   _decelerate({ velocity, contentOffset }) {
     let decelerating = false;
-    let interval = 1000 / 60;
 
-    if (this.lastAnimationTime) {
-      const now = new Date().getTime();
-      interval = now - this.lastAnimationTime;
-      this.lastAnimationTime = now;
-    }
     if (velocity.x !== 0 || velocity.y !== 0) {
       decelerating = true;
     }
