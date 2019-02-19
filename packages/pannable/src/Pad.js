@@ -55,6 +55,7 @@ export default class Pad extends React.Component {
     const contentStyles = {
       transform,
       WebkitTransform: transform,
+      MsTransform: transform,
       width: contentWidth,
       height: contentHeight,
       ...contentStyle,
