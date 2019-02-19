@@ -13,8 +13,8 @@ function create(styles) {
   return { ...styles, ...transformPrefixer(styles['transform']) };
 }
 
-let styleSheet = {
+let StyleSheet = {
   create,
 };
 
-export default styleSheet;
+export default StyleSheet;

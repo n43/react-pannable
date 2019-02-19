@@ -1,23 +1,23 @@
 import React from 'react';
 import Pannable from './Pannable';
-import styleSheet from './utils/styleSheet';
+import StyleSheet from './utils/StyleSheet';
 import {
   requestAnimationFrame,
   cancelAnimationFrame,
 } from './utils/animationFrame';
 
-function calculateDecelerateLinear(interval, vx, ox, w, cw) {
-  const decelerationRate = 0.002;
+function calculateDecelerationLinear(interval, vx, ox, w, cw) {
+  const rate = 0.002;
   const redirect = vx < 0 ? -1 : 1;
-  const time = (redirect * vx) / decelerationRate;
+  const time = (redirect * vx) / rate;
   let nvx, nox;
 
   if (time > interval) {
-    nvx = vx - redirect * decelerationRate * interval;
-    nox = ox + (vx - 0.5 * redirect * decelerationRate * interval) * interval;
+    nvx = vx - redirect * rate * interval;
+    nox = ox + (vx - 0.5 * redirect * rate * interval) * interval;
   } else {
     nvx = 0;
-    nox = ox + 0.5 * vx * (vx / decelerationRate);
+    nox = ox + 0.5 * vx * (vx / rate);
   }
 
   const nox2 = Math.max(w - cw, Math.min(nox, 0));
@@ -30,7 +30,7 @@ function calculateDecelerateLinear(interval, vx, ox, w, cw) {
   return { velocity: nvx, offset: nox };
 }
 
-function calculateDeceleratePaging(vx, ox, w, cw) {}
+function calculateDecelerationPaging(vx, ox, w, cw) {}
 
 export default class Pad extends React.Component {
   state = {
@@ -52,6 +52,7 @@ export default class Pad extends React.Component {
 
   _decelerate({ velocity, contentOffset }) {
     let decelerating = false;
+    this.lastAnimationTime = new Date().getTime();
 
     if (velocity.x !== 0 || velocity.y !== 0) {
       decelerating = true;
@@ -69,9 +70,12 @@ export default class Pad extends React.Component {
     }
 
     this._deceleratingTimer = requestAnimationFrame(() => {
+      const now = new Date().getTime();
+      const interval = now - this.lastAnimationTime;
+
       this._deceleratingTimer = undefined;
       this._decelerateWithInterval({
-        interval: ANIMATION_INTERVAL,
+        interval,
         velocity,
         contentOffset,
       });
@@ -86,17 +90,17 @@ export default class Pad extends React.Component {
       contentHeight,
       pagingEnabled,
     } = this.props;
-    const calculateDecelerate = pagingEnabled
-      ? calculateDeceleratePaging
-      : calculateDecelerateLinear;
-    const resultX = calculateDecelerate(
+    const calculateDeceleration = pagingEnabled
+      ? calculateDecelerationPaging
+      : calculateDecelerationLinear;
+    const resultX = calculateDeceleration(
       interval,
       velocity.x,
       contentOffset.x,
       width,
       contentWidth
     );
-    const resultY = calculateDecelerate(
+    const resultY = calculateDeceleration(
       interval,
       velocity.y,
       contentOffset.y,
@@ -161,7 +165,7 @@ export default class Pad extends React.Component {
     const contentTransform = `translate3d(${contentOffset.x}px, ${
       contentOffset.y
     }px, 0)`;
-    const wrapperStyles = styleSheet.create({
+    const wrapperStyles = StyleSheet.create({
       position: 'relative',
       boxSizing: 'border-box',
       overflow: 'hidden',
@@ -170,7 +174,7 @@ export default class Pad extends React.Component {
       transform: wrapperTransform,
       ...style,
     });
-    const contentStyles = styleSheet.create({
+    const contentStyles = StyleSheet.create({
       width: contentWidth,
       height: contentHeight,
       transform: contentTransform,
