@@ -106,7 +106,7 @@ export default class Pad extends React.Component {
 
   _onDragStart = () => {
     if (this._decelerateTimer) {
-      clearTimeout(this._decelerateTimer);
+      cancelAnimationFrame(this._decelerateTimer);
       this._decelerateTimer = undefined;
     }
     this._startContentOffset = this.state.contentOffset;
