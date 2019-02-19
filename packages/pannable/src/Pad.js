@@ -7,6 +7,32 @@ import {
   ANIMATION_INTERVAL,
 } from './utils/animationFrame';
 
+function calculateDecelerateLinear(vx, ox, minOx) {
+  const redirect = vx < 0 ? -1 : 1;
+  const time = (redirect * vx) / decelerationRate;
+  let nvx, nox;
+
+  if (time > ANIMATION_INTERVAL) {
+    nvx = vx - redirect * decelerationRate * ANIMATION_INTERVAL;
+    nox =
+      ox +
+      (vx - 0.5 * redirect * decelerationRate * ANIMATION_INTERVAL) *
+        ANIMATION_INTERVAL;
+  } else {
+    nvx = 0;
+    nox = ox + 0.5 * vx * (vx / decelerationRate);
+  }
+
+  const nox2 = Math.max(minOx, Math.min(nox, 0));
+
+  if (nox2 !== nox) {
+    nox = nox2;
+    nvx = 0;
+  }
+
+  return { velocity: nvx, offset: nox };
+}
+
 export default class Pad extends React.Component {
   state = {
     contentOffset: { x: 0, y: 0 },
@@ -39,46 +65,32 @@ export default class Pad extends React.Component {
       return;
     }
 
-    function calculateDecelerateLinear(vx, ox, minOx) {
-      const redirect = vx < 0 ? -1 : 1;
-      const time = (redirect * vx) / decelerationRate;
-      let nvx, nox;
+    const {
+      width,
+      height,
+      contentWidth,
+      contentHeight,
+      pagingEnabled,
+    } = this.props;
+    let result;
 
-      if (time > ANIMATION_INTERVAL) {
-        nvx = vx - redirect * decelerationRate * ANIMATION_INTERVAL;
-        nox =
-          ox +
-          (vx - 0.5 * redirect * decelerationRate * ANIMATION_INTERVAL) *
-            ANIMATION_INTERVAL;
-      } else {
-        nvx = 0;
-        nox = ox + 0.5 * vx * (vx / decelerationRate);
-      }
-
-      const nox2 = Math.max(minOx, Math.min(nox, 0));
-
-      if (nox2 !== nox) {
-        nox = nox2;
-        nvx = 0;
-      }
-
-      return { velocity: nvx, offset: nox };
+    if (!pagingEnabled) {
+      result = [
+        calculateDecelerateLinear(
+          velocity.x,
+          contentOffset.x,
+          width - contentWidth
+        ),
+        calculateDecelerateLinear(
+          velocity.y,
+          contentOffset.y,
+          height - contentHeight
+        ),
+      ];
     }
 
-    const { width, height, contentWidth, contentHeight } = this.props;
-    const resultX = calculateDecelerateLinear(
-      velocity.x,
-      contentOffset.x,
-      width - contentWidth
-    );
-    const resultY = calculateDecelerateLinear(
-      velocity.y,
-      contentOffset.y,
-      height - contentHeight
-    );
-
-    const nextVelocity = { x: resultX.velocity, y: resultY.velocity };
-    const nextContentOffset = { x: resultX.offset, y: resultY.offset };
+    const nextVelocity = { x: result[0].velocity, y: result[1].velocity };
+    const nextContentOffset = { x: result[0].offset, y: result[1].offset };
 
     if (this._deceleratingTimer) {
       cancelAnimationFrame(this._deceleratingTimer);
