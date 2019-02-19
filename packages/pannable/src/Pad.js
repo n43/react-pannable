@@ -7,7 +7,8 @@ import {
   ANIMATION_INTERVAL,
 } from './utils/animationFrame';
 
-function calculateDecelerateLinear(vx, ox, minOx) {
+function calculateDecelerateLinear(vx, ox, w, cw) {
+  const decelerationRate = 0.002;
   const redirect = vx < 0 ? -1 : 1;
   const time = (redirect * vx) / decelerationRate;
   let nvx, nox;
@@ -23,7 +24,7 @@ function calculateDecelerateLinear(vx, ox, minOx) {
     nox = ox + 0.5 * vx * (vx / decelerationRate);
   }
 
-  const nox2 = Math.max(minOx, Math.min(nox, 0));
+  const nox2 = Math.max(w - cw, Math.min(nox, 0));
 
   if (nox2 !== nox) {
     nox = nox2;
@@ -32,6 +33,8 @@ function calculateDecelerateLinear(vx, ox, minOx) {
 
   return { velocity: nvx, offset: nox };
 }
+
+function calculateDeceleratePaging(vx, ox, w, cw) {}
 
 export default class Pad extends React.Component {
   state = {
@@ -52,7 +55,6 @@ export default class Pad extends React.Component {
   }
 
   _decelerate({ velocity, contentOffset }) {
-    const decelerationRate = 0.002;
     let decelerating = false;
 
     if (velocity.x !== 0 || velocity.y !== 0) {
@@ -72,23 +74,13 @@ export default class Pad extends React.Component {
       contentHeight,
       pagingEnabled,
     } = this.props;
-    let result;
-
-    if (!pagingEnabled) {
-      result = [
-        calculateDecelerateLinear(
-          velocity.x,
-          contentOffset.x,
-          width - contentWidth
-        ),
-        calculateDecelerateLinear(
-          velocity.y,
-          contentOffset.y,
-          height - contentHeight
-        ),
-      ];
-    }
-
+    const calculateDecelerate = pagingEnabled
+      ? calculateDeceleratePaging
+      : calculateDecelerateLinear;
+    const result = [
+      calculateDecelerate(velocity.x, contentOffset.x, width, contentWidth),
+      calculateDecelerate(velocity.y, contentOffset.y, height, contentHeight),
+    ];
     const nextVelocity = { x: result[0].velocity, y: result[1].velocity };
     const nextContentOffset = { x: result[0].offset, y: result[1].offset };
 
