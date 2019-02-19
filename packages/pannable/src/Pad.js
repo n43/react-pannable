@@ -25,7 +25,7 @@ export default class Pad extends React.Component {
     }
   }
 
-  _decelerateLinear(velocity, contentOffset) {
+  _decelerate({ velocity, contentOffset }) {
     const decelerationRate = 0.002;
     let decelerating = false;
 
@@ -80,13 +80,16 @@ export default class Pad extends React.Component {
     const nextVelocity = { x: resultX.velocity, y: resultY.velocity };
     const nextContentOffset = { x: resultX.offset, y: resultY.offset };
 
-    if (this._decelerateTimer) {
-      cancelAnimationFrame(this._decelerateTimer);
+    if (this._deceleratingTimer) {
+      cancelAnimationFrame(this._deceleratingTimer);
     }
 
-    this._decelerateTimer = requestAnimationFrame(() => {
-      this._decelerateTimer = undefined;
-      this._decelerateLinear(nextVelocity, nextContentOffset);
+    this._deceleratingTimer = requestAnimationFrame(() => {
+      this._deceleratingTimer = undefined;
+      this._decelerate({
+        velocity: nextVelocity,
+        contentOffset: nextContentOffset,
+      });
     });
   }
 
@@ -100,9 +103,9 @@ export default class Pad extends React.Component {
   }
 
   _onDragStart = () => {
-    if (this._decelerateTimer) {
-      clearTimeout(this._decelerateTimer);
-      this._decelerateTimer = undefined;
+    if (this._deceleratingTimer) {
+      clearTimeout(this._deceleratingTimer);
+      this._deceleratingTimer = undefined;
     }
     this._startContentOffset = this.state.contentOffset;
   };
@@ -122,10 +125,8 @@ export default class Pad extends React.Component {
       y: this._startContentOffset.y + translation.y,
     });
 
-    if (!this.props.pagingEnabled) {
-      this._decelerateLinear(velocity, contentOffset);
-    }
     this._startContentOffset = undefined;
+    this._decelerate({ velocity, contentOffset });
   };
 
   render() {
