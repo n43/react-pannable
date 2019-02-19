@@ -38,14 +38,15 @@ export default class Pad extends React.Component {
       const redirect = vx < 0 ? -1 : 1;
       const time = Math.min((redirect * vx) / decelerationRate, interval);
       let nvx = vx - redirect * decelerationRate * time;
-      const nox1 = ox + 0.5 * (vx + nvx) * time;
-      const nox2 = Math.max(minOx, Math.min(nox1, 0));
+      let nox = ox + 0.5 * (vx + nvx) * time;
+      const nox2 = Math.max(minOx, Math.min(nox, 0));
 
-      if (nox2 !== nox1) {
+      if (nox2 !== nox) {
+        nox = nox2;
         nvx = 0;
       }
 
-      return { velocity: nvx, offset: nox2 };
+      return { velocity: nvx, offset: nox };
     }
 
     const { width, height, contentWidth, contentHeight } = this.props;
