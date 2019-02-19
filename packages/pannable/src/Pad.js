@@ -1,5 +1,6 @@
 import React from 'react';
 import Pannable from './Pannable';
+import { translate3d } from './utils/transform';
 
 export default class Pad extends React.Component {
   state = {
@@ -121,31 +122,21 @@ export default class Pad extends React.Component {
       children,
     } = this.props;
     const { contentOffset } = this.state;
-    const wrapperTransform = 'translate3d(0, 0, 0)';
-    const contentTransform = `translate3d(${contentOffset.x}px, ${
-      contentOffset.y
-    }px, 0)`;
+    const wrapperTransform = translate3d(0, 0, 0);
+    const contentTransform = translate3d(contentOffset.x, contentOffset.y, 0);
     const wrapperStyles = {
       position: 'relative',
       boxSizing: 'border-box',
       overflow: 'hidden',
-      transform: wrapperTransform,
-      WebkitTransform: wrapperTransform,
       width,
       height,
+      ...wrapperTransform,
       ...style,
     };
     const contentStyles = {
-<<<<<<< HEAD
-      transform,
-      WebkitTransform: transform,
-      MsTransform: transform,
-=======
-      transform: contentTransform,
-      WebkitTransform: contentTransform,
->>>>>>> 242a655e103ea3e5c82115df99d319623406b0c0
       width: contentWidth,
       height: contentHeight,
+      ...contentTransform,
       ...contentStyle,
     };
 
