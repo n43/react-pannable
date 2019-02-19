@@ -24,7 +24,7 @@ export default class Pad extends React.Component {
     }
   }
 
-  _decelerate(velocity, contentOffset) {
+  _decelerateLinear(velocity, contentOffset) {
     const decelerationRate = 0.002;
     let decelerating = false;
     let interval = 1000 / 60;
@@ -46,7 +46,7 @@ export default class Pad extends React.Component {
       return;
     }
 
-    function calculateDecelerate(vx, ox, minOx) {
+    function calculateDecelerateLinear(vx, ox, minOx) {
       const redirect = vx < 0 ? -1 : 1;
       const time = (redirect * vx) / decelerationRate;
       let nvx, nox;
@@ -71,12 +71,12 @@ export default class Pad extends React.Component {
     }
 
     const { width, height, contentWidth, contentHeight } = this.props;
-    const resultX = calculateDecelerate(
+    const resultX = calculateDecelerateLinear(
       velocity.x,
       contentOffset.x,
       width - contentWidth
     );
-    const resultY = calculateDecelerate(
+    const resultY = calculateDecelerateLinear(
       velocity.y,
       contentOffset.y,
       height - contentHeight
@@ -91,11 +91,11 @@ export default class Pad extends React.Component {
 
     this._decelerateTimer = requestAnimationFrame(() => {
       this._decelerateTimer = undefined;
-      this._decelerate(nextVelocity, nextContentOffset);
+      this._decelerateLinear(nextVelocity, nextContentOffset);
     });
   }
 
-  _autoAdjustContentOffset(offset) {
+  _getAdjustedContentOffset(offset) {
     const { width, height, contentWidth, contentHeight } = this.props;
 
     return {
@@ -113,7 +113,7 @@ export default class Pad extends React.Component {
   };
 
   _onDragMove = ({ translation }) => {
-    const contentOffset = this._autoAdjustContentOffset({
+    const contentOffset = this._getAdjustedContentOffset({
       x: this._startContentOffset.x + translation.x,
       y: this._startContentOffset.y + translation.y,
     });
@@ -122,12 +122,14 @@ export default class Pad extends React.Component {
   };
 
   _onDragEnd = ({ velocity, translation }) => {
-    const contentOffset = this._autoAdjustContentOffset({
+    const contentOffset = this._getAdjustedContentOffset({
       x: this._startContentOffset.x + translation.x,
       y: this._startContentOffset.y + translation.y,
     });
 
-    this._decelerate(velocity, contentOffset);
+    if (!this.props.pagingEnabled) {
+      this._decelerateLinear(velocity, contentOffset);
+    }
     this._startContentOffset = undefined;
   };
 
