@@ -4,7 +4,6 @@ import styleSheet from './utils/styleSheet';
 import {
   requestAnimationFrame,
   cancelAnimationFrame,
-  ANIMATION_INTERVAL,
 } from './utils/animationFrame';
 
 export default class Pad extends React.Component {
@@ -28,7 +27,14 @@ export default class Pad extends React.Component {
   _decelerate(velocity, contentOffset) {
     const decelerationRate = 0.002;
     let decelerating = false;
+    let interval = 1000 / 60;
 
+    if (this.lastAnimationTime) {
+      const now = new Date().getTime();
+      interval = now - this.lastAnimationTime;
+      this.lastAnimationTime = now;
+    }
+    console.log(interval);
     if (velocity.x !== 0 || velocity.y !== 0) {
       decelerating = true;
     }
@@ -36,6 +42,7 @@ export default class Pad extends React.Component {
     this.setState({ contentOffset, decelerating, dragging: false });
 
     if (!decelerating) {
+      this.lastAnimationTime = undefined;
       return;
     }
 
@@ -44,12 +51,10 @@ export default class Pad extends React.Component {
       const time = (redirect * vx) / decelerationRate;
       let nvx, nox;
 
-      if (time > ANIMATION_INTERVAL) {
-        nvx = vx - redirect * decelerationRate * ANIMATION_INTERVAL;
+      if (time > interval) {
+        nvx = vx - redirect * decelerationRate * interval;
         nox =
-          ox +
-          (vx - 0.5 * redirect * decelerationRate * ANIMATION_INTERVAL) *
-            ANIMATION_INTERVAL;
+          ox + (vx - 0.5 * redirect * decelerationRate * interval) * interval;
       } else {
         nvx = 0;
         nox = ox + 0.5 * vx * (vx / decelerationRate);
