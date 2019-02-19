@@ -25,7 +25,7 @@ export default class Pad extends React.Component {
     }
   }
 
-  _decelerate(velocity, contentOffset) {
+  _decelerateLinear(velocity, contentOffset) {
     const decelerationRate = 0.002;
     let decelerating = false;
 
@@ -86,11 +86,11 @@ export default class Pad extends React.Component {
 
     this._decelerateTimer = requestAnimationFrame(() => {
       this._decelerateTimer = undefined;
-      this._decelerate(nextVelocity, nextContentOffset);
+      this._decelerateLinear(nextVelocity, nextContentOffset);
     });
   }
 
-  _autoAdjustContentOffset(offset) {
+  _getAdjustedContentOffset(offset) {
     const { width, height, contentWidth, contentHeight } = this.props;
 
     return {
@@ -108,7 +108,7 @@ export default class Pad extends React.Component {
   };
 
   _onDragMove = ({ translation }) => {
-    const contentOffset = this._autoAdjustContentOffset({
+    const contentOffset = this._getAdjustedContentOffset({
       x: this._startContentOffset.x + translation.x,
       y: this._startContentOffset.y + translation.y,
     });
@@ -117,12 +117,14 @@ export default class Pad extends React.Component {
   };
 
   _onDragEnd = ({ velocity, translation }) => {
-    const contentOffset = this._autoAdjustContentOffset({
+    const contentOffset = this._getAdjustedContentOffset({
       x: this._startContentOffset.x + translation.x,
       y: this._startContentOffset.y + translation.y,
     });
 
-    this._decelerate(velocity, contentOffset);
+    if (!this.props.pagingEnabled) {
+      this._decelerateLinear(velocity, contentOffset);
+    }
     this._startContentOffset = undefined;
   };
 

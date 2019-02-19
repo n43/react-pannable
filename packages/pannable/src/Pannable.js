@@ -157,9 +157,7 @@ export default class Pannable extends React.Component {
 
   _start(evt) {
     const { onStart } = this.props;
-    const node = evt.currentTarget;
 
-    console.log('start', evt.pageY, node.offsetTop, node.offsetParent);
     this.setState({ dragging: true });
 
     this._dragParams = {
