@@ -35,8 +35,10 @@ function calculateDecelerationPaging(interval, velocity, offset, size, cSize) {
   const acc = rate * (velocity > 0 ? 1 : -1);
   const passed = Math.round(-offset / size);
   const dist = -offset - passed * size;
-  let time, nVelocity, nOffset;
-  console.log('dist:', dist);
+  let time = 0;
+  let nVelocity = 0;
+  let nOffset = offset + dist;
+
   if ((velocity > 0 && dist < 0) || (velocity < 0 && dist > 0)) {
   } else {
     if (dist <= 0.5 * velocity * (velocity / acc)) {
@@ -46,9 +48,6 @@ function calculateDecelerationPaging(interval, velocity, offset, size, cSize) {
         nVelocity = velocity - acc * interval;
         nOffset =
           offset - 0.5 * acc * Math.pow(interval, 2) + velocity * interval;
-      } else {
-        nVelocity = 0;
-        nOffset = offset + dist;
       }
     } else {
       time =
@@ -69,9 +68,6 @@ function calculateDecelerationPaging(interval, velocity, offset, size, cSize) {
           1.5 * acc * Math.pow(interval, 2) +
           (3 * velocityH - 2 * velocity) * interval -
           Math.pow(velocityH - velocity, 2) / acc;
-      } else {
-        nVelocity = 0;
-        nOffset = offset + dist;
       }
     }
   }
