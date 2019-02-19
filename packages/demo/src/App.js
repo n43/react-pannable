@@ -30,7 +30,6 @@ class App extends Component {
         height={600}
         contentWidth={110 * 9}
         contentHeight={110 * 20}
-        contentStyle={{ position: 'relative' }}
       >
         {this.renderContent()}
       </Pad>

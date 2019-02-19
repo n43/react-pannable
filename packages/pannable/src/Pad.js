@@ -6,31 +6,78 @@ import {
   cancelAnimationFrame,
 } from './utils/animationFrame';
 
-function calculateDecelerationLinear(interval, vx, ox, w, cw) {
+function calculateDecelerationLinear(interval, velocity, offset, size, cSize) {
   const rate = 0.002;
-  const redirect = vx < 0 ? -1 : 1;
-  const time = (redirect * vx) / rate;
-  let nvx, nox;
+  const acc = rate * (velocity > 0 ? 1 : -1);
+  const time = velocity / acc;
+  let nVelocity, nOffset;
 
-  if (time > interval) {
-    nvx = vx - redirect * rate * interval;
-    nox = ox + (vx - 0.5 * redirect * rate * interval) * interval;
+  if (interval < time) {
+    nVelocity = velocity - acc * interval;
+    nOffset = offset - 0.5 * acc * Math.pow(interval, 2) + velocity * interval;
   } else {
-    nvx = 0;
-    nox = ox + 0.5 * vx * (vx / rate);
+    nVelocity = 0;
+    nOffset = offset + 0.5 * acc * velocity * (velocity / acc);
   }
 
-  const nox2 = Math.max(w - cw, Math.min(nox, 0));
+  const anOffset = Math.max(Math.min(size - cSize), Math.min(nOffset, 0));
 
-  if (nox2 !== nox) {
-    nox = nox2;
-    nvx = 0;
+  if (anOffset !== nOffset) {
+    nOffset = anOffset;
+    nVelocity = 0;
   }
 
-  return { velocity: nvx, offset: nox };
+  return { velocity: nVelocity, offset: nOffset };
 }
 
-function calculateDecelerationPaging(vx, ox, w, cw) {}
+function calculateDecelerationPaging(interval, velocity, offset, size, cSize) {
+  const rate = 0.005;
+  const acc = rate * (velocity > 0 ? 1 : -1);
+  const passed = Math.round(-offset / size);
+  const dist = -offset - passed * size;
+  let time, nVelocity, nOffset;
+  console.log('dist:', dist);
+  if ((velocity > 0 && dist < 0) || (velocity < 0 && dist > 0)) {
+  } else {
+    if (dist <= 0.5 * velocity * (velocity / acc)) {
+      time = (velocity - Math.sqrt(velocity * velocity - 2 * acc * dist)) / acc;
+
+      if (interval < time) {
+        nVelocity = velocity - acc * interval;
+        nOffset =
+          offset - 0.5 * acc * Math.pow(interval, 2) + velocity * interval;
+      } else {
+        nVelocity = 0;
+        nOffset = offset + dist;
+      }
+    } else {
+      time =
+        (2 * Math.sqrt(2 * acc * dist + velocity * velocity) - velocity) / acc;
+      const timeH =
+        (2 * Math.sqrt(acc * dist + 0.5 * velocity * velocity) - velocity) /
+        acc;
+      const velocityH = Math.sqrt(acc * dist + 0.5 * velocity * velocity);
+
+      if (interval <= timeH) {
+        nVelocity = velocity + acc * interval;
+        nOffset =
+          offset + 0.5 * acc * Math.pow(interval, 2) + velocity * interval;
+      } else if (interval < time) {
+        nVelocity = 2 * velocityH - velocity - acc * interval;
+        nOffset =
+          offset -
+          1.5 * acc * Math.pow(interval, 2) +
+          (3 * velocityH - 2 * velocity) * interval -
+          Math.pow(velocityH - velocity, 2) / acc;
+      } else {
+        nVelocity = 0;
+        nOffset = offset + dist;
+      }
+    }
+  }
+
+  return { velocity: nVelocity, offset: nOffset };
+}
 
 export default class Pad extends React.Component {
   state = {
@@ -55,6 +102,18 @@ export default class Pad extends React.Component {
       cancelAnimationFrame(this._deceleratingTimer);
       this._deceleratingTimer = undefined;
     }
+  }
+
+  getContentOffset() {
+    return this.state.contentOffset;
+  }
+
+  isDragging() {
+    return this.state.dragging;
+  }
+
+  isDecelerating() {
+    return this.state.decelerating;
   }
 
   _decelerate({ velocity, contentOffset }) {
@@ -95,14 +154,14 @@ export default class Pad extends React.Component {
     const calculateDeceleration = pagingEnabled
       ? calculateDecelerationPaging
       : calculateDecelerationLinear;
-    const resultX = calculateDeceleration(
+    const nextX = calculateDeceleration(
       interval,
       velocity.x,
       contentOffset.x,
       width,
       contentWidth
     );
-    const resultY = calculateDeceleration(
+    const nextY = calculateDeceleration(
       interval,
       velocity.y,
       contentOffset.y,
@@ -111,8 +170,8 @@ export default class Pad extends React.Component {
     );
 
     this._decelerate({
-      velocity: { x: resultX.velocity, y: resultY.velocity },
-      contentOffset: { x: resultX.offset, y: resultY.offset },
+      velocity: { x: nextX.velocity, y: nextY.velocity },
+      contentOffset: { x: nextX.offset, y: nextY.offset },
     });
   }
 
@@ -120,8 +179,8 @@ export default class Pad extends React.Component {
     const { width, height, contentWidth, contentHeight } = this.props;
 
     return {
-      x: Math.max(width - contentWidth, Math.min(offset.x, 0)),
-      y: Math.max(height - contentHeight, Math.min(offset.y, 0)),
+      x: Math.max(Math.min(width - contentWidth, 0), Math.min(offset.x, 0)),
+      y: Math.max(Math.min(height - contentHeight, 0), Math.min(offset.y, 0)),
     };
   }
 
@@ -163,20 +222,20 @@ export default class Pad extends React.Component {
       children,
     } = this.props;
     const { contentOffset } = this.state;
-    const wrapperTransform = 'translate3d(0, 0, 0)';
     const contentTransform = `translate3d(${contentOffset.x}px, ${
       contentOffset.y
     }px, 0)`;
     const wrapperStyles = StyleSheet.create({
+      overflow: 'hidden',
       position: 'relative',
       boxSizing: 'border-box',
-      overflow: 'hidden',
       width,
       height,
-      transform: wrapperTransform,
       ...style,
     });
     const contentStyles = StyleSheet.create({
+      position: 'relative',
+      boxSizing: 'border-box',
       width: contentWidth,
       height: contentHeight,
       transform: contentTransform,
