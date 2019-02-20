@@ -5,14 +5,14 @@ class BasicScroll extends Component {
   renderContent() {
     const items = [];
 
-    for (let row = 0; row < 20; row++) {
-      for (let column = 0; column < 9; column++) {
+    for (let row = 0; row < 5; row++) {
+      for (let column = 0; column < 5; column++) {
         const style = {
           position: 'absolute',
-          top: row * 110,
-          left: column * 110,
-          width: 110,
-          height: 110,
+          top: row * 400,
+          left: column * 300,
+          width: 300,
+          height: 400,
           backgroundColor: (row + column) % 2 ? '#000' : '#ccc',
         };
 
@@ -27,9 +27,10 @@ class BasicScroll extends Component {
     return (
       <Pad
         width={300}
-        height={600}
-        contentWidth={110 * 9}
-        contentHeight={110 * 20}
+        height={400}
+        contentWidth={300 * 5}
+        contentHeight={400 * 5}
+        pagingEnabled
       >
         {this.renderContent()}
       </Pad>
