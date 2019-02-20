@@ -40,8 +40,10 @@ function calculateDecelerationPaging(interval, velocity, offset, size, cSize) {
   let nOffset = offset + dist;
 
   if ((velocity > 0 && dist < 0) || (velocity < 0 && dist > 0)) {
+    /* 速度与位移相反，需要先减速，再反向加速，再减速 */
   } else {
     if (dist <= 0.5 * velocity * (velocity / acc)) {
+      /* 速度与位移相同，速度太大，需立即减速 */
       time = (velocity - Math.sqrt(velocity * velocity - 2 * acc * dist)) / acc;
 
       if (interval < time) {
@@ -50,6 +52,7 @@ function calculateDecelerationPaging(interval, velocity, offset, size, cSize) {
           offset - 0.5 * acc * Math.pow(interval, 2) + velocity * interval;
       }
     } else {
+      /* 速度与位移相同，速度太小，需先加速，再减速 */
       time =
         (2 * Math.sqrt(2 * acc * dist + velocity * velocity) - velocity) / acc;
       const timeH =
