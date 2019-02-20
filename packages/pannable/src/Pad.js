@@ -31,46 +31,41 @@ function calculateDecelerationLinear(interval, velocity, offset, size, cSize) {
 }
 
 function calculateDecelerationPaging(interval, velocity, offset, size, cSize) {
-  const rate = 0.005;
-  const acc = rate * (velocity > 0 ? 1 : -1);
+  const rate = 0.008;
   const passed = Math.round(-offset / size);
   const dist = -offset - passed * size;
-  let time = 0;
   let nVelocity = 0;
   let nOffset = offset + dist;
 
-  if ((velocity > 0 && dist < 0) || (velocity < 0 && dist > 0)) {
-    /* 速度与位移相反，需要先减速，再反向加速，再减速 */
-  } else {
-    if (dist <= 0.5 * velocity * (velocity / acc)) {
-      /* 速度与位移相同，速度太大，需立即减速 */
-      time = (velocity - Math.sqrt(velocity * velocity - 2 * acc * dist)) / acc;
+  if (dist !== 0) {
+    const acc = rate * (dist > 0 ? 1 : -1);
+
+    if (
+      ((velocity > 0 && dist > 0) || (velocity < 0 && dist < 0)) &&
+      dist * acc <= 0.5 * velocity * velocity
+    ) {
+      const velocityE =
+        Math.sqrt(velocity * velocity - 2 * acc * dist) * (dist > 0 ? 1 : -1);
+      const time = (velocity - velocityE) / acc;
 
       if (interval < time) {
         nVelocity = velocity - acc * interval;
-        nOffset =
-          offset - 0.5 * acc * Math.pow(interval, 2) + velocity * interval;
+        nOffset = offset + 0.5 * (2 * velocity - acc * interval) * interval;
       }
     } else {
-      /* 速度与位移相同，速度太小，需先加速，再减速 */
-      time =
-        (2 * Math.sqrt(2 * acc * dist + velocity * velocity) - velocity) / acc;
-      const timeH =
-        (2 * Math.sqrt(acc * dist + 0.5 * velocity * velocity) - velocity) /
-        acc;
-      const velocityH = Math.sqrt(acc * dist + 0.5 * velocity * velocity);
+      const velocityH =
+        Math.sqrt(0.5 * velocity * velocity + acc * dist) * (dist > 0 ? 1 : -1);
+      const timeH = (velocityH - velocity) / acc;
+      const time = (2 * velocityH - velocity) / acc;
 
-      if (interval <= timeH) {
-        nVelocity = velocity + acc * interval;
+      if (interval < time) {
+        nVelocity = velocityH - acc * Math.abs(timeH - interval);
         nOffset =
-          offset + 0.5 * acc * Math.pow(interval, 2) + velocity * interval;
-      } else if (interval < time) {
-        nVelocity = 2 * velocityH - velocity - acc * interval;
-        nOffset =
-          offset -
-          1.5 * acc * Math.pow(interval, 2) +
-          (3 * velocityH - 2 * velocity) * interval -
-          Math.pow(velocityH - velocity, 2) / acc;
+          offset +
+          0.5 * (velocity + velocityH) * timeH -
+          0.5 *
+            (2 * velocityH - acc * Math.abs(timeH - interval)) *
+            (timeH - interval);
       }
     }
   }
@@ -116,10 +111,17 @@ export default class Pad extends React.Component {
   }
 
   _decelerate({ velocity, contentOffset }) {
+    const { pagingEnabled, width, height } = this.props;
     let decelerating = false;
 
-    if (velocity.x !== 0 || velocity.y !== 0) {
-      decelerating = true;
+    if (pagingEnabled) {
+      if (contentOffset.x % width !== 0 || contentOffset.y % height !== 0) {
+        decelerating = true;
+      }
+    } else {
+      if (velocity.x !== 0 || velocity.y !== 0) {
+        decelerating = true;
+      }
     }
 
     this.setState({ contentOffset, decelerating, dragging: false });
