@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Pad } from 'react-pannable';
 
-class App extends Component {
+class BasicScroll extends Component {
   renderContent() {
     const items = [];
 
@@ -37,4 +37,4 @@ class App extends Component {
   }
 }
 
-export default App;
+export default BasicScroll;
