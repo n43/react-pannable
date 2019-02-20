@@ -17,7 +17,7 @@ function calculateDecelerationLinear(interval, velocity, offset, size, cSize) {
     nOffset = offset - 0.5 * acc * Math.pow(interval, 2) + velocity * interval;
   } else {
     nVelocity = 0;
-    nOffset = offset + 0.5 * acc * velocity * (velocity / acc);
+    nOffset = offset + 0.5 * velocity * (velocity / acc);
   }
 
   const anOffset = Math.max(Math.min(size - cSize), Math.min(nOffset, 0));
