@@ -1,6 +1,4 @@
-let Sizer = {};
-
-function getSize(element) {
+export function getElementSize(element) {
   if (!element) {
     return { width: 0, height: 0 };
   }
@@ -20,7 +18,7 @@ function getSize(element) {
   return { width: realWidth, height: realHeight };
 }
 
-function getScrollSize(element) {
+export function getElementScrollSize(element) {
   if (!element) {
     return { width: 0, height: 0 };
   }
@@ -99,12 +97,3 @@ function getScrollSize(element) {
 //     }
 //   }
 // };
-
-Sizer = {
-  getSize,
-  getScrollSize,
-  // addResizeListener,
-  // removeResizeListener
-};
-
-export default Sizer;

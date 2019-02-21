@@ -1,6 +1,7 @@
 import React from 'react';
 import Pannable from './Pannable';
-import Sizer from './utils/Sizer';
+import { getElementSize, getElementScrollSize } from './utils/sizeGetter';
+import createDetectElementResize from './utils/detectElementResize';
 import StyleSheet from './utils/StyleSheet';
 import {
   requestAnimationFrame,
@@ -92,14 +93,14 @@ export default class Pad extends React.Component {
       contentHeight,
       autoAdjustsContentSize,
     } = this.props;
+    const parentNode = this.wrapperRef.current.parentNode;
+    const contentNode = this.contentRef.current;
+    let initedSize = {};
+    let initedContentSize = {};
 
-    let computedSize = { width, height };
-    let computedContentSize = { width: contentWidth, height: contentHeight };
-
-    if (width === 0 || height === 0) {
-      const parentNode = this.wrapperRef.current.parentNode;
-      // Sizer.addResizeListener(parentNode);
-      const parentSize = Sizer.getSize(parentNode);
+    const computeSize = (width, height) => {
+      let computedSize = { width, height };
+      const parentSize = getElementSize(parentNode);
 
       if (width === 0) {
         computedSize.width = parentSize.width;
@@ -107,23 +108,44 @@ export default class Pad extends React.Component {
       if (height === 0) {
         computedSize.height = parentSize.height;
       }
+      return computedSize;
+    };
+
+    const computeContentSize = (contentWidth, contentHeight) => {
+      let computedSize = { width: contentWidth, height: contentHeight };
+      const contentSize = getElementScrollSize(contentNode);
+      if (contentWidth === 0) {
+        computedSize.width = contentSize.width;
+      }
+      if (contentHeight === 0) {
+        computedSize.height = contentSize.height;
+      }
+      return computedSize;
+    };
+
+    if (width === 0 || height === 0) {
+      this._detectWrapperResize = createDetectElementResize();
+      this._detectWrapperResize.addResizeListener(parentNode, () => {
+        const size = computeSize(width, height);
+        this.setState({ size });
+      });
+      initedSize = computeSize(width, height);
     }
 
     if (autoAdjustsContentSize && (contentWidth === 0 || contentHeight === 0)) {
-      const contentNode = this.contentRef.current;
-      const contentSize = Sizer.getScrollSize(contentNode);
-
-      if (contentWidth === 0) {
-        computedContentSize.width = contentSize.width;
-      }
-      if (contentHeight === 0) {
-        computedContentSize.height = contentSize.height;
-      }
+      this._detectContentResize = createDetectElementResize();
+      this._detectContentResize.addResizeListener(contentNode, () => {
+        const contentSize = computeContentSize(contentWidth, contentHeight);
+        this.setState({ contentSize });
+      });
+      initedContentSize = computeContentSize(contentWidth, contentHeight);
     }
 
-    this.setState({
-      size: computedSize,
-      contentSize: computedContentSize,
+    this.setState(({ size, contentSize }) => {
+      return {
+        size: { ...size, ...initedSize },
+        contentSize: { ...contentSize, initedContentSize },
+      };
     });
 
     this._configureDeceleration();
