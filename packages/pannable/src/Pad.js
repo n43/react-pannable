@@ -111,7 +111,16 @@ export default class Pad extends React.Component {
     }
     if (prevState.deceleratingVelocity !== deceleratingVelocity) {
       if (decelerating) {
-        this._decelerate();
+        const startTime = new Date().getTime();
+
+        if (this._deceleratingTimer) {
+          cancelAnimationFrame(this._deceleratingTimer);
+        }
+
+        this._deceleratingTimer = requestAnimationFrame(() => {
+          this._deceleratingTimer = undefined;
+          this._decelerate(new Date().getTime() - startTime);
+        });
       }
     }
   }
@@ -162,20 +171,7 @@ export default class Pad extends React.Component {
     return false;
   }
 
-  _decelerate() {
-    if (this._deceleratingTimer) {
-      cancelAnimationFrame(this._deceleratingTimer);
-    }
-
-    const startTime = new Date().getTime();
-
-    this._deceleratingTimer = requestAnimationFrame(() => {
-      this._deceleratingTimer = undefined;
-      this._decelerateWithInterval(new Date().getTime() - startTime);
-    });
-  }
-
-  _decelerateWithInterval(interval) {
+  _decelerate(interval) {
     const {
       width,
       height,
