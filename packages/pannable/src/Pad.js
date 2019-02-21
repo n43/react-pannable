@@ -73,14 +73,132 @@ function calculateDecelerationPaging(interval, velocity, offset, size, cSize) {
   return { velocity: nVelocity, offset: nOffset };
 }
 
+function getAdjustedContentOffset(offset, size, contentSize) {
+  return {
+    x: Math.max(
+      Math.min(size.width - contentSize.width, 0),
+      Math.min(offset.x, 0)
+    ),
+    y: Math.max(
+      Math.min(size.height - contentSize.height, 0),
+      Math.min(offset.y, 0)
+    ),
+  };
+}
+
 export default class Pad extends React.Component {
+  static defaultProps = {
+    width: 0,
+    height: 0,
+    contentWidth: 0,
+    contentHeight: 0,
+    contentStyle: null,
+    pagingEnabled: false,
+  };
+
   state = {
+    size: { width: 0, height: 0 },
+    contentSize: { width: 0, height: 0 },
     contentOffset: { x: 0, y: 0 },
     dragging: false,
     decelerating: false,
+    draggingStartPosition: null,
+    deceleratingVelocity: null,
   };
 
+  static getDerivedStateFromProps(props, state) {
+    const { width, height, contentWidth, contentHeight, pagingEnabled } = props;
+    const {
+      size,
+      contentSize,
+      contentOffset,
+      dragging,
+      draggingStartPosition,
+      deceleratingVelocity,
+    } = state;
+    const nextState = {};
+    let needsUpdateContentOffset = false;
+
+    if (
+      (width !== 0 && width !== size.width) ||
+      (height !== 0 && height !== size.height)
+    ) {
+      needsUpdateContentOffset = true;
+
+      nextState.size = {
+        width,
+        height,
+      };
+    }
+    if (
+      (contentWidth !== 0 && contentWidth !== contentSize.width) ||
+      (contentHeight !== 0 && contentHeight !== contentSize.height)
+    ) {
+      needsUpdateContentOffset = true;
+
+      nextState.contentSize = {
+        width: contentWidth,
+        height: contentHeight,
+      };
+    }
+
+    if (needsUpdateContentOffset) {
+      nextState.contentOffset = getAdjustedContentOffset(
+        contentOffset,
+        nextState.size || size,
+        nextState.contentSize || contentSize
+      );
+    }
+
+    if (draggingStartPosition && !dragging) {
+      nextState.dragging = true;
+      nextState.decelerating = false;
+      nextState.deceleratingVelocity = null;
+    }
+    if (!draggingStartPosition && dragging) {
+      nextState.dragging = false;
+    }
+
+    if (deceleratingVelocity) {
+      let decelerating = false;
+
+      if (pagingEnabled) {
+        if (contentOffset.x % width !== 0 || contentOffset.y % height !== 0) {
+          decelerating = true;
+        }
+      } else {
+        if (deceleratingVelocity.x !== 0 || deceleratingVelocity.y !== 0) {
+          decelerating = true;
+        }
+      }
+
+      nextState.decelerating = decelerating;
+
+      if (!decelerating) {
+        nextState.deceleratingVelocity = null;
+      }
+    }
+
+    return nextState;
+  }
+
   componentDidUpdate(prevProps, prevState) {
+    if (prevState.size !== this.state.size) {
+      const { onResize } = this.props;
+      const { size, contentOffset } = this.state;
+
+      if (onResize) {
+        onResize({ size, contentOffset });
+      }
+    }
+    if (prevState.contentSize !== this.state.contentSize) {
+      const { onContentResize } = this.props;
+      const { contentSize, contentOffset } = this.state;
+
+      if (onContentResize) {
+        onContentResize({ contentSize, contentOffset });
+      }
+    }
     if (prevState.contentOffset !== this.state.contentOffset) {
       const { onScroll } = this.props;
       const { contentOffset, dragging, decelerating } = this.state;
@@ -89,6 +207,9 @@ export default class Pad extends React.Component {
         onScroll({ contentOffset, dragging, decelerating });
       }
     }
+    if (prevState.deceleratingVelocity !== this.state.deceleratingVelocity) {
+      this._decelerate();
+    }
   }
 
   componentWillUnmount() {
@@ -96,6 +217,14 @@ export default class Pad extends React.Component {
       cancelAnimationFrame(this._deceleratingTimer);
       this._deceleratingTimer = undefined;
     }
+  }
+
+  getSize() {
+    return this.state.size;
+  }
+
+  getContentSize() {
+    return this.state.contentSize;
   }
 
   getContentOffset() {
@@ -110,41 +239,26 @@ export default class Pad extends React.Component {
     return this.state.decelerating;
   }
 
-  _decelerate({ velocity, contentOffset }) {
-    const { pagingEnabled, width, height } = this.props;
-    let decelerating = false;
-
-    if (pagingEnabled) {
-      if (contentOffset.x % width !== 0 || contentOffset.y % height !== 0) {
-        decelerating = true;
-      }
-    } else {
-      if (velocity.x !== 0 || velocity.y !== 0) {
-        decelerating = true;
-      }
+  _decelerate() {
+    if (this._deceleratingTimer) {
+      cancelAnimationFrame(this._deceleratingTimer);
     }
 
-    this.setState({ contentOffset, decelerating, dragging: false });
-
-    if (!decelerating) {
+    if (!this.state.decelerating) {
       return;
     }
 
     const startTime = new Date().getTime();
 
-    if (this._deceleratingTimer) {
-      cancelAnimationFrame(this._deceleratingTimer);
-    }
-
     this._deceleratingTimer = requestAnimationFrame(() => {
       const interval = new Date().getTime() - startTime;
 
       this._deceleratingTimer = undefined;
-      this._decelerateWithInterval({ interval, velocity, contentOffset });
+      this._decelerateWithInterval(interval);
     });
   }
 
-  _decelerateWithInterval({ interval, velocity, contentOffset }) {
+  _decelerateWithInterval(interval) {
     const {
       width,
       height,
@@ -152,94 +266,88 @@ export default class Pad extends React.Component {
       contentHeight,
       pagingEnabled,
     } = this.props;
+    const { deceleratingVelocity, contentOffset } = this.state;
     const calculateDeceleration = pagingEnabled
       ? calculateDecelerationPaging
       : calculateDecelerationLinear;
     const nextX = calculateDeceleration(
       interval,
-      velocity.x,
+      deceleratingVelocity.x,
       contentOffset.x,
       width,
       contentWidth
     );
     const nextY = calculateDeceleration(
       interval,
-      velocity.y,
+      deceleratingVelocity.y,
       contentOffset.y,
       height,
       contentHeight
     );
 
-    this._decelerate({
-      velocity: { x: nextX.velocity, y: nextY.velocity },
+    this.setState({
+      deceleratingVelocity: { x: nextX.velocity, y: nextY.velocity },
       contentOffset: { x: nextX.offset, y: nextY.offset },
     });
   }
 
-  _getAdjustedContentOffset(offset) {
-    const { width, height, contentWidth, contentHeight } = this.props;
-
-    return {
-      x: Math.max(Math.min(width - contentWidth, 0), Math.min(offset.x, 0)),
-      y: Math.max(Math.min(height - contentHeight, 0), Math.min(offset.y, 0)),
-    };
-  }
-
   _onDragStart = () => {
-    if (this._deceleratingTimer) {
-      cancelAnimationFrame(this._deceleratingTimer);
-      this._deceleratingTimer = undefined;
-    }
-    this._startContentOffset = this.state.contentOffset;
+    this.setState(({ contentOffset }) => ({
+      draggingStartPosition: contentOffset,
+    }));
   };
 
   _onDragMove = ({ translation }) => {
-    const contentOffset = this._getAdjustedContentOffset({
-      x: this._startContentOffset.x + translation.x,
-      y: this._startContentOffset.y + translation.y,
-    });
+    this.setState(({ size, contentSize, draggingStartPosition }) => {
+      const contentOffset = getAdjustedContentOffset(
+        {
+          x: draggingStartPosition.x + translation.x,
+          y: draggingStartPosition.y + translation.y,
+        },
+        size,
+        contentSize
+      );
 
-    this.setState({ contentOffset, dragging: true, decelerating: false });
+      return { contentOffset };
+    });
   };
 
   _onDragEnd = ({ velocity, translation }) => {
-    const contentOffset = this._getAdjustedContentOffset({
-      x: this._startContentOffset.x + translation.x,
-      y: this._startContentOffset.y + translation.y,
-    });
+    this.setState(({ size, contentSize, draggingStartPosition }) => {
+      const contentOffset = getAdjustedContentOffset(
+        {
+          x: draggingStartPosition.x + translation.x,
+          y: draggingStartPosition.y + translation.y,
+        },
+        size,
+        contentSize
+      );
 
-    this._startContentOffset = undefined;
-    this._decelerate({ velocity, contentOffset });
+      return {
+        contentOffset,
+        draggingStartPosition: null,
+        deceleratingVelocity: velocity,
+      };
+    });
   };
 
   render() {
-    const {
-      width,
-      height,
-      contentWidth,
-      contentHeight,
-      style,
-      contentStyle,
-      children,
-    } = this.props;
-    const { contentOffset } = this.state;
-    const contentTransform = `translate3d(${contentOffset.x}px, ${
-      contentOffset.y
-    }px, 0)`;
+    const { style, contentStyle, children } = this.props;
+    const { size, contentSize, contentOffset } = this.state;
     const wrapperStyles = StyleSheet.create({
       overflow: 'hidden',
       position: 'relative',
       boxSizing: 'border-box',
-      width,
-      height,
+      width: size.width,
+      height: size.height,
       ...style,
     });
     const contentStyles = StyleSheet.create({
       position: 'relative',
       boxSizing: 'border-box',
-      width: contentWidth,
-      height: contentHeight,
-      transform: contentTransform,
+      width: contentSize.width,
+      height: contentSize.height,
+      transform: `translate3d(${contentOffset.x}px, ${contentOffset.y}px, 0)`,
       ...contentStyle,
     });
     return (
