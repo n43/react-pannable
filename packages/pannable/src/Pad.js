@@ -39,7 +39,7 @@ export default class Pad extends React.Component {
     deceleratingVelocity: null,
   };
 
-  padRef = React.createRef();
+  wrapperRef = React.createRef();
   contentRef = React.createRef();
 
   static getDerivedStateFromProps(props, state) {
@@ -55,8 +55,8 @@ export default class Pad extends React.Component {
       needsUpdateContentOffset = true;
 
       nextState.size = {
-        width,
-        height,
+        width: width === 0 ? size.width : width,
+        height: height === 0 ? size.height : height,
       };
     }
     if (
@@ -66,8 +66,8 @@ export default class Pad extends React.Component {
       needsUpdateContentOffset = true;
 
       nextState.contentSize = {
-        width: contentWidth,
-        height: contentHeight,
+        width: contentWidth === 0 ? contentSize.width : contentWidth,
+        height: contentHeight === 0 ? contentSize.height : contentHeight,
       };
     }
 
@@ -82,27 +82,47 @@ export default class Pad extends React.Component {
     return nextState;
   }
 
-  // componentDidMount() {
-  //   const { width, height } = this.props;
+  componentDidMount() {
+    const {
+      width,
+      height,
+      contentWidth,
+      contentHeight,
+      autoAdjustsContentSize,
+    } = this.props;
 
-  //   if (width === 0 || height === 0) {
-  //     const parentNode = this.padRef.current.parentNode;
-  //     const parentSize = Sizer.getSize(parentNode);
+    let computedSize = { width, height };
+    let computedContentSize = { width: contentWidth, height: contentHeight };
 
-  //     this.setState({
-  //       size: parentSize,
-  //     });
-  //   }
+    if (width === 0 || height === 0) {
+      const parentNode = this.wrapperRef.current.parentNode;
+      // Sizer.addResizeListener(parentNode);
+      const parentSize = Sizer.getSize(parentNode);
 
-  //   // if (
-  //   //   autoAdjustsContentSize &&
-  //   //   (contentSize.width === 1 || contentSize.height === 1)
-  //   // ) {
-  //   //   const contentNode = this.contentRef.current;
-  //   //   const contentSize = Sizer.getSize(contentNode);
-  //   //   console.log(contentSize);
-  //   // }
-  // }
+      if (width === 0) {
+        computedSize.width = parentSize.width;
+      }
+      if (height === 0) {
+        computedSize.height = parentSize.height;
+      }
+    }
+
+    if (autoAdjustsContentSize && (contentWidth === 0 || contentHeight === 0)) {
+      const contentNode = this.contentRef.current;
+      const contentSize = Sizer.getScrollSize(contentNode);
+
+      if (contentWidth === 0) {
+        computedContentSize.width = contentSize.width;
+      }
+      if (contentHeight === 0) {
+        computedContentSize.height = contentSize.height;
+      }
+    }
+    this.setState({
+      size: computedSize,
+      contentSize: computedContentSize,
+    });
+  }
 
   componentDidUpdate(prevProps, prevState) {
     const { onResize, onContentResize, onScroll } = this.props;
@@ -199,14 +219,13 @@ export default class Pad extends React.Component {
   }
 
   _decelerate(interval) {
+    const { pagingEnabled } = this.props;
     const {
-      width,
-      height,
-      contentWidth,
-      contentHeight,
-      pagingEnabled,
-    } = this.props;
-    const { deceleratingVelocity, contentOffset } = this.state;
+      size,
+      contentSize,
+      deceleratingVelocity,
+      contentOffset,
+    } = this.state;
     const calculateDeceleration = pagingEnabled
       ? calculateDecelerationPaging
       : calculateDecelerationLinear;
@@ -214,15 +233,15 @@ export default class Pad extends React.Component {
       interval,
       deceleratingVelocity.x,
       contentOffset.x,
-      width,
-      contentWidth
+      size.width,
+      contentSize.width
     );
     const nextY = calculateDeceleration(
       interval,
       deceleratingVelocity.y,
       contentOffset.y,
-      height,
-      contentHeight
+      size.height,
+      contentSize.height
     );
     const nextContentOffset = { x: nextX.offset, y: nextY.offset };
     const nextVelocity = { x: nextX.velocity, y: nextY.velocity };
@@ -304,10 +323,14 @@ export default class Pad extends React.Component {
       width: contentSize.width,
       height: contentSize.height,
       transform: `translate3d(${contentOffset.x}px, ${contentOffset.y}px, 0)`,
+      overflow:
+        contentSize.width === 0 || contentSize.height === 0
+          ? 'scroll'
+          : 'hidden',
       ...contentStyle,
     });
     return (
-      <div ref={this.padRef}>
+      <div ref={this.wrapperRef}>
         <Pannable
           style={wrapperStyles}
           onStart={this._onDragStart}
