@@ -1,5 +1,6 @@
 import React from 'react';
 import Pannable from './Pannable';
+import Sizer from './utils/Sizer';
 import StyleSheet from './utils/StyleSheet';
 import {
   requestAnimationFrame,
@@ -94,6 +95,7 @@ export default class Pad extends React.Component {
     contentHeight: 0,
     contentStyle: null,
     pagingEnabled: false,
+    autoAdjustsContentSize: false,
   };
 
   state = {
@@ -105,6 +107,9 @@ export default class Pad extends React.Component {
     draggingStartPosition: null,
     deceleratingVelocity: null,
   };
+
+  padRef = React.createRef();
+  contentRef = React.createRef();
 
   static getDerivedStateFromProps(props, state) {
     const { width, height, contentWidth, contentHeight, pagingEnabled } = props;
@@ -181,6 +186,28 @@ export default class Pad extends React.Component {
 
     return nextState;
   }
+
+  // componentDidMount() {
+  //   const { width, height } = this.props;
+
+  //   if (width === 0 || height === 0) {
+  //     const parentNode = this.padRef.current.parentNode;
+  //     const parentSize = Sizer.getSize(parentNode);
+
+  //     this.setState({
+  //       size: parentSize,
+  //     });
+  //   }
+
+  //   // if (
+  //   //   autoAdjustsContentSize &&
+  //   //   (contentSize.width === 1 || contentSize.height === 1)
+  //   // ) {
+  //   //   const contentNode = this.contentRef.current;
+  //   //   const contentSize = Sizer.getSize(contentNode);
+  //   //   console.log(contentSize);
+  //   // }
+  // }
 
   componentDidUpdate(prevProps, prevState) {
     if (prevState.size !== this.state.size) {
@@ -351,14 +378,18 @@ export default class Pad extends React.Component {
       ...contentStyle,
     });
     return (
-      <Pannable
-        style={wrapperStyles}
-        onStart={this._onDragStart}
-        onMove={this._onDragMove}
-        onEnd={this._onDragEnd}
-      >
-        <div style={contentStyles}>{children}</div>
-      </Pannable>
+      <div ref={this.padRef}>
+        <Pannable
+          style={wrapperStyles}
+          onStart={this._onDragStart}
+          onMove={this._onDragMove}
+          onEnd={this._onDragEnd}
+        >
+          <div style={contentStyles} ref={this.contentRef}>
+            {children}
+          </div>
+        </Pannable>
+      </div>
     );
   }
 }
