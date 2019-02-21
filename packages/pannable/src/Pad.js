@@ -8,13 +8,16 @@ import {
 
 function calculateDecelerationLinear(interval, velocity, offset, size, cSize) {
   const rate = 0.002;
-  const acc = rate * (velocity > 0 ? 1 : -1);
+  const redirect = velocity > 0 ? 1 : -1;
+  const acc = rate * redirect;
+  let nVelocity;
+  let nOffset;
+
   const time = velocity / acc;
-  let nVelocity, nOffset;
 
   if (interval < time) {
     nVelocity = velocity - acc * interval;
-    nOffset = offset - 0.5 * acc * Math.pow(interval, 2) + velocity * interval;
+    nOffset = offset + 0.5 * (2 * velocity - acc * interval) * interval;
   } else {
     nVelocity = 0;
     nOffset = offset + 0.5 * velocity * (velocity / acc);
@@ -34,55 +37,43 @@ function calculateDecelerationPaging(interval, velocity, offset, size, cSize) {
   const rate = 0.01;
   const pageNum = Math.round(-offset / size);
   const dist = -offset - pageNum * size;
-  let nVelocity = 0;
-  let nOffset = offset + dist;
+  const redirect = dist > 0 ? 1 : -1;
+  const acc = rate * redirect;
+  let nVelocity;
+  let nOffset;
 
-  if (dist !== 0) {
-    const acc = rate * (dist > 0 ? 1 : -1);
+  const velocityH =
+    Math.sqrt(0.5 * velocity * velocity + acc * dist) * redirect;
+  const timeH = (velocityH - velocity) / acc;
+  const time = (2 * velocityH - velocity) / acc;
 
-    if (
-      ((velocity > 0 && dist > 0) || (velocity < 0 && dist < 0)) &&
-      dist * acc <= 0.5 * velocity * velocity
-    ) {
-      const velocityE =
-        Math.sqrt(velocity * velocity - 2 * acc * dist) * (dist > 0 ? 1 : -1);
-      const time = (velocity - velocityE) / acc;
+  if (interval < time) {
+    nVelocity = velocityH - acc * Math.abs(timeH - interval);
+    nOffset =
+      offset +
+      0.5 * (velocity + velocityH) * timeH -
+      0.5 *
+        (2 * velocityH - acc * Math.abs(timeH - interval)) *
+        (timeH - interval);
+  } else {
+    nVelocity = 0;
+    nOffset = offset + dist;
+  }
 
-      if (interval < time) {
-        nVelocity = velocity - acc * interval;
-        nOffset = offset + 0.5 * (2 * velocity - acc * interval) * interval;
-      }
-    } else {
-      const velocityH =
-        Math.sqrt(0.5 * velocity * velocity + acc * dist) * (dist > 0 ? 1 : -1);
-      const timeH = (velocityH - velocity) / acc;
-      const time = (2 * velocityH - velocity) / acc;
+  const anOffset = Math.max(Math.min(size - cSize), Math.min(nOffset, 0));
 
-      if (interval < time) {
-        nVelocity = velocityH - acc * Math.abs(timeH - interval);
-        nOffset =
-          offset +
-          0.5 * (velocity + velocityH) * timeH -
-          0.5 *
-            (2 * velocityH - acc * Math.abs(timeH - interval)) *
-            (timeH - interval);
-      }
-    }
+  if (anOffset !== nOffset) {
+    nOffset = anOffset;
+    nVelocity = 0;
   }
 
   return { velocity: nVelocity, offset: nOffset };
 }
 
-function getAdjustedContentOffset(offset, size, contentSize) {
+function getAdjustedContentOffset(offset, size, cSize) {
   return {
-    x: Math.max(
-      Math.min(size.width - contentSize.width, 0),
-      Math.min(offset.x, 0)
-    ),
-    y: Math.max(
-      Math.min(size.height - contentSize.height, 0),
-      Math.min(offset.y, 0)
-    ),
+    x: Math.max(Math.min(size.width - cSize.width, 0), Math.min(offset.x, 0)),
+    y: Math.max(Math.min(size.height - cSize.height, 0), Math.min(offset.y, 0)),
   };
 }
 
