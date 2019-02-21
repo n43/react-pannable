@@ -1,7 +1,11 @@
-export function calculateDecelerationLinear(
+export function needsScrollDeceleration(offset, velocity, size) {
+  return velocity.x !== 0 || velocity.y !== 0;
+}
+
+export function calculateScrollDeceleration(
   interval,
-  velocity,
   offset,
+  velocity,
   size,
   cSize
 ) {
@@ -31,10 +35,14 @@ export function calculateDecelerationLinear(
   return { velocity: nVelocity, offset: nOffset };
 }
 
-export function calculateDecelerationPaging(
+export function needsPagingDeceleration(offset, velocity, size) {
+  return offset.x % size.width !== 0 || offset.y % size.height !== 0;
+}
+
+export function calculatePagingDeceleration(
   interval,
-  velocity,
   offset,
+  velocity,
   size,
   cSize
 ) {
