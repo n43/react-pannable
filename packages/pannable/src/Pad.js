@@ -232,6 +232,7 @@ export default class Pad extends React.Component {
   _decelerate() {
     if (this._deceleratingTimer) {
       cancelAnimationFrame(this._deceleratingTimer);
+      this._deceleratingTimer = undefined;
     }
 
     if (!this.state.decelerating) {
@@ -241,10 +242,8 @@ export default class Pad extends React.Component {
     const startTime = new Date().getTime();
 
     this._deceleratingTimer = requestAnimationFrame(() => {
-      const interval = new Date().getTime() - startTime;
-
       this._deceleratingTimer = undefined;
-      this._decelerateWithInterval(interval);
+      this._decelerateWithInterval(new Date().getTime() - startTime);
     });
   }
 
