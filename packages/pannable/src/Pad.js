@@ -170,7 +170,9 @@ export default class Pad extends React.Component {
       }
     }
     if (prevState.deceleratingVelocity !== deceleratingVelocity) {
-      this._decelerate();
+      if (decelerating) {
+        this._decelerate();
+      }
     }
   }
 
@@ -223,11 +225,6 @@ export default class Pad extends React.Component {
   _decelerate() {
     if (this._deceleratingTimer) {
       cancelAnimationFrame(this._deceleratingTimer);
-      this._deceleratingTimer = undefined;
-    }
-
-    if (!this.state.decelerating) {
-      return;
     }
 
     const startTime = new Date().getTime();
@@ -278,6 +275,11 @@ export default class Pad extends React.Component {
   }
 
   _onDragStart = () => {
+    if (this._deceleratingTimer) {
+      cancelAnimationFrame(this._deceleratingTimer);
+      this._deceleratingTimer = undefined;
+    }
+
     this.setState(({ contentOffset }) => ({
       draggingStartPosition: contentOffset,
       dragging: true,
