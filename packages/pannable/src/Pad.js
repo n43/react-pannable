@@ -7,8 +7,10 @@ import {
   cancelAnimationFrame,
 } from './utils/animationFrame';
 import {
-  calculateDecelerationLinear,
-  calculateDecelerationPaging,
+  needsScrollDeceleration,
+  calculateScrollDeceleration,
+  needsPagingDeceleration,
+  calculatePagingDeceleration,
 } from './utils/deceleration';
 
 function getAdjustedContentOffset(offset, size, cSize) {
@@ -104,6 +106,10 @@ export default class Pad extends React.Component {
   //   // }
   // }
 
+  componentDidMount() {
+    this._configureDeceleration();
+  }
+
   componentDidUpdate(prevProps, prevState) {
     const { onResize, onContentResize, onScroll } = this.props;
     const {
@@ -115,6 +121,9 @@ export default class Pad extends React.Component {
       deceleratingVelocity,
     } = this.state;
 
+    if (prevProps.pagingEnabled !== this.props.pagingEnabled) {
+      this._configureDeceleration();
+    }
     if (prevState.size !== size) {
       if (onResize) {
         onResize({ size, contentSize, contentOffset, dragging, decelerating });
@@ -179,62 +188,47 @@ export default class Pad extends React.Component {
     return this.state.decelerating;
   }
 
-  _willDecelerate({ contentOffset, velocity }) {
-    const { size } = this.state;
-
+  _configureDeceleration() {
     if (this.props.pagingEnabled) {
-      if (
-        contentOffset.x % size.width !== 0 ||
-        contentOffset.y % size.height !== 0
-      ) {
-        return true;
-      }
+      this._needsDecelerate = needsPagingDeceleration;
+      this._calculateDeceleration = calculatePagingDeceleration;
     } else {
-      if (velocity.x !== 0 || velocity.y !== 0) {
-        return true;
-      }
+      this._needsDecelerate = needsScrollDeceleration;
+      this._calculateDeceleration = calculateScrollDeceleration;
     }
-
-    return false;
   }
 
   _decelerate(interval) {
-    const {
-      width,
-      height,
-      contentWidth,
-      contentHeight,
-      pagingEnabled,
-    } = this.props;
-    const { deceleratingVelocity, contentOffset } = this.state;
-    const calculateDeceleration = pagingEnabled
-      ? calculateDecelerationPaging
-      : calculateDecelerationLinear;
-    const nextX = calculateDeceleration(
-      interval,
-      deceleratingVelocity.x,
-      contentOffset.x,
-      width,
-      contentWidth
-    );
-    const nextY = calculateDeceleration(
-      interval,
-      deceleratingVelocity.y,
-      contentOffset.y,
-      height,
-      contentHeight
-    );
-    const nextContentOffset = { x: nextX.offset, y: nextY.offset };
-    const nextVelocity = { x: nextX.velocity, y: nextY.velocity };
+    this.setState(
+      ({ size, contentSize, deceleratingVelocity, contentOffset }) => {
+        const nextX = this._calculateDeceleration(
+          interval,
+          contentOffset.x,
+          deceleratingVelocity.x,
+          size.width,
+          contentSize.width
+        );
+        const nextY = this._calculateDeceleration(
+          interval,
+          contentOffset.y,
+          deceleratingVelocity.y,
+          size.height,
+          contentSize.height
+        );
+        const nextContentOffset = { x: nextX.offset, y: nextY.offset };
+        const nextVelocity = { x: nextX.velocity, y: nextY.velocity };
 
-    this.setState({
-      contentOffset: nextContentOffset,
-      deceleratingVelocity: nextVelocity,
-      decelerating: this._willDecelerate({
-        contentOffset: nextContentOffset,
-        velocity: nextVelocity,
-      }),
-    });
+        return {
+          contentOffset: nextContentOffset,
+          deceleratingVelocity: nextVelocity,
+          decelerating: this._needsDecelerate(
+            nextContentOffset,
+            nextVelocity,
+            size
+          ),
+        };
+      }
+    );
   }
 
   _onDragStart = () => {
@@ -282,7 +276,7 @@ export default class Pad extends React.Component {
         draggingStartPosition: null,
         dragging: false,
         deceleratingVelocity: velocity,
-        decelerating: this._willDecelerate({ contentOffset, velocity }),
+        decelerating: this._needsDecelerate(contentOffset, velocity, size),
       };
     });
   };
