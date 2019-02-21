@@ -32,8 +32,8 @@ function calculateDecelerationLinear(interval, velocity, offset, size, cSize) {
 
 function calculateDecelerationPaging(interval, velocity, offset, size, cSize) {
   const rate = 0.01;
-  const passed = Math.round(-offset / size);
-  const dist = -offset - passed * size;
+  const pageNum = Math.round(-offset / size);
+  const dist = -offset - pageNum * size;
   let nVelocity = 0;
   let nOffset = offset + dist;
 
