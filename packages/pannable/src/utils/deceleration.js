@@ -1,39 +1,36 @@
-export function needsScrollDeceleration(offset, velocity, size) {
-  return velocity.x !== 0 || velocity.y !== 0;
-}
-
-export function calculateScrollDeceleration(interval, offset, velocity) {
-  const rate = 0.002;
+export function calculateScrollDecelerationEndPosition(offset, velocity, rate) {
   const redirect = velocity > 0 ? 1 : -1;
   const acc = rate * redirect;
-  let nVelocity;
-  let nOffset;
+  const dist = (0.5 * velocity * velocity) / acc;
 
-  const time = velocity / acc;
-
-  if (interval < time) {
-    nVelocity = velocity - acc * interval;
-    nOffset = offset + 0.5 * (2 * velocity - acc * interval) * interval;
-  } else {
-    nVelocity = 0;
-    nOffset = offset + 0.5 * velocity * (velocity / acc);
-  }
-
-  return { velocity: nVelocity, offset: nOffset };
+  return offset + dist;
 }
 
-export function needsPagingDeceleration(offset, velocity, size) {
-  return offset.x % size.width !== 0 || offset.y % size.height !== 0;
+export function calculatePagingDecelerationEndPosition(
+  offset,
+  velocity,
+  rate,
+  size
+) {
+  const pageNum = size > 0 ? Math.round(offset / size) : 0;
+  const dist = pageNum * size - offset;
+
+  return offset + dist;
 }
 
-export function calculatePagingDeceleration(interval, offset, velocity, size) {
-  const rate = 0.01;
-  const pageNum = Math.round(-offset / size);
-  const dist = -offset - pageNum * size;
+export function calculateDeceleration(
+  interval,
+  rate,
+  offset,
+  velocity,
+  offsetEnd
+) {
+  let nVelocity = 0;
+  let nOffset = offsetEnd;
+
+  const dist = offsetEnd - offset;
   const redirect = dist > 0 ? 1 : -1;
   const acc = rate * redirect;
-  let nVelocity;
-  let nOffset;
 
   const velocityH =
     Math.sqrt(0.5 * velocity * velocity + acc * dist) * redirect;
@@ -48,9 +45,6 @@ export function calculatePagingDeceleration(interval, offset, velocity, size) {
       0.5 *
         (2 * velocityH - acc * Math.abs(timeH - interval)) *
         (timeH - interval);
-  } else {
-    nVelocity = 0;
-    nOffset = offset + dist;
   }
 
   return { velocity: nVelocity, offset: nOffset };
