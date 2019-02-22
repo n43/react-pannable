@@ -100,13 +100,16 @@ export default class Pad extends React.Component {
         } else {
           nextDecelerating = true;
         }
-
-        nextState.decelerating = nextDecelerating;
+      } else {
+        if (nextDecelerating) {
+          nextDecelerating = false;
+        }
       }
 
       nextState.prevContentOffset = contentOffset;
       nextState.contentOffset = nextContentOffset;
       nextState.contentVelocity = nextContentVelocity;
+      nextState.decelerating = nextDecelerating;
 
       if (props.onScroll) {
         props.onScroll({
@@ -212,7 +215,7 @@ export default class Pad extends React.Component {
       }));
     }
     if (prevState.contentOffset !== this.state.contentOffset) {
-      if (this.state.decelerating) {
+      if (this.state.decelerationEndPosition) {
         const startTime = new Date().getTime();
 
         if (this._deceleratingTimer) {
@@ -286,11 +289,10 @@ export default class Pad extends React.Component {
       ({
         contentVelocity,
         contentOffset,
-        decelerating,
         decelerationEndPosition,
         decelerationRate,
       }) => {
-        if (!decelerating) {
+        if (!decelerationEndPosition) {
           return null;
         }
 
@@ -328,7 +330,6 @@ export default class Pad extends React.Component {
 
       return {
         dragging: true,
-        decelerating: false,
         contentOffset: dragStartPosition,
         contentVelocity: velocity,
         dragStartPosition,
