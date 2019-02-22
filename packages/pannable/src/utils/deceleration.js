@@ -2,13 +2,7 @@ export function needsScrollDeceleration(offset, velocity, size) {
   return velocity.x !== 0 || velocity.y !== 0;
 }
 
-export function calculateScrollDeceleration(
-  interval,
-  offset,
-  velocity,
-  size,
-  cSize
-) {
+export function calculateScrollDeceleration(interval, offset, velocity) {
   const rate = 0.002;
   const redirect = velocity > 0 ? 1 : -1;
   const acc = rate * redirect;
@@ -25,13 +19,6 @@ export function calculateScrollDeceleration(
     nOffset = offset + 0.5 * velocity * (velocity / acc);
   }
 
-  const anOffset = Math.max(Math.min(size - cSize), Math.min(nOffset, 0));
-
-  if (anOffset !== nOffset) {
-    nOffset = anOffset;
-    nVelocity = 0;
-  }
-
   return { velocity: nVelocity, offset: nOffset };
 }
 
@@ -39,13 +26,7 @@ export function needsPagingDeceleration(offset, velocity, size) {
   return offset.x % size.width !== 0 || offset.y % size.height !== 0;
 }
 
-export function calculatePagingDeceleration(
-  interval,
-  offset,
-  velocity,
-  size,
-  cSize
-) {
+export function calculatePagingDeceleration(interval, offset, velocity, size) {
   const rate = 0.01;
   const pageNum = Math.round(-offset / size);
   const dist = -offset - pageNum * size;
@@ -70,13 +51,6 @@ export function calculatePagingDeceleration(
   } else {
     nVelocity = 0;
     nOffset = offset + dist;
-  }
-
-  const anOffset = Math.max(Math.min(size - cSize), Math.min(nOffset, 0));
-
-  if (anOffset !== nOffset) {
-    nOffset = anOffset;
-    nVelocity = 0;
   }
 
   return { velocity: nVelocity, offset: nOffset };
