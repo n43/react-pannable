@@ -1,9 +1,8 @@
 export function calculateScrollDecelerationEndPosition(offset, velocity, rate) {
   const redirect = velocity > 0 ? 1 : -1;
   const acc = rate * redirect;
-  const dist = (0.5 * velocity * velocity) / acc;
 
-  return offset + dist;
+  return offset + (0.5 * velocity * velocity) / acc;
 }
 
 export function calculatePagingDecelerationEndPosition(
@@ -12,10 +11,11 @@ export function calculatePagingDecelerationEndPosition(
   rate,
   size
 ) {
-  const pageNum = size > 0 ? Math.round(offset / size) : 0;
-  const dist = pageNum * size - offset;
+  const redirect = velocity > 0 ? 1 : -1;
+  const acc = rate * redirect;
+  const nOffset = offset + (0.5 * velocity * velocity) / acc;
 
-  return offset + dist;
+  return size ? size * Math.round(nOffset / size) : 0;
 }
 
 export function calculateDeceleration(
