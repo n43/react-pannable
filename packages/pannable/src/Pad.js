@@ -345,8 +345,6 @@ export default class Pad extends React.Component {
         );
       }
 
-      console.log(contentVelocity.x);
-
       let decelerationEndPosition = getDecelerationEndPosition(
         contentOffset,
         contentVelocity,
