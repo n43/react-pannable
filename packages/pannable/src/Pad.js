@@ -8,20 +8,15 @@ import {
   cancelAnimationFrame,
 } from './utils/animationFrame';
 import {
-  calculateScrollDecelerationEndPosition,
-  calculatePagingDecelerationEndPosition,
+  getAdjustedContentOffset,
+  getAdjustedPagingOffset,
+  getAdjustedPagingVelocity,
+  getDecelerationEndPosition,
   calculateDeceleration,
-} from './utils/deceleration';
+} from './utils/motion';
 
 const POSITION_ZERO = { x: 0, y: 0 };
 const VELOCITY_ZERO = { x: 0, y: 0 };
-
-function getAdjustedContentOffset(offset, size, cSize) {
-  return {
-    x: Math.max(Math.min(size.width - cSize.width, 0), Math.min(offset.x, 0)),
-    y: Math.max(Math.min(size.height - cSize.height, 0), Math.min(offset.y, 0)),
-  };
-}
 
 export default class Pad extends React.Component {
   static defaultProps = {
@@ -268,17 +263,12 @@ export default class Pad extends React.Component {
       }
 
       if (pagingEnabled) {
-        position = {
-          x: size.width ? size.width * Math.round(position.x / size.width) : 0,
-          y: size.height
-            ? size.height * Math.round(position.y / size.height)
-            : 0,
-        };
+        position = getAdjustedPagingOffset(position, size);
       }
 
       return {
         decelerationEndPosition: position,
-        decelerationRate: 0.004,
+        decelerationRate: 0.01,
         contentOffset: { ...contentOffset },
       };
     });
@@ -296,27 +286,15 @@ export default class Pad extends React.Component {
           return null;
         }
 
-        const nextX = calculateDeceleration(
+        const next = calculateDeceleration(
           interval,
           decelerationRate,
-          contentOffset.x,
-          contentVelocity.x,
-          decelerationEndPosition.x
+          contentOffset,
+          contentVelocity,
+          decelerationEndPosition
         );
-        const nextY = calculateDeceleration(
-          interval,
-          decelerationRate,
-          contentOffset.y,
-          contentVelocity.y,
-          decelerationEndPosition.y
-        );
-        const nextContentOffset = { x: nextX.offset, y: nextY.offset };
-        const nextVelocity = { x: nextX.velocity, y: nextY.velocity };
 
-        return {
-          contentOffset: nextContentOffset,
-          contentVelocity: nextVelocity,
-        };
+        return { contentOffset: next.offset, contentVelocity: next.velocity };
       }
     );
   }
@@ -356,37 +334,36 @@ export default class Pad extends React.Component {
         x: dragStartPosition.x + translation.x,
         y: dragStartPosition.y + translation.y,
       };
-
-      let calculateDecelerationEndPosition;
-      let decelerationRate;
+      let contentVelocity = velocity;
+      let decelerationRate = pagingEnabled ? 0.02 : 0.002;
 
       if (pagingEnabled) {
-        calculateDecelerationEndPosition = calculatePagingDecelerationEndPosition;
-        decelerationRate = 0.01;
-      } else {
-        calculateDecelerationEndPosition = calculateScrollDecelerationEndPosition;
-        decelerationRate = 0.002;
+        contentVelocity = getAdjustedPagingVelocity(
+          contentVelocity,
+          size,
+          decelerationRate
+        );
       }
 
-      const decelerationEndPosition = {
-        x: calculateDecelerationEndPosition(
-          contentOffset.x,
-          velocity.x,
-          decelerationRate,
-          size.width
-        ),
-        y: calculateDecelerationEndPosition(
-          contentOffset.y,
-          velocity.y,
-          decelerationRate,
-          size.height
-        ),
-      };
+      console.log(contentVelocity.x);
+
+      let decelerationEndPosition = getDecelerationEndPosition(
+        contentOffset,
+        contentVelocity,
+        decelerationRate
+      );
+
+      if (pagingEnabled) {
+        decelerationEndPosition = getAdjustedPagingOffset(
+          decelerationEndPosition,
+          size
+        );
+      }
 
       return {
         dragging: false,
         contentOffset,
-        contentVelocity: velocity,
+        contentVelocity,
         decelerationEndPosition,
         decelerationRate,
         dragStartPosition: null,
