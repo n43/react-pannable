@@ -133,13 +133,6 @@ export default class Pad extends React.Component {
           contentSize,
         });
       }
-      console.log(
-        'onScroll',
-        nextContentOffset,
-        nextContentVelocity,
-        dragging,
-        nextDecelerating
-      );
     }
     return nextState;
   }

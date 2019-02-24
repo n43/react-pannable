@@ -30,7 +30,7 @@ class BasicScroll extends Component {
         height={400}
         contentWidth={300 * 5}
         contentHeight={400 * 5}
-        // pagingEnabled
+        pagingEnabled
       >
         {this.renderContent()}
       </Pad>

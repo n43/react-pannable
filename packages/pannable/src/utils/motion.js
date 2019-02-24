@@ -20,70 +20,91 @@ export function getAdjustedPagingOffset(offset, size, name) {
   };
 }
 
-export function getAdjustedPagingVelocity(velocity, size, rate, name) {
-  if (name) {
-    const redirect = velocity > 0 ? 1 : -1;
+function getAcc(rate, { x, y }) {
+  const r = Math.sqrt(x * x + y * y);
 
-    return redirect * Math.min(Math.abs(velocity), Math.sqrt(rate * size));
+  return { x: rate * (x / r), y: rate * (y / r) };
+}
+
+export function getAdjustedPagingVelocity(velocity, size, acc, name) {
+  if (name) {
+    if (!acc) {
+      return 0;
+    }
+
+    const redirect = acc > 0 ? 1 : -1;
+
+    return (
+      redirect * Math.min(Math.abs(velocity), Math.sqrt(redirect * acc * size))
+    );
   }
 
+  acc = getAcc(acc, velocity);
+
   return {
-    x: getAdjustedPagingVelocity(velocity.x, size.width, rate, 'x'),
-    y: getAdjustedPagingVelocity(velocity.y, size.height, rate, 'y'),
+    x: getAdjustedPagingVelocity(velocity.x, size.width, acc.x, 'x'),
+    y: getAdjustedPagingVelocity(velocity.y, size.height, acc.y, 'y'),
   };
 }
 
-export function getDecelerationEndPosition(offset, velocity, rate, name) {
+export function getDecelerationEndPosition(offset, velocity, acc, name) {
   if (name) {
-    const redirect = velocity > 0 ? 1 : -1;
-    const acc = rate * redirect;
+    if (!acc) {
+      return offset;
+    }
 
-    return offset + (0.5 * velocity * velocity) / acc;
+    return offset + 0.5 * velocity * (velocity / acc);
   }
 
+  acc = getAcc(acc, velocity);
+
   return {
-    x: getDecelerationEndPosition(offset.x, velocity.x, rate, 'x'),
-    y: getDecelerationEndPosition(offset.y, velocity.y, rate, 'y'),
+    x: getDecelerationEndPosition(offset.x, velocity.x, acc.x, 'x'),
+    y: getDecelerationEndPosition(offset.y, velocity.y, acc.y, 'y'),
   };
 }
 
 export function calculateDeceleration(
   interval,
-  rate,
+  acc,
   offset,
   velocity,
   offsetEnd,
   name
 ) {
   if (name) {
-    let nVelocity = 0;
-    let nOffset = offsetEnd;
+    if (!acc) {
+      return { offset: offsetEnd, velocity: 0 };
+    }
 
     const dist = offsetEnd - offset;
-    const redirect = dist > 0 ? 1 : -1;
-    const acc = rate * redirect;
+    const redirect = acc > 0 ? 1 : -1;
 
     const velocityH =
-      Math.sqrt(0.5 * velocity * velocity + acc * dist) * redirect;
-    const timeH = (velocityH - velocity) / acc;
-    const time = (2 * velocityH - velocity) / acc;
+      redirect * Math.sqrt(0.5 * velocity * velocity + acc * dist);
+    const timeH = acc ? (velocityH - velocity) / acc : 0;
+    const time = acc ? (2 * velocityH - velocity) / acc : 0;
 
-    if (interval < time) {
-      nVelocity = velocityH - acc * Math.abs(timeH - interval);
-      nOffset =
+    if (time < interval) {
+      return { offset: offsetEnd, velocity: 0 };
+    }
+
+    return {
+      offset:
         offset +
         0.5 * (velocity + velocityH) * timeH -
         0.5 *
           (2 * velocityH - acc * Math.abs(timeH - interval)) *
-          (timeH - interval);
-    }
-
-    return { offset: nOffset, velocity: nVelocity };
+          (timeH - interval),
+      velocity: velocityH - acc * Math.abs(timeH - interval),
+    };
   }
+
+  acc = getAcc(acc, { x: offsetEnd.x - offset.x, y: offsetEnd.y - offset.y });
 
   const nextX = calculateDeceleration(
     interval,
-    rate,
+    acc.x,
     offset.x,
     velocity.x,
     offsetEnd.x,
@@ -91,7 +112,7 @@ export function calculateDeceleration(
   );
   const nextY = calculateDeceleration(
     interval,
-    rate,
+    acc.y,
     offset.y,
     velocity.y,
     offsetEnd.y,
