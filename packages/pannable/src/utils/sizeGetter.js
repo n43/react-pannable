@@ -1,7 +1,13 @@
-export function getElementSize(element) {
+export function getElementSize(
+  element = null,
+  needsWidth = true,
+  needsHeight = true
+) {
   if (!element) {
     return { width: 0, height: 0 };
   }
+
+  let size = {};
 
   const width = element.offsetWidth || 0;
   const height = element.offsetHeight || 0;
@@ -15,16 +21,36 @@ export function getElementSize(element) {
   const realHeight = height - paddingTop - paddingBottom;
   const realWidth = width - paddingLeft - paddingRight;
 
-  return { width: realWidth, height: realHeight };
+  if (needsWidth) {
+    size.width = realWidth;
+  }
+  if (needsHeight) {
+    size.height = realHeight;
+  }
+
+  return size;
 }
 
-export function getElementScrollSize(element) {
+export function getElementScrollSize(
+  element = null,
+  needsWidth = true,
+  needsHeight = true
+) {
   if (!element) {
     return { width: 0, height: 0 };
   }
 
+  let size = {};
+
   const width = element.scrollWidth || 0;
   const height = element.scrollHeight || 0;
 
-  return { width, height };
+  if (needsWidth) {
+    size.width = width;
+  }
+  if (needsHeight) {
+    size.height = height;
+  }
+
+  return size;
 }

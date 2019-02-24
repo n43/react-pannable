@@ -150,53 +150,52 @@ export default class Pad extends React.Component {
     let initedSize = {};
     let initedContentSize = {};
 
-    const computeSize = (width, height) => {
-      let computedSize = { width, height };
-      const parentSize = getElementSize(parentNode);
-
-      if (width === 0) {
-        computedSize.width = parentSize.width;
-      }
-      if (height === 0) {
-        computedSize.height = parentSize.height;
-      }
-      return computedSize;
-    };
-
-    const computeContentSize = (contentWidth, contentHeight) => {
-      let computedSize = { width: contentWidth, height: contentHeight };
-      const contentSize = getElementScrollSize(contentNode);
-      if (contentWidth === 0) {
-        computedSize.width = contentSize.width;
-      }
-      if (contentHeight === 0) {
-        computedSize.height = contentSize.height;
-      }
-      return computedSize;
-    };
-
     if (width === 0 || height === 0) {
       this._detectWrapperResize = createDetectElementResize();
       this._detectWrapperResize.addResizeListener(parentNode, () => {
-        const size = computeSize(width, height);
-        this.setState({ size });
+        const parentSize = getElementSize(
+          parentNode,
+          width === 0,
+          height === 0
+        );
+        this.setState(({ size, contentOffset }) => {
+          return {
+            size: { ...size, ...parentSize },
+            contentOffset: { ...contentOffset },
+          };
+        });
       });
-      initedSize = computeSize(width, height);
+
+      initedSize = getElementSize(parentNode, width === 0, height === 0);
     }
 
     if (autoAdjustsContentSize && (contentWidth === 0 || contentHeight === 0)) {
       this._detectContentResize = createDetectElementResize();
       this._detectContentResize.addResizeListener(contentNode, () => {
-        const contentSize = computeContentSize(contentWidth, contentHeight);
-        this.setState({ contentSize });
+        const scrollSize = getElementScrollSize(
+          contentNode,
+          contentWidth === 0,
+          contentHeight === 0
+        );
+        this.setState(({ contentSize, contentOffset }) => {
+          return {
+            contentSize: { ...contentSize, ...scrollSize },
+            contentOffset: { ...contentOffset },
+          };
+        });
       });
-      initedContentSize = computeContentSize(contentWidth, contentHeight);
+      initedContentSize = getElementScrollSize(
+        contentNode,
+        contentWidth === 0,
+        contentHeight === 0
+      );
     }
 
-    this.setState(({ size, contentSize }) => {
+    this.setState(({ size, contentSize, contentOffset }) => {
       return {
         size: { ...size, ...initedSize },
         contentSize: { ...contentSize, initedContentSize },
+        contentOffset: { ...contentOffset },
       };
     });
   }

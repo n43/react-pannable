@@ -4,7 +4,7 @@ import { Pad } from 'react-pannable';
 class AutoAdjustsContentSize extends Component {
   render() {
     return (
-      <div style={{ width: '400px', height: '600px' }}>
+      <div style={{ width: '100%', height: '600px' }}>
         <Pad contentWidth={400} autoAdjustsContentSize={true}>
           <div style={{ marginBottom: '20px', lineHeight: '1.8em' }}>
             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras
