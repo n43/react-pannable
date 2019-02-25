@@ -228,7 +228,7 @@ export default class Pannable extends React.Component {
   };
   _onMouseDown = evt => {
     const { onMouseDown } = this.props;
-    const { pageX, pageY } = touchEvt;
+    const { pageX, pageY } = evt;
 
     this.setState((state, props) => {
       if (props.enabled) {
