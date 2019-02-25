@@ -15,9 +15,6 @@ import {
   calculateDeceleration,
 } from './utils/motion';
 
-const POSITION_ZERO = { x: 0, y: 0 };
-const VELOCITY_ZERO = { x: 0, y: 0 };
-
 export default class Pad extends React.Component {
   static defaultProps = {
     width: 0,
@@ -25,6 +22,7 @@ export default class Pad extends React.Component {
     contentWidth: 0,
     contentHeight: 0,
     contentStyle: null,
+    scrollEnabled: true,
     pagingEnabled: false,
     autoAdjustsContentSize: false,
   };
@@ -35,8 +33,8 @@ export default class Pad extends React.Component {
     this.state = {
       size: { width: props.width, height: props.height },
       contentSize: { width: props.contentWidth, height: props.contentHeight },
-      contentOffset: POSITION_ZERO,
-      contentVelocity: VELOCITY_ZERO,
+      contentOffset: { x: 0, y: 0 },
+      contentVelocity: { x: 0, y: 0 },
       prevContentOffset: null,
       dragging: false,
       decelerating: false,
@@ -279,7 +277,7 @@ export default class Pad extends React.Component {
       if (!animated) {
         return {
           contentOffset: position,
-          contentVelocity: VELOCITY_ZERO,
+          contentVelocity: { x: 0, y: 0 },
           decelerating: false,
           decelerationEndPosition: null,
           decelerationRate: 0,
@@ -388,16 +386,44 @@ export default class Pad extends React.Component {
         contentOffset,
         contentVelocity,
         dragging: false,
-        decelerationEndPosition,
-        decelerating: true,
-        decelerationRate,
         dragStartPosition: null,
+        decelerating: true,
+        decelerationEndPosition,
+        decelerationRate,
+      };
+    });
+  };
+
+  _onDragCancel = ({ translation, velocity }) => {
+    this.setState(({ dragStartPosition, size }, { pagingEnabled }) => {
+      const contentOffset = {
+        x: dragStartPosition.x + translation.x,
+        y: dragStartPosition.y + translation.y,
+      };
+
+      let decelerationEndPosition = dragStartPosition;
+
+      if (pagingEnabled) {
+        decelerationEndPosition = getAdjustedPagingOffset(
+          decelerationEndPosition,
+          size
+        );
+      }
+
+      return {
+        contentOffset,
+        contentVelocity: velocity,
+        dragging: false,
+        dragStartPosition: null,
+        decelerating: true,
+        decelerationEndPosition,
+        decelerationRate: 0.01,
       };
     });
   };
 
   render() {
-    const { style, contentStyle, children } = this.props;
+    const { style, contentStyle, scrollEnabled, children } = this.props;
     const { size, contentSize, contentOffset } = this.state;
     const wrapperStyles = StyleSheet.create({
       overflow: 'hidden',
@@ -418,10 +444,12 @@ export default class Pad extends React.Component {
     return (
       <div ref={this.wrapperRef}>
         <Pannable
+          enabled={scrollEnabled}
           style={wrapperStyles}
           onStart={this._onDragStart}
           onMove={this._onDragMove}
           onEnd={this._onDragEnd}
+          onCancel={this._onDragCancel}
         >
           <div style={contentStyles}>
             <div ref={this.contentRef}>{children}</div>
