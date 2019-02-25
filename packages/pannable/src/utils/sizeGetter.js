@@ -30,27 +30,3 @@ export function getElementSize(
 
   return size;
 }
-
-export function getElementScrollSize(
-  element = null,
-  needsWidth = true,
-  needsHeight = true
-) {
-  if (!element) {
-    return { width: 0, height: 0 };
-  }
-
-  let size = {};
-
-  const width = element.scrollWidth || 0;
-  const height = element.scrollHeight || 0;
-
-  if (needsWidth) {
-    size.width = width;
-  }
-  if (needsHeight) {
-    size.height = height;
-  }
-
-  return size;
-}
