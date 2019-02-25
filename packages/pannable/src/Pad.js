@@ -1,7 +1,7 @@
 import React from 'react';
 import Pannable from './Pannable';
-import { getElementSize, getElementScrollSize } from './utils/sizeGetter';
-import createDetectElementResize from './utils/detectElementResize';
+import { getElementSize } from './utils/sizeGetter';
+import createResizeDetector from 'element-resize-detector';
 import StyleSheet from './utils/StyleSheet';
 import {
   requestAnimationFrame,
@@ -150,51 +150,50 @@ export default class Pad extends React.Component {
     let initedSize = {};
     let initedContentSize = {};
 
+    this.resizeDetector = createResizeDetector({
+      strategy: 'scroll',
+    });
+
     if (width === 0 || height === 0) {
-      this._detectWrapperResize = createDetectElementResize();
-      this._detectWrapperResize.addResizeListener(parentNode, () => {
-        const parentSize = getElementSize(
-          parentNode,
-          width === 0,
-          height === 0
-        );
+      this.resizeDetector.listenTo(parentNode, element => {
+        const changedSize = getElementSize(element, !width, !height);
+
         this.setState(({ size, contentOffset }) => {
           return {
-            size: { ...size, ...parentSize },
+            size: { ...size, ...changedSize },
             contentOffset: { ...contentOffset },
           };
         });
       });
 
-      initedSize = getElementSize(parentNode, width === 0, height === 0);
+      initedSize = getElementSize(parentNode, !width, !height);
     }
 
     if (autoAdjustsContentSize && (contentWidth === 0 || contentHeight === 0)) {
-      this._detectContentResize = createDetectElementResize();
-      this._detectContentResize.addResizeListener(contentNode, () => {
-        const scrollSize = getElementScrollSize(
-          contentNode,
-          contentWidth === 0,
-          contentHeight === 0
+      this.resizeDetector.listenTo(contentNode, element => {
+        const changedSize = getElementSize(
+          element,
+          !contentWidth,
+          !contentHeight
         );
+
         this.setState(({ contentSize, contentOffset }) => {
           return {
-            contentSize: { ...contentSize, ...scrollSize },
+            contentSize: { ...contentSize, ...changedSize },
             contentOffset: { ...contentOffset },
           };
         });
       });
-      initedContentSize = getElementScrollSize(
+      initedContentSize = getElementSize(
         contentNode,
-        contentWidth === 0,
-        contentHeight === 0
+        !contentWidth,
+        !contentHeight
       );
     }
-
     this.setState(({ size, contentSize, contentOffset }) => {
       return {
         size: { ...size, ...initedSize },
-        contentSize: { ...contentSize, initedContentSize },
+        contentSize: { ...contentSize, ...initedContentSize },
         contentOffset: { ...contentOffset },
       };
     });
@@ -204,8 +203,11 @@ export default class Pad extends React.Component {
     const { width, height, contentWidth, contentHeight } = this.props;
 
     if (prevProps.width !== width || prevProps.height !== height) {
-      this.setState(({ contentOffset }) => ({
-        size: { width, height },
+      this.setState(({ size, contentOffset }) => ({
+        size: {
+          width: width ? width : size.width,
+          height: height ? height : size.height,
+        },
         contentOffset: { ...contentOffset },
       }));
     }
@@ -213,8 +215,11 @@ export default class Pad extends React.Component {
       prevProps.contentWidth !== contentWidth ||
       prevProps.contentHeight !== contentHeight
     ) {
-      this.setState(({ contentOffset }) => ({
-        contentSize: { width: contentWidth, height: contentHeight },
+      this.setState(({ contentSize, contentOffset }) => ({
+        contentSize: {
+          width: contentWidth ? contentWidth : contentSize.width,
+          height: contentHeight ? contentHeight : contentSize.height,
+        },
         contentOffset: { ...contentOffset },
       }));
     }
@@ -239,6 +244,10 @@ export default class Pad extends React.Component {
       cancelAnimationFrame(this._deceleratingTimer);
       this._deceleratingTimer = undefined;
     }
+
+    const parentNode = this.wrapperRef.current.parentNode;
+    const contentNode = this.contentRef.current;
+    this.resizeDetector.uninstall([parentNode, contentNode]);
   }
 
   getSize() {
@@ -404,10 +413,6 @@ export default class Pad extends React.Component {
       width: contentSize.width,
       height: contentSize.height,
       transform: `translate3d(${contentOffset.x}px, ${contentOffset.y}px, 0)`,
-      overflow:
-        contentSize.width === 0 || contentSize.height === 0
-          ? 'scroll'
-          : 'hidden',
       ...contentStyle,
     });
     return (
@@ -418,8 +423,8 @@ export default class Pad extends React.Component {
           onMove={this._onDragMove}
           onEnd={this._onDragEnd}
         >
-          <div style={contentStyles} ref={this.contentRef}>
-            {children}
+          <div style={contentStyles}>
+            <div ref={this.contentRef}>{children}</div>
           </div>
         </Pannable>
       </div>
