@@ -7,6 +7,7 @@ export default class Note extends React.Component {
     super(props);
 
     this.state = {
+      enabled: true,
       dragTarget: null,
       dragStartPosition: null,
       items: {
@@ -44,15 +45,23 @@ export default class Note extends React.Component {
         return null;
       }
 
-      return {
+      const position = {
+        x: dragStartPosition.x + translation.x,
+        y: dragStartPosition.y + translation.y,
+      };
+
+      let nextState = {
         items: {
           ...items,
-          [dragTarget]: {
-            x: dragStartPosition.x + translation.x,
-            y: dragStartPosition.y + translation.y,
-          },
+          [dragTarget]: position,
         },
       };
+
+      if (position.x < 0 || position.y < 0) {
+        nextState.enabled = false;
+      }
+
+      return nextState;
     });
   };
 
@@ -60,21 +69,41 @@ export default class Note extends React.Component {
     this.setState({ dragTarget: null, dragStartPosition: null });
   };
 
+  _onCancel = () => {
+    this.setState(({ dragTarget, dragStartPosition, items }) => {
+      return {
+        enabled: true,
+        dragTarget: null,
+        dragStartPosition: null,
+        items: { ...items, [dragTarget]: dragStartPosition },
+      };
+    });
+  };
+
   render() {
-    const { items } = this.state;
+    const { enabled, items } = this.state;
 
     return (
       <Pannable
         className="note-wrapper"
+        enabled={enabled}
         onStart={this._onStart}
         onMove={this._onMove}
         onEnd={this._onEnd}
+        onCancel={this._onCancel}
       >
         <div
           data-draggable="item0"
           className="note-item"
           style={getPositionStyle(items['item0'])}
-        />
+        >
+          <div>
+            In this guide, we will examine the building blocks of React apps:
+            <a href="https://github.com/n43/react-pannable" target="blank">
+              elements and components.
+            </a>
+          </div>
+        </div>
         <div
           data-draggable="item1"
           className="note-item"
