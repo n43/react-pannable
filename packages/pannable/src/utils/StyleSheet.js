@@ -1,16 +1,21 @@
-function transformPrefixer(transformFunction) {
-  if (!transformFunction) {
-    return {};
+function convertTransformTranslate(translate) {
+  if (!translate) {
+    return null;
   }
   return {
-    transform: transformFunction,
-    WebkitTransform: transformFunction,
-    MsTransform: transformFunction,
+    transform: `translate3d(${translate[0]}px, ${translate[1]}px, 0)`,
+    WebkitTransform: `translate3d(${translate[0]}px, ${translate[1]}px, 0)`,
+    msTransform: `translate(${translate[0]}px, ${translate[1]}px)`,
   };
 }
 
 function create(styles) {
-  return { ...styles, ...transformPrefixer(styles['transform']) };
+  const { transformTranslate, ...style } = styles;
+
+  return {
+    ...style,
+    ...convertTransformTranslate(transformTranslate),
+  };
 }
 
 let StyleSheet = {

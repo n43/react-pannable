@@ -438,9 +438,10 @@ export default class Pad extends React.Component {
       boxSizing: 'border-box',
       width: contentSize.width,
       height: contentSize.height,
-      transform: `translate3d(${contentOffset.x}px, ${contentOffset.y}px, 0)`,
+      transformTranslate: [contentOffset.x, contentOffset.y],
       ...contentStyle,
     });
+
     return (
       <div ref={this.wrapperRef}>
         <Pannable
