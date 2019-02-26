@@ -1,7 +1,7 @@
 import React from 'react';
 import Pannable from './Pannable';
-import { getElementSize } from './utils/sizeGetter';
-import createResizeDetector from 'element-resize-detector';
+// import { getElementSize } from './utils/sizeGetter';
+// import createResizeDetector from 'element-resize-detector';
 import StyleSheet from './utils/StyleSheet';
 import {
   requestAnimationFrame,
@@ -21,10 +21,9 @@ export default class Pad extends React.Component {
     height: 0,
     contentWidth: 0,
     contentHeight: 0,
-    contentStyle: null,
+    contentProps: {},
     scrollEnabled: true,
     pagingEnabled: false,
-    autoAdjustsContentSize: false,
   };
 
   constructor(props) {
@@ -135,67 +134,67 @@ export default class Pad extends React.Component {
     return nextState;
   }
 
-  componentDidMount() {
-    const {
-      width,
-      height,
-      contentWidth,
-      contentHeight,
-      autoAdjustsContentSize,
-    } = this.props;
-    const parentNode = this.wrapperRef.current.parentNode;
-    const contentNode = this.contentRef.current;
-    let initedSize = {};
-    let initedContentSize = {};
+  // componentDidMount() {
+  //   const {
+  //     width,
+  //     height,
+  //     contentWidth,
+  //     contentHeight,
+  //     autoAdjustsContentSize,
+  //   } = this.props;
+  //   const parentNode = this.wrapperRef.current.parentNode;
+  //   const contentNode = this.contentRef.current;
+  //   let initedSize = {};
+  //   let initedContentSize = {};
 
-    this.resizeDetector = createResizeDetector({
-      strategy: 'scroll',
-    });
+  //   this.resizeDetector = createResizeDetector({
+  //     strategy: 'scroll',
+  //   });
 
-    if (width === 0 || height === 0) {
-      this.resizeDetector.listenTo(parentNode, element => {
-        const changedSize = getElementSize(element, !width, !height);
+  //   if (width === 0 || height === 0) {
+  //     this.resizeDetector.listenTo(parentNode, element => {
+  //       const changedSize = getElementSize(element, !width, !height);
 
-        this.setState(({ size, contentOffset }) => {
-          return {
-            size: { ...size, ...changedSize },
-            contentOffset: { ...contentOffset },
-          };
-        });
-      });
+  //       this.setState(({ size, contentOffset }) => {
+  //         return {
+  //           size: { ...size, ...changedSize },
+  //           contentOffset: { ...contentOffset },
+  //         };
+  //       });
+  //     });
 
-      initedSize = getElementSize(parentNode, !width, !height);
-    }
+  //     initedSize = getElementSize(parentNode, !width, !height);
+  //   }
 
-    if (autoAdjustsContentSize && (contentWidth === 0 || contentHeight === 0)) {
-      this.resizeDetector.listenTo(contentNode, element => {
-        const changedSize = getElementSize(
-          element,
-          !contentWidth,
-          !contentHeight
-        );
+  //   if (autoAdjustsContentSize && (contentWidth === 0 || contentHeight === 0)) {
+  //     this.resizeDetector.listenTo(contentNode, element => {
+  //       const changedSize = getElementSize(
+  //         element,
+  //         !contentWidth,
+  //         !contentHeight
+  //       );
 
-        this.setState(({ contentSize, contentOffset }) => {
-          return {
-            contentSize: { ...contentSize, ...changedSize },
-            contentOffset: { ...contentOffset },
-          };
-        });
-      });
-      initedContentSize = getElementSize(
-        contentNode,
-        !contentWidth,
-        !contentHeight
-      );
-    }
-    this.setState(({ size, contentSize, contentOffset }) => {
-      return {
-        size: { ...size, ...initedSize },
-        contentSize: { ...contentSize, ...initedContentSize },
-        contentOffset: { ...contentOffset },
-      };
-    });
-  }
+  //       this.setState(({ contentSize, contentOffset }) => {
+  //         return {
+  //           contentSize: { ...contentSize, ...changedSize },
+  //           contentOffset: { ...contentOffset },
+  //         };
+  //       });
+  //     });
+  //     initedContentSize = getElementSize(
+  //       contentNode,
+  //       !contentWidth,
+  //       !contentHeight
+  //     );
+  //   }
+  //   this.setState(({ size, contentSize, contentOffset }) => {
+  //     return {
+  //       size: { ...size, ...initedSize },
+  //       contentSize: { ...contentSize, ...initedContentSize },
+  //       contentOffset: { ...contentOffset },
+  //     };
+  //   });
+  // }
 
   componentDidUpdate(prevProps, prevState) {
     const { width, height, contentWidth, contentHeight } = this.props;
@@ -243,9 +242,9 @@ export default class Pad extends React.Component {
       this._deceleratingTimer = undefined;
     }
 
-    const parentNode = this.wrapperRef.current.parentNode;
-    const contentNode = this.contentRef.current;
-    this.resizeDetector.uninstall([parentNode, contentNode]);
+    // const parentNode = this.wrapperRef.current.parentNode;
+    // const contentNode = this.contentRef.current;
+    // this.resizeDetector.uninstall([parentNode, contentNode]);
   }
 
   getSize() {
@@ -423,7 +422,18 @@ export default class Pad extends React.Component {
   };
 
   render() {
-    const { style, contentStyle, scrollEnabled, children } = this.props;
+    const {
+      width,
+      height,
+      contentWidth,
+      contentHeight,
+      contentProps,
+      scrollEnabled,
+      pagingEnabled,
+      style,
+      children,
+      ...wrapperProps
+    } = this.props;
     const { size, contentSize, contentOffset } = this.state;
     const wrapperStyles = StyleSheet.create({
       overflow: 'hidden',
@@ -439,24 +449,24 @@ export default class Pad extends React.Component {
       width: contentSize.width,
       height: contentSize.height,
       transformTranslate: [contentOffset.x, contentOffset.y],
-      ...contentStyle,
+      ...contentProps.style,
     });
 
     return (
-      <div ref={this.wrapperRef}>
-        <Pannable
-          enabled={scrollEnabled}
-          style={wrapperStyles}
-          onStart={this._onDragStart}
-          onMove={this._onDragMove}
-          onEnd={this._onDragEnd}
-          onCancel={this._onDragCancel}
-        >
-          <div style={contentStyles}>
-            <div ref={this.contentRef}>{children}</div>
-          </div>
-        </Pannable>
-      </div>
+      <Pannable
+        {...wrapperProps}
+        ref={this.wrapperRef}
+        enabled={scrollEnabled}
+        style={wrapperStyles}
+        onStart={this._onDragStart}
+        onMove={this._onDragMove}
+        onEnd={this._onDragEnd}
+        onCancel={this._onDragCancel}
+      >
+        <div {...contentProps} style={contentStyles}>
+          <div ref={this.contentRef}>{children}</div>
+        </div>
+      </Pannable>
     );
   }
 }

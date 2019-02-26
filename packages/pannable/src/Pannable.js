@@ -18,6 +18,8 @@ export default class Pannable extends React.Component {
     moveT: null,
   };
 
+  elemRef = React.createRef;
+
   componentDidUpdate(prevProps) {
     const { enabled } = this.props;
 
@@ -63,6 +65,7 @@ export default class Pannable extends React.Component {
       onStart({
         translation: nextState.translation,
         velocity: nextState.velocity,
+        target: evt.target,
       });
     }
 
@@ -92,6 +95,7 @@ export default class Pannable extends React.Component {
       onMove({
         translation: nextState.translation,
         velocity: nextState.velocity,
+        target: evt.target,
       });
     }
 
@@ -112,7 +116,7 @@ export default class Pannable extends React.Component {
     };
 
     if (onEnd) {
-      onEnd({ translation, velocity });
+      onEnd({ translation, velocity, target: evt.target });
     }
 
     return nextState;
@@ -132,7 +136,7 @@ export default class Pannable extends React.Component {
     };
 
     if (onCancel) {
-      onCancel({ translation, velocity });
+      onCancel({ translation, velocity, target: evt.target });
     }
 
     return nextState;
@@ -164,7 +168,11 @@ export default class Pannable extends React.Component {
 
     if (evt.touches && evt.touches.length === 1) {
       const touchEvt = evt.touches[0];
-      const params = { pageX: touchEvt.pageX, pageY: touchEvt.pageY };
+      const params = {
+        pageX: touchEvt.pageX,
+        pageY: touchEvt.pageY,
+        target: touchEvt.target,
+      };
 
       this.setState((state, props) => {
         if (Pannable._shouldStart(params, state, props)) {
@@ -187,7 +195,11 @@ export default class Pannable extends React.Component {
 
     if (evt.changedTouches && evt.changedTouches.length === 1) {
       const touchEvt = evt.changedTouches[0];
-      const params = { pageX: touchEvt.pageX, pageY: touchEvt.pageY };
+      const params = {
+        pageX: touchEvt.pageX,
+        pageY: touchEvt.pageY,
+        target: touchEvt.target,
+      };
 
       this.setState((state, props) => {
         if (state.trackingStartXY) {
@@ -209,7 +221,11 @@ export default class Pannable extends React.Component {
 
     if (evt.changedTouches && evt.changedTouches.length === 1) {
       const touchEvt = evt.changedTouches[0];
-      const params = { pageX: touchEvt.pageX, pageY: touchEvt.pageY };
+      const params = {
+        pageX: touchEvt.pageX,
+        pageY: touchEvt.pageY,
+        target: touchEvt.target,
+      };
 
       this.setState((state, props) => {
         if (state.trackingStartXY) {
@@ -248,7 +264,7 @@ export default class Pannable extends React.Component {
     evt.preventDefault();
 
     const { onMouseMove } = this.props;
-    const params = { pageX: evt.pageX, pageY: evt.pageY };
+    const params = { pageX: evt.pageX, pageY: evt.pageY, target: evt.target };
 
     this.setState((state, props) => {
       if (Pannable._shouldStart(params, state, props)) {
@@ -266,7 +282,7 @@ export default class Pannable extends React.Component {
   };
   _onMouseUp = evt => {
     const { onMouseUp } = this.props;
-    const params = { pageX: evt.pageX, pageY: evt.pageY };
+    const params = { pageX: evt.pageX, pageY: evt.pageY, target: evt.target };
 
     this.setState((state, props) => {
       if (state.trackingStartXY) {
@@ -286,7 +302,7 @@ export default class Pannable extends React.Component {
   };
   _onMouseLeave = evt => {
     const { onMouseLeave } = this.props;
-    const params = { pageX: evt.pageX, pageY: evt.pageY };
+    const params = { pageX: evt.pageX, pageY: evt.pageY, target: evt.target };
 
     this.setState((state, props) => {
       if (state.trackingStartXY) {
@@ -315,15 +331,25 @@ export default class Pannable extends React.Component {
   };
 
   render() {
-    const { enabled, style, children } = this.props;
-    const wrapperStyle = StyleSheet.create({
+    const {
+      enabled,
+      onStart,
+      onMove,
+      onEnd,
+      onCancel,
+      style,
+      ...elemProps
+    } = this.props;
+    const styles = StyleSheet.create({
       touchAction: enabled ? 'none' : 'auto',
       ...style,
     });
 
     return (
       <div
-        style={wrapperStyle}
+        {...elemProps}
+        ref={this.elemRef}
+        style={styles}
         onTouchStart={this._onTouchStart}
         onTouchEnd={this._onTouchEnd}
         onTouchMove={this._onTouchMove}
@@ -333,9 +359,7 @@ export default class Pannable extends React.Component {
         onMouseMove={this._onMouseMove}
         onMouseLeave={this._onMouseLeave}
         onClick={this._onClick}
-      >
-        {children}
-      </div>
+      />
     );
   }
 }

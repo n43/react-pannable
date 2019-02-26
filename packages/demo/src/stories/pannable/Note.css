@@ -1,0 +1,13 @@
+.note-wrapper {
+  position: relative;
+  width: 600px;
+  height: 400px;
+  background-color: #eeeeee;
+}
+
+.note-item {
+  position: absolute;
+  width: 120px;
+  height: 180px;
+  background-color: #fff;
+}
