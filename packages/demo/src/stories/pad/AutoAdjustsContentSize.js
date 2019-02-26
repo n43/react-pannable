@@ -7,9 +7,10 @@ class AutoAdjustsContentSize extends Component {
     contentWidth: 400,
   };
   componentDidMount() {
-    setTimeout(() => {
-      this.setState({ paragraph: [1, 2, 3, 4] });
-    }, 5000);
+    // setTimeout(() => {
+    //   this.setState({ paragraph: [1, 2, 3, 4] });
+    //   console.log('resize!!');
+    // }, 10000);
   }
   renderContent = () => {
     const { paragraph } = this.state;
@@ -57,6 +58,7 @@ class AutoAdjustsContentSize extends Component {
           {({ content, contentWidth, contentHeight }) => (
             <Pad
               width={400}
+              height={600}
               contentWidth={contentWidth}
               contentHeight={contentHeight}
             >

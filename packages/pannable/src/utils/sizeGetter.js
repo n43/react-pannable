@@ -24,7 +24,7 @@ export function getElementSize(
   if (needsWidth) {
     size.width = realWidth;
   }
-  if (needsHeight) {
+  if (needsHeight && 1) {
     size.height = realHeight;
   }
 

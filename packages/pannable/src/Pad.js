@@ -144,7 +144,7 @@ export default class Pad extends React.Component {
     this.resizeDetector = createResizeDetector({
       strategy: 'scroll',
     });
-    console.log(this.wrapperRef.current);
+    // console.log(this.wrapperRef.current);
     // if (width === 0 || height === 0) {
     //   this.resizeDetector.listenTo(parentNode, element => {
     //     const changedSize = getElementSize(element, !width, !height);
