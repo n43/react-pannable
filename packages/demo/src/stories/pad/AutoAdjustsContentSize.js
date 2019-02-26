@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Pad } from 'react-pannable';
+import { Pad, GeneralContent } from 'react-pannable';
 
 class AutoAdjustsContentSize extends Component {
   state = {
@@ -51,12 +51,19 @@ class AutoAdjustsContentSize extends Component {
     });
   };
   render() {
-    const { contentWidth } = this.state;
     return (
-      <div style={{ width: '400px', height: '200px' }}>
-        <Pad contentWidth={contentWidth} autoAdjustsContentSize={true}>
-          {this.renderContent()}
-        </Pad>
+      <div style={{ width: '400px', height: '600px' }}>
+        <GeneralContent content={this.renderContent()} fixedWidth={400}>
+          {({ content, contentWidth, contentHeight }) => (
+            <Pad
+              width={400}
+              contentWidth={contentWidth}
+              contentHeight={contentHeight}
+            >
+              {content}
+            </Pad>
+          )}
+        </GeneralContent>
       </div>
     );
   }
