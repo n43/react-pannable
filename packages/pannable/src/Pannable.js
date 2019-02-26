@@ -136,7 +136,7 @@ export default class Pannable extends React.Component {
     };
 
     if (onCancel) {
-      onCancel({ translation, velocity, target: evt.target });
+      onCancel({ translation, velocity });
     }
 
     return nextState;
