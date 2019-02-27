@@ -114,7 +114,7 @@ export default class Note extends React.Component {
               checked={!constrainted}
               onChange={this._onConstraintedChange}
             />{' '}
-            Can be dragged anywhere.
+            Drag anywhere.
           </label>
         </div>
         <Pannable
