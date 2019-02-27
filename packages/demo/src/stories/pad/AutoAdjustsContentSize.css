@@ -1,6 +1,5 @@
 .autoadjust-optbar {
   margin: 40px auto;
-  text-align: center;
 }
 .autoadjust-main {
   margin: 0 auto;
@@ -14,7 +13,6 @@
   display: inline-block;
   padding: 0 10px;
   width: 130px;
-  text-align: left;
 }
 .autoadjust-optlabel {
   padding-bottom: 10px;

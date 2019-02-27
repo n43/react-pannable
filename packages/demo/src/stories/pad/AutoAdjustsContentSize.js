@@ -40,7 +40,13 @@ class AutoAdjustsContentSize extends Component {
       if (!isNaN(parseInt(imageWidth))) {
         styleWidth = `${imageWidth}px`;
       }
-      return <img src={src} style={{ width: styleWidth }} key={src} />;
+      return (
+        <img
+          src={src}
+          style={{ display: 'block', width: styleWidth }}
+          key={src}
+        />
+      );
     });
   };
   renderOptItem(name, value, placeholder) {
