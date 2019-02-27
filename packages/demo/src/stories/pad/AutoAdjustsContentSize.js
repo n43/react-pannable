@@ -1,93 +1,111 @@
 import React, { Component } from 'react';
 import { Pad, GeneralContent } from 'react-pannable';
+import './AutoAdjustsContentSize.css';
 
 class AutoAdjustsContentSize extends Component {
   state = {
-    paragraph: [1, 2, 3],
     images: [
       'http://h1.ioliu.cn//bing/CumulusCaribbean_ZH-CN4884493707_1920x1080.jpg',
       'http://h1.ioliu.cn//bing/LoisachKochelsee_ZH-CN5859866695_1920x1080.jpg',
       'http://h1.ioliu.cn//bing/MinnewankaBoathouse_ZH-CN0548323518_1920x1080.jpg',
       'http://h1.ioliu.cn//bing/AthabascaCave_EN-AU0628983693_1920x1080.jpg',
       'http://h1.ioliu.cn//bing/SwissSuspension_EN-AU8560310773_1920x1080.jpg',
+      'http://h1.ioliu.cn//bing/SpainSurfer_EN-AU11271138486_640x360.jpg',
+      'http://h1.ioliu.cn//bing/AuburnBalloons_EN-AU8649124966_1920x1080.jpg',
+      'http://h1.ioliu.cn//bing/PJ_EN-AU10859560585_1920x1080.jpg',
     ],
-    contentWidth: 400,
+    contentFixedWidth: 400,
+    contentFixedHeight: 'auto',
+    imagesCount: '4',
+    imageWidth: 400,
   };
-  componentDidMount() {
-    setTimeout(() => {
-      this.setState({ paragraph: [1, 2, 3, 4] });
-    }, 10000);
-  }
-  renderArticle = () => {
-    const { paragraph } = this.state;
 
-    return paragraph.map(item => {
-      if (item < 4) {
-        return (
-          <div
-            style={{ paddingBottom: '20px', lineHeight: '1.8em' }}
-            key={item}
-          >
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras
-            aliquam hendrerit elit id vulputate. Pellentesque pellentesque erat
-            rutrum velit facilisis sodales convallis tellus lacinia. Curabitur
-            gravida mi sit amet nulla suscipit sed congue dolor volutpat. Aenean
-            sem tortor, pretium et euismod in, imperdiet sit amet urna. Ut ante
-            nisi, auctor mattis suscipit a, ullamcorper eget leo. Phasellus
-            sagittis ante at lectus rutrum ut sollicitudin sem malesuada. Duis
-            ultrices sapien et nulla tincidunt malesuada. Mauris ante turpis,
-            dignissim eu tincidunt vitae, placerat quis diam. In augue nisl,
-            cursus at rutrum ut, scelerisque et erat. Suspendisse potenti.
-            Pellentesque habitant morbi tristique senectus et netus et malesuada
-            fames ac turpis egestas. Mauris orci dui, aliquam ut convallis ut,
-            dapibus et erat. Cum sociis natoque penatibus et magnis dis
-            parturient montes, nascetur ridiculus mus. Aliquam erat volutpat.
-            Mauris placerat elit id lectus rhoncus in dignissim justo mollis.
-            Donec nec odio sapien. In iaculis euismod felis non laoreet. Mauris
-            ornare varius neque, et congue erat porta a. Aliquam nec auctor
-            lectus. Etiam ut ipsum a nibh iaculis fringilla.
-          </div>
-        );
-      } else {
-        return (
-          <div
-            style={{ paddingBottom: '20px', lineHeight: '1.8em' }}
-            key={item}
-          >
-            Content resize!Lorem ipsum dolor sit amet, consectetur adipiscing
-            elit. Cras aliquam hendrerit elit id vulputate. Pellentesque
-            pellentesque erat rutrum velit facilisis sodales convallis tellus
-            lacinia.
-          </div>
-        );
-      }
+  handleInputChange = evt => {
+    const node = evt.target;
+
+    this.setState({
+      [node.name]: node.value,
     });
   };
-  renderImages = () => {
-    const { images } = this.state;
 
-    return images.map(src => (
-      <img src={src} style={{ width: '400px' }} key={src} />
-    ));
+  renderImages = () => {
+    const { images, imagesCount, imageWidth } = this.state;
+
+    return images.map((src, index) => {
+      if (index + 1 > imagesCount) {
+        return null;
+      }
+
+      let styleWidth = 'auto';
+      if (!isNaN(parseInt(imageWidth))) {
+        styleWidth = `${imageWidth}px`;
+      }
+      return <img src={src} style={{ width: styleWidth }} key={src} />;
+    });
   };
-  render() {
+  renderOptItem(name, value, placeholder) {
     return (
-      <div
-        style={{
-          marginLeft: 'auto',
-          marginRight: 'auto',
-          width: '400px',
-          height: '600px',
-        }}
-      >
-        <GeneralContent content={this.renderImages()}>
-          {({ content, contentWidth, contentHeight }) => (
-            <Pad contentWidth={contentWidth} contentHeight={contentHeight}>
-              {content}
-            </Pad>
-          )}
-        </GeneralContent>
+      <div className="autoadjust-optitem">
+        <div className="autoadjust-optlabel">{name}</div>
+        <input
+          className="autoadjust-optinput"
+          value={value}
+          name={name}
+          placeholder={placeholder}
+          onChange={this.handleInputChange}
+        />
       </div>
+    );
+  }
+  render() {
+    const {
+      contentFixedWidth,
+      contentFixedHeight,
+      imagesCount,
+      imageWidth,
+    } = this.state;
+
+    const generalContentProps = {};
+    if (!isNaN(parseInt(contentFixedWidth))) {
+      generalContentProps.fixedWidth = parseInt(contentFixedWidth);
+    }
+    if (!isNaN(parseInt(contentFixedHeight))) {
+      generalContentProps.fixedHeight = parseInt(contentFixedHeight);
+    }
+
+    return (
+      <React.Fragment>
+        <div className="autoadjust-optbar">
+          {this.renderOptItem(
+            'contentFixedWidth',
+            contentFixedWidth,
+            'auto or integer'
+          )}
+          {this.renderOptItem(
+            'contentFixedHeight',
+            contentFixedHeight,
+            'auto or integer'
+          )}
+          {this.renderOptItem('imagesCount', imagesCount, '1-8')}
+          {this.renderOptItem('imageWidth', imageWidth, 'auto or integer')}
+        </div>
+        <div className="autoadjust-main">
+          <GeneralContent
+            content={this.renderImages()}
+            {...generalContentProps}
+          >
+            {({ content, contentWidth, contentHeight }) => (
+              <Pad
+                className="autoadjust-pad"
+                contentWidth={contentWidth}
+                contentHeight={contentHeight}
+              >
+                {content}
+              </Pad>
+            )}
+          </GeneralContent>
+        </div>
+      </React.Fragment>
     );
   }
 }
