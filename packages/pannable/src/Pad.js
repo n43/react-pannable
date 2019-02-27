@@ -135,16 +135,14 @@ export default class Pad extends React.Component {
   }
 
   componentDidMount() {
-    const { width, height, contentWidth, contentHeight } = this.props;
+    const { width, height } = this.props;
     const parentNode = this.wrapperRef.current.parentNode;
-    const contentNode = this.contentRef.current;
     let initedSize = {};
-    let initedContentSize = {};
 
     this.resizeDetector = createResizeDetector({
       strategy: 'scroll',
     });
-    // console.log(this.wrapperRef.current);
+    console.log(this.wrapperRef.current.elemRef);
     // if (width === 0 || height === 0) {
     //   this.resizeDetector.listenTo(parentNode, element => {
     //     const changedSize = getElementSize(element, !width, !height);
@@ -160,27 +158,6 @@ export default class Pad extends React.Component {
     //   initedSize = getElementSize(parentNode, !width, !height);
     // }
 
-    // if (autoAdjustsContentSize && (contentWidth === 0 || contentHeight === 0)) {
-    //   this.resizeDetector.listenTo(contentNode, element => {
-    //     const changedSize = getElementSize(
-    //       element,
-    //       !contentWidth,
-    //       !contentHeight
-    //     );
-
-    //     this.setState(({ contentSize, contentOffset }) => {
-    //       return {
-    //         contentSize: { ...contentSize, ...changedSize },
-    //         contentOffset: { ...contentOffset },
-    //       };
-    //     });
-    //   });
-    //   initedContentSize = getElementSize(
-    //     contentNode,
-    //     !contentWidth,
-    //     !contentHeight
-    //   );
-    // }
     // this.setState(({ size, contentOffset }) => {
     //   return {
     //     size: { ...size, ...initedSize },
@@ -442,7 +419,6 @@ export default class Pad extends React.Component {
       width: contentSize.width,
       height: contentSize.height,
       transformTranslate: [contentOffset.x, contentOffset.y],
-      overflow: 'auto',
       ...contentProps.style,
     });
 
