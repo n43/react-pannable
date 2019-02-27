@@ -1,13 +1,15 @@
 .note-wrapper {
   position: relative;
-  width: 600px;
-  height: 400px;
   background-color: #eeeeee;
 }
 
 .note-item {
   position: absolute;
-  width: 120px;
-  height: 180px;
   background-color: #fff;
+  transition: transform 0.3s;
+}
+
+.note-item-dragging {
+  z-index: 10;
+  transition-duration: 0s;
 }
