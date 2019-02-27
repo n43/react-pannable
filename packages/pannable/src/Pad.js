@@ -136,34 +136,33 @@ export default class Pad extends React.Component {
 
   componentDidMount() {
     const { width, height } = this.props;
-    const parentNode = this.wrapperRef.current.parentNode;
+    const parentNode = this.wrapperRef.current.elemRef.current.parentNode;
     let initedSize = {};
 
     this.resizeDetector = createResizeDetector({
       strategy: 'scroll',
     });
-    console.log(this.wrapperRef.current.elemRef);
-    // if (width === 0 || height === 0) {
-    //   this.resizeDetector.listenTo(parentNode, element => {
-    //     const changedSize = getElementSize(element, !width, !height);
+    if (width === 0 || height === 0) {
+      this.resizeDetector.listenTo(parentNode, element => {
+        const changedSize = getElementSize(element, !width, !height);
 
-    //     this.setState(({ size, contentOffset }) => {
-    //       return {
-    //         size: { ...size, ...changedSize },
-    //         contentOffset: { ...contentOffset },
-    //       };
-    //     });
-    //   });
+        this.setState(({ size, contentOffset }) => {
+          return {
+            size: { ...size, ...changedSize },
+            contentOffset: { ...contentOffset },
+          };
+        });
+      });
 
-    //   initedSize = getElementSize(parentNode, !width, !height);
-    // }
+      initedSize = getElementSize(parentNode, !width, !height);
+    }
 
-    // this.setState(({ size, contentOffset }) => {
-    //   return {
-    //     size: { ...size, ...initedSize },
-    //     contentOffset: { ...contentOffset },
-    //   };
-    // });
+    this.setState(({ size, contentOffset }) => {
+      return {
+        size: { ...size, ...initedSize },
+        contentOffset: { ...contentOffset },
+      };
+    });
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -182,10 +181,10 @@ export default class Pad extends React.Component {
       prevProps.contentWidth !== contentWidth ||
       prevProps.contentHeight !== contentHeight
     ) {
-      this.setState(({ contentSize, contentOffset }) => ({
+      this.setState(({ contentOffset }) => ({
         contentSize: {
-          width: contentWidth ? contentWidth : contentSize.width,
-          height: contentHeight ? contentHeight : contentSize.height,
+          width: contentWidth,
+          height: contentHeight,
         },
         contentOffset: { ...contentOffset },
       }));
@@ -212,9 +211,8 @@ export default class Pad extends React.Component {
       this._deceleratingTimer = undefined;
     }
 
-    // const parentNode = this.wrapperRef.current.parentNode;
-    // const contentNode = this.contentRef.current;
-    // this.resizeDetector.uninstall([parentNode, contentNode]);
+    const parentNode = this.wrapperRef.current.elemRef.current.parentNode;
+    this.resizeDetector.uninstall(parentNode);
   }
 
   getSize() {
