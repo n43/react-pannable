@@ -73,7 +73,7 @@ export default class Note extends React.Component {
         position.y <= 0 ||
         position.y >= WRAPPER_HEIGHT - ITEM_HEIGHT
       ) {
-        // nextState.enabled = false;
+        nextState.enabled = false;
       }
 
       return nextState;
