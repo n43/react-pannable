@@ -1,0 +1,42 @@
+.sticker-wrapper {
+  position: relative;
+  width: 680px;
+  height: 510px;
+}
+
+.sticker-box {
+  position: absolute;
+  background-color: #eee;
+}
+.sticker-translate {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  left: 0;
+  top: 0;
+  background-color: #ccc;
+}
+.sticker-remove {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  right: 0;
+  top: 0;
+  background-color: #ccc;
+}
+.sticker-scale {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+}
+.sticker-rotate {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  left: 0;
+  bottom: 0;
+  background-color: #ccc;
+}
