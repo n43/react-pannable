@@ -1,6 +1,12 @@
 import React from 'react';
 import { Pannable } from 'react-pannable';
+import clsx from 'clsx';
 import './Note.css';
+
+const WRAPPER_WIDTH = 600;
+const WRAPPER_HEIGHT = 400;
+const ITEM_WIDTH = 120;
+const ITEM_HEIGHT = 180;
 
 export default class Note extends React.Component {
   constructor(props) {
@@ -57,7 +63,12 @@ export default class Note extends React.Component {
         },
       };
 
-      if (position.x < 0 || position.y < 0) {
+      if (
+        position.x <= 0 ||
+        position.x >= WRAPPER_WIDTH - ITEM_WIDTH ||
+        position.y <= 0 ||
+        position.y >= WRAPPER_HEIGHT - ITEM_HEIGHT
+      ) {
         nextState.enabled = false;
       }
 
@@ -81,11 +92,12 @@ export default class Note extends React.Component {
   };
 
   render() {
-    const { enabled, items } = this.state;
+    const { enabled, items, dragTarget } = this.state;
 
     return (
       <Pannable
         className="note-wrapper"
+        style={{ width: WRAPPER_WIDTH, height: WRAPPER_HEIGHT }}
         enabled={enabled}
         onStart={this._onStart}
         onMove={this._onMove}
@@ -94,8 +106,14 @@ export default class Note extends React.Component {
       >
         <div
           data-draggable="item0"
-          className="note-item"
-          style={getPositionStyle(items['item0'])}
+          className={clsx('note-item', {
+            'note-item-dragging': dragTarget === 'item0',
+          })}
+          style={{
+            width: ITEM_WIDTH,
+            height: ITEM_HEIGHT,
+            ...getPositionStyle(items['item0']),
+          }}
         >
           <div>
             In this guide, we will examine the building blocks of React apps:
@@ -106,8 +124,14 @@ export default class Note extends React.Component {
         </div>
         <div
           data-draggable="item1"
-          className="note-item"
-          style={getPositionStyle(items['item1'])}
+          className={clsx('note-item', {
+            'note-item-dragging': dragTarget === 'item1',
+          })}
+          style={{
+            width: ITEM_WIDTH,
+            height: ITEM_HEIGHT,
+            ...getPositionStyle(items['item1']),
+          }}
         />
       </Pannable>
     );
