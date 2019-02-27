@@ -4,21 +4,30 @@ import { Pad, GeneralContent } from 'react-pannable';
 class AutoAdjustsContentSize extends Component {
   state = {
     paragraph: [1, 2, 3],
+    images: [
+      'http://h1.ioliu.cn//bing/CumulusCaribbean_ZH-CN4884493707_1920x1080.jpg',
+      'http://h1.ioliu.cn//bing/LoisachKochelsee_ZH-CN5859866695_1920x1080.jpg',
+      'http://h1.ioliu.cn//bing/MinnewankaBoathouse_ZH-CN0548323518_1920x1080.jpg',
+      'http://h1.ioliu.cn//bing/AthabascaCave_EN-AU0628983693_1920x1080.jpg',
+      'http://h1.ioliu.cn//bing/SwissSuspension_EN-AU8560310773_1920x1080.jpg',
+    ],
     contentWidth: 400,
   };
   componentDidMount() {
-    // setTimeout(() => {
-    //   this.setState({ paragraph: [1, 2, 3, 4] });
-    //   console.log('resize!!');
-    // }, 10000);
+    setTimeout(() => {
+      this.setState({ paragraph: [1, 2, 3, 4] });
+    }, 10000);
   }
-  renderContent = () => {
+  renderArticle = () => {
     const { paragraph } = this.state;
 
     return paragraph.map(item => {
       if (item < 4) {
         return (
-          <div style={{ marginBottom: '20px', lineHeight: '1.8em' }} key={item}>
+          <div
+            style={{ paddingBottom: '20px', lineHeight: '1.8em' }}
+            key={item}
+          >
             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras
             aliquam hendrerit elit id vulputate. Pellentesque pellentesque erat
             rutrum velit facilisis sodales convallis tellus lacinia. Curabitur
@@ -41,7 +50,10 @@ class AutoAdjustsContentSize extends Component {
         );
       } else {
         return (
-          <div style={{ marginBottom: '20px', lineHeight: '1.8em' }} key={item}>
+          <div
+            style={{ paddingBottom: '20px', lineHeight: '1.8em' }}
+            key={item}
+          >
             Content resize!Lorem ipsum dolor sit amet, consectetur adipiscing
             elit. Cras aliquam hendrerit elit id vulputate. Pellentesque
             pellentesque erat rutrum velit facilisis sodales convallis tellus
@@ -51,10 +63,17 @@ class AutoAdjustsContentSize extends Component {
       }
     });
   };
+  renderImages = () => {
+    const { images } = this.state;
+
+    return images.map(src => (
+      <img src={src} style={{ width: '400px' }} key={src} />
+    ));
+  };
   render() {
     return (
       <div style={{ width: '400px', height: '600px' }}>
-        <GeneralContent content={this.renderContent()} fixedWidth={400}>
+        <GeneralContent content={this.renderImages()}>
           {({ content, contentWidth, contentHeight }) => (
             <Pad
               width={400}

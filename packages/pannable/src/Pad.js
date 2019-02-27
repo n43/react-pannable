@@ -442,6 +442,7 @@ export default class Pad extends React.Component {
       width: contentSize.width,
       height: contentSize.height,
       transformTranslate: [contentOffset.x, contentOffset.y],
+      overflow: 'auto',
       ...contentProps.style,
     });
 
