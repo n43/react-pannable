@@ -14,9 +14,9 @@ class AutoAdjustsContentSize extends Component {
     contentWidth: 400,
   };
   componentDidMount() {
-    // setTimeout(() => {
-    //   this.setState({ paragraph: [1, 2, 3, 4] });
-    // }, 10000);
+    setTimeout(() => {
+      this.setState({ paragraph: [1, 2, 3, 4] });
+    }, 10000);
   }
   renderArticle = () => {
     const { paragraph } = this.state;
@@ -72,14 +72,17 @@ class AutoAdjustsContentSize extends Component {
   };
   render() {
     return (
-      <div style={{ width: '400px', height: '600px' }}>
+      <div
+        style={{
+          marginLeft: 'auto',
+          marginRight: 'auto',
+          width: '400px',
+          height: '600px',
+        }}
+      >
         <GeneralContent content={this.renderImages()}>
           {({ content, contentWidth, contentHeight }) => (
-            <Pad
-              width={400}
-              contentWidth={contentWidth}
-              contentHeight={contentHeight}
-            >
+            <Pad contentWidth={contentWidth} contentHeight={contentHeight}>
               {content}
             </Pad>
           )}

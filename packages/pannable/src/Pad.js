@@ -1,7 +1,7 @@
 import React from 'react';
 import Pannable from './Pannable';
 import { getElementSize } from './utils/sizeGetter';
-import createResizeDetector from 'element-resize-detector';
+import createDetector from './utils/resizeDetector';
 import StyleSheet from './utils/StyleSheet';
 import {
   requestAnimationFrame,
@@ -139,13 +139,10 @@ export default class Pad extends React.Component {
     const parentNode = this.wrapperRef.current.elemRef.current.parentNode;
     let initedSize = {};
 
-    this.resizeDetector = createResizeDetector({
-      strategy: 'scroll',
-    });
+    this.resizeDetector = createDetector();
     if (width === 0 || height === 0) {
-      this.resizeDetector.listenTo(parentNode, element => {
-        const changedSize = getElementSize(element, !width, !height);
-
+      this.resizeDetector.addResizeListener(parentNode, () => {
+        const changedSize = getElementSize(parentNode, !width, !height);
         this.setState(({ size, contentOffset }) => {
           return {
             size: { ...size, ...changedSize },
@@ -212,7 +209,7 @@ export default class Pad extends React.Component {
     }
 
     const parentNode = this.wrapperRef.current.elemRef.current.parentNode;
-    this.resizeDetector.uninstall(parentNode);
+    this.resizeDetector.removeResizeListener(parentNode);
   }
 
   getSize() {

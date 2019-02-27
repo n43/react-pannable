@@ -1,6 +1,6 @@
 import React from 'react';
 import { getElementSize } from './utils/sizeGetter';
-import createResizeDetector from 'element-resize-detector';
+import createDetector from './utils/resizeDetector';
 
 export default class GeneralContent extends React.Component {
   static defaultProps = {
@@ -16,14 +16,12 @@ export default class GeneralContent extends React.Component {
   contentRef = React.createRef();
 
   componentDidMount() {
-    this.resizeDetector = createResizeDetector({
-      strategy: 'scroll',
-    });
+    this.resizeDetector = createDetector();
 
     this.computeSize().then(() => {
       const contentNode = this.contentRef.current;
 
-      this.resizeDetector.listenTo(contentNode, () => {
+      this.resizeDetector.addResizeListener(contentNode, () => {
         this.computeSize();
       });
     });
@@ -38,7 +36,7 @@ export default class GeneralContent extends React.Component {
   }
   componentWillUnmount() {
     const contentNode = this.contentRef.current;
-    this.resizeDetector.uninstall(contentNode);
+    this.resizeDetector.removeResizeListener(contentNode);
   }
   computeSize = () => {
     return new Promise(resolve => {
