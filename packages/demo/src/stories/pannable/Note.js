@@ -14,6 +14,7 @@ export default class Note extends React.Component {
 
     this.state = {
       enabled: true,
+      constrainted: true,
       dragTarget: null,
       dragStartPosition: null,
       items: {
@@ -23,6 +24,11 @@ export default class Note extends React.Component {
     };
     this.pannableRef = React.createRef();
   }
+
+  _onConstraintedChange = () => {
+    this.setState(({ constrainted }) => ({ constrainted: !constrainted }));
+  };
+
   _onStart = ({ target }) => {
     let key;
 
@@ -50,7 +56,7 @@ export default class Note extends React.Component {
   };
 
   _onMove = ({ translation }) => {
-    this.setState(({ dragTarget, dragStartPosition, items }) => {
+    this.setState(({ dragTarget, dragStartPosition, items, constrainted }) => {
       if (!dragTarget) {
         return null;
       }
@@ -68,10 +74,11 @@ export default class Note extends React.Component {
       };
 
       if (
-        position.x <= 0 ||
-        position.x >= WRAPPER_WIDTH - ITEM_WIDTH ||
-        position.y <= 0 ||
-        position.y >= WRAPPER_HEIGHT - ITEM_HEIGHT
+        constrainted &&
+        (position.x <= 0 ||
+          position.x >= WRAPPER_WIDTH - ITEM_WIDTH ||
+          position.y <= 0 ||
+          position.y >= WRAPPER_HEIGHT - ITEM_HEIGHT)
       ) {
         nextState.enabled = false;
       }
@@ -96,49 +103,67 @@ export default class Note extends React.Component {
   };
 
   render() {
-    const { enabled, items, dragTarget } = this.state;
+    const { enabled, constrainted, items, dragTarget } = this.state;
 
     return (
-      <Pannable
-        ref={this.pannableRef}
-        className="note-wrapper"
-        style={{ width: WRAPPER_WIDTH, height: WRAPPER_HEIGHT }}
-        enabled={enabled}
-        onStart={this._onStart}
-        onMove={this._onMove}
-        onEnd={this._onEnd}
-        onCancel={this._onCancel}
-      >
-        <div
-          data-draggable="item0"
-          className={clsx('note-item', {
-            'note-item-dragging': dragTarget === 'item0',
-          })}
-          style={{
-            width: ITEM_WIDTH,
-            height: ITEM_HEIGHT,
-            ...getPositionStyle(items['item0']),
-          }}
-        >
-          <div>You can drag me in the box.</div>
-          <div>
-            <a href="https://github.com/n43/react-pannable" target="blank">
-              Click me
-            </a>
-          </div>
+      <div>
+        <div className="note-optbar">
+          <label className="note-opt">
+            <input
+              type="checkbox"
+              checked={!constrainted}
+              onChange={this._onConstraintedChange}
+            />{' '}
+            Drag anywhere.
+          </label>
         </div>
-        <div
-          data-draggable="item1"
-          className={clsx('note-item', {
-            'note-item-dragging': dragTarget === 'item1',
-          })}
-          style={{
-            width: ITEM_WIDTH,
-            height: ITEM_HEIGHT,
-            ...getPositionStyle(items['item1']),
-          }}
-        />
-      </Pannable>
+        <Pannable
+          ref={this.pannableRef}
+          className="note-wrapper"
+          style={{ width: WRAPPER_WIDTH, height: WRAPPER_HEIGHT }}
+          enabled={enabled}
+          onStart={this._onStart}
+          onMove={this._onMove}
+          onEnd={this._onEnd}
+          onCancel={this._onCancel}
+        >
+          <div
+            data-draggable="item0"
+            className={clsx('note-item', {
+              'note-item-dragging': dragTarget === 'item0',
+            })}
+            style={{
+              width: ITEM_WIDTH,
+              height: ITEM_HEIGHT,
+              ...getPositionStyle(items['item0']),
+            }}
+          >
+            <div>You can drag me.</div>
+            <div>
+              And you can{' '}
+              <a href="https://github.com/n43/react-pannable" target="blank">
+                open the link
+              </a>
+              .
+            </div>
+          </div>
+          <div
+            className={clsx('note-item', {
+              'note-item-dragging': dragTarget === 'item1',
+            })}
+            style={{
+              width: ITEM_WIDTH,
+              height: ITEM_HEIGHT,
+              ...getPositionStyle(items['item1']),
+            }}
+          >
+            <div data-draggable="item1" className="note-trigger">
+              Drag here
+            </div>
+            <div>You can only drag me by trigger.</div>
+          </div>
+        </Pannable>
+      </div>
     );
   }
 }
