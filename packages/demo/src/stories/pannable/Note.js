@@ -100,6 +100,7 @@ export default class Note extends React.Component {
 
     return (
       <Pannable
+        ref={this.pannableRef}
         className="note-wrapper"
         style={{ width: WRAPPER_WIDTH, height: WRAPPER_HEIGHT }}
         enabled={enabled}
