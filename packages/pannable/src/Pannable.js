@@ -39,16 +39,7 @@ export default class Pannable extends React.Component {
   }
 
   componentWillUnmount() {
-    document.documentElement.removeEventListener(
-      'mousemove',
-      this._onMouseMove,
-      false
-    );
-    document.documentElement.removeEventListener(
-      'mouseup',
-      this._onMouseUp,
-      false
-    );
+    this._removeMouseDragListener();
   }
 
   static _shouldStart(evt, state, props) {
@@ -242,24 +233,27 @@ export default class Pannable extends React.Component {
       onTouchCancel(evt);
     }
   };
+
+  _addMouseDragListener() {
+    const doc = document.documentElement;
+
+    doc.addEventListener('mousemove', this._onMouseMove, false);
+    doc.addEventListener('mouseup', this._onMouseUp, false);
+  }
+  _removeMouseDragListener() {
+    const doc = document.documentElement;
+
+    doc.removeEventListener('mousemove', this._onMouseMove, false);
+    doc.removeEventListener('mouseup', this._onMouseUp, false);
+  }
   _onMouseDown = evt => {
     const { enabled, onMouseDown } = this.props;
 
     this._shouldPreventClick = enabled;
 
     if (enabled) {
+      this._addMouseDragListener();
       this.setState({ trackingStartXY: { x: evt.pageX, y: evt.pageY } });
-
-      document.documentElement.addEventListener(
-        'mousemove',
-        this._onMouseMove,
-        false
-      );
-      document.documentElement.addEventListener(
-        'mouseup',
-        this._onMouseUp,
-        false
-      );
     }
 
     if (onMouseDown) {
@@ -267,11 +261,9 @@ export default class Pannable extends React.Component {
     }
   };
   _onMouseMove = evt => {
-    const params = { target: evt.target, pageX: evt.pageX, pageY: evt.pageY };
+    evt.preventDefault();
 
-    if (this._shouldPreventClick) {
-      evt.preventDefault();
-    }
+    const params = { target: evt.target, pageX: evt.pageX, pageY: evt.pageY };
 
     this.setState((state, props) => {
       if (Pannable._shouldStart(params, state, props)) {
@@ -285,36 +277,20 @@ export default class Pannable extends React.Component {
     });
   };
   _onMouseUp = evt => {
-    const params = { target: evt.target, pageX: evt.pageX, pageY: evt.pageY };
+    evt.preventDefault();
+    this._removeMouseDragListener();
 
-    if (this._shouldPreventClick) {
-      evt.preventDefault();
-    }
+    const params = { target: evt.target, pageX: evt.pageX, pageY: evt.pageY };
 
     this.setState((state, props) => {
       if (state.target) {
         return Pannable._end(params, state, props);
       }
 
-      if (state.trackingStartXY) {
-        this._shouldPreventClick = false;
+      this._shouldPreventClick = false;
 
-        return { trackingStartXY: null };
-      }
-
-      return null;
+      return { trackingStartXY: null };
     });
-
-    document.documentElement.removeEventListener(
-      'mousemove',
-      this._onMouseMove,
-      false
-    );
-    document.documentElement.removeEventListener(
-      'mouseup',
-      this._onMouseUp,
-      false
-    );
   };
 
   _onClick = evt => {
@@ -323,7 +299,6 @@ export default class Pannable extends React.Component {
     if (this._shouldPreventClick) {
       evt.preventDefault();
     }
-
     this._shouldPreventClick = false;
 
     if (onClick) {
