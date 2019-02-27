@@ -73,7 +73,7 @@ export default class Note extends React.Component {
         position.y <= 0 ||
         position.y >= WRAPPER_HEIGHT - ITEM_HEIGHT
       ) {
-        nextState.enabled = false;
+        // nextState.enabled = false;
       }
 
       return nextState;
@@ -100,6 +100,7 @@ export default class Note extends React.Component {
 
     return (
       <Pannable
+        ref={this.pannableRef}
         className="note-wrapper"
         style={{ width: WRAPPER_WIDTH, height: WRAPPER_HEIGHT }}
         enabled={enabled}

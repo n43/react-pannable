@@ -245,7 +245,7 @@ export default class Pannable extends React.Component {
   _onMouseMove = evt => {
     const { onMouseMove } = this.props;
     const params = { target: evt.target, pageX: evt.pageX, pageY: evt.pageY };
-
+    console.log('_onMouseMove', this._shouldPreventClick);
     if (this._shouldPreventClick) {
       evt.preventDefault();
     }
@@ -278,9 +278,9 @@ export default class Pannable extends React.Component {
         return Pannable._end(params, state, props);
       }
 
-      this._shouldPreventClick = false;
-
       if (state.trackingStartXY) {
+        this._shouldPreventClick = false;
+
         return { trackingStartXY: null };
       }
 
@@ -304,9 +304,9 @@ export default class Pannable extends React.Component {
         return Pannable._end(params, state, props);
       }
 
-      this._shouldPreventClick = false;
-
       if (state.trackingStartXY) {
+        this._shouldPreventClick = false;
+
         return { trackingStartXY: null };
       }
 
@@ -323,6 +323,8 @@ export default class Pannable extends React.Component {
     if (this._shouldPreventClick) {
       evt.preventDefault();
     }
+
+    this._shouldPreventClick = false;
 
     if (onClick) {
       onClick(evt);
