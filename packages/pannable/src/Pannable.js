@@ -22,7 +22,7 @@ export default class Pannable extends React.Component {
     moveT: null,
   };
 
-  elemRef = React.createRef;
+  elemRef = React.createRef();
 
   componentDidUpdate(prevProps) {
     const { enabled } = this.props;

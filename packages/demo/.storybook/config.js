@@ -1,6 +1,7 @@
 import React from 'react';
 import { configure, addDecorator } from '@storybook/react';
 import { withOptions } from '@storybook/addon-options';
+import 'normalize.css';
 import Main from '../src/layout/Main';
 
 addDecorator(

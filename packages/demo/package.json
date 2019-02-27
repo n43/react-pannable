@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "normalize.css": "8.0.1",
+    "clsx": "^1.0.3",
     "react": "^16.4.0",
     "react-dom": "^16.4.0",
     "react-pannable": "^0.1.0"
@@ -12,7 +14,6 @@
     "@storybook/react": "^4.1.13",
     "@storybook/addon-options": "^4.1.13",
     "babel-loader": "^8.0.5",
-    "clsx": "^1.0.3",
     "webpack": "^4.29.5"
   },
   "scripts": {

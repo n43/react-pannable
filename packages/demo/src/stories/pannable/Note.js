@@ -3,10 +3,10 @@ import { Pannable } from 'react-pannable';
 import clsx from 'clsx';
 import './Note.css';
 
-const WRAPPER_WIDTH = 600;
-const WRAPPER_HEIGHT = 400;
-const ITEM_WIDTH = 120;
-const ITEM_HEIGHT = 180;
+const WRAPPER_WIDTH = 680;
+const WRAPPER_HEIGHT = 510;
+const ITEM_WIDTH = 180;
+const ITEM_HEIGHT = 120;
 
 export default class Note extends React.Component {
   constructor(props) {
@@ -17,8 +17,8 @@ export default class Note extends React.Component {
       dragTarget: null,
       dragStartPosition: null,
       items: {
-        item0: { x: 10, y: 10 },
-        item1: { x: 140, y: 10 },
+        item0: { x: 20, y: 20 },
+        item1: { x: 220, y: 20 },
       },
     };
     this.pannableRef = React.createRef();
@@ -26,7 +26,11 @@ export default class Note extends React.Component {
   _onStart = ({ target }) => {
     let key;
 
-    while (!key && target && target !== this.pannableRef.current) {
+    while (
+      !key &&
+      target &&
+      target !== this.pannableRef.current.elemRef.current
+    ) {
       if (target.dataset && target.dataset.draggable) {
         key = target.dataset.draggable;
       }
@@ -115,10 +119,10 @@ export default class Note extends React.Component {
             ...getPositionStyle(items['item0']),
           }}
         >
+          <div>You can drag me in the box.</div>
           <div>
-            In this guide, we will examine the building blocks of React apps:
             <a href="https://github.com/n43/react-pannable" target="blank">
-              elements and components.
+              Click me
             </a>
           </div>
         </div>
