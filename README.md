@@ -30,8 +30,10 @@ npm install --save react-pannable
 | onEnd       | func          | () => {} | Callback invoked when the gesture ended listening.: `(params: PanningParams) => void`                                                                         |
 | onCancel    | func          | () => {} | Callback invoked when the gesture cancelled.: `(params: PanningParams) => void`                                                                               |
 
+```js
 type Point = { x: number, y: number };
 type PanningParams = { translation: Point, velocity: Point, target: HTMLElement };
+```
 
 ### Pad
 
