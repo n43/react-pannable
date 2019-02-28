@@ -1,27 +1,35 @@
 .note-wrapper {
   position: relative;
-  background-color: #eee;
+  background-color: #fff6ea;
 }
 .note-item {
   position: absolute;
   box-sizing: border-box;
-  padding: 10px;
-  background-color: #fff;
   transition: transform 0.3s ease;
 }
 .note-item-dragging {
   z-index: 10;
   transition-duration: 0s;
 }
+.note-itemcon {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 20px 10px;
+  font-family: 'sans-serif';
+  box-sizing: border-box;
+}
 .note-trigger {
   margin-bottom: 10px;
-  padding: 3px;
+  padding: 5px;
   text-align: center;
-  background-color: #eee;
+  background-color: #ecca3e;
 }
 .note-optbar {
   display: flex;
   padding: 10px;
+  font-family: 'sans-serif';
 }
 .note-opt {
   display: block;

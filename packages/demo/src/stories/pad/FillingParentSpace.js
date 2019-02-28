@@ -1,13 +1,15 @@
 import React, { Component } from 'react';
 import { Pad } from 'react-pannable';
+import SvgPhone from './SvgPhone';
+import TextField from './TextField';
+import './Pad.css';
 import './FillingParentSpace.css';
-import { hidden } from 'ansi-colors';
 
 class FillingParentSpace extends Component {
   state = {
-    width: 400,
+    width: 345,
     height: '',
-    parentSize: '600*600',
+    parentSize: '345*552',
   };
 
   handleInputChange = evt => {
@@ -18,28 +20,9 @@ class FillingParentSpace extends Component {
     });
   };
 
-  renderOptItem(name, value, placeholder, isReadonly) {
-    return (
-      <div className="fillingp-optitem">
-        <div className="fillingp-optlabel">{name}</div>
-        {isReadonly ? (
-          <div className="fillingp-optinput">{value}</div>
-        ) : (
-          <input
-            className="fillingp-optinput"
-            value={value}
-            name={name}
-            placeholder={placeholder}
-            onChange={this.handleInputChange}
-          />
-        )}
-      </div>
-    );
-  }
-
   renderContent = () => {
     return (
-      <div className="fillingp-content">
+      <div className="fillparent-padcontent">
         If you don't specify both width and height, Pad will automatically
         expand to fill its parent.
       </div>
@@ -59,20 +42,40 @@ class FillingParentSpace extends Component {
 
     return (
       <React.Fragment>
-        <div className="fillingp-optbar">
-          {this.renderOptItem('width', width, 'integer', false)}
-          {this.renderOptItem('height', height, 'integer', false)}
-          {this.renderOptItem('parentSize', parentSize, '', true)}
-        </div>
-        <div className="fillingp-main">
-          <Pad
-            className="fillingp-pad"
-            contentWidth={340}
-            contentHeight={100}
-            {...padProps}
-          >
-            {this.renderContent()}
-          </Pad>
+        <div className="pad-main">
+          <div className="pad-preview">
+            <SvgPhone className="pad-preview-bg" />
+            <div className="pad-preview-content">
+              <Pad
+                className="fillparent-padwrapper"
+                contentWidth={345}
+                contentHeight={100}
+                {...padProps}
+              >
+                {this.renderContent()}
+              </Pad>
+            </div>
+          </div>
+          <div className="pad-optbar">
+            <TextField
+              name="width"
+              value={width}
+              placeholder="integer"
+              onChange={this.handleInputChange}
+            />
+            <TextField
+              name="height"
+              value={height}
+              placeholder="integer"
+              onChange={this.handleInputChange}
+            />
+            <TextField
+              name="parentSize"
+              value={parentSize}
+              isReadOnly={true}
+              onChange={this.handleInputChange}
+            />
+          </div>
         </div>
       </React.Fragment>
     );

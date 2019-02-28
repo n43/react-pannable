@@ -1,0 +1,25 @@
+.textfield-item {
+  padding: 10px 0;
+  width: 130px;
+  text-align: left;
+}
+.textfield-label {
+  padding-bottom: 10px;
+  font-size: 12px;
+  color: #666666;
+}
+.textfield-input {
+  padding-bottom: 8px;
+  width: 100%;
+  color: #434343;
+  font-size: 14px;
+  border: 0;
+  border-bottom: 1px solid #999;
+  outline: none;
+}
+.textfield-input::-webkit-input-placeholder {
+  color: #cccccc;
+}
+.textfield-input:-ms-input-placeholder {
+  color: #cccccc;
+}

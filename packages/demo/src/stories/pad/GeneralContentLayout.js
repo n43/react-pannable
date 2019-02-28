@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import { Pad, GeneralContent } from 'react-pannable';
-import './GeneralContentLayout.css';
+import SvgPhone from './SvgPhone';
+import TextField from './TextField';
+import './Pad.css';
 
 class GeneralContentLayout extends Component {
   state = {
@@ -14,10 +16,10 @@ class GeneralContentLayout extends Component {
       'http://h1.ioliu.cn//bing/AuburnBalloons_EN-AU8649124966_1920x1080.jpg',
       'http://h1.ioliu.cn//bing/PJ_EN-AU10859560585_1920x1080.jpg',
     ],
-    contentFixedWidth: 400,
+    contentFixedWidth: 346,
     contentFixedHeight: '',
-    imagesCount: '4',
-    imageWidth: 400,
+    imagesCount: '5',
+    imageWidth: 346,
   };
 
   handleInputChange = evt => {
@@ -85,44 +87,54 @@ class GeneralContentLayout extends Component {
 
     return (
       <React.Fragment>
-        <div className="autoadjust-optbar">
-          {this.renderOptItem(
-            'contentFixedWidth',
-            contentFixedWidth,
-            'integer',
-            false
-          )}
-          {this.renderOptItem(
-            'contentFixedHeight',
-            contentFixedHeight,
-            'integer',
-            false
-          )}
-          {this.renderOptItem('imagesCount', imagesCount, '1-8', false)}
-          {this.renderOptItem(
-            'imageWidth',
-            imageWidth,
-            'auto or integer',
-            false
-          )}
-        </div>
-        <div className="autoadjust-main">
-          <GeneralContent
-            content={this.renderImages()}
-            {...generalContentProps}
-          >
-            {({ content, contentWidth, contentHeight }) => (
-              <Pad
-                className="autoadjust-pad"
-                width={400}
-                height={600}
-                contentWidth={contentWidth}
-                contentHeight={contentHeight}
+        <div className="pad-main">
+          <div className="pad-preview">
+            <SvgPhone className="pad-preview-bg" />
+            <div className="pad-preview-content">
+              <GeneralContent
+                content={this.renderImages()}
+                {...generalContentProps}
               >
-                {content}
-              </Pad>
-            )}
-          </GeneralContent>
+                {({ content, contentWidth, contentHeight }) => (
+                  <Pad
+                    className="autoadjust-pad"
+                    width={346}
+                    height={552}
+                    contentWidth={contentWidth}
+                    contentHeight={contentHeight}
+                  >
+                    {content}
+                  </Pad>
+                )}
+              </GeneralContent>
+            </div>
+          </div>
+          <div className="pad-optbar">
+            <TextField
+              name="contentFixedWidth"
+              value={contentFixedWidth}
+              placeholder="integer"
+              onChange={this.handleInputChange}
+            />
+            <TextField
+              name="contentFixedHeight"
+              value={contentFixedHeight}
+              placeholder="integer"
+              onChange={this.handleInputChange}
+            />
+            <TextField
+              name="imagesCount"
+              value={imagesCount}
+              placeholder="1-8"
+              onChange={this.handleInputChange}
+            />
+            <TextField
+              name="imageWidth"
+              value={imageWidth}
+              placeholder="auto or integer"
+              onChange={this.handleInputChange}
+            />
+          </div>
         </div>
       </React.Fragment>
     );

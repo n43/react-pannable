@@ -1,12 +1,13 @@
 import React from 'react';
 import { Pannable } from 'react-pannable';
+import SvgNote from './SvgNote';
 import clsx from 'clsx';
 import './Note.css';
 
 const WRAPPER_WIDTH = 680;
 const WRAPPER_HEIGHT = 510;
-const ITEM_WIDTH = 180;
-const ITEM_HEIGHT = 120;
+const ITEM_WIDTH = 200;
+const ITEM_HEIGHT = 200;
 
 export default class Note extends React.Component {
   constructor(props) {
@@ -19,7 +20,7 @@ export default class Note extends React.Component {
       dragStartPosition: null,
       items: {
         item0: { x: 20, y: 20 },
-        item1: { x: 220, y: 20 },
+        item1: { x: 240, y: 20 },
       },
     };
     this.pannableRef = React.createRef();
@@ -138,13 +139,16 @@ export default class Note extends React.Component {
               ...getPositionStyle(items['item0']),
             }}
           >
-            <div>You can drag me.</div>
-            <div>
-              And you can{' '}
-              <a href="https://github.com/n43/react-pannable" target="blank">
-                open the link
-              </a>
-              .
+            <SvgNote width={ITEM_WIDTH} height={ITEM_HEIGHT} />
+            <div className="note-itemcon">
+              <div>You can drag me.</div>
+              <div>
+                And you can{' '}
+                <a href="https://github.com/n43/react-pannable" target="blank">
+                  open the link
+                </a>
+                .
+              </div>
             </div>
           </div>
           <div
@@ -157,10 +161,13 @@ export default class Note extends React.Component {
               ...getPositionStyle(items['item1']),
             }}
           >
-            <div data-draggable="item1" className="note-trigger">
-              Drag here
+            <SvgNote width={ITEM_WIDTH} height={ITEM_HEIGHT} />
+            <div className="note-itemcon">
+              <div data-draggable="item1" className="note-trigger">
+                Drag here
+              </div>
+              <div>You can only drag me by trigger.</div>
             </div>
-            <div>You can only drag me by trigger.</div>
           </div>
         </Pannable>
       </div>

@@ -39,6 +39,7 @@
   color: #434343;
   border-radius: 4px;
   cursor: pointer;
+  font-family: 'sans-serif';
 }
 .sticker-btn:hover {
   background-color: #dedede;

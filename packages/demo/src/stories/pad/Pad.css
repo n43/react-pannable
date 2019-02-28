@@ -1,0 +1,25 @@
+.pad-preview {
+  position: relative;
+  display: inline-block;
+  padding-top: 27px;
+  width: 400px;
+  height: 650px;
+  box-sizing: border-box;
+}
+.pad-preview-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+.pad-preview-content {
+  position: relative;
+  margin: 0 auto;
+  width: 346px;
+  height: 552px;
+}
+.pad-optbar {
+  display: inline-block;
+  padding-left: 40px;
+  vertical-align: top;
+  font-family: 'sans-serif';
+}
