@@ -6,7 +6,7 @@ import { hidden } from 'ansi-colors';
 class FillingParentSpace extends Component {
   state = {
     width: 400,
-    height: 400,
+    height: '',
     parentSize: '600*600',
   };
 
