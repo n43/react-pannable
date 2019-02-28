@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import { Pad, GeneralContent } from 'react-pannable';
-import './AutoAdjustsContentSize.css';
+import './GeneralContentLayout.css';
 
-class AutoAdjustsContentSize extends Component {
+class GeneralContentLayout extends Component {
   state = {
     images: [
       'http://h1.ioliu.cn//bing/CumulusCaribbean_ZH-CN4884493707_1920x1080.jpg',
@@ -15,7 +15,7 @@ class AutoAdjustsContentSize extends Component {
       'http://h1.ioliu.cn//bing/PJ_EN-AU10859560585_1920x1080.jpg',
     ],
     contentFixedWidth: 400,
-    contentFixedHeight: 'auto',
+    contentFixedHeight: '',
     imagesCount: '4',
     imageWidth: 400,
   };
@@ -49,17 +49,21 @@ class AutoAdjustsContentSize extends Component {
       );
     });
   };
-  renderOptItem(name, value, placeholder) {
+  renderOptItem(name, value, placeholder, isReadonly) {
     return (
       <div className="autoadjust-optitem">
         <div className="autoadjust-optlabel">{name}</div>
-        <input
-          className="autoadjust-optinput"
-          value={value}
-          name={name}
-          placeholder={placeholder}
-          onChange={this.handleInputChange}
-        />
+        {isReadonly ? (
+          <div className="autoadjust-optinput">{value}</div>
+        ) : (
+          <input
+            className="autoadjust-optinput"
+            value={value}
+            name={name}
+            placeholder={placeholder}
+            onChange={this.handleInputChange}
+          />
+        )}
       </div>
     );
   }
@@ -72,10 +76,10 @@ class AutoAdjustsContentSize extends Component {
     } = this.state;
 
     const generalContentProps = {};
-    if (!isNaN(parseInt(contentFixedWidth))) {
+    if (contentFixedWidth && !isNaN(parseInt(contentFixedWidth))) {
       generalContentProps.fixedWidth = parseInt(contentFixedWidth);
     }
-    if (!isNaN(parseInt(contentFixedHeight))) {
+    if (contentFixedHeight && !isNaN(parseInt(contentFixedHeight))) {
       generalContentProps.fixedHeight = parseInt(contentFixedHeight);
     }
 
@@ -85,15 +89,22 @@ class AutoAdjustsContentSize extends Component {
           {this.renderOptItem(
             'contentFixedWidth',
             contentFixedWidth,
-            'auto or integer'
+            'integer',
+            false
           )}
           {this.renderOptItem(
             'contentFixedHeight',
             contentFixedHeight,
-            'auto or integer'
+            'integer',
+            false
           )}
-          {this.renderOptItem('imagesCount', imagesCount, '1-8')}
-          {this.renderOptItem('imageWidth', imageWidth, 'auto or integer')}
+          {this.renderOptItem('imagesCount', imagesCount, '1-8', false)}
+          {this.renderOptItem(
+            'imageWidth',
+            imageWidth,
+            'auto or integer',
+            false
+          )}
         </div>
         <div className="autoadjust-main">
           <GeneralContent
@@ -103,6 +114,8 @@ class AutoAdjustsContentSize extends Component {
             {({ content, contentWidth, contentHeight }) => (
               <Pad
                 className="autoadjust-pad"
+                width={400}
+                height={600}
                 contentWidth={contentWidth}
                 contentHeight={contentHeight}
               >
@@ -116,4 +129,4 @@ class AutoAdjustsContentSize extends Component {
   }
 }
 
-export default AutoAdjustsContentSize;
+export default GeneralContentLayout;

@@ -1,8 +1,10 @@
 import React from 'react';
 import { storiesOf } from '@storybook/react';
 import BasicScroll from './BasicScroll';
-import AutoAdjustsContentSize from './AutoAdjustsContentSize';
+import FillingParentSpace from './FillingParentSpace';
+import GeneralContentLayout from './GeneralContentLayout';
 
 storiesOf('Pad', module)
   .add('basic scroll', () => <BasicScroll />)
-  .add('automatically adjust content size', () => <AutoAdjustsContentSize />);
+  .add('filling parent space', () => <FillingParentSpace />)
+  .add('using general content layout', () => <GeneralContentLayout />);
