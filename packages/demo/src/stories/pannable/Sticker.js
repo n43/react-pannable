@@ -10,7 +10,6 @@ import './Sticker.css';
 export default class Sticker extends React.Component {
   state = {
     hidden: false,
-    enabled: true,
     width: 300,
     height: 300,
     translateX: 100,
@@ -20,7 +19,7 @@ export default class Sticker extends React.Component {
     currentAction: null,
   };
 
-  _onStart = ({ target }) => {
+  _shouldStart = ({ target }) => {
     let action;
 
     if (target.dataset && target.dataset.action) {
@@ -28,13 +27,15 @@ export default class Sticker extends React.Component {
     }
 
     if (!action) {
-      this.setState({ enabled: false });
-    } else {
-      this.setState(({ width, height, translateX, translateY, rotate }) => ({
-        currentAction: action,
-        startTransform: { width, height, translateX, translateY, rotate },
-      }));
+      return false;
     }
+
+    this.setState(({ width, height, translateX, translateY, rotate }) => ({
+      currentAction: action,
+      startTransform: { width, height, translateX, translateY, rotate },
+    }));
+
+    return true;
   };
   _onMove = ({ translation }) => {
     this.setState(({ currentAction, startTransform }) => {
@@ -59,9 +60,6 @@ export default class Sticker extends React.Component {
   _onEnd = () => {
     this.setState({ currentAction: null, startTransform: null });
   };
-  _onCancel = evt => {
-    this.setState({ enabled: true });
-  };
   _onClick = evt => {
     this.setState({ hidden: true });
   };
@@ -71,7 +69,6 @@ export default class Sticker extends React.Component {
 
   render() {
     const {
-      enabled,
       hidden,
       translateX,
       translateY,
@@ -97,11 +94,9 @@ export default class Sticker extends React.Component {
             height,
             ...getTransformStyle(translateX, translateY, rotate),
           }}
-          enabled={enabled}
-          onStart={this._onStart}
+          shouldStart={this._shouldStart}
           onMove={this._onMove}
           onEnd={this._onEnd}
-          onCancel={this._onCancel}
         >
           <SvgSticker width={width} height={height} />
 

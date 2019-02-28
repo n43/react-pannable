@@ -6,6 +6,7 @@ const MIN_DISTANCE = 0;
 export default class Pannable extends React.Component {
   static defaultProps = {
     enabled: true,
+    shouldStart: true,
     onStart: () => {},
     onMove: () => {},
     onEnd: () => {},
@@ -44,13 +45,18 @@ export default class Pannable extends React.Component {
 
   static _shouldStart(evt, state, props) {
     const { trackingStartXY } = state;
+    const { shouldStart } = props;
 
     if (
       trackingStartXY &&
       (Math.abs(evt.pageX - trackingStartXY.x) > MIN_DISTANCE ||
         Math.abs(evt.pageY - trackingStartXY.y) > MIN_DISTANCE)
     ) {
-      return true;
+      if (typeof shouldStart === 'function') {
+        return shouldStart({ target: evt.target });
+      } else {
+        return shouldStart;
+      }
     }
 
     return false;
@@ -309,6 +315,7 @@ export default class Pannable extends React.Component {
   render() {
     const {
       enabled,
+      shouldStart,
       onStart,
       onMove,
       onEnd,
