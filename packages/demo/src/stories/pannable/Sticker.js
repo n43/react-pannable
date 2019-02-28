@@ -1,7 +1,6 @@
 import React from 'react';
 import { Pannable } from 'react-pannable';
 import './Sticker.css';
-import { calculateDeceleration } from 'react-pannable/src/utils/motion';
 
 export default class Sticker extends React.Component {
   state = {
@@ -47,7 +46,7 @@ export default class Sticker extends React.Component {
         };
       }
       if (currentAction === 'rotate') {
-        return { rotate: calculateRotate(startTransform.rotate, translation) };
+        return { rotate: calculateRotate(startTransform, translation) };
       }
       return null;
     });
@@ -101,14 +100,19 @@ export default class Sticker extends React.Component {
 function getTransformStyle(translateX, translateY, rotate) {
   return {
     transform: `translate3d(${translateX}px, ${translateY}px, 0) rotate(${rotate})`,
-    WebkitTransform: `translate3d(${translateX}px, ${translateY}px, 0) rotate(${rotate}deg)`,
+    WebkitTransform: `translate3d(${translateX}px, ${translateY}px, 0) rotate(${rotate}rad)`,
     msTransform: `translate(${translateX}px, ${translateY}px) rotate(${rotate})`,
   };
 }
 
-function calculateRotate(rotate, { x, y }) {
-  const redirect = (x >= 0 && y >= 0) || (x <= 0 && y <= 0) ? 1 : -1;
-  const c = redirect * Math.sqrt(x * x + y * y);
-  console.log(c);
-  return rotate + c;
+function calculateRotate({ rotate, width, height }, { x, y }) {
+  const sr = 0.5 * Math.sqrt(width * width + height * height);
+  const sx = -Math.cos(rotate - 0.25 * Math.PI) * sr;
+  const sy = -Math.sin(rotate - 0.25 * Math.PI) * sr;
+  const ex = sx + x;
+  const ey = sy + y;
+  const er = Math.sqrt(ex * ex + ey * ey);
+  const redirect = ey >= 0 ? 1 : -1;
+
+  return -redirect * Math.acos(-ex / er) + 0.25 * Math.PI;
 }
