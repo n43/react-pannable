@@ -1,5 +1,10 @@
 import React from 'react';
 import { Pannable } from 'react-pannable';
+import SvgDelete from './SvgDelete';
+import SvgScale from './SvgScale';
+import SvgRotate from './SvgRotate';
+import SvgPan from './SvgPan';
+import SvgSticker from './SvgSticker';
 import './Sticker.css';
 
 export default class Sticker extends React.Component {
@@ -60,6 +65,9 @@ export default class Sticker extends React.Component {
   _onClick = evt => {
     this.setState({ hidden: true });
   };
+  _onShowSticker = evt => {
+    this.setState({ hidden: false });
+  };
 
   render() {
     const {
@@ -73,6 +81,13 @@ export default class Sticker extends React.Component {
     } = this.state;
     return (
       <div className="sticker-wrapper">
+        <div className="sticker-optbar">
+          {hidden && (
+            <div className="sticker-btn" onClick={this._onShowSticker}>
+              Show Sticker
+            </div>
+          )}
+        </div>
         <Pannable
           className="sticker-box"
           style={{
@@ -87,10 +102,32 @@ export default class Sticker extends React.Component {
           onEnd={this._onEnd}
           onCancel={this._onCancel}
         >
-          <div data-action="translate" className="sticker-translate" />
-          <div className="sticker-remove" onClick={this._onClick} />
-          <div data-action="scale" className="sticker-scale" />
-          <div data-action="rotate" className="sticker-rotate" />
+          <SvgSticker width={width} height={height} />
+
+          <SvgPan
+            data-action="translate"
+            className="sticker-translate"
+            width={30}
+            height={30}
+          />
+          <SvgDelete
+            className="sticker-remove"
+            onClick={this._onClick}
+            width={30}
+            height={30}
+          />
+          <SvgScale
+            data-action="scale"
+            className="sticker-scale"
+            width={25}
+            height={25}
+          />
+          <SvgRotate
+            data-action="rotate"
+            className="sticker-rotate"
+            width={28}
+            height={28}
+          />
         </Pannable>
       </div>
     );
