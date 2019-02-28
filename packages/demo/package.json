@@ -15,7 +15,8 @@
     "webpack": "^4.29.5"
   },
   "scripts": {
-    "start": "start-storybook -p 9001 -c .storybook"
+    "start": "start-storybook -p 9001 -c .storybook",
+    "build": "build-storybook -c .storybook -o dist"
   },
   "eslintConfig": {
     "extends": "react-app"
