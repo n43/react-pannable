@@ -1,6 +1,6 @@
 import React from 'react';
-import StyleSheet from './utils/StyleSheet';
 import { getElementSize } from './utils/sizeGetter';
+import createDetector from './utils/resizeDetector';
 
 export default class GeneralContent extends React.Component {
   static defaultProps = {
@@ -9,69 +9,96 @@ export default class GeneralContent extends React.Component {
     fixedHeight: 0,
   };
 
-  state = {
-    contentSize: { width: 0, height: 0 },
-  };
+  constructor(props) {
+    super(props);
 
-  contentRef = React.createRef();
+    this.state = {
+      contentSize: { width: props.fixedWidth, height: props.fixedHeight },
+    };
+    this.contentRef = React.createRef();
+  }
 
   componentDidMount() {
-    this.computeSize();
+    const { fixedWidth, fixedHeight } = this.props;
+
+    if (!(fixedWidth && fixedHeight)) {
+      this.resizeDetector = createDetector();
+      this._computeSize().then(({ error }) => {
+        if (!error) {
+          const contentNode = this.contentRef.current;
+          this.resizeDetector.addResizeListener(contentNode, () => {
+            this._computeSize();
+          });
+        }
+      });
+    }
   }
   componentDidUpdate(prevProps) {
-    if (prevProps.fixedWidth !== this.props.fixedWidth) {
-      this.computeSize();
-    }
-    if (prevProps.fixedHeight !== this.props.fixedHeight) {
-      this.computeSize();
+    const { fixedWidth, fixedHeight } = this.props;
+
+    if (
+      prevProps.fixedWidth !== fixedWidth ||
+      prevProps.fixedHeight !== fixedHeight
+    ) {
+      if (fixedWidth && fixedHeight) {
+        this.setState({
+          contentSize: { width: fixedWidth, height: fixedHeight },
+        });
+      } else {
+        this._computeSize().then(({ error }) => {
+          if (!error && !this.resizeDetector) {
+            const contentNode = this.contentRef.current;
+            this.resizeDetector.addResizeListener(contentNode, () => {
+              this._computeSize();
+            });
+          }
+        });
+      }
     }
   }
-  computeSize = () => {
-    const { fixedWidth, fixedHeight } = this.props;
-    const element = this.contentRef.current;
-
-    if (!fixedWidth && !fixedHeight) {
-      return;
+  componentWillUnmount() {
+    if (this.resizeDetector) {
+      const contentNode = this.contentRef.current;
+      this.resizeDetector.removeResizeListener(contentNode);
     }
+  }
+  _computeSize = () => {
+    return new Promise(resolve => {
+      const { fixedWidth, fixedHeight } = this.props;
+      const contentNode = this.contentRef.current;
 
-    if (fixedWidth && fixedHeight) {
-      return;
-    }
+      if (fixedWidth && fixedHeight) {
+        resolve({ error: 1 });
+        return;
+      }
 
-    const size = getElementSize(element, !fixedWidth, !fixedHeight);
-    console.log('computed size:', size);
-    this.setState(({ contentSize }) => {
-      return {
-        contentSize: {
-          ...contentSize,
-          ...size,
+      const size = getElementSize(contentNode, !fixedWidth, !fixedHeight);
+
+      this.setState(
+        {
+          contentSize: { width: fixedWidth, height: fixedHeight, ...size },
         },
-      };
+        () => resolve({ error: 0 })
+      );
     });
   };
   render() {
-    const { content, fixedWidth, fixedHeight, children } = this.props;
+    const { content, children } = this.props;
     const { contentSize } = this.state;
 
-    const sizerStyle = StyleSheet.create({
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      width: fixedWidth,
-      height: fixedHeight,
-      overflow: 'auto',
-    });
-
-    const contentWidth = fixedWidth || contentSize.width;
-    const contentHeight = fixedHeight || contentSize.height;
-
-    return (
-      <React.Fragment>
-        {children({ content, contentWidth, contentHeight })}
-        <div style={sizerStyle}>
-          <div ref={this.contentRef}>{content}</div>
-        </div>
-      </React.Fragment>
+    const wrappedContent = (
+      <div
+        ref={this.contentRef}
+        style={{ position: 'absolute', top: 0, left: 0 }}
+      >
+        {content}
+      </div>
     );
+
+    return children({
+      content: wrappedContent,
+      contentWidth: contentSize.width,
+      contentHeight: contentSize.height,
+    });
   }
 }

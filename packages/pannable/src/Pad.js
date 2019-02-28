@@ -1,7 +1,7 @@
 import React from 'react';
 import Pannable from './Pannable';
 import { getElementSize } from './utils/sizeGetter';
-import createResizeDetector from 'element-resize-detector';
+import createDetector from './utils/resizeDetector';
 import StyleSheet from './utils/StyleSheet';
 import {
   requestAnimationFrame,
@@ -43,7 +43,6 @@ export default class Pad extends React.Component {
     };
 
     this.wrapperRef = React.createRef();
-    this.contentRef = React.createRef();
   }
 
   static getDerivedStateFromProps(props, state) {
@@ -135,80 +134,51 @@ export default class Pad extends React.Component {
   }
 
   componentDidMount() {
-    const { width, height, contentWidth, contentHeight } = this.props;
-    const parentNode = this.wrapperRef.current.parentNode;
-    const contentNode = this.contentRef.current;
-    let initedSize = {};
-    let initedContentSize = {};
+    const { width, height } = this.props;
+    const parentNode = this.wrapperRef.current.elemRef.current.parentNode;
 
-    this.resizeDetector = createResizeDetector({
-      strategy: 'scroll',
-    });
-    // console.log(this.wrapperRef.current);
-    // if (width === 0 || height === 0) {
-    //   this.resizeDetector.listenTo(parentNode, element => {
-    //     const changedSize = getElementSize(element, !width, !height);
-
-    //     this.setState(({ size, contentOffset }) => {
-    //       return {
-    //         size: { ...size, ...changedSize },
-    //         contentOffset: { ...contentOffset },
-    //       };
-    //     });
-    //   });
-
-    //   initedSize = getElementSize(parentNode, !width, !height);
-    // }
-
-    // if (autoAdjustsContentSize && (contentWidth === 0 || contentHeight === 0)) {
-    //   this.resizeDetector.listenTo(contentNode, element => {
-    //     const changedSize = getElementSize(
-    //       element,
-    //       !contentWidth,
-    //       !contentHeight
-    //     );
-
-    //     this.setState(({ contentSize, contentOffset }) => {
-    //       return {
-    //         contentSize: { ...contentSize, ...changedSize },
-    //         contentOffset: { ...contentOffset },
-    //       };
-    //     });
-    //   });
-    //   initedContentSize = getElementSize(
-    //     contentNode,
-    //     !contentWidth,
-    //     !contentHeight
-    //   );
-    // }
-    // this.setState(({ size, contentOffset }) => {
-    //   return {
-    //     size: { ...size, ...initedSize },
-    //     contentOffset: { ...contentOffset },
-    //   };
-    // });
+    if (!(width && height)) {
+      this._computeParentSize().then(({ error }) => {
+        if (!error) {
+          this.resizeDetector = createDetector();
+          this.resizeDetector.addResizeListener(parentNode, () => {
+            this._computeParentSize();
+          });
+        }
+      });
+    }
   }
 
   componentDidUpdate(prevProps, prevState) {
     const { width, height, contentWidth, contentHeight } = this.props;
 
     if (prevProps.width !== width || prevProps.height !== height) {
-      this.setState(({ size, contentOffset }) => ({
-        size: {
-          width: width ? width : size.width,
-          height: height ? height : size.height,
-        },
-        contentOffset: { ...contentOffset },
-      }));
+      if (width && height) {
+        this.setState(({ contentOffset }) => ({
+          size: { width, height },
+          contentOffset: { ...contentOffset },
+        }));
+      } else {
+        this._computeParentSize().then(({ error }) => {
+          if (!error && !this.resizeDetector) {
+            const parentNode = this.wrapperRef.current.elemRef.current
+              .parentNode;
+            this.resizeDetector = createDetector();
+            this.resizeDetector.addResizeListener(parentNode, () => {
+              this._computeParentSize();
+            });
+          }
+        });
+      }
     }
     if (
       prevProps.contentWidth !== contentWidth ||
       prevProps.contentHeight !== contentHeight
     ) {
-      this.setState(({ contentSize, contentOffset }) => ({
+      this.setState(({ contentOffset }) => ({
         contentSize: {
-          width: contentWidth ? contentWidth : contentSize.width,
-          height: contentHeight ? contentHeight : contentSize.height,
+          width: contentWidth,
+          height: contentHeight,
         },
         contentOffset: { ...contentOffset },
       }));
@@ -235,9 +205,10 @@ export default class Pad extends React.Component {
       this._deceleratingTimer = undefined;
     }
 
-    // const parentNode = this.wrapperRef.current.parentNode;
-    // const contentNode = this.contentRef.current;
-    // this.resizeDetector.uninstall([parentNode, contentNode]);
+    if (this.resizeDetector) {
+      const parentNode = this.wrapperRef.current.elemRef.current.parentNode;
+      this.resizeDetector.removeResizeListener(parentNode);
+    }
   }
 
   getSize() {
@@ -288,6 +259,30 @@ export default class Pad extends React.Component {
       };
     });
   }
+
+  _computeParentSize = () => {
+    return new Promise(resolve => {
+      const parentNode = this.wrapperRef.current.elemRef.current.parentNode;
+      const { width, height } = this.props;
+
+      if (width && height) {
+        resolve({ error: 1 });
+        return;
+      }
+
+      const parentSize = getElementSize(parentNode, !width, !height);
+
+      this.setState(
+        ({ contentOffset }) => {
+          return {
+            size: { width, height, ...parentSize },
+            contentOffset: { ...contentOffset },
+          };
+        },
+        () => resolve({ error: 0 })
+      );
+    });
+  };
 
   _decelerate(interval) {
     this.setState(
@@ -442,6 +437,7 @@ export default class Pad extends React.Component {
       width: contentSize.width,
       height: contentSize.height,
       transformTranslate: [contentOffset.x, contentOffset.y],
+      overflow: 'hidden',
       ...contentProps.style,
     });
 

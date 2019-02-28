@@ -6,11 +6,16 @@ const MIN_DISTANCE = 0;
 export default class Pannable extends React.Component {
   static defaultProps = {
     enabled: true,
+    shouldStart: true,
+    onStart: () => {},
+    onMove: () => {},
+    onEnd: () => {},
+    onCancel: () => {},
   };
 
   state = {
     trackingStartXY: null,
-    dragging: false,
+    target: null,
     translation: null,
     velocity: null,
     startXY: null,
@@ -18,14 +23,14 @@ export default class Pannable extends React.Component {
     moveT: null,
   };
 
-  elemRef = React.createRef;
+  elemRef = React.createRef();
 
   componentDidUpdate(prevProps) {
     const { enabled } = this.props;
 
     if (prevProps.enabled !== enabled && !enabled) {
       this.setState((state, props) => {
-        if (state.dragging) {
+        if (state.target) {
           return Pannable._cancel(null, state, props);
         }
 
@@ -34,51 +39,54 @@ export default class Pannable extends React.Component {
     }
   }
 
+  componentWillUnmount() {
+    this._removeMouseDragListener();
+  }
+
   static _shouldStart(evt, state, props) {
     const { trackingStartXY } = state;
+    const { shouldStart } = props;
 
     if (
       trackingStartXY &&
       (Math.abs(evt.pageX - trackingStartXY.x) > MIN_DISTANCE ||
         Math.abs(evt.pageY - trackingStartXY.y) > MIN_DISTANCE)
     ) {
-      return true;
+      if (typeof shouldStart === 'function') {
+        return shouldStart({ target: evt.target });
+      } else {
+        return shouldStart;
+      }
     }
 
     return false;
   }
-
   static _start(evt, state, props) {
-    const { onStart } = props;
-
     const nextState = {
       trackingStartXY: null,
-      dragging: true,
       translation: { x: 0, y: 0 },
       velocity: { x: 0, y: 0 },
+      target: evt.target,
       startXY: { x: evt.pageX, y: evt.pageY },
       moveXY: { x: evt.pageX, y: evt.pageY },
       moveT: new Date().getTime(),
     };
 
-    if (onStart) {
-      onStart({
-        translation: nextState.translation,
-        velocity: nextState.velocity,
-        target: evt.target,
-      });
-    }
+    props.onStart({
+      translation: nextState.translation,
+      velocity: nextState.velocity,
+      target: nextState.target,
+    });
 
     return nextState;
   }
-
   static _move(evt, state, props) {
-    const { onMove } = props;
     const { startXY, moveXY, moveT } = state;
     const now = new Date().getTime();
     const interval = now - moveT;
 
     const nextState = {
+      target: evt.target,
       translation: {
         x: evt.pageX - startXY.x,
         y: evt.pageY - startXY.y,
@@ -91,23 +99,19 @@ export default class Pannable extends React.Component {
       moveT: now,
     };
 
-    if (onMove) {
-      onMove({
-        translation: nextState.translation,
-        velocity: nextState.velocity,
-        target: evt.target,
-      });
-    }
+    props.onMove({
+      translation: nextState.translation,
+      velocity: nextState.velocity,
+      target: nextState.target,
+    });
 
     return nextState;
   }
-
   static _end(evt, state, props) {
-    const { onEnd } = props;
-    const { translation, velocity } = state;
+    const { target, translation, velocity } = state;
 
     const nextState = {
-      dragging: false,
+      target: null,
       translation: null,
       velocity: null,
       startXY: null,
@@ -115,19 +119,16 @@ export default class Pannable extends React.Component {
       moveT: null,
     };
 
-    if (onEnd) {
-      onEnd({ translation, velocity, target: evt.target });
-    }
+    props.onEnd({ target, translation, velocity });
 
     return nextState;
   }
 
   static _cancel(evt, state, props) {
-    const { onCancel } = props;
-    const { translation, velocity } = state;
+    const { target, translation, velocity } = state;
 
     const nextState = {
-      dragging: false,
+      target: null,
       translation: null,
       velocity: null,
       startXY: null,
@@ -135,49 +136,44 @@ export default class Pannable extends React.Component {
       moveT: null,
     };
 
-    if (onCancel) {
-      onCancel({ translation, velocity });
-    }
+    props.onCancel({ target, translation, velocity });
 
     return nextState;
   }
 
   _onTouchStart = evt => {
-    const { onTouchStart } = this.props;
+    const { enabled, onTouchStart } = this.props;
 
     if (evt.touches && evt.touches.length === 1) {
       const touchEvt = evt.touches[0];
-      const { pageX, pageY } = touchEvt;
 
-      this.setState((state, props) => {
-        if (props.enabled) {
-          return { trackingStartXY: { x: pageX, y: pageY } };
-        }
-
-        return null;
-      });
+      if (enabled) {
+        this.setState({
+          trackingStartXY: { x: touchEvt.pageX, y: touchEvt.pageY },
+        });
+      }
     }
 
     if (onTouchStart) {
       onTouchStart(evt);
     }
   };
-
   _onTouchMove = evt => {
     const { onTouchMove } = this.props;
 
     if (evt.touches && evt.touches.length === 1) {
       const touchEvt = evt.touches[0];
       const params = {
+        target: touchEvt.target,
         pageX: touchEvt.pageX,
         pageY: touchEvt.pageY,
-        target: touchEvt.target,
       };
 
       this.setState((state, props) => {
         if (Pannable._shouldStart(params, state, props)) {
           return Pannable._start(params, state, props);
-        } else if (state.dragging) {
+        }
+        if (state.target) {
           return Pannable._move(params, state, props);
         }
 
@@ -189,23 +185,23 @@ export default class Pannable extends React.Component {
       onTouchMove(evt);
     }
   };
-
   _onTouchEnd = evt => {
     const { onTouchEnd } = this.props;
 
     if (evt.changedTouches && evt.changedTouches.length === 1) {
       const touchEvt = evt.changedTouches[0];
       const params = {
+        target: touchEvt.target,
         pageX: touchEvt.pageX,
         pageY: touchEvt.pageY,
-        target: touchEvt.target,
       };
 
       this.setState((state, props) => {
+        if (state.target) {
+          return Pannable._end(params, state, props);
+        }
         if (state.trackingStartXY) {
           return { trackingStartXY: null };
-        } else if (state.dragging) {
-          return Pannable._end(params, state, props);
         }
 
         return null;
@@ -222,16 +218,17 @@ export default class Pannable extends React.Component {
     if (evt.changedTouches && evt.changedTouches.length === 1) {
       const touchEvt = evt.changedTouches[0];
       const params = {
+        target: touchEvt.target,
         pageX: touchEvt.pageX,
         pageY: touchEvt.pageY,
-        target: touchEvt.target,
       };
 
       this.setState((state, props) => {
+        if (state.target) {
+          return Pannable._end(params, state, props);
+        }
         if (state.trackingStartXY) {
           return { trackingStartXY: null };
-        } else if (state.dragging) {
-          return Pannable._end(params, state, props);
         }
 
         return null;
@@ -242,19 +239,28 @@ export default class Pannable extends React.Component {
       onTouchCancel(evt);
     }
   };
+
+  _addMouseDragListener() {
+    const doc = document.documentElement;
+
+    doc.addEventListener('mousemove', this._onMouseMove, false);
+    doc.addEventListener('mouseup', this._onMouseUp, false);
+  }
+  _removeMouseDragListener() {
+    const doc = document.documentElement;
+
+    doc.removeEventListener('mousemove', this._onMouseMove, false);
+    doc.removeEventListener('mouseup', this._onMouseUp, false);
+  }
   _onMouseDown = evt => {
-    const { onMouseDown } = this.props;
-    const { pageX, pageY } = evt;
+    const { enabled, onMouseDown } = this.props;
 
-    this.setState((state, props) => {
-      if (props.enabled) {
-        return { trackingStartXY: { x: pageX, y: pageY } };
-      }
+    this._shouldPreventClick = enabled;
 
-      return null;
-    });
-
-    this._shouldPreventClick = false;
+    if (enabled) {
+      this._addMouseDragListener();
+      this.setState({ trackingStartXY: { x: evt.pageX, y: evt.pageY } });
+    }
 
     if (onMouseDown) {
       onMouseDown(evt);
@@ -263,67 +269,43 @@ export default class Pannable extends React.Component {
   _onMouseMove = evt => {
     evt.preventDefault();
 
-    const { onMouseMove } = this.props;
-    const params = { pageX: evt.pageX, pageY: evt.pageY, target: evt.target };
+    const params = { target: evt.target, pageX: evt.pageX, pageY: evt.pageY };
 
     this.setState((state, props) => {
       if (Pannable._shouldStart(params, state, props)) {
         return Pannable._start(params, state, props);
-      } else if (state.dragging) {
+      }
+      if (state.target) {
         return Pannable._move(params, state, props);
       }
 
       return null;
     });
-
-    if (onMouseMove) {
-      onMouseMove(evt);
-    }
   };
   _onMouseUp = evt => {
-    const { onMouseUp } = this.props;
-    const params = { pageX: evt.pageX, pageY: evt.pageY, target: evt.target };
+    evt.preventDefault();
+    this._removeMouseDragListener();
+
+    const params = { target: evt.target, pageX: evt.pageX, pageY: evt.pageY };
 
     this.setState((state, props) => {
-      if (state.trackingStartXY) {
-        return { trackingStartXY: null };
-      } else if (state.dragging) {
-        this._shouldPreventClick = true;
-
+      if (state.target) {
         return Pannable._end(params, state, props);
       }
 
-      return null;
+      this._shouldPreventClick = false;
+
+      return { trackingStartXY: null };
     });
-
-    if (onMouseUp) {
-      onMouseUp(evt);
-    }
   };
-  _onMouseLeave = evt => {
-    const { onMouseLeave } = this.props;
-    const params = { pageX: evt.pageX, pageY: evt.pageY, target: evt.target };
 
-    this.setState((state, props) => {
-      if (state.trackingStartXY) {
-        return { trackingStartXY: null };
-      } else if (state.dragging) {
-        return Pannable._end(params, state, props);
-      }
-
-      return null;
-    });
-
-    if (onMouseLeave) {
-      onMouseLeave(evt);
-    }
-  };
   _onClick = evt => {
     const { onClick } = this.props;
 
     if (this._shouldPreventClick) {
       evt.preventDefault();
     }
+    this._shouldPreventClick = false;
 
     if (onClick) {
       onClick(evt);
@@ -333,6 +315,7 @@ export default class Pannable extends React.Component {
   render() {
     const {
       enabled,
+      shouldStart,
       onStart,
       onMove,
       onEnd,
@@ -355,9 +338,6 @@ export default class Pannable extends React.Component {
         onTouchMove={this._onTouchMove}
         onTouchCancel={this._onTouchCancel}
         onMouseDown={this._onMouseDown}
-        onMouseUp={this._onMouseUp}
-        onMouseMove={this._onMouseMove}
-        onMouseLeave={this._onMouseLeave}
         onClick={this._onClick}
       />
     );

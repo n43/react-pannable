@@ -1,0 +1,45 @@
+.sticker-wrapper {
+  position: relative;
+  width: 680px;
+  height: 510px;
+}
+
+.sticker-box {
+  position: absolute;
+  border: 1px dashed transparent;
+}
+.sticker-box-dragging {
+  position: absolute;
+  border: 1px dashed #cccccc;
+}
+.sticker-translate {
+  position: absolute;
+  left: 2px;
+  top: 2px;
+}
+.sticker-remove {
+  position: absolute;
+  right: 2px;
+  top: 2px;
+}
+.sticker-scale {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+}
+.sticker-rotate {
+  position: absolute;
+  left: 2px;
+  bottom: 2px;
+}
+.sticker-btn {
+  display: inline-block;
+  padding: 10px;
+  background-color: #ececec;
+  color: #434343;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.sticker-btn:hover {
+  background-color: #dedede;
+}
