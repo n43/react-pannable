@@ -32,12 +32,22 @@ npm install --save react-pannable
 
 ```js
 type Point = { x: number, y: number };
-type PanningParams = { translation: Point, velocity: Point, target: HTMLElement };
+type PanningParams = {
+  translation: Point,
+  velocity: Point,
+  target: HTMLElement,
+};
 ```
 
 ### Pad
 
 `Pad` provides a scrollable content component on which overflow scrollbars are not natively supported. It also provides paging scroll implementation and multiple content layout mode.
+
+#### Prop Types
+
+| Property | Type | Default | Description |
+| :------- | :--- | :------ | :---------- |
+
 
 ## License
 
