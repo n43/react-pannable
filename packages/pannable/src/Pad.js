@@ -24,6 +24,7 @@ export default class Pad extends React.Component {
     contentProps: {},
     scrollEnabled: true,
     pagingEnabled: false,
+    onScroll: () => {},
   };
 
   constructor(props) {
@@ -119,16 +120,14 @@ export default class Pad extends React.Component {
         nextState.decelerationEndPosition = nextDecelerationEndPosition;
       }
 
-      if (props.onScroll) {
-        props.onScroll({
-          contentOffset: nextContentOffset,
-          contentVelocity: nextContentVelocity,
-          decelerating: nextDecelerating,
-          dragging,
-          size,
-          contentSize,
-        });
-      }
+      props.onScroll({
+        contentOffset: nextContentOffset,
+        contentVelocity: nextContentVelocity,
+        decelerating: nextDecelerating,
+        dragging,
+        size,
+        contentSize,
+      });
     }
     return nextState;
   }
@@ -231,7 +230,7 @@ export default class Pad extends React.Component {
     return this.state.decelerating;
   }
 
-  scrollTo({ position, animated }) {
+  scrollTo({ offset, animated }) {
     this.setState(({ contentOffset, size, dragging }, { pagingEnabled }) => {
       if (dragging) {
         return null;
@@ -239,7 +238,7 @@ export default class Pad extends React.Component {
 
       if (!animated) {
         return {
-          contentOffset: position,
+          contentOffset: offset,
           contentVelocity: { x: 0, y: 0 },
           decelerating: false,
           decelerationEndPosition: null,
@@ -248,13 +247,13 @@ export default class Pad extends React.Component {
       }
 
       if (pagingEnabled) {
-        position = getAdjustedPagingOffset(position, size);
+        offset = getAdjustedPagingOffset(offset, size);
       }
 
       return {
         contentOffset: { ...contentOffset },
         decelerating: true,
-        decelerationEndPosition: position,
+        decelerationEndPosition: offset,
         decelerationRate: 0.01,
       };
     });
