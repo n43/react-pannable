@@ -23,10 +23,10 @@ npm install --save react-pannable
 | Property | Type | Default | Description |
 |:---|:---|:---|:---|
 | enabled | Boolean | true | Indicate whether the gesture listener is enabled. If you change this property to `false` while the gesture is listening, the gesture transitions to cancel. |
-| shouldStart | Boolean \| Function | true | |
+| shouldStart | Boolean\|Function | true | Whether to start gesture listening |
 | onStart | Function | ({ translation: Point, velocity: Point, target: HTMLElement }) => {} | Callback invoked when the gesture starts listening |
 | onMove | Function | ({ translation: Point, velocity: Point, target: HTMLElement }) => {} | Callback invoked when the gesture moves |
-| onEnd | Function | ({ translation: Point, velocity: Point, target: HTMLElement }) => {} | Callback invoked when the gesture ended |
+| onEnd | Function | ({ translation: Point, velocity: Point, target: HTMLElement }) => {} | Callback invoked when the gesture ended listening |
 | onCancel | Function | ({ translation: Point, velocity: Point, target: HTMLElement }) => {} | Callback invoked when the gesture cancelled |
 
 ### Pad
