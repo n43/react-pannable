@@ -78,6 +78,7 @@ export default class Sticker extends React.Component {
       width,
       height,
       rotate,
+      currentAction,
     } = this.state;
     return (
       <div className="sticker-wrapper">
@@ -89,7 +90,7 @@ export default class Sticker extends React.Component {
           )}
         </div>
         <Pannable
-          className="sticker-box"
+          className={currentAction ? 'sticker-box-dragging' : 'sticker-box'}
           style={{
             display: hidden ? 'none' : 'block',
             width,
@@ -104,30 +105,10 @@ export default class Sticker extends React.Component {
         >
           <SvgSticker width={width} height={height} />
 
-          <SvgPan
-            data-action="translate"
-            className="sticker-translate"
-            width={30}
-            height={30}
-          />
-          <SvgDelete
-            className="sticker-remove"
-            onClick={this._onClick}
-            width={30}
-            height={30}
-          />
-          <SvgScale
-            data-action="scale"
-            className="sticker-scale"
-            width={25}
-            height={25}
-          />
-          <SvgRotate
-            data-action="rotate"
-            className="sticker-rotate"
-            width={28}
-            height={28}
-          />
+          <SvgPan data-action="translate" className="sticker-translate" />
+          <SvgDelete className="sticker-remove" onClick={this._onClick} />
+          <SvgScale data-action="scale" className="sticker-scale" />
+          <SvgRotate data-action="rotate" className="sticker-rotate" />
         </Pannable>
       </div>
     );
