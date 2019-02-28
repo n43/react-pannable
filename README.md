@@ -22,12 +22,12 @@ npm install --save react-pannable
 #### Prop Types
 | Property | Type | Default | Description |
 |:---|:---|:---|:---|
-| enabled | Boolean | true | Indicate whether the gesture listener is enabled. If you change this property to `false` while the gesture is listening, the gesture transitions to cancel. |
-| shouldStart | Boolean \| Function | true | |
-| onStart | Function | ({ translation: Point, velocity: Point, target: HTMLElement }) => {} | Callback invoked when the gesture starts listening |
-| onMove | Function | ({ translation: Point, velocity: Point, target: HTMLElement }) => {} | Callback invoked when the gesture moves |
-| onEnd | Function | ({ translation: Point, velocity: Point, target: HTMLElement }) => {} | Callback invoked when the gesture ended |
-| onCancel | Function | ({ translation: Point, velocity: Point, target: HTMLElement }) => {} | Callback invoked when the gesture cancelled |
+| enabled | Boolean | true | Indicate whether the gesture listener is enabled. If you change this property to `false` while the gesture is listening, the gesture transitions to `cancel`. |
+| shouldStart | Boolean\|Function | true | Whether to start gesture listening |
+| onStart | Function | () => {} | Callback invoked when the gesture starts listening.: `({ translation: Point, velocity: Point, target: HTMLElement }): void` |
+| onMove | Function | () => {} | Callback invoked when the gesture moves.: `({ translation: Point, velocity: Point, target: HTMLElement }): void` |
+| onEnd | Function | () => {} | Callback invoked when the gesture ended listening.: `({ translation: Point, velocity: Point, target: HTMLElement }): void` |
+| onCancel | Function | () => {} | Callback invoked when the gesture cancelled.: `({ translation: Point, velocity: Point, target: HTMLElement }): void` |
 
 ### Pad
 
