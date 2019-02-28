@@ -64,7 +64,16 @@ export default class Sticker extends React.Component {
     this.setState({ hidden: true });
   };
   _onShowSticker = evt => {
-    this.setState({ hidden: false });
+    this.setState({
+      hidden: false,
+      width: 300,
+      height: 300,
+      translateX: 100,
+      translateY: 100,
+      rotate: 0,
+      startTransform: null,
+      currentAction: null,
+    });
   };
 
   render() {
