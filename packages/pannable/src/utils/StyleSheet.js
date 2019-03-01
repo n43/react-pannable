@@ -18,8 +18,4 @@ function create(styles) {
   };
 }
 
-let StyleSheet = {
-  create,
-};
-
-export default StyleSheet;
+export default { create };

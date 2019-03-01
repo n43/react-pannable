@@ -73,11 +73,9 @@ export default class GeneralContent extends React.Component {
         return;
       }
 
-      const size = getElementSize(contentNode, !fixedWidth, !fixedHeight);
-
       this.setState(
         {
-          contentSize: { width: fixedWidth, height: fixedHeight, ...size },
+          contentSize: getElementSize(contentNode),
         },
         () => resolve({ error: 0 })
       );

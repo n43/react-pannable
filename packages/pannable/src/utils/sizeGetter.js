@@ -1,32 +1,33 @@
-export function getElementSize(
-  element = null,
-  needsWidth = true,
-  needsHeight = true
-) {
-  if (!element) {
-    return { width: 0, height: 0 };
-  }
-
-  let size = {};
-
-  const width = element.offsetWidth || 0;
-  const height = element.offsetHeight || 0;
+export function getElementSize(element) {
   const styles = window.getComputedStyle(element) || {};
 
-  const paddingLeft = parseInt(styles.paddingLeft, 10) || 0;
-  const paddingRight = parseInt(styles.paddingRight, 10) || 0;
-  const paddingTop = parseInt(styles.paddingTop, 10) || 0;
-  const paddingBottom = parseInt(styles.paddingBottom, 10) || 0;
+  let width = element.offsetWidth || 0;
+  let height = element.offsetHeight || 0;
 
-  const realHeight = height - paddingTop - paddingBottom;
-  const realWidth = width - paddingLeft - paddingRight;
-
-  if (needsWidth) {
-    size.width = realWidth;
+  if (styles.paddingLeft) {
+    width -= parseInt(styles.paddingLeft, 10);
   }
-  if (needsHeight) {
-    size.height = realHeight;
+  if (styles.paddingRight) {
+    width -= parseInt(styles.paddingRight, 10);
+  }
+  if (styles.borderLeftWidth) {
+    width -= parseInt(styles.borderLeftWidth, 10);
+  }
+  if (styles.borderRightWidth) {
+    width -= parseInt(styles.borderRightWidth, 10);
+  }
+  if (styles.paddingTop) {
+    height -= parseInt(styles.paddingTop, 10);
+  }
+  if (styles.paddingBottom) {
+    height -= parseInt(styles.paddingBottom, 10);
+  }
+  if (styles.borderTopWidth) {
+    height -= parseInt(styles.borderTopWidth, 10);
+  }
+  if (styles.borderBottomWidth) {
+    height -= parseInt(styles.borderBottomWidth, 10);
   }
 
-  return size;
+  return { width, height };
 }
