@@ -23,3 +23,19 @@
   vertical-align: top;
   font-family: 'sans-serif';
 }
+.pad-optcheck {
+  padding: 12px 0;
+}
+.pad-btn {
+  display: inline-block;
+  padding: 10px;
+  background-color: #ececec;
+  font-size: 14px;
+  color: #434343;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: 'sans-serif';
+}
+.pad-btn:hover {
+  background-color: #dedede;
+}
