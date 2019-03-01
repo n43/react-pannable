@@ -26,7 +26,7 @@ npm install --save react-pannable
 
 - [Basic Scroll](https://n43.github.io/react-pannable-demo/?selectedKind=Pad&selectedStory=basic%20scroll&full=0&addons=0&stories=1&panelRight=0)
 - [Auto Resizing](https://n43.github.io/react-pannable-demo/?selectedKind=Pad&selectedStory=filling%20parent%20space&full=0&addons=0&stories=1&panelRight=0)
-- [Layout With General Content Mode](https://n43.github.io/react-pannable-demo/?selectedKind=Pad&selectedStory=using%20general%20content%20layout&full=0&addons=0&stories=1&panelRight=0)
+- [Layout with General Content Mode](https://n43.github.io/react-pannable-demo/?selectedKind=Pad&selectedStory=using%20general%20content%20layout&full=0&addons=0&stories=1&panelRight=0)
 
 ## API Reference
 
