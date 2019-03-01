@@ -4,6 +4,7 @@ import createDetector from './utils/resizeDetector';
 
 export default class GeneralContent extends React.Component {
   static defaultProps = {
+    children: () => null,
     content: null,
     fixedWidth: 0,
     fixedHeight: 0,
