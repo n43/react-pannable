@@ -75,6 +75,19 @@ type PadEvent = {
 
 Sets the offset from the content view’s origin.
 
+### GeneralContent
+
+`GeneralContent` automatically adjusts the width and height of content.
+
+#### Prop Types
+
+| Property | Type               | Default    | Description                                                                                                     |
+| :------- | :----------------- | :--------- | :-------------------------------------------------------------------------------------------------------------- |
+| children | func               | () => null | Function responsible for rendering children.:`({ content: element, width: number, height: number }) => element` |
+| content  | element\|component | null       | Rendered content. Can be a React Component Class, a render function, or a rendered element.                     |
+| width    | number             | -1         | The width of the content.If you set this property to `-1`, it shrinks the content's width.                      |
+| height   | number             | -1         | The height of the content.If you set this property to `-1`, it shrinks the content's height.                    |
+
 ## License
 
 [MIT License](./LICENSE)
