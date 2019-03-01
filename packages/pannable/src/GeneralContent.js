@@ -1,59 +1,40 @@
 import React from 'react';
 import { getElementSize } from './utils/sizeGetter';
-import createDetector from './utils/resizeDetector';
+import createElementResizeDetector from './utils/resizeDetector';
 
 export default class GeneralContent extends React.Component {
   static defaultProps = {
     children: () => null,
     content: null,
-    fixedWidth: 0,
-    fixedHeight: 0,
+    width: 0,
+    height: 0,
   };
 
   constructor(props) {
     super(props);
 
     this.state = {
-      contentSize: { width: props.fixedWidth, height: props.fixedHeight },
+      width: props.width,
+      height: props.height,
     };
     this.contentRef = React.createRef();
   }
 
   componentDidMount() {
-    const { fixedWidth, fixedHeight } = this.props;
+    const { width, height } = this.props;
 
-    if (!(fixedWidth && fixedHeight)) {
-      this.resizeDetector = createDetector();
-      this._computeSize().then(({ error }) => {
-        if (!error) {
-          const contentNode = this.contentRef.current;
-          this.resizeDetector.addResizeListener(contentNode, () => {
-            this._computeSize();
-          });
-        }
-      });
+    if (!(width && height)) {
+      this._calculateSize();
     }
   }
   componentDidUpdate(prevProps) {
-    const { fixedWidth, fixedHeight } = this.props;
+    const { width, height } = this.props;
 
-    if (
-      prevProps.fixedWidth !== fixedWidth ||
-      prevProps.fixedHeight !== fixedHeight
-    ) {
-      if (fixedWidth && fixedHeight) {
-        this.setState({
-          contentSize: { width: fixedWidth, height: fixedHeight },
-        });
+    if (prevProps.width !== width || prevProps.height !== height) {
+      if (width && height) {
+        this.setState({ width, heigh });
       } else {
-        this._computeSize().then(({ error }) => {
-          if (!error && !this.resizeDetector) {
-            const contentNode = this.contentRef.current;
-            this.resizeDetector.addResizeListener(contentNode, () => {
-              this._computeSize();
-            });
-          }
-        });
+        this._calculateSize();
       }
     }
   }
@@ -63,27 +44,34 @@ export default class GeneralContent extends React.Component {
       this.resizeDetector.removeResizeListener(contentNode);
     }
   }
-  _computeSize = () => {
-    return new Promise(resolve => {
-      const { fixedWidth, fixedHeight } = this.props;
-      const contentNode = this.contentRef.current;
+  _calculateSize = () => {
+    const { width, height } = this.props;
+    const contentNode = this.contentRef.current;
 
-      if (fixedWidth && fixedHeight) {
-        resolve({ error: 1 });
-        return;
+    if (width && height) {
+      return;
+    }
+
+    const size = getElementSize(contentNode);
+    this.setState(
+      {
+        width: width || size.width,
+        height: height || size.height,
+      },
+      () => {
+        if (!this.resizeDetector) {
+          this.resizeDetector = createElementResizeDetector();
+          this.resizeDetector.addResizeListener(
+            contentNode,
+            this._calculateSize
+          );
+        }
       }
-
-      this.setState(
-        {
-          contentSize: getElementSize(contentNode),
-        },
-        () => resolve({ error: 0 })
-      );
-    });
+    );
   };
   render() {
     const { content, children } = this.props;
-    const { contentSize } = this.state;
+    const { width, height } = this.state;
 
     const wrappedContent = (
       <div
@@ -96,8 +84,8 @@ export default class GeneralContent extends React.Component {
 
     return children({
       content: wrappedContent,
-      contentWidth: contentSize.width,
-      contentHeight: contentSize.height,
+      width,
+      height,
     });
   }
 }

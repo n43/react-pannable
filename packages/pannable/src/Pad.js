@@ -1,7 +1,7 @@
 import React from 'react';
 import Pannable from './Pannable';
 import { getElementSize } from './utils/sizeGetter';
-import createDetector from './utils/resizeDetector';
+import createElementResizeDetector from './utils/resizeDetector';
 import StyleSheet from './utils/StyleSheet';
 import {
   requestAnimationFrame,
@@ -134,17 +134,9 @@ export default class Pad extends React.Component {
 
   componentDidMount() {
     const { width, height } = this.props;
-    const parentNode = this.wrapperRef.current.elemRef.current.parentNode;
 
     if (!(width && height)) {
-      this._computeParentSize().then(({ error }) => {
-        if (!error) {
-          this.resizeDetector = createDetector();
-          this.resizeDetector.addResizeListener(parentNode, () => {
-            this._computeParentSize();
-          });
-        }
-      });
+      this._calculateParentSize();
     }
   }
 
@@ -158,16 +150,7 @@ export default class Pad extends React.Component {
           contentOffset: { ...contentOffset },
         }));
       } else {
-        this._computeParentSize().then(({ error }) => {
-          if (!error && !this.resizeDetector) {
-            const parentNode = this.wrapperRef.current.elemRef.current
-              .parentNode;
-            this.resizeDetector = createDetector();
-            this.resizeDetector.addResizeListener(parentNode, () => {
-              this._computeParentSize();
-            });
-          }
-        });
+        this._calculateParentSize();
       }
     }
     if (
@@ -259,28 +242,36 @@ export default class Pad extends React.Component {
     });
   }
 
-  _computeParentSize = () => {
-    return new Promise(resolve => {
-      const parentNode = this.wrapperRef.current.elemRef.current.parentNode;
-      const { width, height } = this.props;
+  _calculateParentSize = () => {
+    const parentNode = this.wrapperRef.current.elemRef.current.parentNode;
+    const { width, height } = this.props;
 
-      if (width && height) {
-        resolve({ error: 1 });
-        return;
+    if (width && height) {
+      return;
+    }
+
+    const parentSize = getElementSize(parentNode);
+
+    this.setState(
+      ({ contentOffset }) => {
+        return {
+          size: {
+            width: width || parentSize.width,
+            height: height || parentSize.height,
+          },
+          contentOffset: { ...contentOffset },
+        };
+      },
+      () => {
+        if (!this.resizeDetector) {
+          this.resizeDetector = createElementResizeDetector();
+          this.resizeDetector.addResizeListener(
+            parentNode,
+            this._calculateParentSize
+          );
+        }
       }
-
-      const parentSize = getElementSize(parentNode, !width, !height);
-
-      this.setState(
-        ({ contentOffset }) => {
-          return {
-            size: { width, height, ...parentSize },
-            contentOffset: { ...contentOffset },
-          };
-        },
-        () => resolve({ error: 0 })
-      );
-    });
+    );
   };
 
   _decelerate(interval) {

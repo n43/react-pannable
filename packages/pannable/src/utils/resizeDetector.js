@@ -2,7 +2,7 @@ import createResizeDetector from 'element-resize-detector';
 
 let detector = null;
 
-export default function createDetector() {
+export default function createElementResizeDetector() {
   if (detector) {
     return { addResizeListener, removeResizeListener };
   }

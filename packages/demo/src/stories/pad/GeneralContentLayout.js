@@ -95,13 +95,13 @@ class GeneralContentLayout extends Component {
                 content={this.renderImages()}
                 {...generalContentProps}
               >
-                {({ content, contentWidth, contentHeight }) => (
+                {({ content, width, height }) => (
                   <Pad
                     className="autoadjust-pad"
                     width={346}
                     height={552}
-                    contentWidth={contentWidth}
-                    contentHeight={contentHeight}
+                    contentWidth={width}
+                    contentHeight={height}
                   >
                     {content}
                   </Pad>

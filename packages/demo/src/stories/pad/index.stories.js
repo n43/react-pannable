@@ -5,6 +5,6 @@ import FillingParentSpace from './FillingParentSpace';
 import GeneralContentLayout from './GeneralContentLayout';
 
 storiesOf('Pad', module)
-  .add('basic scroll', () => <BasicScroll />)
-  .add('filling parent space', () => <FillingParentSpace />)
-  .add('using general content layout', () => <GeneralContentLayout />);
+  .add('Scrollable Content', () => <BasicScroll />)
+  .add('Auto Resizing', () => <FillingParentSpace />)
+  .add('Layout with General Content Mode', () => <GeneralContentLayout />);
