@@ -17,12 +17,12 @@ npm install --save react-pannable
 
 [All the examples!](https://n43.github.io/react-pannable-demo/)
 
-`Pannable` demos
+Some `Pannable` demos
 
 - [Note](https://n43.github.io/react-pannable-demo/?selectedKind=Pannable&selectedStory=Note&full=0&addons=0&stories=1&panelRight=0)
 - [Sticker](https://n43.github.io/react-pannable-demo/?selectedKind=Pannable&selectedStory=Sticker&full=0&addons=0&stories=1&panelRight=0)
 
-`Pad` demos
+Some `Pad` demos
 
 - [Basic Scroll](https://n43.github.io/react-pannable-demo/?selectedKind=Pad&selectedStory=basic%20scroll&full=0&addons=0&stories=1&panelRight=0)
 - [Auto Resizing](https://n43.github.io/react-pannable-demo/?selectedKind=Pad&selectedStory=filling%20parent%20space&full=0&addons=0&stories=1&panelRight=0)
