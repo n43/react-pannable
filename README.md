@@ -19,8 +19,8 @@ npm install --save react-pannable
 
 Some `Pannable` demos
 
-- [Note](https://n43.github.io/react-pannable-demo/?selectedKind=Pannable&selectedStory=Note&full=0&addons=0&stories=1&panelRight=0)
-- [Sticker](https://n43.github.io/react-pannable-demo/?selectedKind=Pannable&selectedStory=Sticker&full=0&addons=0&stories=1&panelRight=0)
+- [Draggable Notes](https://n43.github.io/react-pannable-demo/?selectedKind=Pannable&selectedStory=Note&full=0&addons=0&stories=1&panelRight=0)
+- [Adjustable Sticker](https://n43.github.io/react-pannable-demo/?selectedKind=Pannable&selectedStory=Sticker&full=0&addons=0&stories=1&panelRight=0)
 
 Some `Pad` demos
 
