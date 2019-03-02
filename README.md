@@ -94,14 +94,18 @@ Sets the offset from the content view’s origin.
 
 `GeneralContent` automatically adjusts the width and height of content.
 
+```js
+type Size = { width: number, height: number };
+```
+
 #### Prop Types
 
-| Property |       Type        | DefaultValue | Description                                                                                                     |
-| :------- | :---------------: | :----------: | :-------------------------------------------------------------------------------------------------------------- |
-| children |     function      |  () => null  | Function responsible for rendering children.:`({ content: element, width: number, height: number }) => element` |
-| content  | element,component |     null     | Rendered content. Can be a react component class, a render function, or a rendered element.                     |
-| width    |      number       |      -1      | The width of the content.If you set this property to `-1`, it shrinks the content's width.                      |
-| height   |      number       |      -1      | The height of the content.If you set this property to `-1`, it shrinks the content's height.                    |
+| Property |       Type        | DefaultValue | Description                                                                                  |
+| :------- | :---------------: | :----------: | :------------------------------------------------------------------------------------------- |
+| children |     function      |  () => null  | Function responsible for rendering children.:`({ content: element, size: Size }) => element` |
+| content  | element,component |     null     | Rendered content. Can be a react component class, a render function, or a rendered element.  |
+| width    |      number       |      -1      | The width of the content.If you set this property to `-1`, it shrinks the content's width.   |
+| height   |      number       |      -1      | The height of the content.If you set this property to `-1`, it shrinks the content's height. |
 
 ## License
 

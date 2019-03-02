@@ -74,13 +74,13 @@ class GeneralContentLayout extends Component {
                 width={contentFixedWidth}
                 height={contentFixedHeight}
               >
-                {({ content, width, height }) => (
+                {({ content, size }) => (
                   <Pad
                     className="autoadjust-pad"
                     width={346}
                     height={552}
-                    contentWidth={width}
-                    contentHeight={height}
+                    contentWidth={size.width}
+                    contentHeight={size.height}
                   >
                     {content}
                   </Pad>

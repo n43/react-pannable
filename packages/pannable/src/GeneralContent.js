@@ -50,7 +50,6 @@ export default class GeneralContent extends React.Component {
     }
   }
   _calculateSize = () => {
-    const { width, height } = this.props;
     const resizeNode = this.contentRef.current;
 
     if (!this._resizeNode) {
@@ -59,33 +58,25 @@ export default class GeneralContent extends React.Component {
       return;
     }
 
-    const resizeNodeSize = getElementSize(resizeNode);
-
-    this.setState({
-      size: {
-        width: width < 0 ? resizeNodeSize.width : width,
-        height: height < 0 ? resizeNodeSize.height : height,
-      },
-    });
+    this.setState({ size: getElementSize(resizeNode) });
   };
   render() {
-    const { content, children } = this.props;
-    const { size } = this.state;
+    const { width, height, content, children } = this.props;
+    const wrappedStyle = {
+      position: 'absolute',
+      width: width < 0 ? 'auto' : width,
+      height: height < 0 ? 'auto' : height,
+    };
 
     const wrappedContent = (
-      <div
-        key="content"
-        ref={this.contentRef}
-        style={{ position: 'absolute', top: 0, left: 0 }}
-      >
-        {content}
+      <div ref={this.contentRef} style={wrappedStyle}>
+        {React.isValidElement(content) ? content : <content />}
       </div>
     );
 
     return children({
       content: wrappedContent,
-      width: size.width,
-      height: size.height,
+      size: this.state.size,
     });
   }
 }
