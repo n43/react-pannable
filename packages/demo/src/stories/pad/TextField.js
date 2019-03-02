@@ -3,21 +3,15 @@ import './TextField.css';
 
 class TextField extends Component {
   render() {
-    const { name, value, placeholder, isReadonly, onChange } = this.props;
+    const { name, readOnly } = this.props;
 
     return (
       <div className="textfield-item">
         <div className="textfield-label">{name}</div>
-        {isReadonly ? (
+        {readOnly ? (
           <div className="textfield-input">{value}</div>
         ) : (
-          <input
-            className="textfield-input"
-            value={value}
-            name={name}
-            placeholder={placeholder}
-            onChange={onChange}
-          />
+          <input {...this.props} className="textfield-input" />
         )}
       </div>
     );

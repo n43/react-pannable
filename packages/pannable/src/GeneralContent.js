@@ -1,21 +1,22 @@
 import React from 'react';
 import { getElementSize } from './utils/sizeGetter';
-import createElementResizeDetector from './utils/resizeDetector';
+import resizeDetector from './utils/resizeDetector';
 
 export default class GeneralContent extends React.Component {
   static defaultProps = {
     children: () => null,
     content: null,
-    width: 0,
-    height: 0,
+    width: -1,
+    height: -1,
   };
 
   constructor(props) {
     super(props);
 
+    const { width, height } = props;
+
     this.state = {
-      width: props.width,
-      height: props.height,
+      size: { width: width < 0 ? 0 : width, height: height < 0 ? 0 : height },
     };
     this.contentRef = React.createRef();
   }
@@ -23,7 +24,7 @@ export default class GeneralContent extends React.Component {
   componentDidMount() {
     const { width, height } = this.props;
 
-    if (!(width && height)) {
+    if (width < 0 || height < 0) {
       this._calculateSize();
     }
   }
@@ -31,50 +32,49 @@ export default class GeneralContent extends React.Component {
     const { width, height } = this.props;
 
     if (prevProps.width !== width || prevProps.height !== height) {
-      if (width && height) {
-        this.setState({ width, heigh });
-      } else {
+      if (width < 0 || height < 0) {
         this._calculateSize();
+      } else {
+        if (this._resizeNode) {
+          resizeDetector.uninstall(this._resizeNode);
+          this._resizeNode = undefined;
+        }
+        this.setState({ size: { width, height } });
       }
     }
   }
   componentWillUnmount() {
-    if (this.resizeDetector) {
-      const contentNode = this.contentRef.current;
-      this.resizeDetector.removeResizeListener(contentNode);
+    if (this._resizeNode) {
+      resizeDetector.uninstall(this._resizeNode);
+      this._resizeNode = undefined;
     }
   }
   _calculateSize = () => {
     const { width, height } = this.props;
-    const contentNode = this.contentRef.current;
+    const resizeNode = this.contentRef.current;
 
-    if (width && height) {
+    if (!this._resizeNode) {
+      this._resizeNode = resizeNode;
+      resizeDetector.listenTo(resizeNode, this._calculateSize);
       return;
     }
 
-    const size = getElementSize(contentNode);
-    this.setState(
-      {
-        width: width || size.width,
-        height: height || size.height,
+    const resizeNodeSize = getElementSize(resizeNode);
+
+    this.setState({
+      size: {
+        width: width < 0 ? resizeNodeSize.width : width,
+        height: height < 0 ? resizeNodeSize.height : height,
       },
-      () => {
-        if (!this.resizeDetector) {
-          this.resizeDetector = createElementResizeDetector();
-          this.resizeDetector.addResizeListener(
-            contentNode,
-            this._calculateSize
-          );
-        }
-      }
-    );
+    });
   };
   render() {
     const { content, children } = this.props;
-    const { width, height } = this.state;
+    const { size } = this.state;
 
     const wrappedContent = (
       <div
+        key="content"
         ref={this.contentRef}
         style={{ position: 'absolute', top: 0, left: 0 }}
       >
@@ -84,8 +84,8 @@ export default class GeneralContent extends React.Component {
 
     return children({
       content: wrappedContent,
-      width,
-      height,
+      width: size.width,
+      height: size.height,
     });
   }
 }

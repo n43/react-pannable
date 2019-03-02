@@ -4,71 +4,57 @@ import SvgPhone from './SvgPhone';
 import TextField from './TextField';
 import './Pad.css';
 
+const images = [
+  'http://h1.ioliu.cn//bing/CumulusCaribbean_ZH-CN4884493707_1920x1080.jpg',
+  'http://h1.ioliu.cn//bing/LoisachKochelsee_ZH-CN5859866695_1920x1080.jpg',
+  'http://h1.ioliu.cn//bing/MinnewankaBoathouse_ZH-CN0548323518_1920x1080.jpg',
+  'http://h1.ioliu.cn//bing/AthabascaCave_EN-AU0628983693_1920x1080.jpg',
+  'http://h1.ioliu.cn//bing/SwissSuspension_EN-AU8560310773_1920x1080.jpg',
+  'http://h1.ioliu.cn//bing/SpainSurfer_EN-AU11271138486_640x360.jpg',
+  'http://h1.ioliu.cn//bing/AuburnBalloons_EN-AU8649124966_1920x1080.jpg',
+  'http://h1.ioliu.cn//bing/PJ_EN-AU10859560585_1920x1080.jpg',
+];
+
 class GeneralContentLayout extends Component {
   state = {
-    images: [
-      'http://h1.ioliu.cn//bing/CumulusCaribbean_ZH-CN4884493707_1920x1080.jpg',
-      'http://h1.ioliu.cn//bing/LoisachKochelsee_ZH-CN5859866695_1920x1080.jpg',
-      'http://h1.ioliu.cn//bing/MinnewankaBoathouse_ZH-CN0548323518_1920x1080.jpg',
-      'http://h1.ioliu.cn//bing/AthabascaCave_EN-AU0628983693_1920x1080.jpg',
-      'http://h1.ioliu.cn//bing/SwissSuspension_EN-AU8560310773_1920x1080.jpg',
-      'http://h1.ioliu.cn//bing/SpainSurfer_EN-AU11271138486_640x360.jpg',
-      'http://h1.ioliu.cn//bing/AuburnBalloons_EN-AU8649124966_1920x1080.jpg',
-      'http://h1.ioliu.cn//bing/PJ_EN-AU10859560585_1920x1080.jpg',
-    ],
     contentFixedWidth: 346,
-    contentFixedHeight: '',
-    imagesCount: '5',
+    contentFixedHeight: -1,
+    imagesCount: 5,
     imageWidth: 346,
   };
 
   handleInputChange = evt => {
     const node = evt.target;
+    const value = parseInt(node.value, 10);
+
+    if (isNaN(value)) {
+      return;
+    }
 
     this.setState({
-      [node.name]: node.value,
+      [node.name]: value,
     });
   };
 
   renderImages = () => {
-    const { images, imagesCount, imageWidth } = this.state;
+    const { imagesCount, imageWidth } = this.state;
+    const elements = [];
 
-    return images.map((src, index) => {
-      if (index + 1 > imagesCount) {
-        return null;
+    for (let idx = 0; idx < Math.max(0, imagesCount); idx++) {
+      const imgStyle = { display: 'block' };
+
+      if (imageWidth > 0) {
+        imgStyle.width = imageWidth;
       }
 
-      let styleWidth = 'auto';
-      if (!isNaN(parseInt(imageWidth))) {
-        styleWidth = `${imageWidth}px`;
-      }
-      return (
-        <img
-          src={src}
-          style={{ display: 'block', width: styleWidth }}
-          key={src}
-        />
+      elements.push(
+        <img key={idx} src={images[idx % images.length]} style={imgStyle} />
       );
-    });
+    }
+
+    return elements;
   };
-  renderOptItem(name, value, placeholder, isReadonly) {
-    return (
-      <div className="autoadjust-optitem">
-        <div className="autoadjust-optlabel">{name}</div>
-        {isReadonly ? (
-          <div className="autoadjust-optinput">{value}</div>
-        ) : (
-          <input
-            className="autoadjust-optinput"
-            value={value}
-            name={name}
-            placeholder={placeholder}
-            onChange={this.handleInputChange}
-          />
-        )}
-      </div>
-    );
-  }
+
   render() {
     const {
       contentFixedWidth,
@@ -76,14 +62,6 @@ class GeneralContentLayout extends Component {
       imagesCount,
       imageWidth,
     } = this.state;
-
-    const generalContentProps = {};
-    if (contentFixedWidth && !isNaN(parseInt(contentFixedWidth))) {
-      generalContentProps.fixedWidth = parseInt(contentFixedWidth);
-    }
-    if (contentFixedHeight && !isNaN(parseInt(contentFixedHeight))) {
-      generalContentProps.fixedHeight = parseInt(contentFixedHeight);
-    }
 
     return (
       <React.Fragment>
@@ -93,7 +71,8 @@ class GeneralContentLayout extends Component {
             <div className="pad-preview-content">
               <GeneralContent
                 content={this.renderImages()}
-                {...generalContentProps}
+                width={contentFixedWidth}
+                height={contentFixedHeight}
               >
                 {({ content, width, height }) => (
                   <Pad
@@ -112,25 +91,25 @@ class GeneralContentLayout extends Component {
           <div className="pad-optbar">
             <TextField
               name="contentFixedWidth"
-              value={contentFixedWidth}
+              defaultValue={contentFixedWidth}
               placeholder="integer"
               onChange={this.handleInputChange}
             />
             <TextField
               name="contentFixedHeight"
-              value={contentFixedHeight}
+              defaultValue={contentFixedHeight}
               placeholder="integer"
               onChange={this.handleInputChange}
             />
             <TextField
               name="imagesCount"
-              value={imagesCount}
+              defaultValue={imagesCount}
               placeholder="1-8"
               onChange={this.handleInputChange}
             />
             <TextField
               name="imageWidth"
-              value={imageWidth}
+              defaultValue={imageWidth}
               placeholder="auto or integer"
               onChange={this.handleInputChange}
             />

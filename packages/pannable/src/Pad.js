@@ -1,7 +1,7 @@
 import React from 'react';
 import Pannable from './Pannable';
 import { getElementSize } from './utils/sizeGetter';
-import createElementResizeDetector from './utils/resizeDetector';
+import resizeDetector from './utils/resizeDetector';
 import StyleSheet from './utils/StyleSheet';
 import {
   requestAnimationFrame,
@@ -17,8 +17,8 @@ import {
 
 export default class Pad extends React.Component {
   static defaultProps = {
-    width: 0,
-    height: 0,
+    width: -1,
+    height: -1,
     contentWidth: 0,
     contentHeight: 0,
     contentProps: {},
@@ -30,9 +30,11 @@ export default class Pad extends React.Component {
   constructor(props) {
     super(props);
 
+    const { width, height, contentWidth, contentHeight } = props;
+
     this.state = {
-      size: { width: props.width, height: props.height },
-      contentSize: { width: props.contentWidth, height: props.contentHeight },
+      size: { width: width < 0 ? 0 : width, height: height < 0 ? 0 : height },
+      contentSize: { width: contentWidth, height: contentHeight },
       contentOffset: { x: 0, y: 0 },
       contentVelocity: { x: 0, y: 0 },
       prevContentOffset: null,
@@ -70,9 +72,11 @@ export default class Pad extends React.Component {
       let nextDecelerationEndPosition = decelerationEndPosition;
 
       if (
-        nextContentOffset.x !== contentOffset.x ||
-        nextContentOffset.y !== contentOffset.y
+        nextContentOffset.x === contentOffset.x &&
+        nextContentOffset.y === contentOffset.y
       ) {
+        nextContentOffset = contentOffset;
+      } else {
         nextContentVelocity = {
           x:
             nextContentOffset.x !== contentOffset.x ? 0 : nextContentVelocity.x,
@@ -135,8 +139,8 @@ export default class Pad extends React.Component {
   componentDidMount() {
     const { width, height } = this.props;
 
-    if (!(width && height)) {
-      this._calculateParentSize();
+    if (width < 0 || height < 0) {
+      this._calculateSize();
     }
   }
 
@@ -144,13 +148,18 @@ export default class Pad extends React.Component {
     const { width, height, contentWidth, contentHeight } = this.props;
 
     if (prevProps.width !== width || prevProps.height !== height) {
-      if (width && height) {
+      if (width < 0 || height < 0) {
+        this._calculateSize();
+      } else {
+        if (this._resizeNode) {
+          resizeDetector.uninstall(this._resizeNode);
+          this._resizeNode = undefined;
+        }
+
         this.setState(({ contentOffset }) => ({
           size: { width, height },
           contentOffset: { ...contentOffset },
         }));
-      } else {
-        this._calculateParentSize();
       }
     }
     if (
@@ -187,9 +196,9 @@ export default class Pad extends React.Component {
       this._deceleratingTimer = undefined;
     }
 
-    if (this.resizeDetector) {
-      const parentNode = this.wrapperRef.current.elemRef.current.parentNode;
-      this.resizeDetector.removeResizeListener(parentNode);
+    if (this._resizeNode) {
+      resizeDetector.uninstall(this._resizeNode);
+      this._resizeNode = undefined;
     }
   }
 
@@ -242,36 +251,25 @@ export default class Pad extends React.Component {
     });
   }
 
-  _calculateParentSize = () => {
-    const parentNode = this.wrapperRef.current.elemRef.current.parentNode;
+  _calculateSize = () => {
     const { width, height } = this.props;
+    const resizeNode = this.wrapperRef.current.elemRef.current.parentNode;
 
-    if (width && height) {
+    if (!this._resizeNode) {
+      this._resizeNode = resizeNode;
+      resizeDetector.listenTo(resizeNode, this._calculateSize);
       return;
     }
 
-    const parentSize = getElementSize(parentNode);
+    const resizeNodeSize = getElementSize(resizeNode);
 
-    this.setState(
-      ({ contentOffset }) => {
-        return {
-          size: {
-            width: width || parentSize.width,
-            height: height || parentSize.height,
-          },
-          contentOffset: { ...contentOffset },
-        };
+    this.setState(({ contentOffset }) => ({
+      size: {
+        width: width < 0 ? resizeNodeSize.width : width,
+        height: height < 0 ? resizeNodeSize.height : height,
       },
-      () => {
-        if (!this.resizeDetector) {
-          this.resizeDetector = createElementResizeDetector();
-          this.resizeDetector.addResizeListener(
-            parentNode,
-            this._calculateParentSize
-          );
-        }
-      }
-    );
+      contentOffset: { ...contentOffset },
+    }));
   };
 
   _decelerate(interval) {

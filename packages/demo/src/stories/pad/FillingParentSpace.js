@@ -7,16 +7,20 @@ import './FillingParentSpace.css';
 
 class FillingParentSpace extends Component {
   state = {
-    width: 345,
-    height: '',
-    parentSize: '345*552',
+    width: -1,
+    height: -1,
   };
 
   handleInputChange = evt => {
     const node = evt.target;
+    const value = parseInt(node.value, 10);
+
+    if (isNaN(value)) {
+      return;
+    }
 
     this.setState({
-      [node.name]: node.value,
+      [node.name]: value,
     });
   };
 
@@ -30,15 +34,7 @@ class FillingParentSpace extends Component {
   };
 
   render() {
-    const { width, height, parentSize } = this.state;
-
-    const padProps = {};
-    if (width && !isNaN(parseInt(width))) {
-      padProps.width = parseInt(width);
-    }
-    if (height && !isNaN(parseInt(height))) {
-      padProps.height = parseInt(height);
-    }
+    const { width, height } = this.state;
 
     return (
       <React.Fragment>
@@ -50,7 +46,8 @@ class FillingParentSpace extends Component {
                 className="fillparent-padwrapper"
                 contentWidth={345}
                 contentHeight={100}
-                {...padProps}
+                width={width}
+                height={height}
               >
                 {this.renderContent()}
               </Pad>
@@ -59,20 +56,14 @@ class FillingParentSpace extends Component {
           <div className="pad-optbar">
             <TextField
               name="width"
-              value={width}
+              defaultValue={'' + width}
               placeholder="integer"
               onChange={this.handleInputChange}
             />
             <TextField
               name="height"
-              value={height}
+              defaultValue={'' + height}
               placeholder="integer"
-              onChange={this.handleInputChange}
-            />
-            <TextField
-              name="parentSize"
-              value={parentSize}
-              isReadOnly={true}
               onChange={this.handleInputChange}
             />
           </div>
