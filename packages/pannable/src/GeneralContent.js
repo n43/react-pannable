@@ -50,15 +50,20 @@ export default class GeneralContent extends React.Component {
     }
   }
   _calculateSize = () => {
-    const resizeNode = this.contentRef.current;
-
     if (!this._resizeNode) {
+      const resizeNode = this.contentRef.current;
+
+      if (!resizeNode) {
+        return;
+      }
+
       this._resizeNode = resizeNode;
       resizeDetector.listenTo(resizeNode, this._calculateSize);
+
       return;
     }
 
-    this.setState({ size: getElementSize(resizeNode) });
+    this.setState({ size: getElementSize(this._resizeNode) });
   };
   render() {
     const { width, height, content, children } = this.props;

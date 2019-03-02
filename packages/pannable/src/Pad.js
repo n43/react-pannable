@@ -252,16 +252,20 @@ export default class Pad extends React.Component {
   }
 
   _calculateSize = () => {
-    const { width, height } = this.props;
-    const resizeNode = this.wrapperRef.current.elemRef.current.parentNode;
-
     if (!this._resizeNode) {
+      const resizeNode = this.wrapperRef.current.elemRef.current.parentNode;
+
+      if (!resizeNode) {
+        return;
+      }
+
       this._resizeNode = resizeNode;
       resizeDetector.listenTo(resizeNode, this._calculateSize);
       return;
     }
 
-    const resizeNodeSize = getElementSize(resizeNode);
+    const { width, height } = this.props;
+    const resizeNodeSize = getElementSize(this._resizeNode);
 
     this.setState(({ contentOffset }) => ({
       size: {
