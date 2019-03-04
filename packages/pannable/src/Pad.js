@@ -1,7 +1,5 @@
 import React from 'react';
 import Pannable from './Pannable';
-import { getElementSize } from './utils/sizeGetter';
-import resizeDetector from './utils/resizeDetector';
 import StyleSheet from './utils/StyleSheet';
 import {
   requestAnimationFrame,
@@ -17,8 +15,8 @@ import {
 
 export default class Pad extends React.Component {
   static defaultProps = {
-    width: -1,
-    height: -1,
+    width: 0,
+    height: 0,
     contentWidth: 0,
     contentHeight: 0,
     contentProps: {},
@@ -33,7 +31,7 @@ export default class Pad extends React.Component {
     const { width, height, contentWidth, contentHeight } = props;
 
     this.state = {
-      size: { width: width < 0 ? 0 : width, height: height < 0 ? 0 : height },
+      size: { width, height },
       contentSize: { width: contentWidth, height: contentHeight },
       contentOffset: { x: 0, y: 0 },
       contentVelocity: { x: 0, y: 0 },
@@ -136,31 +134,14 @@ export default class Pad extends React.Component {
     return nextState;
   }
 
-  componentDidMount() {
-    const { width, height } = this.props;
-
-    if (width < 0 || height < 0) {
-      this._calculateSize();
-    }
-  }
-
   componentDidUpdate(prevProps, prevState) {
     const { width, height, contentWidth, contentHeight } = this.props;
 
     if (prevProps.width !== width || prevProps.height !== height) {
-      if (width < 0 || height < 0) {
-        this._calculateSize();
-      } else {
-        if (this._resizeNode) {
-          resizeDetector.uninstall(this._resizeNode);
-          this._resizeNode = undefined;
-        }
-
-        this.setState(({ contentOffset }) => ({
-          size: { width, height },
-          contentOffset: { ...contentOffset },
-        }));
-      }
+      this.setState(({ contentOffset }) => ({
+        size: { width, height },
+        contentOffset: { ...contentOffset },
+      }));
     }
     if (
       prevProps.contentWidth !== contentWidth ||
@@ -194,11 +175,6 @@ export default class Pad extends React.Component {
     if (this._deceleratingTimer) {
       cancelAnimationFrame(this._deceleratingTimer);
       this._deceleratingTimer = undefined;
-    }
-
-    if (this._resizeNode) {
-      resizeDetector.uninstall(this._resizeNode);
-      this._resizeNode = undefined;
     }
   }
 
@@ -250,31 +226,6 @@ export default class Pad extends React.Component {
       };
     });
   }
-
-  _calculateSize = () => {
-    if (!this._resizeNode) {
-      const resizeNode = this.wrapperRef.current.elemRef.current.parentNode;
-
-      if (!resizeNode) {
-        return;
-      }
-
-      this._resizeNode = resizeNode;
-      resizeDetector.listenTo(resizeNode, this._calculateSize);
-      return;
-    }
-
-    const { width, height } = this.props;
-    const resizeNodeSize = getElementSize(this._resizeNode);
-
-    this.setState(({ contentOffset }) => ({
-      size: {
-        width: width < 0 ? resizeNodeSize.width : width,
-        height: height < 0 ? resizeNodeSize.height : height,
-      },
-      contentOffset: { ...contentOffset },
-    }));
-  };
 
   _decelerate(interval) {
     this.setState(

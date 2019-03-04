@@ -52,7 +52,7 @@ class GeneralContentLayout extends Component {
       );
     }
 
-    return elements;
+    return <React.Fragment>{elements}</React.Fragment>;
   };
 
   render() {

@@ -77,8 +77,8 @@ type PadEvent = {
 | :------------ | :------: | :----------: | :-------------------------------------------------------------------------- |
 | scrollEnabled | boolean  |     true     | Determines whether scrolling is enabled.                                    |
 | pagingEnabled | boolean  |    false     | Determines whether paging is enabled for the pad.                           |
-| width         |  number  |      -1      | The width of the bounding view. `-1` means auto.                            |
-| height        |  number  |      -1      | The height of the bounding view. `-1` means auto.                           |
+| width         |  number  |      0       | The width of the bounding view.                                             |
+| height        |  number  |      0       | The height of the bounding view.                                            |
 | contentWidth  |  number  |      0       | The width of the content view.                                              |
 | contentHeight |  number  |      0       | The height of the content view.                                             |
 | contentProps  |  object  |      {}      | The props of the content view.                                              |
