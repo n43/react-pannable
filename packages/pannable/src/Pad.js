@@ -15,6 +15,7 @@ import {
 
 export default class Pad extends React.Component {
   static defaultProps = {
+    children: null,
     width: 0,
     height: 0,
     contentWidth: 0,
