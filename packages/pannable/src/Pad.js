@@ -43,7 +43,9 @@ export default class Pad extends React.Component {
       decelerationRate: 0,
     };
 
-    this.wrapperRef = React.createRef();
+    this.boundingRef = React.createRef();
+    this.contentRef = React.createRef();
+    this.setContentSize = this.setContentSize.bind(this);
   }
 
   static getDerivedStateFromProps(props, state) {
@@ -196,6 +198,13 @@ export default class Pad extends React.Component {
 
   isDecelerating() {
     return this.state.decelerating;
+  }
+
+  setContentSize(contentSize) {
+    this.setState(({ contentOffset }) => ({
+      contentSize,
+      contentOffset: { ...contentOffset },
+    }));
   }
 
   scrollTo({ offset, animated }) {
@@ -363,10 +372,10 @@ export default class Pad extends React.Component {
       pagingEnabled,
       style,
       children,
-      ...wrapperProps
+      ...boundingProps
     } = this.props;
     const { size, contentSize, contentOffset } = this.state;
-    const wrapperStyles = StyleSheet.create({
+    const boundingStyles = StyleSheet.create({
       overflow: 'hidden',
       position: 'relative',
       boxSizing: 'border-box',
@@ -382,20 +391,25 @@ export default class Pad extends React.Component {
       transformTranslate: [contentOffset.x, contentOffset.y],
       ...contentProps.style,
     });
+    let Component = children;
+
+    if (!React.isValidElement(Component)) {
+      Component = <Component setContentSize={this.setContentSize} />;
+    }
 
     return (
       <Pannable
-        {...wrapperProps}
-        ref={this.wrapperRef}
+        {...boundingProps}
+        ref={this.boundingRef}
+        style={boundingStyles}
         enabled={scrollEnabled}
-        style={wrapperStyles}
         onStart={this._onDragStart}
         onMove={this._onDragMove}
         onEnd={this._onDragEnd}
         onCancel={this._onDragCancel}
       >
-        <div {...contentProps} style={contentStyles}>
-          {children}
+        <div {...contentProps} ref={this.contentRef} style={contentStyles}>
+          {Component}
         </div>
       </Pannable>
     );
