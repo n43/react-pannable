@@ -3,7 +3,9 @@ import React from 'react';
 function calculateDerivedState(count, widthFn, hash, widthList, hashDict) {
   let shouldUpdateWidthList = widthList.length !== count;
   let nextWidthList = [];
-  let nextState = { width: 0 };
+  let nextWidth = 0;
+  let nextHashDict;
+  let nextState = {};
 
   for (let index = 0; index < count; index++) {
     let width;
@@ -17,10 +19,10 @@ function calculateDerivedState(count, widthFn, hash, widthList, hashDict) {
       if (width === undefined) {
         width = widthFn({ index });
 
-        if (!nextState.hashDict) {
-          nextState.hashDict = { ...hashDict };
+        if (!nextHashDict) {
+          nextHashDict = { ...hashDict };
         }
-        nextState.hashDict[hashKey] = width;
+        nextHashDict[hashKey] = width;
       }
     }
     if (widthList[index] !== width) {
@@ -28,11 +30,15 @@ function calculateDerivedState(count, widthFn, hash, widthList, hashDict) {
     }
 
     nextWidthList[index] = width;
-    nextState.width += width;
+    nextWidth += width;
   }
   if (shouldUpdateWidthList) {
     nextState.widthList = nextWidthList;
   }
+  if (nextHashDict) {
+    nextState.hashDict = nextHashDict;
+  }
+  nextState.width = nextWidth;
 
   return nextState;
 }
