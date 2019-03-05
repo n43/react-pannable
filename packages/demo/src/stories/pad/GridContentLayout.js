@@ -11,7 +11,12 @@ export default class GridContentLayout extends React.Component {
           <div className="pad-preview">
             <SvgPhone className="pad-preview-bg" />
             <div className="pad-preview-content">
-              <Pad className="autoadjust-pad" width={346} height={552}>
+              <Pad
+                className="autoadjust-pad"
+                directionalLockEnabled
+                width={346}
+                height={552}
+              >
                 {pad => (
                   <GridContent
                     pad={pad}

@@ -9,7 +9,7 @@ import {
   getAdjustedContentOffset,
   getAdjustedPagingOffset,
   getAdjustedPagingVelocity,
-  getDecelerationEndPosition,
+  getDecelerationEndOffset,
   calculateDeceleration,
 } from './utils/motion';
 
@@ -22,6 +22,7 @@ export default class Pad extends React.Component {
     contentHeight: 0,
     scrollEnabled: true,
     pagingEnabled: false,
+    directionalLockEnabled: false,
     onScroll: () => {},
   };
 
@@ -38,8 +39,9 @@ export default class Pad extends React.Component {
       prevContentOffset: null,
       dragging: false,
       decelerating: false,
-      dragStartPosition: null,
-      decelerationEndPosition: null,
+      dragStartOffset: null,
+      dragDirection: 'xy',
+      decelerationEndOffset: null,
       decelerationRate: 0,
     };
 
@@ -57,7 +59,7 @@ export default class Pad extends React.Component {
       prevContentOffset,
       dragging,
       decelerating,
-      decelerationEndPosition,
+      decelerationEndOffset,
     } = state;
     const nextState = {};
 
@@ -69,7 +71,7 @@ export default class Pad extends React.Component {
       );
       let nextContentVelocity = contentVelocity;
       let nextDecelerating = decelerating;
-      let nextDecelerationEndPosition = decelerationEndPosition;
+      let nextDecelerationEndOffset = decelerationEndOffset;
 
       if (
         nextContentOffset.x === contentOffset.x &&
@@ -83,29 +85,29 @@ export default class Pad extends React.Component {
           y:
             nextContentOffset.y !== contentOffset.y ? 0 : nextContentVelocity.y,
         };
-        if (nextDecelerationEndPosition) {
-          nextDecelerationEndPosition = {
+        if (nextDecelerationEndOffset) {
+          nextDecelerationEndOffset = {
             x:
               nextContentOffset.x !== contentOffset.x
                 ? nextContentOffset.x
-                : nextDecelerationEndPosition.x,
+                : nextDecelerationEndOffset.x,
             y:
               nextContentOffset.y !== contentOffset.y
                 ? nextContentOffset.y
-                : nextDecelerationEndPosition.y,
+                : nextDecelerationEndOffset.y,
           };
         }
       }
 
-      if (nextDecelerationEndPosition) {
+      if (nextDecelerationEndOffset) {
         if (
-          nextContentOffset.x === nextDecelerationEndPosition.x &&
-          nextContentOffset.y === nextDecelerationEndPosition.y &&
+          nextContentOffset.x === nextDecelerationEndOffset.x &&
+          nextContentOffset.y === nextDecelerationEndOffset.y &&
           nextContentVelocity.x === 0 &&
           nextContentVelocity.y === 0
         ) {
           nextDecelerating = false;
-          nextDecelerationEndPosition = null;
+          nextDecelerationEndOffset = null;
 
           nextState.decelerationRate = 0;
         }
@@ -120,8 +122,8 @@ export default class Pad extends React.Component {
       if (nextDecelerating !== decelerating) {
         nextState.decelerating = nextDecelerating;
       }
-      if (nextDecelerationEndPosition !== decelerationEndPosition) {
-        nextState.decelerationEndPosition = nextDecelerationEndPosition;
+      if (nextDecelerationEndOffset !== decelerationEndOffset) {
+        nextState.decelerationEndOffset = nextDecelerationEndOffset;
       }
 
       props.onScroll({
@@ -158,7 +160,7 @@ export default class Pad extends React.Component {
       }));
     }
     if (prevState.contentOffset !== this.state.contentOffset) {
-      if (this.state.decelerationEndPosition) {
+      if (this.state.decelerationEndOffset) {
         const startTime = new Date().getTime();
 
         if (this._deceleratingTimer) {
@@ -218,7 +220,7 @@ export default class Pad extends React.Component {
           contentOffset: offset,
           contentVelocity: { x: 0, y: 0 },
           decelerating: false,
-          decelerationEndPosition: null,
+          decelerationEndOffset: null,
           decelerationRate: 0,
         };
       }
@@ -230,7 +232,7 @@ export default class Pad extends React.Component {
       return {
         contentOffset: { ...contentOffset },
         decelerating: true,
-        decelerationEndPosition: offset,
+        decelerationEndOffset: offset,
         decelerationRate: 0.01,
       };
     });
@@ -241,10 +243,10 @@ export default class Pad extends React.Component {
       ({
         contentVelocity,
         contentOffset,
-        decelerationEndPosition,
+        decelerationEndOffset,
         decelerationRate,
       }) => {
-        if (!decelerationEndPosition) {
+        if (!decelerationEndOffset) {
           return null;
         }
 
@@ -253,7 +255,7 @@ export default class Pad extends React.Component {
           decelerationRate,
           contentOffset,
           contentVelocity,
-          decelerationEndPosition
+          decelerationEndOffset
         );
 
         return { contentOffset: next.offset, contentVelocity: next.velocity };
@@ -262,89 +264,109 @@ export default class Pad extends React.Component {
   }
 
   _onDragStart = ({ translation, velocity }) => {
-    this.setState(({ contentOffset }) => {
-      const dragStartPosition = {
-        x: contentOffset.x + translation.x,
-        y: contentOffset.y + translation.y,
+    this.setState(({ contentOffset }, { directionalLockEnabled }) => {
+      const dragDirection = !directionalLockEnabled
+        ? 'xy'
+        : Math.abs(velocity.x) > Math.abs(velocity.y)
+        ? 'x'
+        : 'y';
+      const dragStartOffset = {
+        x: contentOffset.x + (dragDirection === 'y' ? 0 : translation.x),
+        y: contentOffset.y + (dragDirection === 'x' ? 0 : translation.y),
+      };
+      const contentVelocity = {
+        x: dragDirection === 'y' ? 0 : velocity.x,
+        y: dragDirection === 'x' ? 0 : velocity.y,
       };
 
       return {
-        contentOffset: dragStartPosition,
-        contentVelocity: velocity,
+        contentOffset: dragStartOffset,
+        contentVelocity,
         dragging: true,
-        dragStartPosition,
+        dragStartOffset,
+        dragDirection,
         decelerating: false,
-        decelerationEndPosition: null,
+        decelerationEndOffset: null,
         decelerationRate: 0,
       };
     });
   };
 
   _onDragMove = ({ translation, velocity }) => {
-    this.setState(({ dragStartPosition }) => {
+    this.setState(({ dragStartOffset, dragDirection }) => {
       const contentOffset = {
-        x: dragStartPosition.x + translation.x,
-        y: dragStartPosition.y + translation.y,
+        x: dragStartOffset.x + (dragDirection === 'y' ? 0 : translation.x),
+        y: dragStartOffset.y + (dragDirection === 'x' ? 0 : translation.y),
+      };
+      const contentVelocity = {
+        x: dragDirection === 'y' ? 0 : velocity.x,
+        y: dragDirection === 'x' ? 0 : velocity.y,
       };
 
-      return { contentOffset, contentVelocity: velocity };
+      return { contentOffset, contentVelocity };
     });
   };
 
   _onDragEnd = ({ translation, velocity }) => {
-    this.setState(({ dragStartPosition, size }, { pagingEnabled }) => {
-      const contentOffset = {
-        x: dragStartPosition.x + translation.x,
-        y: dragStartPosition.y + translation.y,
-      };
-      let contentVelocity = velocity;
-      let decelerationRate = pagingEnabled ? 0.02 : 0.002;
+    this.setState(
+      ({ dragStartOffset, dragDirection, size }, { pagingEnabled }) => {
+        const contentOffset = {
+          x: dragStartOffset.x + (dragDirection === 'y' ? 0 : translation.x),
+          y: dragStartOffset.y + (dragDirection === 'x' ? 0 : translation.y),
+        };
+        let contentVelocity = {
+          x: dragDirection === 'y' ? 0 : velocity.x,
+          y: dragDirection === 'x' ? 0 : velocity.y,
+        };
+        const decelerationRate = pagingEnabled ? 0.02 : 0.002;
 
-      if (pagingEnabled) {
-        contentVelocity = getAdjustedPagingVelocity(
+        if (pagingEnabled) {
+          contentVelocity = getAdjustedPagingVelocity(
+            contentVelocity,
+            size,
+            decelerationRate
+          );
+        }
+
+        let decelerationEndOffset = getDecelerationEndOffset(
+          contentOffset,
           contentVelocity,
-          size,
           decelerationRate
         );
+
+        if (pagingEnabled) {
+          decelerationEndOffset = getAdjustedPagingOffset(
+            decelerationEndOffset,
+            size
+          );
+        }
+
+        return {
+          contentOffset,
+          contentVelocity,
+          dragging: false,
+          dragStartOffset: null,
+          dragDirection: 'xy',
+          decelerating: true,
+          decelerationEndOffset,
+          decelerationRate,
+        };
       }
-
-      let decelerationEndPosition = getDecelerationEndPosition(
-        contentOffset,
-        contentVelocity,
-        decelerationRate
-      );
-
-      if (pagingEnabled) {
-        decelerationEndPosition = getAdjustedPagingOffset(
-          decelerationEndPosition,
-          size
-        );
-      }
-
-      return {
-        contentOffset,
-        contentVelocity,
-        dragging: false,
-        dragStartPosition: null,
-        decelerating: true,
-        decelerationEndPosition,
-        decelerationRate,
-      };
-    });
+    );
   };
 
   _onDragCancel = ({ translation, velocity }) => {
-    this.setState(({ dragStartPosition, size }, { pagingEnabled }) => {
+    this.setState(({ dragStartOffset, size }, { pagingEnabled }) => {
       const contentOffset = {
-        x: dragStartPosition.x + translation.x,
-        y: dragStartPosition.y + translation.y,
+        x: dragStartOffset.x + translation.x,
+        y: dragStartOffset.y + translation.y,
       };
 
-      let decelerationEndPosition = dragStartPosition;
+      let decelerationEndOffset = dragStartOffset;
 
       if (pagingEnabled) {
-        decelerationEndPosition = getAdjustedPagingOffset(
-          decelerationEndPosition,
+        decelerationEndOffset = getAdjustedPagingOffset(
+          decelerationEndOffset,
           size
         );
       }
@@ -353,9 +375,10 @@ export default class Pad extends React.Component {
         contentOffset,
         contentVelocity: velocity,
         dragging: false,
-        dragStartPosition: null,
+        dragStartOffset: null,
+        dragDirection: 'xy',
         decelerating: true,
-        decelerationEndPosition,
+        decelerationEndOffset,
         decelerationRate: 0.01,
       };
     });
@@ -369,6 +392,7 @@ export default class Pad extends React.Component {
       contentHeight,
       scrollEnabled,
       pagingEnabled,
+      directionalLockEnabled,
       style,
       children,
       ...boundingProps

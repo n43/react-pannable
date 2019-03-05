@@ -48,14 +48,14 @@ function calculateDerivedState(count, widthFn, hash, xList, hashDict) {
 export default class GridContent extends React.Component {
   static defaultProps = {
     pad: null,
-    cellKey: ({ columnIndex, rowIndex }) => rowIndex + '-' + columnIndex,
-    rowHash: ({ rowIndex }) => rowIndex,
-    columnHash: ({ columnIndex }) => columnIndex,
-    columnWidth: 0,
-    rowHeight: 0,
     columnCount: 0,
     rowCount: 0,
+    columnWidth: 0,
+    rowHeight: 0,
+    rowHash: ({ rowIndex }) => rowIndex,
+    columnHash: ({ columnIndex }) => columnIndex,
     renderCell: () => null,
+    cellKey: ({ columnIndex, rowIndex }) => rowIndex + '-' + columnIndex,
   };
 
   state = {

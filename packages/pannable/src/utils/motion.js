@@ -47,7 +47,7 @@ export function getAdjustedPagingVelocity(velocity, size, acc, name) {
   };
 }
 
-export function getDecelerationEndPosition(offset, velocity, acc, name) {
+export function getDecelerationEndOffset(offset, velocity, acc, name) {
   if (name) {
     if (!acc) {
       return offset;
@@ -59,8 +59,8 @@ export function getDecelerationEndPosition(offset, velocity, acc, name) {
   acc = getAcc(acc, velocity);
 
   return {
-    x: getDecelerationEndPosition(offset.x, velocity.x, acc.x, 'x'),
-    y: getDecelerationEndPosition(offset.y, velocity.y, acc.y, 'y'),
+    x: getDecelerationEndOffset(offset.x, velocity.x, acc.x, 'x'),
+    y: getDecelerationEndOffset(offset.y, velocity.y, acc.y, 'y'),
   };
 }
 
