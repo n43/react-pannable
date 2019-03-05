@@ -1,8 +1,8 @@
 import React from 'react';
 
-function calculateDerivedState(count, widthFn, hash, widthList, hashDict) {
-  let shouldUpdateWidthList = widthList.length !== count;
-  let nextWidthList = [];
+function calculateDerivedState(count, widthFn, hash, xList, hashDict) {
+  let shouldUpdateXList = xList.length !== count;
+  let nextXList = [];
   let nextWidth = 0;
   let nextHashDict;
   let nextState = {};
@@ -25,15 +25,17 @@ function calculateDerivedState(count, widthFn, hash, widthList, hashDict) {
         nextHashDict[hashKey] = width;
       }
     }
-    if (widthList[index] !== width) {
-      shouldUpdateWidthList = true;
-    }
 
-    nextWidthList[index] = width;
     nextWidth += width;
+
+    if (xList[index] !== nextWidth) {
+      shouldUpdateXList = true;
+    }
+    nextXList[index] = nextWidth;
   }
-  if (shouldUpdateWidthList) {
-    nextState.widthList = nextWidthList;
+
+  if (shouldUpdateXList) {
+    nextState.xList = nextXList;
   }
   if (nextHashDict) {
     nextState.hashDict = nextHashDict;
@@ -60,8 +62,8 @@ export default class GridContent extends React.Component {
     size: { width: 0, height: 0 },
     columnHashDict: {},
     rowHashDict: {},
-    widthList: [],
-    heightList: [],
+    xList: [],
+    yList: [],
   };
 
   static getDerivedStateFromProps(props, state) {
@@ -74,7 +76,7 @@ export default class GridContent extends React.Component {
       rowHash,
       columnHash,
     } = props;
-    const { widthList, heightList, columnHashDict, rowHashDict, size } = state;
+    const { xList, yList, columnHashDict, rowHashDict, size } = state;
     let nextState = {};
     let nextSize = { ...size };
 
@@ -82,11 +84,11 @@ export default class GridContent extends React.Component {
       rowCount,
       rowHeight,
       rowHash,
-      heightList,
+      yList,
       rowHashDict
     );
-    if (rowState.widthList) {
-      nextState.heightList = rowState.widthList;
+    if (rowState.xList) {
+      nextState.yList = rowState.xList;
     }
     if (rowState.hashDict) {
       nextState.rowHashDict = rowState.hashDict;
@@ -97,11 +99,11 @@ export default class GridContent extends React.Component {
       columnCount,
       columnWidth,
       columnHash,
-      widthList,
+      xList,
       columnHashDict
     );
-    if (columnState.widthList) {
-      nextState.widthList = columnState.widthList;
+    if (columnState.xList) {
+      nextState.xList = columnState.xList;
     }
     if (columnState.hashDict) {
       nextState.columnHashDict = columnState.hashDict;
@@ -116,35 +118,49 @@ export default class GridContent extends React.Component {
     return nextState;
   }
 
+  _needsRenderCell({ x, y, width, height }) {
+    const { pad } = this.props;
+    const contentOffset = pad.getContentOffset();
+    const boundingSize = pad.getSize();
+    const dx = x + contentOffset.x;
+    const dy = y + contentOffset.y;
+
+    return (
+      -0.25 * boundingSize.width < dx + width &&
+      dx < 1.25 * boundingSize.width &&
+      -0.25 * boundingSize.height < dy + height &&
+      dy < 1.25 * boundingSize.height
+    );
+  }
+
   render() {
     const { renderCell, cellKey } = this.props;
-    const { widthList, heightList } = this.state;
+    const { xList, yList } = this.state;
     const grids = [];
-    let top = 0;
 
-    for (let rowIndex in heightList) {
-      let left = 0;
+    for (let rowIndex = 0; rowIndex < yList.length; rowIndex++) {
+      for (let columnIndex = 0; columnIndex < xList.length; columnIndex++) {
+        const x = columnIndex === 0 ? 0 : xList[columnIndex - 1];
+        const y = rowIndex === 0 ? 0 : yList[rowIndex - 1];
+        const width = xList[columnIndex] - x;
+        const height = yList[rowIndex] - y;
 
-      for (let columnIndex in widthList) {
-        grids.push(
-          renderCell({
-            columnIndex,
-            rowIndex,
-            key: cellKey({ columnIndex, rowIndex }),
-            style: {
-              position: 'absolute',
-              top,
-              left,
-              width: widthList[columnIndex],
-              height: heightList[rowIndex],
-            },
-          })
-        );
+        if (this._needsRenderCell({ x, y, width, height })) {
+          const cellStyle = {
+            position: 'absolute',
+            left: x,
+            top: y,
+            width,
+            height,
+          };
 
-        left += widthList[columnIndex];
+          grids.push(
+            <div key={cellKey({ columnIndex, rowIndex })} style={cellStyle}>
+              {renderCell({ columnIndex, rowIndex })}
+            </div>
+          );
+        }
       }
-
-      top += heightList[rowIndex];
     }
 
     return <React.Fragment>{grids}</React.Fragment>;

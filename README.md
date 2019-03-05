@@ -82,7 +82,6 @@ type PadEvent = {
 | height        |      number       |      0       | The height of the bounding view.                                                                                                        |
 | contentWidth  |      number       |      0       | The width of the content view.                                                                                                          |
 | contentHeight |      number       |      0       | The height of the content view.                                                                                                         |
-| contentProps  |      object       |      {}      | The props of the content view.                                                                                                          |
 | onScroll      |     function      |   () => {}   | Callback invoked when the content view scrolls.:`({evt: PadEvent}) => void`                                                             |
 
 #### Public Methods

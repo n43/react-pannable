@@ -19,10 +19,8 @@ export default class GridContentLayout extends React.Component {
                     rowHeight={300}
                     columnCount={10}
                     rowCount={10}
-                    renderCell={({ key, style }) => (
-                      <div key={key} style={style}>
-                        {key}
-                      </div>
+                    renderCell={({ rowIndex, columnIndex }) => (
+                      <div>{rowIndex + '-' + columnIndex}</div>
                     )}
                   />
                 )}

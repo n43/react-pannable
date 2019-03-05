@@ -20,7 +20,6 @@ export default class Pad extends React.Component {
     height: 0,
     contentWidth: 0,
     contentHeight: 0,
-    contentProps: {},
     scrollEnabled: true,
     pagingEnabled: false,
     onScroll: () => {},
@@ -368,7 +367,6 @@ export default class Pad extends React.Component {
       height,
       contentWidth,
       contentHeight,
-      contentProps,
       scrollEnabled,
       pagingEnabled,
       style,
@@ -390,7 +388,6 @@ export default class Pad extends React.Component {
       width: contentSize.width,
       height: contentSize.height,
       transformTranslate: [contentOffset.x, contentOffset.y],
-      ...contentProps.style,
     });
 
     return (
@@ -404,7 +401,7 @@ export default class Pad extends React.Component {
         onEnd={this._onDragEnd}
         onCancel={this._onDragCancel}
       >
-        <div {...contentProps} ref={this.contentRef} style={contentStyles}>
+        <div ref={this.contentRef} style={contentStyles}>
           {React.isValidElement(children) ? children : children(this)}
         </div>
       </Pannable>
