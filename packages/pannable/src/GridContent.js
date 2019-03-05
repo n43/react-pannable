@@ -118,6 +118,8 @@ export default class GridContent extends React.Component {
     return nextState;
   }
 
+  scrollTo() {}
+
   _needsRenderCell({ x, y, width, height }) {
     const { pad } = this.props;
     const contentOffset = pad.getContentOffset();
