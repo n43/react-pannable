@@ -9,10 +9,6 @@ export default class GeneralContent extends React.Component {
     onResize: () => {},
   };
 
-  state = {
-    size: { width: 0, height: 0 },
-  };
-
   resizeRef = React.createRef();
 
   componentDidMount() {
@@ -63,7 +59,6 @@ export default class GeneralContent extends React.Component {
       size = { width, height };
     }
 
-    this.setState({ size });
     onResize(size);
   }
 

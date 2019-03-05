@@ -392,11 +392,6 @@ export default class Pad extends React.Component {
       transformTranslate: [contentOffset.x, contentOffset.y],
       ...contentProps.style,
     });
-    let Component = children;
-
-    if (!React.isValidElement(Component)) {
-      Component = <Component setContentSize={this.setContentSize} />;
-    }
 
     return (
       <Pannable
@@ -410,7 +405,7 @@ export default class Pad extends React.Component {
         onCancel={this._onDragCancel}
       >
         <div {...contentProps} ref={this.contentRef} style={contentStyles}>
-          {Component}
+          {React.isValidElement(children) ? children : children(this)}
         </div>
       </Pannable>
     );

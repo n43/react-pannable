@@ -70,11 +70,11 @@ class GeneralContentLayout extends Component {
             <SvgPhone className="pad-preview-bg" />
             <div className="pad-preview-content">
               <Pad className="autoadjust-pad" width={346} height={552}>
-                {({ setContentSize }) => (
+                {pad => (
                   <GeneralContent
                     width={contentFixedWidth}
                     height={contentFixedHeight}
-                    onResize={setContentSize}
+                    onResize={size => pad.setContentSize(size)}
                   >
                     {this.renderImages()}
                   </GeneralContent>

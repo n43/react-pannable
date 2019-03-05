@@ -1,7 +1,45 @@
 import React from 'react';
 
+function calculateDerivedState(count, widthFn, hash, widthList, hashDict) {
+  let shouldUpdateWidthList = widthList.length !== count;
+  let nextWidthList = [];
+  let nextState = { width: 0 };
+
+  for (let index = 0; index < count; index++) {
+    let width;
+
+    if (typeof widthFn === 'number') {
+      width = widthFn;
+    } else {
+      const hashKey = hash({ index });
+      width = hashDict[hashKey];
+
+      if (width === undefined) {
+        width = widthFn({ index });
+
+        if (!nextState.hashDict) {
+          nextState.hashDict = { ...hashDict };
+        }
+        nextState.hashDict[hashKey] = width;
+      }
+    }
+    if (widthList[index] !== width) {
+      shouldUpdateWidthList = true;
+    }
+
+    nextWidthList[index] = width;
+    nextState.width += width;
+  }
+  if (shouldUpdateWidthList) {
+    nextState.widthList = nextWidthList;
+  }
+
+  return nextState;
+}
+
 export default class GridContent extends React.Component {
   static defaultProps = {
+    pad: null,
     cellKey: ({ columnIndex, rowIndex }) => rowIndex + '-' + columnIndex,
     rowHash: ({ rowIndex }) => rowIndex,
     columnHash: ({ columnIndex }) => columnIndex,
@@ -10,94 +48,62 @@ export default class GridContent extends React.Component {
     columnCount: 0,
     rowCount: 0,
     renderCell: () => null,
-    onResize: () => {},
   };
 
   state = {
-    rowHashDict: {},
+    size: { width: 0, height: 0 },
     columnHashDict: {},
+    rowHashDict: {},
     widthList: [],
     heightList: [],
-    size: { width: 0, height: 0 },
   };
 
   static getDerivedStateFromProps(props, state) {
     const {
+      pad,
       columnWidth,
       rowHeight,
       columnCount,
       rowCount,
       rowHash,
       columnHash,
-      onResize,
     } = props;
-    const { widthList, heightList, rowHashDict, columnHashDict, size } = state;
-    let shouldUpdateHeightList = heightList.length !== rowCount;
-    let shouldUpdateWidthList = widthList.length !== columnCount;
-    const nextHeightList = [];
-    const nextWidthList = [];
-    let nextRowHashDict;
-    let nextColumnHashDict;
-    const nextSize = { width: 0, height: 0 };
+    const { widthList, heightList, columnHashDict, rowHashDict, size } = state;
     let nextState = {};
+    let nextSize = { ...size };
 
-    for (let rowIndex = 0; rowIndex < rowCount; rowIndex++) {
-      const hashKey = rowHash({ rowIndex });
-      let height = rowHashDict[hashKey];
-
-      if (height === undefined) {
-        height =
-          typeof rowHeight === 'function' ? rowHeight({ rowIndex }) : rowHeight;
-
-        if (!nextRowHashDict) {
-          nextRowHashDict = { ...rowHashDict };
-        }
-        nextRowHashDict[hashKey] = height;
-      }
-      if (heightList[rowIndex] !== height) {
-        shouldUpdateHeightList = true;
-      }
-
-      nextHeightList[rowIndex] = height;
-      nextSize.height += height;
+    const rowState = calculateDerivedState(
+      rowCount,
+      rowHeight,
+      rowHash,
+      heightList,
+      rowHashDict
+    );
+    if (rowState.widthList) {
+      nextState.heightList = rowState.widthList;
     }
-    for (let columnIndex = 0; columnIndex < columnCount; columnIndex++) {
-      const hashKey = columnHash({ columnIndex });
-      let width = columnHashDict[hashKey];
+    if (rowState.hashDict) {
+      nextState.rowHashDict = rowState.hashDict;
+    }
+    nextSize.height = rowState.width;
 
-      if (width === undefined) {
-        width =
-          typeof columnWidth === 'function'
-            ? columnWidth({ columnIndex })
-            : columnWidth;
+    const columnState = calculateDerivedState(
+      columnCount,
+      columnWidth,
+      columnHash,
+      widthList,
+      columnHashDict
+    );
+    if (columnState.widthList) {
+      nextState.widthList = columnState.widthList;
+    }
+    if (columnState.hashDict) {
+      nextState.columnHashDict = columnState.hashDict;
+    }
+    nextSize.width = columnState.width;
 
-        if (!nextColumnHashDict) {
-          nextColumnHashDict = { ...columnHashDict };
-        }
-        nextColumnHashDict[hashKey] = width;
-      }
-      if (widthList[columnIndex] !== width) {
-        shouldUpdateWidthList = true;
-      }
-
-      nextWidthList[columnIndex] = width;
-      nextSize.width += width;
-    }
-
-    if (shouldUpdateHeightList) {
-      nextState.heightList = nextHeightList;
-    }
-    if (shouldUpdateWidthList) {
-      nextState.widthList = nextWidthList;
-    }
-    if (nextRowHashDict) {
-      nextState.rowHashDict = nextRowHashDict;
-    }
-    if (nextColumnHashDict) {
-      nextState.columnHashDict = nextColumnHashDict;
-    }
     if (nextSize.width !== size.width || nextSize.height !== size.height) {
-      onResize(nextSize);
+      pad.setContentSize(nextSize);
       nextState.size = nextSize;
     }
 
