@@ -19,7 +19,6 @@ export default class GridContentLayout extends React.Component {
               >
                 {pad => (
                   <GridContent
-                    pad={pad}
                     ref={ref => {
                       pad.gridContent = ref;
                     }}
@@ -30,6 +29,8 @@ export default class GridContentLayout extends React.Component {
                     renderCell={({ rowIndex, columnIndex }) => (
                       <div>{rowIndex + '-' + columnIndex}</div>
                     )}
+                    visibleRect={pad.getVisibleRect()}
+                    onResize={size => pad.setContentSize(size)}
                   />
                 )}
               </Pad>

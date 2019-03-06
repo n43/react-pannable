@@ -11,6 +11,7 @@ import {
   getAdjustedPagingVelocity,
   getDecelerationEndOffset,
   calculateDeceleration,
+  calculateRectOffset,
 } from './utils/motion';
 
 export default class Pad extends React.Component {
@@ -202,6 +203,17 @@ export default class Pad extends React.Component {
     return this.state.decelerating;
   }
 
+  getVisibleRect() {
+    const { contentOffset, size } = this.state;
+
+    return {
+      x: -contentOffset.x,
+      y: -contentOffset.y,
+      width: size.width,
+      height: size.height,
+    };
+  }
+
   setContentSize(contentSize) {
     this.setState(({ contentOffset }) => ({
       contentSize,
@@ -236,6 +248,19 @@ export default class Pad extends React.Component {
         decelerationRate: 0.01,
       };
     });
+  }
+
+  scrollToRect({ rect, align = 'auto', animated }) {
+    const { contentOffset, size } = this.state;
+    const offset = calculateRectOffset(
+      { x: rect.x, y: rect.y },
+      { width: rect.width, height: rect.height },
+      align,
+      contentOffset,
+      size
+    );
+
+    this.scrollTo({ offset, animated });
   }
 
   _decelerate(interval) {

@@ -2,7 +2,6 @@ import React from 'react';
 
 export default class GridContent extends React.Component {
   static defaultProps = {
-    pad: null,
     columnCount: 0,
     rowCount: 0,
     columnWidth: 0,
@@ -11,6 +10,8 @@ export default class GridContent extends React.Component {
     columnHash: ({ columnIndex }) => columnIndex,
     renderCell: () => null,
     cellKey: ({ columnIndex, rowIndex }) => rowIndex + '-' + columnIndex,
+    visibleRect: { x: 0, y: 0, width: 0, height: 0 },
+    onResize: () => {},
   };
 
   state = {
@@ -23,13 +24,13 @@ export default class GridContent extends React.Component {
 
   static getDerivedStateFromProps(props, state) {
     const {
-      pad,
       columnWidth,
       rowHeight,
       columnCount,
       rowCount,
       rowHash,
       columnHash,
+      onResize,
     } = props;
     const { xList, yList, columnHashDict, rowHashDict, size } = state;
     let nextState = {};
@@ -66,36 +67,11 @@ export default class GridContent extends React.Component {
     nextSize.width = columnState.width;
 
     if (nextSize.width !== size.width || nextSize.height !== size.height) {
-      pad.setContentSize(nextSize);
+      onResize(nextSize);
       nextState.size = nextSize;
     }
 
     return nextState;
-  }
-
-  scrollTo({
-    rowIndex = 0,
-    columnIndex = 0,
-    rowAlign = 'auto',
-    columnAlign = 'auto',
-    animated,
-  }) {
-    const { pad } = this.props;
-
-    if (!pad) {
-      return;
-    }
-
-    const { x, y, width, height } = this.getCellRect({ rowIndex, columnIndex });
-    const offset = getCellOffset(
-      { x, y },
-      { width, height },
-      { row: rowAlign, column: columnAlign },
-      pad.getContentOffset(),
-      pad.getSize()
-    );
-
-    pad.scrollTo({ offset, animated });
   }
 
   getCellRect({ rowIndex, columnIndex }) {
@@ -109,36 +85,33 @@ export default class GridContent extends React.Component {
   }
 
   render() {
-    const { pad, renderCell, cellKey, children } = this.props;
+    const { visibleRect, renderCell, cellKey, children } = this.props;
 
     if (typeof children === 'function') {
       return children(this);
     }
-    if (!pad) {
-      return children;
-    }
 
     const { xList, yList } = this.state;
     const grids = [];
-    const contentOffset = pad.getContentOffset();
-    const boundingSize = pad.getSize();
 
     for (let rowIndex = 0; rowIndex < yList.length; rowIndex++) {
       for (let columnIndex = 0; columnIndex < xList.length; columnIndex++) {
-        const { x, y, width, height } = this.getCellRect({
-          rowIndex,
-          columnIndex,
-        });
+        const cellRect = this.getCellRect({ rowIndex, columnIndex });
 
         if (
-          needsRender({ x, y }, { width, height }, contentOffset, boundingSize)
+          needsRender(
+            { x: cellRect.x, y: cellRect.y },
+            { width: cellRect.width, height: cellRect.height },
+            { x: visibleRect.x, y: visibleRect.y },
+            { width: visibleRect.width, height: visibleRect.height }
+          )
         ) {
           const cellStyle = {
             position: 'absolute',
-            left: x,
-            top: y,
-            width,
-            height,
+            left: cellRect.x,
+            top: cellRect.y,
+            width: cellRect.width,
+            height: cellRect.width,
           };
 
           grids.push(
@@ -154,67 +127,16 @@ export default class GridContent extends React.Component {
   }
 }
 
-function getCellOffset(pos, size, align, cOffset, bSize, name) {
+function needsRender(pos, size, vPos, vSize, name) {
   if (name) {
-    let nOffset;
+    const dPos = pos - vPos;
 
-    if (align === 'auto') {
-      const direction = bSize < size ? -1 : 1;
-      nOffset =
-        -pos +
-        direction *
-          Math.max(
-            0,
-            Math.min(direction * (pos + cOffset), direction * (bSize - size))
-          );
-    } else {
-      if (align === 'start') {
-        align = 0;
-      } else if (align === 'center') {
-        align = 0.5;
-      } else if (align === 'end') {
-        align = 1;
-      }
-      if (typeof align !== 'number' || isNaN(align)) {
-        align = 0.5;
-      }
-
-      nOffset = -pos + align * (bSize - size);
-    }
-
-    return nOffset;
-  }
-
-  return {
-    x: getCellOffset(
-      pos.x,
-      size.width,
-      align.row,
-      cOffset.x,
-      bSize.width,
-      'row'
-    ),
-    y: getCellOffset(
-      pos.y,
-      size.height,
-      align.column,
-      cOffset.y,
-      bSize.height,
-      'column'
-    ),
-  };
-}
-
-function needsRender(pos, size, cOffset, bSize, name) {
-  if (name) {
-    const dPos = pos + cOffset;
-
-    return -0.25 * bSize < dPos + size && dPos < 1.25 * bSize;
+    return -0.25 * vSize < dPos + size && dPos < 1.25 * vSize;
   }
 
   return (
-    needsRender(pos.x, size.width, cOffset.x, bSize.width, 'x') &&
-    needsRender(pos.y, size.height, cOffset.y, bSize.height, 'y')
+    needsRender(pos.x, size.width, vPos.x, vSize.width, 'x') &&
+    needsRender(pos.y, size.height, vPos.y, vSize.height, 'y')
   );
 }
 

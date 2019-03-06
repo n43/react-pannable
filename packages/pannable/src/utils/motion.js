@@ -125,3 +125,58 @@ export function calculateDeceleration(
     velocity: { x: nextX.velocity, y: nextY.velocity },
   };
 }
+
+export function calculateRectOffset(rPos, rSize, align, offset, size, name) {
+  if (name) {
+    let nOffset;
+
+    if (align === 'auto') {
+      const direction = size < rSize ? -1 : 1;
+      nOffset =
+        -rPos +
+        direction *
+          Math.max(
+            0,
+            Math.min(direction * (rPos + offset), direction * (size - rSize))
+          );
+    } else {
+      if (align === 'start') {
+        align = 0;
+      } else if (align === 'center') {
+        align = 0.5;
+      } else if (align === 'end') {
+        align = 1;
+      }
+      if (typeof align !== 'number' || isNaN(align)) {
+        align = 0.5;
+      }
+
+      nOffset = -rPos + align * (size - rSize);
+    }
+
+    return nOffset;
+  }
+
+  if (typeof align !== 'object') {
+    align = { x: align, y: align };
+  }
+
+  return {
+    x: calculateRectOffset(
+      rPos.x,
+      rSize.width,
+      align.x,
+      offset.x,
+      size.width,
+      'x'
+    ),
+    y: calculateRectOffset(
+      rPos.y,
+      rSize.height,
+      align.y,
+      offset.y,
+      size.height,
+      'y'
+    ),
+  };
+}
