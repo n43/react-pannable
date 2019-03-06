@@ -100,12 +100,12 @@ export default class GridContent extends React.Component {
 
   getCellRect({ rowIndex, columnIndex }) {
     const { xList, yList } = this.state;
-    const x = columnIndex === 0 ? 0 : xList[columnIndex - 1];
-    const y = rowIndex === 0 ? 0 : yList[rowIndex - 1];
-    const width = xList[columnIndex] - x;
-    const height = yList[rowIndex] - y;
+    const x = xList[columnIndex - 1] || 0;
+    const y = yList[rowIndex - 1] || 0;
+    const x2 = xList[columnIndex] || 0;
+    const y2 = yList[rowIndex] || 0;
 
-    return { x, y, width, height };
+    return { x, y, width: x2 - x, height: y2 - y };
   }
 
   render() {
