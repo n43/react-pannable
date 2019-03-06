@@ -426,7 +426,7 @@ export default class Pad extends React.Component {
         onCancel={this._onDragCancel}
       >
         <div ref={this.contentRef} style={contentStyles}>
-          {React.isValidElement(children) ? children : children(this)}
+          {typeof children === 'function' ? children(this) : children}
         </div>
       </Pannable>
     );

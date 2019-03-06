@@ -1,50 +1,5 @@
 import React from 'react';
 
-function calculateDerivedState(count, widthFn, hash, xList, hashDict) {
-  let shouldUpdateXList = xList.length !== count;
-  let nextXList = [];
-  let nextWidth = 0;
-  let nextHashDict;
-  let nextState = {};
-
-  for (let index = 0; index < count; index++) {
-    let width;
-
-    if (typeof widthFn === 'number') {
-      width = widthFn;
-    } else {
-      const hashKey = hash({ index });
-      width = hashDict[hashKey];
-
-      if (width === undefined) {
-        width = widthFn({ index });
-
-        if (!nextHashDict) {
-          nextHashDict = { ...hashDict };
-        }
-        nextHashDict[hashKey] = width;
-      }
-    }
-
-    nextWidth += width;
-
-    if (xList[index] !== nextWidth) {
-      shouldUpdateXList = true;
-    }
-    nextXList[index] = nextWidth;
-  }
-
-  if (shouldUpdateXList) {
-    nextState.xList = nextXList;
-  }
-  if (nextHashDict) {
-    nextState.hashDict = nextHashDict;
-  }
-  nextState.width = nextWidth;
-
-  return nextState;
-}
-
 export default class GridContent extends React.Component {
   static defaultProps = {
     pad: null,
@@ -118,36 +73,66 @@ export default class GridContent extends React.Component {
     return nextState;
   }
 
-  scrollTo() {}
-
-  _needsRenderCell({ x, y, width, height }) {
+  scrollTo({
+    rowIndex = 0,
+    columnIndex = 0,
+    rowAlign = 'auto',
+    columnAlign = 'auto',
+    animated,
+  }) {
     const { pad } = this.props;
-    const contentOffset = pad.getContentOffset();
-    const boundingSize = pad.getSize();
-    const dx = x + contentOffset.x;
-    const dy = y + contentOffset.y;
 
-    return (
-      -0.25 * boundingSize.width < dx + width &&
-      dx < 1.25 * boundingSize.width &&
-      -0.25 * boundingSize.height < dy + height &&
-      dy < 1.25 * boundingSize.height
+    if (!pad) {
+      return;
+    }
+
+    const { x, y, width, height } = this.getCellRect({ rowIndex, columnIndex });
+    const offset = getCellOffset(
+      { x, y },
+      { width, height },
+      { row: rowAlign, column: columnAlign },
+      pad.getContentOffset(),
+      pad.getSize()
     );
+
+    pad.scrollTo({ offset, animated });
+  }
+
+  getCellRect({ rowIndex, columnIndex }) {
+    const { xList, yList } = this.state;
+    const x = columnIndex === 0 ? 0 : xList[columnIndex - 1];
+    const y = rowIndex === 0 ? 0 : yList[rowIndex - 1];
+    const width = xList[columnIndex] - x;
+    const height = yList[rowIndex] - y;
+
+    return { x, y, width, height };
   }
 
   render() {
-    const { renderCell, cellKey } = this.props;
+    const { pad, renderCell, cellKey, children } = this.props;
+
+    if (typeof children === 'function') {
+      return children(this);
+    }
+    if (!pad) {
+      return children;
+    }
+
     const { xList, yList } = this.state;
     const grids = [];
+    const contentOffset = pad.getContentOffset();
+    const boundingSize = pad.getSize();
 
     for (let rowIndex = 0; rowIndex < yList.length; rowIndex++) {
       for (let columnIndex = 0; columnIndex < xList.length; columnIndex++) {
-        const x = columnIndex === 0 ? 0 : xList[columnIndex - 1];
-        const y = rowIndex === 0 ? 0 : yList[rowIndex - 1];
-        const width = xList[columnIndex] - x;
-        const height = yList[rowIndex] - y;
+        const { x, y, width, height } = this.getCellRect({
+          rowIndex,
+          columnIndex,
+        });
 
-        if (this._needsRenderCell({ x, y, width, height })) {
+        if (
+          needsRender({ x, y }, { width, height }, contentOffset, boundingSize)
+        ) {
           const cellStyle = {
             position: 'absolute',
             left: x,
@@ -167,4 +152,113 @@ export default class GridContent extends React.Component {
 
     return <React.Fragment>{grids}</React.Fragment>;
   }
+}
+
+function getCellOffset(pos, size, align, cOffset, bSize, name) {
+  if (name) {
+    let nOffset;
+
+    if (align === 'auto') {
+      const direction = bSize < size ? -1 : 1;
+      nOffset =
+        -pos +
+        direction *
+          Math.max(
+            0,
+            Math.min(direction * (pos + cOffset), direction * (bSize - size))
+          );
+    } else {
+      if (align === 'start') {
+        align = 0;
+      } else if (align === 'center') {
+        align = 0.5;
+      } else if (align === 'end') {
+        align = 1;
+      }
+      if (typeof align !== 'number' || isNaN(align)) {
+        align = 0.5;
+      }
+
+      nOffset = -pos + align * (bSize - size);
+    }
+
+    return nOffset;
+  }
+
+  return {
+    x: getCellOffset(
+      pos.x,
+      size.width,
+      align.row,
+      cOffset.x,
+      bSize.width,
+      'row'
+    ),
+    y: getCellOffset(
+      pos.y,
+      size.height,
+      align.column,
+      cOffset.y,
+      bSize.height,
+      'column'
+    ),
+  };
+}
+
+function needsRender(pos, size, cOffset, bSize, name) {
+  if (name) {
+    const dPos = pos + cOffset;
+
+    return -0.25 * bSize < dPos + size && dPos < 1.25 * bSize;
+  }
+
+  return (
+    needsRender(pos.x, size.width, cOffset.x, bSize.width, 'x') &&
+    needsRender(pos.y, size.height, cOffset.y, bSize.height, 'y')
+  );
+}
+
+function calculateDerivedState(count, widthFn, hash, xList, hashDict) {
+  let shouldUpdateXList = xList.length !== count;
+  let nextXList = [];
+  let nextWidth = 0;
+  let nextHashDict;
+  let nextState = {};
+
+  for (let index = 0; index < count; index++) {
+    let width;
+
+    if (typeof widthFn === 'number') {
+      width = widthFn;
+    } else {
+      const hashKey = hash({ index });
+      width = hashDict[hashKey];
+
+      if (width === undefined) {
+        width = widthFn({ index });
+
+        if (!nextHashDict) {
+          nextHashDict = { ...hashDict };
+        }
+        nextHashDict[hashKey] = width;
+      }
+    }
+
+    nextWidth += width;
+
+    if (xList[index] !== nextWidth) {
+      shouldUpdateXList = true;
+    }
+    nextXList[index] = nextWidth;
+  }
+
+  if (shouldUpdateXList) {
+    nextState.xList = nextXList;
+  }
+  if (nextHashDict) {
+    nextState.hashDict = nextHashDict;
+  }
+  nextState.width = nextWidth;
+
+  return nextState;
 }

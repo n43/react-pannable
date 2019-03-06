@@ -32,10 +32,11 @@ export function getAdjustedPagingVelocity(velocity, size, acc, name) {
       return 0;
     }
 
-    const redirect = acc > 0 ? 1 : -1;
+    const direction = acc < 0 ? -1 : 1;
 
     return (
-      redirect * Math.min(Math.abs(velocity), Math.sqrt(redirect * acc * size))
+      direction *
+      Math.min(Math.abs(velocity), Math.sqrt(direction * acc * size))
     );
   }
 
@@ -78,10 +79,10 @@ export function calculateDeceleration(
     }
 
     const dist = offsetEnd - offset;
-    const redirect = acc > 0 ? 1 : -1;
+    const direction = acc < 0 ? -1 : 1;
 
     const velocityH =
-      redirect * Math.sqrt(0.5 * velocity * velocity + acc * dist);
+      direction * Math.sqrt(0.5 * velocity * velocity + acc * dist);
     const timeH = acc ? (velocityH - velocity) / acc : 0;
     const time = acc ? (2 * velocityH - velocity) / acc : 0;
 

@@ -72,7 +72,7 @@ export default class GeneralContent extends React.Component {
 
     return (
       <div ref={this.resizeRef} style={style}>
-        {children}
+        {typeof children === 'function' ? children(this) : children}
       </div>
     );
   }
