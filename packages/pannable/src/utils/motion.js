@@ -126,18 +126,18 @@ export function calculateDeceleration(
   };
 }
 
-export function calculateRectOffset(rPos, rSize, align, offset, size, name) {
+export function calculateRectOffset(rOrigin, rSize, align, offset, size, name) {
   if (name) {
     let nOffset;
 
     if (align === 'auto') {
       const direction = size < rSize ? -1 : 1;
       nOffset =
-        -rPos +
+        -rOrigin +
         direction *
           Math.max(
             0,
-            Math.min(direction * (rPos + offset), direction * (size - rSize))
+            Math.min(direction * (rOrigin + offset), direction * (size - rSize))
           );
     } else {
       if (align === 'start') {
@@ -151,7 +151,7 @@ export function calculateRectOffset(rPos, rSize, align, offset, size, name) {
         align = 0.5;
       }
 
-      nOffset = -rPos + align * (size - rSize);
+      nOffset = -rOrigin + align * (size - rSize);
     }
 
     return nOffset;
@@ -163,7 +163,7 @@ export function calculateRectOffset(rPos, rSize, align, offset, size, name) {
 
   return {
     x: calculateRectOffset(
-      rPos.x,
+      rOrigin.x,
       rSize.width,
       align.x,
       offset.x,
@@ -171,7 +171,7 @@ export function calculateRectOffset(rPos, rSize, align, offset, size, name) {
       'x'
     ),
     y: calculateRectOffset(
-      rPos.y,
+      rOrigin.y,
       rSize.height,
       align.y,
       offset.y,

@@ -127,16 +127,16 @@ export default class GridContent extends React.Component {
   }
 }
 
-function needsRender(pos, size, vPos, vSize, name) {
+function needsRender(origin, size, vOrigin, vSize, name) {
   if (name) {
-    const dPos = pos - vPos;
+    const dOrigin = origin - vOrigin;
 
-    return -0.25 * vSize < dPos + size && dPos < 1.25 * vSize;
+    return -0.25 * vSize < dOrigin + size && dOrigin < 1.25 * vSize;
   }
 
   return (
-    needsRender(pos.x, size.width, vPos.x, vSize.width, 'x') &&
-    needsRender(pos.y, size.height, vPos.y, vSize.height, 'y')
+    needsRender(origin.x, size.width, vOrigin.x, vSize.width, 'x') &&
+    needsRender(origin.y, size.height, vOrigin.y, vSize.height, 'y')
   );
 }
 

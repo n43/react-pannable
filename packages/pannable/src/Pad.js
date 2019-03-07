@@ -203,17 +203,6 @@ export default class Pad extends React.Component {
     return this.state.decelerating;
   }
 
-  getVisibleRect() {
-    const { contentOffset, size } = this.state;
-
-    return {
-      x: -contentOffset.x,
-      y: -contentOffset.y,
-      width: size.width,
-      height: size.height,
-    };
-  }
-
   setContentSize(contentSize) {
     this.setState(({ contentOffset }) => ({
       contentSize,
