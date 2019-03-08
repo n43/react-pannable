@@ -1,23 +1,23 @@
 import React from 'react';
 
-export default class GridContent extends React.Component {
+export default class GridContent extends React.PureComponent {
   static defaultProps = {
-    columnCount: 0,
     rowCount: 0,
-    columnWidth: 0,
+    columnCount: 0,
     rowHeight: 0,
-    rowHash: ({ rowIndex }) => rowIndex,
-    columnHash: ({ columnIndex }) => columnIndex,
-    renderCell: () => null,
+    columnWidth: 0,
+    rowHeightHash: ({ rowIndex }) => '' + rowIndex,
+    columnWidthHash: ({ columnIndex }) => '' + columnIndex,
     cellKey: ({ columnIndex, rowIndex }) => rowIndex + '-' + columnIndex,
+    renderCell: () => null,
     visibleRect: { x: 0, y: 0, width: 0, height: 0 },
     onResize: () => {},
   };
 
   state = {
     size: { width: 0, height: 0 },
-    columnHashDict: {},
-    rowHashDict: {},
+    widthDict: {},
+    heightDict: {},
     xList: [],
     yList: [],
   };
@@ -28,43 +28,43 @@ export default class GridContent extends React.Component {
       rowHeight,
       columnCount,
       rowCount,
-      rowHash,
-      columnHash,
+      rowHeightHash,
+      columnWidthHash,
       onResize,
     } = props;
-    const { xList, yList, columnHashDict, rowHashDict, size } = state;
+    const { xList, yList, widthDict, heightDict, size } = state;
     let nextState = {};
     let nextSize = { ...size };
 
     const rowState = calculateDerivedState(
       rowCount,
       rowHeight,
-      rowHash,
+      rowHeightHash,
       yList,
-      rowHashDict
+      heightDict
     );
-    if (rowState.xList) {
-      nextState.yList = rowState.xList;
+    if (rowState.originList) {
+      nextState.yList = rowState.originList;
     }
-    if (rowState.hashDict) {
-      nextState.rowHashDict = rowState.hashDict;
+    if (rowState.sizeDict) {
+      nextState.heightDict = rowState.sizeDict;
     }
-    nextSize.height = rowState.width;
+    nextSize.height = rowState.size;
 
     const columnState = calculateDerivedState(
       columnCount,
       columnWidth,
-      columnHash,
+      columnWidthHash,
       xList,
-      columnHashDict
+      widthDict
     );
-    if (columnState.xList) {
-      nextState.xList = columnState.xList;
+    if (columnState.originList) {
+      nextState.xList = columnState.originList;
     }
-    if (columnState.hashDict) {
-      nextState.columnHashDict = columnState.hashDict;
+    if (columnState.sizeDict) {
+      nextState.widthDict = columnState.sizeDict;
     }
-    nextSize.width = columnState.width;
+    nextSize.width = columnState.size;
 
     if (nextSize.width !== size.width || nextSize.height !== size.height) {
       onResize(nextSize);
@@ -140,47 +140,53 @@ function needsRender(origin, size, vOrigin, vSize, name) {
   );
 }
 
-function calculateDerivedState(count, widthFn, hash, xList, hashDict) {
-  let shouldUpdateXList = xList.length !== count;
-  let nextXList = [];
-  let nextWidth = 0;
-  let nextHashDict;
+function calculateDerivedState(
+  count,
+  sizeFn,
+  sizeHashFn,
+  originList,
+  sizeDict
+) {
+  let shouldUpdateOriginList = originList.length !== count;
+  let nextOriginList = [];
+  let nextSize = 0;
+  let nextSizeDict;
   let nextState = {};
 
   for (let index = 0; index < count; index++) {
-    let width;
+    let size;
 
-    if (typeof widthFn === 'number') {
-      width = widthFn;
+    if (typeof sizeFn === 'number') {
+      size = sizeFn;
     } else {
-      const hashKey = hash({ index });
-      width = hashDict[hashKey];
+      const sizeHash = sizeHashFn({ index });
+      size = sizeDict[sizeHash];
 
-      if (width === undefined) {
-        width = widthFn({ index });
+      if (size === undefined) {
+        size = sizeFn({ index });
 
-        if (!nextHashDict) {
-          nextHashDict = { ...hashDict };
+        if (!nextSizeDict) {
+          nextSizeDict = { ...sizeDict };
         }
-        nextHashDict[hashKey] = width;
+        nextSizeDict[sizeHash] = size;
       }
     }
 
-    nextWidth += width;
+    nextSize += size;
 
-    if (xList[index] !== nextWidth) {
-      shouldUpdateXList = true;
+    if (originList[index] !== nextSize) {
+      shouldUpdateOriginList = true;
     }
-    nextXList[index] = nextWidth;
+    nextOriginList[index] = nextSize;
   }
 
-  if (shouldUpdateXList) {
-    nextState.xList = nextXList;
+  if (shouldUpdateOriginList) {
+    nextState.originList = nextOriginList;
   }
-  if (nextHashDict) {
-    nextState.hashDict = nextHashDict;
+  if (nextSizeDict) {
+    nextState.sizeDict = nextSizeDict;
   }
-  nextState.width = nextWidth;
+  nextState.size = nextSize;
 
   return nextState;
 }

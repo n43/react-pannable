@@ -2,7 +2,7 @@ import React from 'react';
 import { getElementSize } from './utils/sizeGetter';
 import resizeDetector from './utils/resizeDetector';
 
-export default class GeneralContent extends React.Component {
+export default class GeneralContent extends React.PureComponent {
   static defaultProps = {
     width: -1,
     height: -1,

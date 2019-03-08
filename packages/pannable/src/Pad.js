@@ -14,7 +14,7 @@ import {
   calculateRectOffset,
 } from './utils/motion';
 
-export default class Pad extends React.Component {
+export default class Pad extends React.PureComponent {
   static defaultProps = {
     children: null,
     width: 0,

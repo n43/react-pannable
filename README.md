@@ -61,6 +61,8 @@ type PanEvent = {
 ```js
 type Point = { x: number, y: number };
 type Size = { width: number, height: number };
+type Rect = { x: number, y: number, width: number, height: number };
+type Align = 'auto' | 'center' | 'start' | 'end' | number;
 type PadEvent = {
   contentOffset: Point,
   contentVelocity: Point,
@@ -91,6 +93,10 @@ type PadEvent = {
 
 Sets the offset from the content view’s origin.
 
+##### scrollToRect({ rect: Rect, align: Align, animated: boolean })
+
+Scrolls a specific area of the content so that it is visible.
+
 ### GeneralContent
 
 `GeneralContent` automatically adjusts the width and height of content.
@@ -105,7 +111,37 @@ type Size = { width: number, height: number };
 | :------- | :------: | :----------: | :-------------------------------------------------------------------------------------------- |
 | width    |  number  |      -1      | The width of the content. If you set this property to `-1`, it shrinks the content's width.   |
 | height   |  number  |      -1      | The height of the content. If you set this property to `-1`, it shrinks the content's height. |
-| onResize | function |   () => {}   | Callback invoked when the content resize.:`(Size) => element`                                 |
+| onResize | function |   () => {}   | Callback invoked when the content resize.:`(size: Size) => {}`                                |
+
+### GridContent
+
+`GridContent` provides grid layout of content.
+
+```js
+type Size = { width: number, height: number };
+type Rect = { x: number, y: number, width: number, height: number };
+```
+
+#### Prop Types
+
+| Property        |      Type       |                        DefaultValue                         | Description                                                                                  |
+| :-------------- | :-------------: | :---------------------------------------------------------: | :------------------------------------------------------------------------------------------- |
+| rowCount        |     number      |                              0                              | the number of rows.                                                                          |
+| columnCount     |     number      |                              0                              | the number of columns.                                                                       |
+| rowHeight       | number,function |                              0                              | the height of the specified row.                                                             |
+| columnWidth     | number,function |                              0                              | the width of the specified column.                                                           |
+| rowHeightHash   |    function     |               ({ rowIndex }) => '' + rowIndex               | the hash of the row's height.:`({ rowIndex: number }) => string`                             |
+| columnWidthHash |    function     |            ({ columnIndex }) => '' + columnIndex            | the hash of the column's width.:`({ columnIndex: number }) => string`                        |
+| cellKey         |    function     | ({ columnIndex, rowIndex }) => rowIndex + '-' + columnIndex | the key of the specified cell.:`({ rowIndex: number, columnIndex: number }) => string`       |
+| renderCell      |    function     |                         () => null                          | the renderer of the specified cell.:`({ rowIndex: number, columnIndex: number }) => element` |
+| visibleRect     |      Rect       |             { x: 0, y: 0, width: 0, height: 0 }             | the area of the visible content.                                                             |
+| onResize        |    function     |                          () => {}                           | Callback invoked when the content resize.:`(size: Size) => {}`                               |
+
+#### Public Methods
+
+##### getCellRect({ rowIndex: number, columnIndex: number })
+
+Returns the area of cell at the specified indexes.
 
 ## License
 
