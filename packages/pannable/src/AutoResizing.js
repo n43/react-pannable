@@ -42,7 +42,6 @@ export default class AutoResizing extends React.Component {
     if (width < 0 || height < 0) {
       if (!this._resizeNode) {
         const resizeNode = this.resizeRef.current;
-
         if (!resizeNode) {
           return;
         }
@@ -52,7 +51,6 @@ export default class AutoResizing extends React.Component {
 
         return;
       }
-
       size = getElementSize(this._resizeNode);
     } else {
       if (this._resizeNode) {

@@ -1,0 +1,23 @@
+.autoresize-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.autoresize-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #75d3ec;
+  font-size: 20px;
+  color: #ffffff;
+  text-align: center;
+}
+.autoresize-main {
+  flex: 1;
+  height: 0;
+}
+.autoresize-content {
+  padding: 10px;
+  line-height: 1.5em;
+  font-family: 'sans-serif';
+}
