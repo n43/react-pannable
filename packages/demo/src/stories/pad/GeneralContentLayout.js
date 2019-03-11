@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import { Pad, GeneralContent } from 'react-pannable';
 import SvgPhone from './SvgPhone';
+import SvgPlus from './SvgPlus';
+import SvgMinus from './SvgMinus';
 import TextField from './TextField';
 import './Pad.css';
 
@@ -36,6 +38,21 @@ class GeneralContentLayout extends Component {
     });
   };
 
+  handleImageCountChange = type => {
+    this.setState(({ imagesCount }) => {
+      let count = imagesCount;
+      if (type === 'add' && imagesCount < 8) {
+        count += 1;
+      }
+      if (type === 'minus' && imagesCount > 1) {
+        count -= 1;
+      }
+      return {
+        imagesCount: count,
+      };
+    });
+  };
+
   renderImages = () => {
     const { imagesCount, imageWidth } = this.state;
     const elements = [];
@@ -53,6 +70,19 @@ class GeneralContentLayout extends Component {
     }
 
     return <React.Fragment>{elements}</React.Fragment>;
+  };
+
+  renderArticle = () => {
+    const style = {
+      padding: 10,
+      lineHeight: '1.5em',
+    };
+    return (
+      <div style={style}>
+        GeneralContent is a quite useful component, when the size of content is
+        difficult to figure out, or it would change dynamically.
+      </div>
+    );
   };
 
   render() {
@@ -76,6 +106,7 @@ class GeneralContentLayout extends Component {
                     height={contentFixedHeight}
                     onResize={size => pad.setContentSize(size)}
                   >
+                    {this.renderArticle()}
                     {this.renderImages()}
                   </GeneralContent>
                 )}
@@ -95,18 +126,23 @@ class GeneralContentLayout extends Component {
               placeholder="integer"
               onChange={this.handleInputChange}
             />
-            <TextField
-              name="imagesCount"
-              defaultValue={imagesCount}
-              placeholder="1-8"
-              onChange={this.handleInputChange}
-            />
+
             <TextField
               name="imageWidth"
               defaultValue={imageWidth}
               placeholder="auto or integer"
               onChange={this.handleInputChange}
             />
+            <div className="pad-numberfield">
+              <div className="pad-numberfield-label">imagesCount</div>
+              <div className="pad-numberfield-main">
+                <SvgMinus
+                  onClick={() => this.handleImageCountChange('minus')}
+                />
+                <div className="pad-numberfield-text">{imagesCount}</div>
+                <SvgPlus onClick={() => this.handleImageCountChange('add')} />
+              </div>
+            </div>
           </div>
         </div>
       </React.Fragment>

@@ -11,6 +11,7 @@ class BasicScroll extends Component {
     this.state = {
       pagingEnabled: false,
       scrollEnabled: true,
+      directionalLockEnabled: false,
       scrollToX: 0,
       scrollToY: 0,
     };
@@ -28,6 +29,11 @@ class BasicScroll extends Component {
   };
   handleScrollEnabledChange = () => {
     this.setState(({ scrollEnabled }) => ({ scrollEnabled: !scrollEnabled }));
+  };
+  handleDirectionalLockEnabledChange = () => {
+    this.setState(({ directionalLockEnabled }) => ({
+      directionalLockEnabled: !directionalLockEnabled,
+    }));
   };
   handleScrollToPos = () => {
     const { scrollToX, scrollToY } = this.state;
@@ -56,9 +62,17 @@ class BasicScroll extends Component {
           width: 346,
           height: 552,
           backgroundColor: (row + column) % 2 ? '#defdff' : '#cbf1ff',
+          color: '#75d3ec',
+          fontSize: 24,
+          lineHeight: '552px',
+          textAlign: 'center',
         };
 
-        items.push(<div key={row + '-' + column} style={style} />);
+        items.push(
+          <div key={row + '-' + column} style={style}>
+            row:{row + 1} column:{column + 1}
+          </div>
+        );
       }
     }
 
@@ -66,7 +80,13 @@ class BasicScroll extends Component {
   }
 
   render() {
-    const { scrollEnabled, pagingEnabled, scrollToX, scrollToY } = this.state;
+    const {
+      scrollEnabled,
+      pagingEnabled,
+      directionalLockEnabled,
+      scrollToX,
+      scrollToY,
+    } = this.state;
     return (
       <div className="pad-main">
         <div className="pad-preview">
@@ -80,6 +100,7 @@ class BasicScroll extends Component {
               contentHeight={552 * 5}
               pagingEnabled={pagingEnabled}
               scrollEnabled={scrollEnabled}
+              directionalLockEnabled={directionalLockEnabled}
             >
               {this.renderContent()}
             </Pad>
@@ -120,6 +141,16 @@ class BasicScroll extends Component {
                   onChange={this.handleScrollEnabledChange}
                 />{' '}
                 scrollEnabled
+              </label>
+            </div>
+            <div className="pad-optcheck">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={directionalLockEnabled}
+                  onChange={this.handleDirectionalLockEnabledChange}
+                />{' '}
+                directionalLockEnabled
               </label>
             </div>
           </div>
