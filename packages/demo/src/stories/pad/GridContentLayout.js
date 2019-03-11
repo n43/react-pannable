@@ -26,8 +26,7 @@ export default class GridContentLayout extends React.Component {
                       ref={ref => {
                         pad.gridContent = ref;
                       }}
-                      direction="horizontal"
-                      height={552}
+                      width={346}
                       itemWidth={100}
                       itemHeight={100}
                       itemCount={100}
