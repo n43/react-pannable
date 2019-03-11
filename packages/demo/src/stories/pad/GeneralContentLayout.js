@@ -3,7 +3,7 @@ import { Pad, GeneralContent } from 'react-pannable';
 import SvgPhone from './SvgPhone';
 import SvgPlus from './SvgPlus';
 import SvgMinus from './SvgMinus';
-import TextField from './TextField';
+import TextField from '../../ui/field/TextField';
 import './Pad.css';
 
 const images = [

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Pad, AutoResizing } from 'react-pannable';
 import SvgPhone from './SvgPhone';
-import TextField from './TextField';
+import TextField from '../../ui/field/TextField';
 import './Pad.css';
 import './AutoResizingPad.css';
 

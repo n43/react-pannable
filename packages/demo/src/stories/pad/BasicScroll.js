@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import { Pad } from 'react-pannable';
 import SvgPhone from './SvgPhone';
-import TextField from './TextField';
+import TextField from '../../ui/field/TextField';
+import CheckField from '../../ui/field/CheckField';
 import './Pad.css';
 
 class BasicScroll extends Component {
@@ -123,36 +124,21 @@ class BasicScroll extends Component {
             scroll
           </div>
           <div style={{ marginTop: '10px' }}>
-            <div className="pad-optcheck">
-              <label>
-                <input
-                  type="checkbox"
-                  checked={pagingEnabled}
-                  onChange={this.handlePagingEnabledChange}
-                />{' '}
-                pagingEnabled
-              </label>
-            </div>
-            <div className="pad-optcheck">
-              <label>
-                <input
-                  type="checkbox"
-                  checked={scrollEnabled}
-                  onChange={this.handleScrollEnabledChange}
-                />{' '}
-                scrollEnabled
-              </label>
-            </div>
-            <div className="pad-optcheck">
-              <label>
-                <input
-                  type="checkbox"
-                  checked={directionalLockEnabled}
-                  onChange={this.handleDirectionalLockEnabledChange}
-                />{' '}
-                directionalLockEnabled
-              </label>
-            </div>
+            <CheckField
+              name="pagingEnabled"
+              checked={pagingEnabled}
+              onChange={this.handlePagingEnabledChange}
+            />
+            <CheckField
+              name="scrollEnabled"
+              checked={scrollEnabled}
+              onChange={this.handleScrollEnabledChange}
+            />
+            <CheckField
+              name="directionalLockEnabled"
+              checked={directionalLockEnabled}
+              onChange={this.handleDirectionalLockEnabledChange}
+            />
           </div>
         </div>
       </div>
