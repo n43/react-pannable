@@ -255,9 +255,9 @@ function calculateLayout(size, itemSize, spacing, itemCount, direction) {
               y: sizeHeight,
               width: itemSize.width,
               height: itemSize.height,
-              itemIndex,
               rowIndex,
               columnIndex,
+              itemIndex,
             });
           }
         }
@@ -297,6 +297,9 @@ function calculateLayout(size, itemSize, spacing, itemCount, direction) {
         y: attrs.x,
         width: attrs.height,
         height: attrs.width,
+        rowIndex: attrs.columnIndex,
+        columnIndex: attrs.rowIndex,
+        itemIndex: attrs.itemIndex,
       })),
     };
   }
