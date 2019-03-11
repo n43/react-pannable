@@ -10,7 +10,7 @@ export default class GridContent extends React.PureComponent {
     height: -1,
     itemWidth: 0,
     itemHeight: 0,
-    itemKey: attrs => attrs.index,
+    itemKey: attrs => attrs.itemIndex,
     renderItem: () => null,
     visibleRect: { x: 0, y: 0, width: 0, height: 0 },
     onResize: () => {},
@@ -254,9 +254,9 @@ function calculateLayout(
         }
 
         for (let columnIndex = 0; columnIndex < columnCount; columnIndex++) {
-          const index = columnIndex + rowIndex * columnCount;
+          const itemIndex = columnIndex + rowIndex * columnCount;
 
-          if (index < itemCount) {
+          if (itemIndex < itemCount) {
             layoutAttrs.push({
               x: Math.round(
                 columnIndex * ((sizeWidth - itemSize.width) / (columnCount - 1))
@@ -264,7 +264,7 @@ function calculateLayout(
               y: sizeHeight,
               width: itemSize.width,
               height: itemSize.height,
-              index,
+              itemIndex,
               rowIndex,
               columnIndex,
             });

@@ -121,7 +121,7 @@ type Size = { width: number, height: number };
 type Size = { width: number, height: number };
 type Rect = { x: number, y: number, width: number, height: number };
 type LayoutAttrs = {
-  index: number,
+  itemIndex: number,
   rowIndex: number,
   columnIndex: number,
   x: number,
@@ -143,7 +143,7 @@ type LayoutAttrs = {
 | height           |         number          |                 -1                  | The height of the content. If you set this property to `-1`, it shrinks the content's height. |
 | itemWidth        |         number          |                  0                  | The width of the item.                                                                        |
 | itemHeight       |         number          |                  0                  | The height of the item.                                                                       |
-| itemKey          |        function         |        attrs => attrs.index         | the key of the specified cell.:`(attrs: LayoutAttrs) => string`                               |
+| itemKey          |        function         |      attrs => attrs.itemIndex       | the key of the specified cell.:`(attrs: LayoutAttrs) => string`                               |
 | renderItem       |        function         |             () => null              | the renderer of the item.:`(attrs: LayoutAttrs) => element`                                   |
 | visibleRect      |          Rect           | { x: 0, y: 0, width: 0, height: 0 } | the area of the visible content.                                                              |
 | onResize         |        function         |              () => {}               | Callback invoked when the content resize.:`(size: Size) => {}`                                |
