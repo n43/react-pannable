@@ -85,7 +85,7 @@ type PadEvent = {
 | contentHeight          |      number       |      0       | The height of the content view.                                                                                     |
 | scrollEnabled          |      boolean      |     true     | Determines whether scrolling is enabled.                                                                            |
 | pagingEnabled          |      boolean      |    false     | Determines whether paging is enabled.                                                                               |
-| directionalLockEnabled |      boolean      |    false     | determines whether scrolling is disabled in a particular direction.                                                 |
+| directionalLockEnabled |      boolean      |    false     | Determines whether scrolling is disabled in a particular direction.                                                 |
 | onScroll               |     function      |   () => {}   | Callback invoked when the content view scrolls.:`({evt: PadEvent}) => void`                                         |
 
 #### Public Methods
@@ -136,17 +136,17 @@ type LayoutAttrs = {
 
 | Property      |          Type           |            DefaultValue             | Description                                                                                   |
 | :------------ | :---------------------: | :---------------------------------: | :-------------------------------------------------------------------------------------------- |
-| direction     | 'vertical','horizontal' |             'vertical'              | the direction of the grid.                                                                    |
-| itemCount     |         number          |                  0                  | the number of items.                                                                          |
+| direction     | 'vertical','horizontal' |             'vertical'              | The direction of the grid.                                                                    |
+| itemCount     |         number          |                  0                  | The number of items.                                                                          |
 | rowSpacing    |         number          |                  0                  | The minimum spacing to use between rows of items in the grid.                                 |
 | columnSpacing |         number          |                  0                  | The minimum spacing to use between columns of items in the grid.                              |
 | width         |         number          |                 -1                  | The width of the content. If you set this property to `-1`, it shrinks the content's width.   |
 | height        |         number          |                 -1                  | The height of the content. If you set this property to `-1`, it shrinks the content's height. |
 | itemWidth     |         number          |                  0                  | The width of the item.                                                                        |
 | itemHeight    |         number          |                  0                  | The height of the item.                                                                       |
-| itemKey       |        function         |      attrs => attrs.itemIndex       | the key of the specified cell.:`(attrs: LayoutAttrs) => string`                               |
-| renderItem    |        function         |             () => null              | the renderer of the item.:`(attrs: LayoutAttrs) => element`                                   |
-| visibleRect   |          Rect           | { x: 0, y: 0, width: 0, height: 0 } | the area of the visible content.                                                              |
+| itemKey       |        function         |      attrs => attrs.itemIndex       | The key of the specified cell.:`(attrs: LayoutAttrs) => string`                               |
+| renderItem    |        function         |             () => null              | The renderer of the item.:`(attrs: LayoutAttrs) => element`                                   |
+| visibleRect   |          Rect           | { x: 0, y: 0, width: 0, height: 0 } | The area of the visible content.                                                              |
 | onResize      |        function         |              () => {}               | Callback invoked when the content resize.:`(size: Size) => {}`                                |
 
 #### Public Methods
