@@ -105,18 +105,18 @@ export default class GridContent extends React.PureComponent {
       );
     }
 
-    if (itemIndex !== undefined && itemIndex < layoutAttrs.length) {
-      const attrs = layoutAttrs[itemIndex];
+    const attrs = layoutAttrs[itemIndex];
 
-      return {
-        x: attrs.x,
-        y: attrs.y,
-        width: attrs.width,
-        height: attrs.height,
-      };
+    if (!attrs) {
+      return null;
     }
 
-    return null;
+    return {
+      x: attrs.x,
+      y: attrs.y,
+      width: attrs.width,
+      height: attrs.height,
+    };
   }
 
   render() {
@@ -153,25 +153,18 @@ export default class GridContent extends React.PureComponent {
   }
 }
 
-function needsRender(cellRect, visibleRect, name) {
+function needsRender(rect, vRect, name) {
   if (name) {
-    const dx = cellRect.x - visibleRect.x;
+    const dx = rect.x - vRect.x;
 
-    return (
-      -0.25 * visibleRect.width < dx + cellRect.width &&
-      dx < 1.25 * visibleRect.width
-    );
+    return -0.25 * vRect.width < dx + rect.width && dx < 1.25 * vRect.width;
   }
 
   return (
+    needsRender(rect, vRect, 'x') &&
     needsRender(
-      { x: cellRect.x, width: cellRect.width },
-      { x: visibleRect.x, width: visibleRect.width },
-      'x'
-    ) &&
-    needsRender(
-      { x: cellRect.y, width: cellRect.height },
-      { x: visibleRect.y, width: visibleRect.height },
+      { x: rect.y, y: rect.x, width: rect.height, height: rect.width },
+      { x: vRect.y, y: vRect.x, width: vRect.height, height: vRect.width },
       'y'
     )
   );
@@ -183,26 +176,11 @@ function calculateItemIndex(index, count, direction) {
   }
 
   if (direction === 'vertical') {
-    return calculateItemIndex(
-      {
-        row: index.row,
-        column: index.column,
-      },
-      {
-        row: count.row,
-        column: count.column,
-      }
-    );
+    return calculateItemIndex(index, count);
   } else if (direction === 'horizontal') {
     return calculateItemIndex(
-      {
-        row: index.column,
-        column: index.row,
-      },
-      {
-        row: count.column,
-        column: count.row,
-      }
+      { row: index.column, column: index.row },
+      { row: count.column, column: count.row }
     );
   }
 }
@@ -284,14 +262,8 @@ function calculateLayout(size, itemSize, spacing, itemCount, direction) {
     );
 
     return {
-      size: {
-        width: layout.size.height,
-        height: layout.size.width,
-      },
-      count: {
-        row: layout.count.column,
-        column: layout.count.row,
-      },
+      size: { width: layout.size.height, height: layout.size.width },
+      count: { row: layout.count.column, column: layout.count.row },
       layoutAttrs: layout.layoutAttrs.map(attrs => ({
         x: attrs.y,
         y: attrs.x,
