@@ -3,16 +3,16 @@ import React from 'react';
 export default class GridContent extends React.PureComponent {
   static defaultProps = {
     direction: 'vertical',
+    count: 0,
+    lineSpacing: 0,
+    inneritemSpacing: 0,
     width: -1,
     height: -1,
     itemWidth: 0,
     itemHeight: 0,
     itemKey: ({ columnIndex, rowIndex }) => rowIndex + '-' + columnIndex,
     renderItem: () => null,
-    count: 0,
     visibleRect: { x: 0, y: 0, width: 0, height: 0 },
-    lineSpacing: 0,
-    inneritemSpacing: 0,
     onResize: () => {},
   };
 
