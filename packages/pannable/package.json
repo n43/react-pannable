@@ -1,10 +1,14 @@
 {
   "name": "react-pannable",
-  "version": "0.2.3",
+  "version": "0.3.0",
   "description": "",
   "keywords": [
     "react",
-    "react-component"
+    "scroll",
+    "grid",
+    "page",
+    "pan",
+    "drag"
   ],
   "homepage": "https://github.com/n43/react-pannable",
   "bugs": "https://github.com/n43/react-pannable/issues",
