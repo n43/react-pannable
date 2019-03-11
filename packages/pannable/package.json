@@ -4,7 +4,11 @@
   "description": "",
   "keywords": [
     "react",
-    "react-component"
+    "scroll",
+    "grid",
+    "page",
+    "pan",
+    "drag"
   ],
   "homepage": "https://github.com/n43/react-pannable",
   "bugs": "https://github.com/n43/react-pannable/issues",
