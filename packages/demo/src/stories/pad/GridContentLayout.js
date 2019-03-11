@@ -29,7 +29,7 @@ export default class GridContentLayout extends React.Component {
                       width={346}
                       itemWidth={100}
                       itemHeight={100}
-                      count={100}
+                      itemCount={100}
                       renderItem={({ rowIndex, columnIndex }) => (
                         <div>{rowIndex + '-' + columnIndex}</div>
                       )}

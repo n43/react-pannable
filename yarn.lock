@@ -6386,13 +6386,6 @@ react-modal@^3.6.1:
     react-lifecycles-compat "^3.0.0"
     warning "^3.0.0"
 
-react-pannable@^0.2.0:
-  version "0.2.3"
-  resolved "https://registry.yarnpkg.com/react-pannable/-/react-pannable-0.2.3.tgz#ec567d1ac0d0520498a86e71323ac54059d31b38"
-  integrity sha512-nGzt6GCxaPM2hfgAioKdYFsd3z8jrBHVsdtAyGdZ2CxUAd20NfSvngmgt9vxZZf9sxS4D8qRES1OPeJ+z/TFCQ==
-  dependencies:
-    element-resize-detector "1.1.15"
-
 react-split-pane@^0.1.84:
   version "0.1.85"
   resolved "https://registry.yarnpkg.com/react-split-pane/-/react-split-pane-0.1.85.tgz#64819946a99b617ffa2d20f6f45a0056b6ee4faa"
