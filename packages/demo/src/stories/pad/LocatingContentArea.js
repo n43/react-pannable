@@ -73,7 +73,7 @@ class LocatingContentArea extends Component {
               ref={this.padRef}
               width={346}
               height={552}
-              contentWidth={1024}
+              contentWidth={1124}
               contentHeight={810}
             >
               <React.Fragment>
