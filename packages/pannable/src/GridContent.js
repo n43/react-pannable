@@ -3,14 +3,13 @@ import React from 'react';
 export default class GridContent extends React.PureComponent {
   static defaultProps = {
     direction: 'vertical',
-    itemCount: 0,
-    rowSpacing: 0,
-    columnSpacing: 0,
     width: -1,
     height: -1,
+    rowSpacing: 0,
+    columnSpacing: 0,
+    itemCount: 0,
     itemWidth: 0,
     itemHeight: 0,
-    itemKey: attrs => attrs.itemIndex,
     renderItem: () => null,
     visibleRect: { x: 0, y: 0, width: 0, height: 0 },
     onResize: () => {},
@@ -36,25 +35,25 @@ export default class GridContent extends React.PureComponent {
 
   componentDidUpdate(prevProps) {
     const {
+      direction,
       width,
       height,
-      itemWidth,
-      itemHeight,
       rowSpacing,
       columnSpacing,
       itemCount,
-      direction,
+      itemWidth,
+      itemHeight,
     } = this.props;
 
     if (
+      prevProps.direction !== direction ||
       prevProps.width !== width ||
       prevProps.height !== height ||
-      prevProps.itemWidth !== itemWidth ||
-      prevProps.itemHeight !== itemHeight ||
       prevProps.rowSpacing !== rowSpacing ||
       prevProps.columnSpacing !== columnSpacing ||
       prevProps.itemCount !== itemCount ||
-      prevProps.direction !== direction
+      prevProps.itemWidth !== itemWidth ||
+      prevProps.itemHeight !== itemHeight
     ) {
       this._calculateLayout();
     }
@@ -63,22 +62,22 @@ export default class GridContent extends React.PureComponent {
   _calculateLayout() {
     this.setState((state, props) => {
       const {
+        direction,
         width,
         height,
-        itemWidth,
-        itemHeight,
         rowSpacing,
         columnSpacing,
         itemCount,
-        direction,
+        itemWidth,
+        itemHeight,
         onResize,
       } = props;
 
       const nextState = calculateLayout(
-        { width, height },
         { width: itemWidth, height: itemHeight },
-        { row: rowSpacing, column: columnSpacing },
         itemCount,
+        { row: rowSpacing, column: columnSpacing },
+        { width, height },
         direction
       );
 
@@ -120,7 +119,7 @@ export default class GridContent extends React.PureComponent {
   }
 
   render() {
-    const { visibleRect, renderItem, itemKey, children } = this.props;
+    const { visibleRect, renderItem, children } = this.props;
     const { layoutAttrs } = this.state;
 
     if (typeof children === 'function') {
@@ -133,19 +132,19 @@ export default class GridContent extends React.PureComponent {
       const attrs = layoutAttrs[index];
 
       if (needsRender(attrs, visibleRect)) {
-        const cellStyle = {
+        let element = renderItem(attrs);
+        const key = element.key || attrs.itemIndex;
+        const style = {
           position: 'absolute',
           left: attrs.x,
           top: attrs.y,
           width: attrs.width,
-          height: attrs.width,
+          height: attrs.height,
+          ...element.props.style,
         };
 
-        grids.push(
-          <div key={itemKey(attrs)} style={cellStyle}>
-            {renderItem(attrs)}
-          </div>
-        );
+        element = React.cloneElement(element, { key, style });
+        grids.push(element);
       }
     }
 
@@ -185,7 +184,7 @@ function calculateItemIndex(index, count, direction) {
   }
 }
 
-function calculateLayout(size, itemSize, spacing, itemCount, direction) {
+function calculateLayout(itemSize, itemCount, spacing, size, direction) {
   if (!direction) {
     let sizeWidth = size.width;
     let sizeHeight = 0;
@@ -194,21 +193,23 @@ function calculateLayout(size, itemSize, spacing, itemCount, direction) {
     const layoutAttrs = [];
 
     if (sizeWidth < 0) {
-      sizeWidth =
-        itemCount * itemSize.width +
-        (itemCount <= 1 ? 0 : (itemCount - 1) * spacing.column);
+      sizeWidth = itemCount * itemSize.width;
+
+      if (itemCount > 1) {
+        sizeWidth += (itemCount - 1) * spacing.column;
+      }
       columnCount = itemCount;
     } else {
       if (itemSize.width === 0 && spacing.column === 0) {
         columnCount = itemCount;
       } else {
-        columnCount =
-          1 +
-          (sizeWidth < itemSize.width
-            ? 0
-            : Math.floor(
-                (sizeWidth - itemSize.width) / (itemSize.width + spacing.column)
-              ));
+        columnCount = 1;
+
+        if (itemSize.width < sizeWidth) {
+          columnCount += Math.floor(
+            (sizeWidth - itemSize.width) / (itemSize.width + spacing.column)
+          );
+        }
       }
     }
 
@@ -224,12 +225,17 @@ function calculateLayout(size, itemSize, spacing, itemCount, direction) {
 
         for (let columnIndex = 0; columnIndex < columnCount; columnIndex++) {
           const itemIndex = columnIndex + rowIndex * columnCount;
+          let x = 0;
+
+          if (columnCount > 1) {
+            x += Math.round(
+              columnIndex * ((sizeWidth - itemSize.width) / (columnCount - 1))
+            );
+          }
 
           if (itemIndex < itemCount) {
             layoutAttrs.push({
-              x: Math.round(
-                columnIndex * ((sizeWidth - itemSize.width) / (columnCount - 1))
-              ),
+              x,
               y: sizeHeight,
               width: itemSize.width,
               height: itemSize.height,
@@ -252,13 +258,13 @@ function calculateLayout(size, itemSize, spacing, itemCount, direction) {
   }
 
   if (direction === 'vertical') {
-    return calculateLayout(size, itemSize, spacing, itemCount);
+    return calculateLayout(itemSize, itemCount, spacing, size);
   } else if (direction === 'horizontal') {
     const layout = calculateLayout(
-      { width: size.height, height: size.width },
       { width: itemSize.height, height: itemSize.width },
+      itemCount,
       { row: spacing.column, column: spacing.row },
-      itemCount
+      { width: size.height, height: size.width }
     );
 
     return {

@@ -55,11 +55,11 @@ export default class GridContentLayout extends React.Component {
 
                         return (
                           <div
+                            key={itemIndex}
                             style={{
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
-                              height: '100%',
                               backgroundColor,
                               color: '#75d3ec',
                             }}

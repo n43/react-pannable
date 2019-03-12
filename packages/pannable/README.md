@@ -137,11 +137,11 @@ type LayoutAttrs = {
 | Property      |          Type           |            DefaultValue             | Description                                                                                   |
 | :------------ | :---------------------: | :---------------------------------: | :-------------------------------------------------------------------------------------------- |
 | direction     | 'vertical','horizontal' |             'vertical'              | The direction of the grid.                                                                    |
-| itemCount     |         number          |                  0                  | The number of items.                                                                          |
-| rowSpacing    |         number          |                  0                  | The minimum spacing to use between rows of items in the grid.                                 |
-| columnSpacing |         number          |                  0                  | The minimum spacing to use between columns of items in the grid.                              |
 | width         |         number          |                 -1                  | The width of the content. If you set this property to `-1`, it shrinks the content's width.   |
 | height        |         number          |                 -1                  | The height of the content. If you set this property to `-1`, it shrinks the content's height. |
+| rowSpacing    |         number          |                  0                  | The minimum spacing to use between rows of items in the grid.                                 |
+| columnSpacing |         number          |                  0                  | The minimum spacing to use between columns of items in the grid.                              |
+| itemCount     |         number          |                  0                  | The number of items.                                                                          |
 | itemWidth     |         number          |                  0                  | The width of the item.                                                                        |
 | itemHeight    |         number          |                  0                  | The height of the item.                                                                       |
 | itemKey       |        function         |      attrs => attrs.itemIndex       | The key of the specified cell.:`(attrs: LayoutAttrs) => string`                               |
