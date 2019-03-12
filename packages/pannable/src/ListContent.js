@@ -115,13 +115,15 @@ export default class ListContent extends React.PureComponent {
         };
 
         element = React.cloneElement(element, { key, style });
-        grids.push(element);
+        list.push(element);
       }
     }
 
     return <React.Fragment>{list}</React.Fragment>;
   }
 }
+
+function needsRender() {}
 
 function calculateLayout(
   itemSize,
