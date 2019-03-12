@@ -9,7 +9,6 @@ export default class ListContent extends React.PureComponent {
     itemCount: 0,
     estimatedItemWidth: 0,
     estimatedItemHeight: 0,
-    itemKey: attrs => attrs.itemIndex,
     renderItem: () => null,
     visibleRect: { x: 0, y: 0, width: 0, height: 0 },
     onResize: () => {},
