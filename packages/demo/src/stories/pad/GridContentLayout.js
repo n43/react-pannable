@@ -55,7 +55,6 @@ export default class GridContentLayout extends React.Component {
 
                         return (
                           <div
-                            key={itemIndex}
                             style={{
                               display: 'flex',
                               alignItems: 'center',

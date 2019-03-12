@@ -144,7 +144,6 @@ type LayoutAttrs = {
 | itemCount     |         number          |                  0                  | The number of items.                                                                          |
 | itemWidth     |         number          |                  0                  | The width of the item.                                                                        |
 | itemHeight    |         number          |                  0                  | The height of the item.                                                                       |
-| itemKey       |        function         |      attrs => attrs.itemIndex       | The key of the specified cell.:`(attrs: LayoutAttrs) => string`                               |
 | renderItem    |        function         |             () => null              | The renderer of the item.:`(attrs: LayoutAttrs) => element`                                   |
 | visibleRect   |          Rect           | { x: 0, y: 0, width: 0, height: 0 } | The area of the visible content.                                                              |
 | onResize      |        function         |              () => {}               | Callback invoked when the content resize.:`(size: Size) => void`                              |
