@@ -16,9 +16,9 @@ export default class GridContent extends React.PureComponent {
   };
 
   state = {
-    count: { row: 0, column: 0 },
     size: { width: 0, height: 0 },
     layoutAttrs: [],
+    count: { row: 0, column: 0 },
   };
 
   getSize() {
