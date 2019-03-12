@@ -35,15 +35,15 @@ class LocatingContentArea extends Component {
       align.x = scrollAlignX;
     }
     if (
-      scrollAlignX === 'start' ||
-      scrollAlignX === 'center' ||
-      scrollAlignX === 'end'
+      scrollAlignY === 'start' ||
+      scrollAlignY === 'center' ||
+      scrollAlignY === 'end'
     ) {
       align.y = scrollAlignY;
     }
-
+    console.log(align);
     this.padRef.current.scrollToRect({
-      rect: { x: 748, y: 325, width: 120, height: 120 },
+      rect: { x: 854, y: 422, width: 120, height: 120 },
       align,
       animated: true,
     });
@@ -73,16 +73,16 @@ class LocatingContentArea extends Component {
               ref={this.padRef}
               width={346}
               height={552}
-              contentWidth={1124}
-              contentHeight={810}
+              contentWidth={1300}
+              contentHeight={973}
             >
               <React.Fragment>
-                <img src={map} />
+                <img src={map} width={1300} height={973} />
                 <div
                   style={{
                     position: 'absolute',
-                    top: '325px',
-                    left: '748px',
+                    top: '422px',
+                    left: '854px',
                     width: '120px',
                     height: '120px',
                     borderRadius: '60px',

@@ -9,7 +9,7 @@ class RadioField extends Component {
       <div className="radiofield-item">
         <div className="radiofield-label">{name}</div>
         {options.map(({ title, value, checked }) => (
-          <label className="radiofield-radio">
+          <label className="radiofield-radio" key={value}>
             <input
               type="radio"
               name={name}
