@@ -112,7 +112,7 @@ type Size = { width: number, height: number };
 | :------- | :------: | :----------: | :-------------------------------------------------------------------------------------------- |
 | width    |  number  |      -1      | The width of the content. If you set this property to `-1`, it shrinks the content's width.   |
 | height   |  number  |      -1      | The height of the content. If you set this property to `-1`, it shrinks the content's height. |
-| onResize | function |   () => {}   | Callback invoked when the content resize.:`(size: Size) => {}`                                |
+| onResize | function |   () => {}   | Callback invoked when the content resize.:`(size: Size) => void`                              |
 
 ### GridContent
 
@@ -147,7 +147,7 @@ type LayoutAttrs = {
 | itemKey       |        function         |      attrs => attrs.itemIndex       | The key of the specified cell.:`(attrs: LayoutAttrs) => string`                               |
 | renderItem    |        function         |             () => null              | The renderer of the item.:`(attrs: LayoutAttrs) => element`                                   |
 | visibleRect   |          Rect           | { x: 0, y: 0, width: 0, height: 0 } | The area of the visible content.                                                              |
-| onResize      |        function         |              () => {}               | Callback invoked when the content resize.:`(size: Size) => {}`                                |
+| onResize      |        function         |              () => {}               | Callback invoked when the content resize.:`(size: Size) => void`                              |
 
 #### Public Methods
 
