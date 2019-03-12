@@ -1,22 +1,29 @@
 export function getAdjustedContentOffset(offset, size, cSize, name) {
   if (name) {
-    return Math.max(Math.min(size - cSize, 0), Math.min(offset, 0));
+    const [x, width] = name === 'y' ? ['y', 'height'] : ['x', 'width'];
+
+    return Math.max(
+      Math.min(size[width] - cSize[width], 0),
+      Math.min(offset[x], 0)
+    );
   }
 
   return {
-    x: getAdjustedContentOffset(offset.x, size.width, cSize.width, 'x'),
-    y: getAdjustedContentOffset(offset.y, size.height, cSize.height, 'y'),
+    x: getAdjustedContentOffset(offset, size, cSize, 'x'),
+    y: getAdjustedContentOffset(offset, size, cSize, 'y'),
   };
 }
 
 export function getAdjustedPagingOffset(offset, size, name) {
   if (name) {
-    return size ? size * Math.round(offset / size) : 0;
+    const [x, width] = name === 'y' ? ['y', 'height'] : ['x', 'width'];
+
+    return size[width] ? size[width] * Math.round(offset[x] / size[width]) : 0;
   }
 
   return {
-    x: getAdjustedPagingOffset(offset.x, size.width, 'x'),
-    y: getAdjustedPagingOffset(offset.y, size.height, 'y'),
+    x: getAdjustedPagingOffset(offset, size, 'x'),
+    y: getAdjustedPagingOffset(offset, size, 'y'),
   };
 }
 
@@ -28,40 +35,51 @@ function getAcc(rate, { x, y }) {
 
 export function getAdjustedPagingVelocity(velocity, size, acc, name) {
   if (name) {
-    if (!acc) {
+    const [x, width] = name === 'y' ? ['y', 'height'] : ['x', 'width'];
+
+    if (!acc[x]) {
       return 0;
     }
 
-    const direction = acc < 0 ? -1 : 1;
+    const direction = acc[x] < 0 ? -1 : 1;
 
     return (
       direction *
-      Math.min(Math.abs(velocity), Math.sqrt(direction * acc * size))
+      Math.min(
+        Math.abs(velocity[x]),
+        Math.sqrt(direction * acc[x] * size[width])
+      )
     );
   }
 
-  acc = getAcc(acc, velocity);
+  if (typeof acc === 'number') {
+    acc = getAcc(acc, velocity);
+  }
 
   return {
-    x: getAdjustedPagingVelocity(velocity.x, size.width, acc.x, 'x'),
-    y: getAdjustedPagingVelocity(velocity.y, size.height, acc.y, 'y'),
+    x: getAdjustedPagingVelocity(velocity, size, acc, 'x'),
+    y: getAdjustedPagingVelocity(velocity, size, acc, 'y'),
   };
 }
 
 export function getDecelerationEndOffset(offset, velocity, acc, name) {
   if (name) {
-    if (!acc) {
-      return offset;
+    const x = name;
+
+    if (!acc[x]) {
+      return offset[x];
     }
 
-    return offset + 0.5 * velocity * (velocity / acc);
+    return offset[x] + 0.5 * velocity[x] * (velocity[x] / acc[x]);
   }
 
-  acc = getAcc(acc, velocity);
+  if (typeof acc === 'number') {
+    acc = getAcc(acc, velocity);
+  }
 
   return {
-    x: getDecelerationEndOffset(offset.x, velocity.x, acc.x, 'x'),
-    y: getDecelerationEndOffset(offset.y, velocity.y, acc.y, 'y'),
+    x: getDecelerationEndOffset(offset, velocity, acc, 'x'),
+    y: getDecelerationEndOffset(offset, velocity, acc, 'y'),
   };
 }
 
@@ -74,49 +92,53 @@ export function calculateDeceleration(
   name
 ) {
   if (name) {
-    if (!acc) {
-      return { offset: offsetEnd, velocity: 0 };
+    const x = name;
+
+    if (!acc[x]) {
+      return { offset: offsetEnd[x], velocity: 0 };
     }
 
-    const dist = offsetEnd - offset;
-    const direction = acc < 0 ? -1 : 1;
+    const dist = offsetEnd[x] - offset[x];
+    const direction = acc[x] < 0 ? -1 : 1;
 
     const velocityH =
-      direction * Math.sqrt(0.5 * velocity * velocity + acc * dist);
-    const timeH = acc ? (velocityH - velocity) / acc : 0;
-    const time = acc ? (2 * velocityH - velocity) / acc : 0;
+      direction * Math.sqrt(0.5 * velocity[x] * velocity[x] + acc[x] * dist);
+    const timeH = acc[x] ? (velocityH - velocity[x]) / acc[x] : 0;
+    const time = acc[x] ? (2 * velocityH - velocity[x]) / acc[x] : 0;
 
     if (time < interval) {
-      return { offset: offsetEnd, velocity: 0 };
+      return { offset: offsetEnd[x], velocity: 0 };
     }
 
     return {
       offset:
-        offset +
-        0.5 * (velocity + velocityH) * timeH -
+        offset[x] +
+        0.5 * (velocity[x] + velocityH) * timeH -
         0.5 *
-          (2 * velocityH - acc * Math.abs(timeH - interval)) *
+          (2 * velocityH - acc[x] * Math.abs(timeH - interval)) *
           (timeH - interval),
-      velocity: velocityH - acc * Math.abs(timeH - interval),
+      velocity: velocityH - acc[x] * Math.abs(timeH - interval),
     };
   }
 
-  acc = getAcc(acc, { x: offsetEnd.x - offset.x, y: offsetEnd.y - offset.y });
+  if (typeof acc === 'number') {
+    acc = getAcc(acc, { x: offsetEnd.x - offset.x, y: offsetEnd.y - offset.y });
+  }
 
   const nextX = calculateDeceleration(
     interval,
-    acc.x,
-    offset.x,
-    velocity.x,
-    offsetEnd.x,
+    acc,
+    offset,
+    velocity,
+    offsetEnd,
     'x'
   );
   const nextY = calculateDeceleration(
     interval,
-    acc.y,
-    offset.y,
-    velocity.y,
-    offsetEnd.y,
+    acc,
+    offset,
+    velocity,
+    offsetEnd,
     'y'
   );
 
@@ -128,30 +150,34 @@ export function calculateDeceleration(
 
 export function calculateRectOffset(rOrigin, rSize, align, offset, size, name) {
   if (name) {
+    const [x, width] = name === 'y' ? ['y', 'height'] : ['x', 'width'];
     let nOffset;
 
-    if (align === 'auto') {
-      const direction = size < rSize ? -1 : 1;
+    if (align[x] === 'auto') {
+      const direction = size[width] < rSize[width] ? -1 : 1;
       nOffset =
-        -rOrigin +
+        -rOrigin[x] +
         direction *
           Math.max(
             0,
-            Math.min(direction * (rOrigin + offset), direction * (size - rSize))
+            Math.min(
+              direction * (rOrigin[x] + offset[x]),
+              direction * (size[width] - rSize[width])
+            )
           );
     } else {
-      if (align === 'start') {
-        align = 0;
-      } else if (align === 'center') {
-        align = 0.5;
-      } else if (align === 'end') {
-        align = 1;
+      if (align[x] === 'start') {
+        align[x] = 0;
+      } else if (align[x] === 'center') {
+        align[x] = 0.5;
+      } else if (align[x] === 'end') {
+        align[x] = 1;
       }
-      if (typeof align !== 'number' || isNaN(align)) {
-        align = 0.5;
+      if (typeof align[x] !== 'number' || isNaN(align[x])) {
+        align[x] = 0.5;
       }
 
-      nOffset = -rOrigin + align * (size - rSize);
+      nOffset = -rOrigin[x] + align[x] * (size[width] - rSize[width]);
     }
 
     return nOffset;
@@ -162,21 +188,7 @@ export function calculateRectOffset(rOrigin, rSize, align, offset, size, name) {
   }
 
   return {
-    x: calculateRectOffset(
-      rOrigin.x,
-      rSize.width,
-      align.x,
-      offset.x,
-      size.width,
-      'x'
-    ),
-    y: calculateRectOffset(
-      rOrigin.y,
-      rSize.height,
-      align.y,
-      offset.y,
-      size.height,
-      'y'
-    ),
+    x: calculateRectOffset(rOrigin, rSize, align, offset, size, 'x'),
+    y: calculateRectOffset(rOrigin, rSize, align, offset, size, 'y'),
   };
 }

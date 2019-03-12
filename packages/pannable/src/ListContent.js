@@ -18,7 +18,7 @@ export default class ListContent extends React.PureComponent {
     size: { width: 0, height: 0 },
     layoutAttrs: [],
     itemHashList: [],
-    itemHashDict: {},
+    itemSizeDict: {},
   };
 
   getSize() {
@@ -65,12 +65,12 @@ export default class ListContent extends React.PureComponent {
         estimatedItemHeight,
         onResize,
       } = props;
-      const { itemHashList, itemHashDict } = state;
+      const { itemHashList, itemSizeDict } = state;
 
       const nextState = calculateLayout(
         { width: estimatedItemWidth, height: estimatedItemHeight },
         itemHashList,
-        itemHashDict,
+        itemSizeDict,
         itemCount,
         spacing,
         { width, height },
@@ -123,27 +123,23 @@ export default class ListContent extends React.PureComponent {
   }
 }
 
-function needsRender() {}
+function needsRender(rect, vRect, name) {
+  if (name) {
+    const [x, width] = name === 'y' ? ['y', 'height'] : ['x', 'width'];
+
+    const dx = rect[x] - vRect[x];
+    return -0.25 * vRect[width] < dx + rect[width] && dx < 1.25 * vRect[width];
+  }
+
+  return needsRender(rect, vRect, 'x') && needsRender(rect, vRect, 'y');
+}
 
 function calculateLayout(
   itemSize,
   itemHashList,
-  itemHashDict,
+  itemSizeDict,
   itemCount,
   spacing,
   size,
   direction
-) {
-  if (!direction) {
-  } else if (direction === 'vertical') {
-    return calculateLayout(
-      itemSize,
-      itemHashList,
-      itemHashDict,
-      itemCount,
-      spacing,
-      size
-    );
-  } else if (direction === 'horizontal') {
-  }
-}
+) {}

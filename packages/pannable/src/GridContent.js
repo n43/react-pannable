@@ -155,131 +155,95 @@ export default class GridContent extends React.PureComponent {
 
 function needsRender(rect, vRect, name) {
   if (name) {
-    const dx = rect.x - vRect.x;
+    const [x, width] = name === 'y' ? ['y', 'height'] : ['x', 'width'];
 
-    return -0.25 * vRect.width < dx + rect.width && dx < 1.25 * vRect.width;
+    const dx = rect[x] - vRect[x];
+    return -0.25 * vRect[width] < dx + rect[width] && dx < 1.25 * vRect[width];
   }
 
-  return (
-    needsRender(rect, vRect, 'x') &&
-    needsRender(
-      { x: rect.y, y: rect.x, width: rect.height, height: rect.width },
-      { x: vRect.y, y: vRect.x, width: vRect.height, height: vRect.width },
-      'y'
-    )
-  );
+  return needsRender(rect, vRect, 'x') && needsRender(rect, vRect, 'y');
 }
 
 function calculateItemIndex(index, count, direction) {
-  if (!direction) {
-    return index.column + index.row * count.column;
-  }
+  const [row, column] =
+    direction === 'horizontal' ? ['column', 'row'] : ['row', 'column'];
 
-  if (direction === 'vertical') {
-    return calculateItemIndex(index, count);
-  } else if (direction === 'horizontal') {
-    return calculateItemIndex(
-      { row: index.column, column: index.row },
-      { row: count.column, column: count.row }
-    );
-  }
+  return index[column] + index[row] * count[column];
 }
 
 function calculateLayout(itemSize, itemCount, spacing, size, direction) {
-  if (!direction) {
-    let sizeWidth = size.width;
-    let sizeHeight = 0;
-    let columnCount = 0;
-    let rowCount = 0;
-    const layoutAttrs = [];
+  const [x, y, width, height, row, column] =
+    direction === 'horizontal'
+      ? ['y', 'x', 'height', 'width', 'column', 'row']
+      : ['x', 'y', 'width', 'height', 'row', 'column'];
 
-    if (sizeWidth < 0) {
-      sizeWidth = itemCount * itemSize.width;
+  let sizeWidth = size[width];
+  let sizeHeight = 0;
+  let countRow = 0;
+  let countColumn = 0;
+  const layoutAttrs = [];
 
-      if (itemCount > 1) {
-        sizeWidth += (itemCount - 1) * spacing.column;
-      }
-      columnCount = itemCount;
+  if (sizeWidth < 0) {
+    sizeWidth = itemCount * itemSize[width];
+
+    if (itemCount > 1) {
+      sizeWidth += (itemCount - 1) * spacing[column];
+    }
+    countColumn = itemCount;
+  } else {
+    if (itemSize[width] === 0 && spacing[column] === 0) {
+      countColumn = itemCount;
     } else {
-      if (itemSize.width === 0 && spacing.column === 0) {
-        columnCount = itemCount;
-      } else {
-        columnCount = 1;
+      countColumn = 1;
 
-        if (itemSize.width < sizeWidth) {
-          columnCount += Math.floor(
-            (sizeWidth - itemSize.width) / (itemSize.width + spacing.column)
+      if (itemSize[width] < sizeWidth) {
+        countColumn += Math.floor(
+          (sizeWidth - itemSize[width]) / (itemSize[width] + spacing[column])
+        );
+      }
+    }
+  }
+
+  if (countColumn > 0) {
+    countRow = Math.ceil(itemCount / countColumn);
+  }
+
+  if (countRow > 0) {
+    for (let rowIndex = 0; rowIndex < countRow; rowIndex++) {
+      if (rowIndex > 0) {
+        sizeHeight += spacing[row] + itemSize[height];
+      }
+
+      for (let columnIndex = 0; columnIndex < countColumn; columnIndex++) {
+        const itemIndex = columnIndex + rowIndex * countColumn;
+        let attrX = 0;
+
+        if (countColumn > 1) {
+          attrX += Math.round(
+            columnIndex * ((sizeWidth - itemSize[width]) / (countColumn - 1))
           );
         }
-      }
-    }
 
-    if (columnCount > 0) {
-      rowCount = Math.ceil(itemCount / columnCount);
-    }
-
-    if (rowCount > 0) {
-      for (let rowIndex = 0; rowIndex < rowCount; rowIndex++) {
-        if (rowIndex > 0) {
-          sizeHeight += spacing.row + itemSize.height;
-        }
-
-        for (let columnIndex = 0; columnIndex < columnCount; columnIndex++) {
-          const itemIndex = columnIndex + rowIndex * columnCount;
-          let x = 0;
-
-          if (columnCount > 1) {
-            x += Math.round(
-              columnIndex * ((sizeWidth - itemSize.width) / (columnCount - 1))
-            );
-          }
-
-          if (itemIndex < itemCount) {
-            layoutAttrs.push({
-              x,
-              y: sizeHeight,
-              width: itemSize.width,
-              height: itemSize.height,
-              rowIndex,
-              columnIndex,
-              itemIndex,
-            });
-          }
+        if (itemIndex < itemCount) {
+          layoutAttrs.push({
+            [x]: attrX,
+            [y]: sizeHeight,
+            [width]: itemSize[width],
+            [height]: itemSize[height],
+            [row + 'Index']: rowIndex,
+            [column + 'Index']: columnIndex,
+            itemIndex,
+          });
         }
       }
-
-      sizeHeight += itemSize.height;
     }
 
-    return {
-      count: { row: rowCount, column: columnCount },
-      size: { width: sizeWidth, height: sizeHeight },
-      layoutAttrs,
-    };
+    sizeHeight += itemSize[height];
   }
 
-  if (direction === 'vertical') {
-    return calculateLayout(itemSize, itemCount, spacing, size);
-  } else if (direction === 'horizontal') {
-    const layout = calculateLayout(
-      { width: itemSize.height, height: itemSize.width },
-      itemCount,
-      { row: spacing.column, column: spacing.row },
-      { width: size.height, height: size.width }
-    );
-
-    return {
-      size: { width: layout.size.height, height: layout.size.width },
-      count: { row: layout.count.column, column: layout.count.row },
-      layoutAttrs: layout.layoutAttrs.map(attrs => ({
-        x: attrs.y,
-        y: attrs.x,
-        width: attrs.height,
-        height: attrs.width,
-        rowIndex: attrs.columnIndex,
-        columnIndex: attrs.rowIndex,
-        itemIndex: attrs.itemIndex,
-      })),
-    };
-  }
+  return {
+    count: { [row]: countRow, [column]: countColumn },
+    size: { [width]: sizeWidth, [height]: sizeHeight },
+    layoutAttrs,
+  };
 }
