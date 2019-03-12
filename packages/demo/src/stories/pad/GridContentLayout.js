@@ -42,9 +42,6 @@ export default class GridContentLayout extends React.Component {
 
                   return (
                     <GridContent
-                      ref={ref => {
-                        pad.gridContent = ref;
-                      }}
                       width={346}
                       itemWidth={itemWidth}
                       itemHeight={itemHeight}

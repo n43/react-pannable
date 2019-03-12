@@ -119,7 +119,7 @@ export default class GridContent extends React.PureComponent {
   }
 
   render() {
-    const { visibleRect, renderItem, children } = this.props;
+    const { itemCount, visibleRect, renderItem, children } = this.props;
     const { layoutAttrs } = this.state;
 
     if (typeof children === 'function') {
@@ -128,11 +128,12 @@ export default class GridContent extends React.PureComponent {
 
     const grids = [];
 
-    for (let index = 0; index < layoutAttrs.length; index++) {
-      const attrs = layoutAttrs[index];
+    for (let itemIndex = 0; itemIndex < itemCount; itemIndex++) {
+      const attrs = layoutAttrs[itemIndex];
 
-      if (needsRender(attrs, visibleRect)) {
+      if (attrs && needsRender(attrs, visibleRect)) {
         let element = renderItem(attrs);
+
         const key = element.key || attrs.itemIndex;
         const style = {
           position: 'absolute',
