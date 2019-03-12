@@ -1,14 +1,23 @@
 import React from 'react';
 import { Pad, GridContent } from 'react-pannable';
 import TextField from '../../ui/field/TextField';
+import RadioField from '../../ui/field/RadioField';
 import SvgPhone from './SvgPhone';
 import './Pad.css';
 
 export default class GridContentLayout extends React.Component {
-  state = {
-    itemWidth: 100,
-    itemHeight: 100,
-  };
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      itemWidth: 100,
+      itemHeight: 100,
+      scrollToIndex: 0,
+      separator: '-',
+    };
+    this.padRef = React.createRef();
+    this.gridRef = React.createRef();
+  }
   handleInputChange = evt => {
     const node = evt.target;
     const value = parseInt(node.value, 10);
@@ -21,8 +30,26 @@ export default class GridContentLayout extends React.Component {
       [node.name]: value,
     });
   };
+  handleRadioChange = evt => {
+    const node = evt.target;
+
+    this.setState({
+      [node.name]: node.value,
+    });
+  };
+  handleScrollToPos = () => {
+    const { scrollToIndex } = this.state;
+    const rect = this.gridRef.current.getItemRect({
+      itemIndex: scrollToIndex,
+    });
+    this.padRef.current.scrollToRect({ rect, animated: true });
+  };
   render() {
-    const { itemWidth, itemHeight } = this.state;
+    const { itemWidth, itemHeight, separator, scrollToIndex } = this.state;
+    const separatorOptions = [
+      { title: '-', value: '-', checked: separator === '-' },
+      { title: ',', value: ',', checked: separator === ',' },
+    ];
 
     return (
       <React.Fragment>
@@ -31,6 +58,7 @@ export default class GridContentLayout extends React.Component {
             <SvgPhone className="pad-preview-bg" />
             <div className="pad-preview-content">
               <Pad
+                ref={this.padRef}
                 className="autoadjust-pad"
                 directionalLockEnabled
                 width={346}
@@ -42,9 +70,7 @@ export default class GridContentLayout extends React.Component {
 
                   return (
                     <GridContent
-                      ref={ref => {
-                        pad.gridContent = ref;
-                      }}
+                      ref={this.gridRef}
                       width={346}
                       itemWidth={itemWidth}
                       itemHeight={itemHeight}
@@ -61,9 +87,12 @@ export default class GridContentLayout extends React.Component {
                               justifyContent: 'center',
                               backgroundColor,
                               color: '#75d3ec',
+                              whiteSpace: 'pre-line',
+                              textAlign: 'center',
                             }}
                           >
-                            {rowIndex + '-' + columnIndex}
+                            index:{itemIndex + '\n'}
+                            {'r:' + rowIndex + separator + 'c:' + columnIndex}
                           </div>
                         );
                       }}
@@ -93,6 +122,20 @@ export default class GridContentLayout extends React.Component {
               placeholder="integer"
               onChange={this.handleInputChange}
             />
+            <RadioField
+              name="separator"
+              options={separatorOptions}
+              onChange={this.handleRadioChange}
+            />
+            <TextField
+              name="scrollToIndex"
+              defaultValue={scrollToIndex}
+              placeholder="integer"
+              onChange={this.handleInputChange}
+            />
+            <div className="pad-btn" onClick={this.handleScrollToPos}>
+              scroll
+            </div>
           </div>
         </div>
       </React.Fragment>
