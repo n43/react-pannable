@@ -54,7 +54,7 @@ class AutoResizingPad extends Component {
                         <div className="autoresize-content">
                           <div
                             className="autosize-paragraph"
-                            style={{ color: '#52a7ea' }}
+                            style={{ color: '#e47777' }}
                           >
                             AutoResizing would automatically fill its parent,
                             unless you specify the value of width or height

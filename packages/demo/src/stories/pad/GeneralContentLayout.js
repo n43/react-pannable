@@ -76,7 +76,7 @@ class GeneralContentLayout extends Component {
     const style = {
       padding: 10,
       lineHeight: '1.5em',
-      color: '#52a7ea',
+      color: '#e47777',
     };
     return (
       <div style={style}>
