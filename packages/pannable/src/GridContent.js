@@ -134,17 +134,20 @@ export default class GridContent extends React.PureComponent {
       if (attrs && needsRender(attrs, visibleRect)) {
         let element = renderItem({ ...attrs });
 
+        const Item = element.type;
+        const { style, ...props } = element.props;
         const key = element.key || attrs.itemIndex;
-        const style = {
+        const itemStyle = {
           position: 'absolute',
           left: attrs.x,
           top: attrs.y,
           width: attrs.width,
           height: attrs.height,
-          ...element.props.style,
+          ...style,
         };
 
-        element = React.cloneElement(element, { key, style });
+        element = <Item {...props} key={key} style={itemStyle} />;
+
         grids.push(element);
       }
     }
