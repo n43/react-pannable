@@ -6,4 +6,12 @@ import ListContent from './ListContent';
 import ItemContent from './ItemContent';
 import AutoResizing from './AutoResizing';
 
-export { Pad, Pannable, GeneralContent, GridContent, ListContent, ItemContent };
+export {
+  Pad,
+  Pannable,
+  GeneralContent,
+  GridContent,
+  ListContent,
+  ItemContent,
+  AutoResizing,
+};
