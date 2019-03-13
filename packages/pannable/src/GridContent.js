@@ -111,7 +111,7 @@ export default class GridContent extends React.PureComponent {
         state.size.width !== nextState.size.width ||
         state.size.height !== nextState.size.height
       ) {
-        onResize(nextState.size);
+        onResize({ ...nextState.size });
       }
 
       return nextState;
@@ -132,7 +132,7 @@ export default class GridContent extends React.PureComponent {
       const attrs = layoutAttrs[itemIndex];
 
       if (attrs && needsRender(attrs, visibleRect)) {
-        let element = renderItem(attrs);
+        let element = renderItem({ ...attrs });
 
         const key = element.key || attrs.itemIndex;
         const style = {

@@ -98,7 +98,7 @@ export default class ListContent extends React.PureComponent {
         state.size.width !== nextState.size.width ||
         state.size.height !== nextState.size.height
       ) {
-        onResize(nextState.size);
+        onResize({ ...nextState.size });
       }
 
       return nextState;
