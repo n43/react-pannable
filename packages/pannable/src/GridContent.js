@@ -126,7 +126,7 @@ export default class GridContent extends React.PureComponent {
       return children(this);
     }
 
-    const grids = [];
+    const items = [];
 
     for (let itemIndex = 0; itemIndex < itemCount; itemIndex++) {
       const attrs = layoutAttrs[itemIndex];
@@ -148,11 +148,11 @@ export default class GridContent extends React.PureComponent {
 
         element = <Item {...props} key={key} style={itemStyle} />;
 
-        grids.push(element);
+        items.push(element);
       }
     }
 
-    return <React.Fragment>{grids}</React.Fragment>;
+    return <React.Fragment>{items}</React.Fragment>;
   }
 }
 
