@@ -100,7 +100,7 @@ Scrolls a specific area of the content so that it is visible.
 
 ### GeneralContent
 
-`GeneralContent` automatically adjusts the width and height of content.
+`GeneralContent` automatically adjusts the size of content.
 
 ```js
 type Size = { width: number, height: number };
@@ -116,7 +116,7 @@ type Size = { width: number, height: number };
 
 ### GridContent
 
-`GridContent` provides grid layout of content.
+`GridContent` displays data in multiple rows and columns with the same size.
 
 ```js
 type Size = { width: number, height: number };
@@ -152,7 +152,63 @@ type LayoutAttrs = {
 
 ##### getItemRect({ itemIndex: number, rowIndex: number, columnIndex: number })
 
-Returns the area of cell at the specified indexes.
+Returns the area of item at the specified indexes.
+
+### ListContent
+
+`ListContent` displays data in a single line of customizable items.
+
+```js
+type Size = { width: number, height: number };
+type Rect = { x: number, y: number, width: number, height: number };
+type LayoutAttrs = {
+  itemIndex: number,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  Item: ItemContent,
+};
+```
+
+#### Prop Types
+
+| Property            |          Type           |            DefaultValue             | Description                                                                                   |
+| :------------------ | :---------------------: | :---------------------------------: | :-------------------------------------------------------------------------------------------- |
+| direction           | 'vertical','horizontal' |             'vertical'              | The direction of the list.                                                                    |
+| width               |         number          |                 -1                  | The width of the content. If you set this property to `-1`, it shrinks the content's width.   |
+| height              |         number          |                 -1                  | The height of the content. If you set this property to `-1`, it shrinks the content's height. |
+| spacing             |         number          |                  0                  | The minimum spacing to use between items in the list.                                         |
+| itemCount           |         number          |                  0                  | The number of items.                                                                          |
+| estimatedItemWidth  |         number          |                  0                  | The estimated width of the item.                                                              |
+| estimatedItemHeight |         number          |                  0                  | The estimated height of the item.                                                             |
+| renderItem          |        function         |             () => null              | The renderer of the item.:`(attrs: LayoutAttrs) => element`                                   |
+| visibleRect         |          Rect           | { x: 0, y: 0, width: 0, height: 0 } | The area of the visible content.                                                              |
+| onResize            |        function         |              () => {}               | Callback invoked when the content resize.:`(size: Size) => void`                              |
+
+#### Public Methods
+
+##### getItemRect({ itemIndex: number })
+
+Returns the area of item at the specified index.
+
+### ItemContent
+
+`ItemContent` adjusts the size of content by hash property.
+
+```js
+type Size = { width: number, height: number };
+```
+
+#### Prop Types
+
+| Property      |   Type   | DefaultValue | Description                                                                                   |
+| :------------ | :------: | :----------: | :-------------------------------------------------------------------------------------------- |
+| width         |  number  |      -1      | The width of the content. If you set this property to `-1`, it shrinks the content's width.   |
+| height        |  number  |      -1      | The height of the content. If you set this property to `-1`, it shrinks the content's height. |
+| hash          |  string  |    'Item'    | The hash of the content. if this property changes, the content size recalculates.             |
+| getSizeByHash | function |  () => null  | The content size getter by hash.:`(hash: string) => Size`                                     |
+| onResize      | function |   () => {}   | Callback invoked when the content resize.:`(size: Size, hash: string) => void`                |
 
 ## License
 

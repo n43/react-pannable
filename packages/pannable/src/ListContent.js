@@ -54,6 +54,22 @@ export default class ListContent extends React.PureComponent {
     return this.state.size;
   }
 
+  getItemRect({ itemIndex }) {
+    const { layoutAttrs } = this.state;
+    const attrs = layoutAttrs[itemIndex];
+
+    if (!attrs) {
+      return null;
+    }
+
+    return {
+      x: attrs.x,
+      y: attrs.y,
+      width: attrs.width,
+      height: attrs.height,
+    };
+  }
+
   _calculateLayout(itemIndex, itemHash, itemSize) {
     this.setState((state, props) => {
       const {
@@ -98,7 +114,7 @@ export default class ListContent extends React.PureComponent {
         state.size.width !== nextState.size.width ||
         state.size.height !== nextState.size.height
       ) {
-        onResize(nextState.size);
+        onResize({ ...nextState.size });
       }
 
       return nextState;
@@ -121,7 +137,7 @@ export default class ListContent extends React.PureComponent {
       return children(this);
     }
 
-    const list = [];
+    const items = [];
 
     for (let itemIndex = 0; itemIndex < itemCount; itemIndex++) {
       const attrs = layoutAttrs[itemIndex];
@@ -129,6 +145,8 @@ export default class ListContent extends React.PureComponent {
       if (attrs && needsRender(attrs, visibleRect)) {
         let element = renderItem({ ...attrs, Item: ItemContent });
 
+        const Item = element.type;
+        const { onResize, style, ...props } = element.props;
         const key = element.key || attrs.itemIndex;
         const itemStyle = {
           position: 'absolute',
@@ -136,12 +154,10 @@ export default class ListContent extends React.PureComponent {
           top: attrs.y,
           width: attrs.width,
           height: attrs.height,
+          ...style,
         };
-        const Item = element.type;
 
         if (Item === ItemContent) {
-          const { onResize, style, ...props } = element.props;
-
           props.onResize = (size, hash) => {
             this._calculateLayout(itemIndex, hash, size);
 
@@ -156,22 +172,19 @@ export default class ListContent extends React.PureComponent {
           }
 
           element = (
-            <div key={key} style={{ ...itemStyle, ...style }}>
+            <div key={key} style={itemStyle}>
               <Item {...props} />
             </div>
           );
         } else {
-          element = React.cloneElement(element, {
-            key,
-            style: { ...itemStyle, ...element.props.style },
-          });
+          element = <Item {...props} key={key} style={itemStyle} />;
         }
 
-        list.push(element);
+        items.push(element);
       }
     }
 
-    return <React.Fragment>{list}</React.Fragment>;
+    return <React.Fragment>{items}</React.Fragment>;
   }
 }
 

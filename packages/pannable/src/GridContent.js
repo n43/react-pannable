@@ -111,7 +111,7 @@ export default class GridContent extends React.PureComponent {
         state.size.width !== nextState.size.width ||
         state.size.height !== nextState.size.height
       ) {
-        onResize(nextState.size);
+        onResize({ ...nextState.size });
       }
 
       return nextState;
@@ -126,30 +126,33 @@ export default class GridContent extends React.PureComponent {
       return children(this);
     }
 
-    const grids = [];
+    const items = [];
 
     for (let itemIndex = 0; itemIndex < itemCount; itemIndex++) {
       const attrs = layoutAttrs[itemIndex];
 
       if (attrs && needsRender(attrs, visibleRect)) {
-        let element = renderItem(attrs);
+        let element = renderItem({ ...attrs });
 
+        const Item = element.type;
+        const { style, ...props } = element.props;
         const key = element.key || attrs.itemIndex;
-        const style = {
+        const itemStyle = {
           position: 'absolute',
           left: attrs.x,
           top: attrs.y,
           width: attrs.width,
           height: attrs.height,
-          ...element.props.style,
+          ...style,
         };
 
-        element = React.cloneElement(element, { key, style });
-        grids.push(element);
+        element = <Item {...props} key={key} style={itemStyle} />;
+
+        items.push(element);
       }
     }
 
-    return <React.Fragment>{grids}</React.Fragment>;
+    return <React.Fragment>{items}</React.Fragment>;
   }
 }
 
