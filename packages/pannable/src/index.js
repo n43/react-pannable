@@ -1,4 +1,5 @@
 import Pad from './Pad';
+import PadPlayer from './PadPlayer';
 import Pannable from './Pannable';
 import GeneralContent from './GeneralContent';
 import GridContent from './GridContent';
@@ -8,6 +9,7 @@ import AutoResizing from './AutoResizing';
 
 export {
   Pad,
+  PadPlayer,
   Pannable,
   GeneralContent,
   GridContent,
