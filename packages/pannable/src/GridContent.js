@@ -208,33 +208,31 @@ function calculateLayout(itemSize, itemCount, spacing, size, direction) {
     countRow = Math.ceil(itemCount / countColumn);
   }
 
-  if (countRow > 0) {
-    for (let rowIndex = 0; rowIndex < countRow; rowIndex++) {
-      if (rowIndex > 0) {
-        sizeHeight += spacing[row] + itemSize[height];
+  for (let rowIndex = 0; rowIndex < countRow; rowIndex++) {
+    if (rowIndex > 0) {
+      sizeHeight += spacing[row];
+    }
+
+    for (let columnIndex = 0; columnIndex < countColumn; columnIndex++) {
+      const itemIndex = columnIndex + rowIndex * countColumn;
+      let attrX = 0;
+
+      if (countColumn > 1) {
+        attrX += Math.round(
+          columnIndex * ((sizeWidth - itemSize[width]) / (countColumn - 1))
+        );
       }
 
-      for (let columnIndex = 0; columnIndex < countColumn; columnIndex++) {
-        const itemIndex = columnIndex + rowIndex * countColumn;
-        let attrX = 0;
-
-        if (countColumn > 1) {
-          attrX += Math.round(
-            columnIndex * ((sizeWidth - itemSize[width]) / (countColumn - 1))
-          );
-        }
-
-        if (itemIndex < itemCount) {
-          layoutAttrs.push({
-            [x]: attrX,
-            [y]: sizeHeight,
-            [width]: itemSize[width],
-            [height]: itemSize[height],
-            [row + 'Index']: rowIndex,
-            [column + 'Index']: columnIndex,
-            itemIndex,
-          });
-        }
+      if (itemIndex < itemCount) {
+        layoutAttrs.push({
+          [x]: attrX,
+          [y]: sizeHeight,
+          [width]: itemSize[width],
+          [height]: itemSize[height],
+          [row + 'Index']: rowIndex,
+          [column + 'Index']: columnIndex,
+          itemIndex,
+        });
       }
     }
 

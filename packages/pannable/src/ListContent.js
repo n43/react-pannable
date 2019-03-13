@@ -57,8 +57,6 @@ export default class ListContent extends React.PureComponent {
     this.setState((state, props) => {
       const {
         direction,
-        width,
-        height,
         spacing,
         itemCount,
         estimatedItemWidth,
@@ -73,7 +71,6 @@ export default class ListContent extends React.PureComponent {
         itemSizeDict,
         itemCount,
         spacing,
-        { width, height },
         direction
       );
 
@@ -135,11 +132,46 @@ function needsRender(rect, vRect, name) {
 }
 
 function calculateLayout(
-  itemSize,
+  estimatedItemSize,
   itemHashList,
   itemSizeDict,
   itemCount,
   spacing,
-  size,
   direction
-) {}
+) {
+  const [x, y, width, height] =
+    direction === 'horizontal'
+      ? ['y', 'x', 'height', 'width']
+      : ['x', 'y', 'width', 'height'];
+
+  let sizeWidth = 0;
+  let sizeHeight = 0;
+  const layoutAttrs = [];
+
+  for (let itemIndex = 0; itemIndex < itemCount; itemIndex++) {
+    if (itemIndex > 0) {
+      sizeHeight += spacing;
+    }
+
+    const itemHash = itemHashList[itemIndex];
+    let itemSize = itemSizeDict[itemHash] || estimatedItemSize;
+
+    layoutAttrs.push({
+      [x]: 0,
+      [y]: sizeHeight,
+      [width]: itemSize[width],
+      [height]: itemSize[height],
+      itemIndex,
+    });
+
+    sizeHeight += itemSize[height];
+    if (sizeWidth < itemSize[width]) {
+      sizeWidth = itemSize[width];
+    }
+  }
+
+  return {
+    size: { [width]: sizeWidth, [height]: sizeHeight },
+    layoutAttrs,
+  };
+}
