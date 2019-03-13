@@ -6,7 +6,7 @@ export default class ItemContent extends React.PureComponent {
     width: -1,
     height: -1,
     hash: 'Item',
-    getSizeByHash: () => {},
+    getSizeByHash: () => null,
     onResize: () => {},
   };
 
