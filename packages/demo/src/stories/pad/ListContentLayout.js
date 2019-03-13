@@ -75,12 +75,18 @@ export default class ListContentLayout extends React.Component {
                       estimatedItemWidth={itemWidth}
                       estimatedItemHeight={itemHeight}
                       itemCount={20}
-                      renderItem={({ itemIndex }) => {
+                      renderItem={({ itemIndex, Item }) => {
                         let backgroundColor =
                           itemIndex % 2 ? '#defdff' : '#cbf1ff';
 
+                        const body = [];
+                        for (let idx = 0; idx < itemIndex; idx++) {
+                          body.push(<div key={idx}>{idx}</div>);
+                        }
+
                         return (
-                          <div
+                          <Item
+                            hash={'' + itemIndex}
                             style={{
                               display: 'flex',
                               alignItems: 'center',
@@ -91,8 +97,9 @@ export default class ListContentLayout extends React.Component {
                               textAlign: 'center',
                             }}
                           >
-                            index:{itemIndex}
-                          </div>
+                            <div>hi</div>
+                            {body}
+                          </Item>
                         );
                       }}
                       visibleRect={{
