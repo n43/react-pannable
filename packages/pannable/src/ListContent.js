@@ -54,6 +54,22 @@ export default class ListContent extends React.PureComponent {
     return this.state.size;
   }
 
+  getItemRect({ itemIndex }) {
+    const { layoutAttrs } = this.state;
+    const attrs = layoutAttrs[itemIndex];
+
+    if (!attrs) {
+      return null;
+    }
+
+    return {
+      x: attrs.x,
+      y: attrs.y,
+      width: attrs.width,
+      height: attrs.height,
+    };
+  }
+
   _calculateLayout(itemIndex, itemHash, itemSize) {
     this.setState((state, props) => {
       const {
