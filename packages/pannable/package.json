@@ -8,7 +8,13 @@
     "grid",
     "page",
     "pan",
-    "drag"
+    "drag",
+    "list",
+    "table",
+    "collection",
+    "slide",
+    "swiper",
+    "virtualized"
   ],
   "homepage": "https://github.com/n43/react-pannable",
   "bugs": "https://github.com/n43/react-pannable/issues",
