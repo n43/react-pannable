@@ -21,14 +21,6 @@ export default class GridContent extends React.PureComponent {
     count: { row: 0, column: 0 },
   };
 
-  getSize() {
-    return this.state.size;
-  }
-
-  getCount() {
-    return this.state.count;
-  }
-
   componentDidMount() {
     this._calculateLayout();
   }
@@ -57,6 +49,40 @@ export default class GridContent extends React.PureComponent {
     ) {
       this._calculateLayout();
     }
+  }
+
+  getSize() {
+    return this.state.size;
+  }
+
+  getCount() {
+    return this.state.count;
+  }
+
+  getItemRect({ itemIndex, rowIndex, columnIndex }) {
+    const { direction } = this.props;
+    const { count, layoutAttrs } = this.state;
+
+    if (rowIndex !== undefined && columnIndex !== undefined) {
+      itemIndex = calculateItemIndex(
+        { row: rowIndex, column: columnIndex },
+        count,
+        direction
+      );
+    }
+
+    const attrs = layoutAttrs[itemIndex];
+
+    if (!attrs) {
+      return null;
+    }
+
+    return {
+      x: attrs.x,
+      y: attrs.y,
+      width: attrs.width,
+      height: attrs.height,
+    };
   }
 
   _calculateLayout() {
@@ -90,32 +116,6 @@ export default class GridContent extends React.PureComponent {
 
       return nextState;
     });
-  }
-
-  getItemRect({ itemIndex, rowIndex, columnIndex }) {
-    const { direction } = this.props;
-    const { count, layoutAttrs } = this.state;
-
-    if (rowIndex !== undefined && columnIndex !== undefined) {
-      itemIndex = calculateItemIndex(
-        { row: rowIndex, column: columnIndex },
-        count,
-        direction
-      );
-    }
-
-    const attrs = layoutAttrs[itemIndex];
-
-    if (!attrs) {
-      return null;
-    }
-
-    return {
-      x: attrs.x,
-      y: attrs.y,
-      width: attrs.width,
-      height: attrs.height,
-    };
   }
 
   render() {
@@ -208,33 +208,31 @@ function calculateLayout(itemSize, itemCount, spacing, size, direction) {
     countRow = Math.ceil(itemCount / countColumn);
   }
 
-  if (countRow > 0) {
-    for (let rowIndex = 0; rowIndex < countRow; rowIndex++) {
-      if (rowIndex > 0) {
-        sizeHeight += spacing[row] + itemSize[height];
+  for (let rowIndex = 0; rowIndex < countRow; rowIndex++) {
+    if (rowIndex > 0) {
+      sizeHeight += spacing[row];
+    }
+
+    for (let columnIndex = 0; columnIndex < countColumn; columnIndex++) {
+      const itemIndex = columnIndex + rowIndex * countColumn;
+      let attrX = 0;
+
+      if (countColumn > 1) {
+        attrX += Math.round(
+          columnIndex * ((sizeWidth - itemSize[width]) / (countColumn - 1))
+        );
       }
 
-      for (let columnIndex = 0; columnIndex < countColumn; columnIndex++) {
-        const itemIndex = columnIndex + rowIndex * countColumn;
-        let attrX = 0;
-
-        if (countColumn > 1) {
-          attrX += Math.round(
-            columnIndex * ((sizeWidth - itemSize[width]) / (countColumn - 1))
-          );
-        }
-
-        if (itemIndex < itemCount) {
-          layoutAttrs.push({
-            [x]: attrX,
-            [y]: sizeHeight,
-            [width]: itemSize[width],
-            [height]: itemSize[height],
-            [row + 'Index']: rowIndex,
-            [column + 'Index']: columnIndex,
-            itemIndex,
-          });
-        }
+      if (itemIndex < itemCount) {
+        layoutAttrs.push({
+          [x]: attrX,
+          [y]: sizeHeight,
+          [width]: itemSize[width],
+          [height]: itemSize[height],
+          [row + 'Index']: rowIndex,
+          [column + 'Index']: columnIndex,
+          itemIndex,
+        });
       }
     }
 

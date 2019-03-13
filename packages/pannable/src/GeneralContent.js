@@ -16,10 +16,9 @@ export default class GeneralContent extends React.PureComponent {
   }
 
   componentDidUpdate(prevProps) {
-    if (
-      prevProps.width !== this.props.width ||
-      prevProps.height !== this.props.height
-    ) {
+    const { width, height } = this.props;
+
+    if (prevProps.width !== width || prevProps.height !== height) {
       this._calculateSize();
     }
   }

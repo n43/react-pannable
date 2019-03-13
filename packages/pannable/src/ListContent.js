@@ -1,4 +1,5 @@
 import React from 'react';
+import ItemContent from './ItemContent';
 
 export default class ListContent extends React.PureComponent {
   static defaultProps = {
@@ -20,10 +21,6 @@ export default class ListContent extends React.PureComponent {
     itemHashList: [],
     itemSizeDict: {},
   };
-
-  getSize() {
-    return this.state.size;
-  }
 
   componentDidMount() {
     this._calculateLayout();
@@ -53,12 +50,14 @@ export default class ListContent extends React.PureComponent {
     }
   }
 
-  _calculateLayout() {
+  getSize() {
+    return this.state.size;
+  }
+
+  _calculateLayout(itemIndex, itemHash, itemSize) {
     this.setState((state, props) => {
       const {
         direction,
-        width,
-        height,
         spacing,
         itemCount,
         estimatedItemWidth,
@@ -66,16 +65,34 @@ export default class ListContent extends React.PureComponent {
         onResize,
       } = props;
       const { itemHashList, itemSizeDict } = state;
+      let nextItemHashList = itemHashList;
+      let nextItemSizeDict = itemSizeDict;
+
+      if (itemIndex !== undefined) {
+        if (nextItemHashList[itemIndex] === itemHash) {
+          return null;
+        }
+
+        nextItemHashList = [...nextItemHashList];
+        nextItemHashList[itemIndex] = itemHash;
+        nextItemSizeDict = { ...nextItemSizeDict, [itemHash]: itemSize };
+      }
 
       const nextState = calculateLayout(
         { width: estimatedItemWidth, height: estimatedItemHeight },
-        itemHashList,
-        itemSizeDict,
+        nextItemHashList,
+        nextItemSizeDict,
         itemCount,
         spacing,
-        { width, height },
         direction
       );
+
+      if (nextItemHashList !== itemHashList) {
+        nextState.itemHashList = nextItemHashList;
+      }
+      if (nextItemSizeDict !== itemSizeDict) {
+        nextState.itemSizeDict = nextItemSizeDict;
+      }
 
       if (
         state.size.width !== nextState.size.width ||
@@ -89,8 +106,16 @@ export default class ListContent extends React.PureComponent {
   }
 
   render() {
-    const { itemCount, visibleRect, renderItem, children } = this.props;
-    const { layoutAttrs } = this.state;
+    const {
+      direction,
+      width,
+      height,
+      itemCount,
+      visibleRect,
+      renderItem,
+      children,
+    } = this.props;
+    const { itemSizeDict, layoutAttrs } = this.state;
 
     if (typeof children === 'function') {
       return children(this);
@@ -102,19 +127,46 @@ export default class ListContent extends React.PureComponent {
       const attrs = layoutAttrs[itemIndex];
 
       if (attrs && needsRender(attrs, visibleRect)) {
-        let element = renderItem(attrs);
+        let element = renderItem({ ...attrs, Item: ItemContent });
 
         const key = element.key || attrs.itemIndex;
-        const style = {
+        const itemStyle = {
           position: 'absolute',
           left: attrs.x,
           top: attrs.y,
           width: attrs.width,
           height: attrs.height,
-          ...element.props.style,
         };
+        const Item = element.type;
 
-        element = React.cloneElement(element, { key, style });
+        if (Item === ItemContent) {
+          const { onResize, style, ...props } = element.props;
+
+          props.onResize = (size, hash) => {
+            this._calculateLayout(itemIndex, hash, size);
+
+            onResize(size);
+          };
+          props.getSizeByHash = hash => itemSizeDict[hash];
+
+          if (direction === 'horizontal') {
+            props.height = height;
+          } else {
+            props.width = width;
+          }
+
+          element = (
+            <div key={key} style={{ ...itemStyle, ...style }}>
+              <Item {...props} />
+            </div>
+          );
+        } else {
+          element = React.cloneElement(element, {
+            key,
+            style: { ...itemStyle, ...element.props.style },
+          });
+        }
+
         list.push(element);
       }
     }
@@ -135,11 +187,46 @@ function needsRender(rect, vRect, name) {
 }
 
 function calculateLayout(
-  itemSize,
+  estimatedItemSize,
   itemHashList,
   itemSizeDict,
   itemCount,
   spacing,
-  size,
   direction
-) {}
+) {
+  const [x, y, width, height] =
+    direction === 'horizontal'
+      ? ['y', 'x', 'height', 'width']
+      : ['x', 'y', 'width', 'height'];
+
+  let sizeWidth = 0;
+  let sizeHeight = 0;
+  const layoutAttrs = [];
+
+  for (let itemIndex = 0; itemIndex < itemCount; itemIndex++) {
+    if (itemIndex > 0) {
+      sizeHeight += spacing;
+    }
+
+    const itemHash = itemHashList[itemIndex];
+    let itemSize = itemSizeDict[itemHash] || estimatedItemSize;
+
+    layoutAttrs.push({
+      [x]: 0,
+      [y]: sizeHeight,
+      [width]: itemSize[width],
+      [height]: itemSize[height],
+      itemIndex,
+    });
+
+    sizeHeight += itemSize[height];
+    if (sizeWidth < itemSize[width]) {
+      sizeWidth = itemSize[width];
+    }
+  }
+
+  return {
+    size: { [width]: sizeWidth, [height]: sizeHeight },
+    layoutAttrs,
+  };
+}
