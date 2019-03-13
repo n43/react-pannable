@@ -72,6 +72,7 @@ export default class ListContentLayout extends React.Component {
                     <ListContent
                       ref={this.listRef}
                       width={346}
+                      spacing={10}
                       estimatedItemWidth={itemWidth}
                       estimatedItemHeight={itemHeight}
                       itemCount={20}
