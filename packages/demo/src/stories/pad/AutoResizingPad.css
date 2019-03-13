@@ -21,3 +21,6 @@
   line-height: 1.5em;
   font-family: 'sans-serif';
 }
+.autosize-paragraph {
+  padding: 10px 0;
+}
