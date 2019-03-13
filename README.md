@@ -65,7 +65,8 @@ type PanEvent = {
 type Point = { x: number, y: number };
 type Size = { width: number, height: number };
 type Rect = { x: number, y: number, width: number, height: number };
-type Align = 'auto' | 'center' | 'start' | 'end' | number;
+type AlignEnum = 'auto' | 'center' | 'start' | 'end' | number;
+type Align = { x: AlignEnum, y: AlignEnum } | AlignEnum;
 type PadEvent = {
   contentOffset: Point,
   contentVelocity: Point,

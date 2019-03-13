@@ -62,12 +62,7 @@ export default class ListContent extends React.PureComponent {
       return null;
     }
 
-    return {
-      x: attrs.x,
-      y: attrs.y,
-      width: attrs.width,
-      height: attrs.height,
-    };
+    return { x: attrs.x, y: attrs.y, width: attrs.width, height: attrs.height };
   }
 
   _calculateLayout(itemIndex, itemHash, itemSize) {
@@ -184,7 +179,7 @@ export default class ListContent extends React.PureComponent {
       }
     }
 
-    return <React.Fragment>{items}</React.Fragment>;
+    return items;
   }
 }
 
