@@ -40,7 +40,7 @@
     "prepare": "yarn clean && yarn build",
     "lint": "eslint src",
     "pretest": "yarn lint",
-    "test": "jest --coverage"
+    "test": "jest"
   },
   "peerDependencies": {
     "react": "^16.4.0",
