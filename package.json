@@ -5,7 +5,7 @@
     "packages/*"
   ],
   "scripts": {
-    "test": ""
+    "test": "cd ./packages/pannable"
   },
   "dependencies": {
     "react": "^16.4.0",
