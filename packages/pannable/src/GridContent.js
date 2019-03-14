@@ -77,7 +77,7 @@ export default class GridContent extends React.PureComponent {
       return null;
     }
 
-    return { x: attrs.x, y: attrs.y, width: attrs.width, height: attrs.height };
+    return attrs.rect;
   }
 
   _calculateLayout() {
@@ -106,7 +106,7 @@ export default class GridContent extends React.PureComponent {
         state.size.width !== nextState.size.width ||
         state.size.height !== nextState.size.height
       ) {
-        onResize({ ...nextState.size });
+        onResize(nextState.size);
       }
 
       return nextState;
@@ -122,10 +122,10 @@ export default class GridContent extends React.PureComponent {
     const key = element.key || attrs.itemIndex;
     const itemStyle = {
       position: 'absolute',
-      left: attrs.x,
-      top: attrs.y,
-      width: attrs.width,
-      height: attrs.height,
+      left: attrs.rect.x,
+      top: attrs.rect.y,
+      width: attrs.rect.width,
+      height: attrs.rect.height,
       ...style,
     };
 
@@ -140,7 +140,7 @@ export default class GridContent extends React.PureComponent {
     for (let itemIndex = 0; itemIndex < itemCount; itemIndex++) {
       const attrs = layoutAttrs[itemIndex];
 
-      if (attrs && needsRender(attrs, visibleRect)) {
+      if (attrs && needsRender(attrs.rect, visibleRect)) {
         items.push(this._renderItem(attrs));
       }
     }
@@ -221,10 +221,12 @@ function calculateLayout(itemSize, itemCount, spacing, size, direction) {
 
       if (itemIndex < itemCount) {
         layoutAttrs.push({
-          [x]: attrX,
-          [y]: sizeHeight,
-          [width]: itemSize[width],
-          [height]: itemSize[height],
+          rect: {
+            [x]: attrX,
+            [y]: sizeHeight,
+            [width]: itemSize[width],
+            [height]: itemSize[height],
+          },
           [row + 'Index']: rowIndex,
           [column + 'Index']: columnIndex,
           itemIndex,

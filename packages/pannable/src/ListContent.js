@@ -62,7 +62,7 @@ export default class ListContent extends React.PureComponent {
       return null;
     }
 
-    return { x: attrs.x, y: attrs.y, width: attrs.width, height: attrs.height };
+    return attrs.rect;
   }
 
   _calculateLayout(itemIndex, itemHash, itemSize) {
@@ -109,7 +109,7 @@ export default class ListContent extends React.PureComponent {
         state.size.width !== nextState.size.width ||
         state.size.height !== nextState.size.height
       ) {
-        onResize({ ...nextState.size });
+        onResize(nextState.size);
       }
 
       return nextState;
@@ -126,10 +126,10 @@ export default class ListContent extends React.PureComponent {
     const key = element.key || attrs.itemIndex;
     const itemStyle = {
       position: 'absolute',
-      left: attrs.x,
-      top: attrs.y,
-      width: attrs.width,
-      height: attrs.height,
+      left: attrs.rect.x,
+      top: attrs.rect.y,
+      width: attrs.rect.width,
+      height: attrs.rect.height,
       ...style,
     };
 
@@ -165,7 +165,7 @@ export default class ListContent extends React.PureComponent {
     for (let itemIndex = 0; itemIndex < itemCount; itemIndex++) {
       const attrs = layoutAttrs[itemIndex];
 
-      if (attrs && needsRender(attrs, visibleRect)) {
+      if (attrs && needsRender(attrs.rect, visibleRect)) {
         items.push(this._renderItem(attrs));
       }
     }
@@ -211,10 +211,12 @@ function calculateLayout(
     let itemSize = itemSizeDict[itemHash] || estimatedItemSize;
 
     layoutAttrs.push({
-      [x]: 0,
-      [y]: sizeHeight,
-      [width]: itemSize[width],
-      [height]: itemSize[height],
+      rect: {
+        [x]: 0,
+        [y]: sizeHeight,
+        [width]: itemSize[width],
+        [height]: itemSize[height],
+      },
       itemIndex,
     });
 
