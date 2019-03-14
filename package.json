@@ -4,9 +4,6 @@
   "workspaces": [
     "packages/*"
   ],
-  "scripts": {
-    "postinstall": "cd packages/pannable && yarn prepare"
-  },
   "dependencies": {
     "react": "^16.4.0",
     "react-dom": "^16.4.0"
