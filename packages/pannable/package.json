@@ -39,8 +39,8 @@
     "clean": "rimraf lib dist es coverage",
     "prepare": "yarn clean && yarn build",
     "lint": "eslint src",
-    "test": "jest",
-    "coverage": "codecov"
+    "pretest": "yarn lint",
+    "test": "jest --coverage"
   },
   "peerDependencies": {
     "react": "^16.4.0",
@@ -58,12 +58,15 @@
     "@babel/preset-env": "^7.2.0",
     "@babel/preset-react": "^7.0.0",
     "babel-eslint": "^9.0.0",
+    "babel-jest": "^24.5.0",
     "eslint": "^5.14.1",
     "eslint-config-react-app": "^3.0.7",
-    "eslint-plugin-import": "^2.16.0",
     "eslint-plugin-flowtype": "^2.50.3",
+    "eslint-plugin-import": "^2.16.0",
     "eslint-plugin-jsx-a11y": "^6.2.1",
     "eslint-plugin-react": "^7.12.4",
+    "jest": "^24.5.0",
+    "react-test-renderer": "^16.8.4",
     "rimraf": "^2.6.3",
     "rollup": "^1.2.3",
     "rollup-plugin-babel": "^4.3.2",
