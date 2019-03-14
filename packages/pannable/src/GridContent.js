@@ -113,37 +113,35 @@ export default class GridContent extends React.PureComponent {
     });
   }
 
+  _renderItem(attrs) {
+    const { renderItem } = this.props;
+    const element = renderItem({ ...attrs });
+
+    const Item = element.type;
+    const { style, ...props } = element.props;
+    const key = element.key || attrs.itemIndex;
+    const itemStyle = {
+      position: 'absolute',
+      left: attrs.x,
+      top: attrs.y,
+      width: attrs.width,
+      height: attrs.height,
+      ...style,
+    };
+
+    return <Item {...props} key={key} style={itemStyle} />;
+  }
+
   render() {
-    const { itemCount, visibleRect, renderItem, children } = this.props;
+    const { itemCount, visibleRect } = this.props;
     const { layoutAttrs } = this.state;
-
-    if (typeof children === 'function') {
-      return children(this);
-    }
-
     const items = [];
 
     for (let itemIndex = 0; itemIndex < itemCount; itemIndex++) {
       const attrs = layoutAttrs[itemIndex];
 
       if (attrs && needsRender(attrs, visibleRect)) {
-        let element = renderItem({ ...attrs });
-
-        const Item = element.type;
-        const { style, ...props } = element.props;
-        const key = element.key || attrs.itemIndex;
-        const itemStyle = {
-          position: 'absolute',
-          left: attrs.x,
-          top: attrs.y,
-          width: attrs.width,
-          height: attrs.height,
-          ...style,
-        };
-
-        element = <Item {...props} key={key} style={itemStyle} />;
-
-        items.push(element);
+        items.push(this._renderItem(attrs));
       }
     }
 
