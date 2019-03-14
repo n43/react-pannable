@@ -2,7 +2,7 @@ import React from 'react';
 import {
   requestAnimationFrame,
   cancelAnimationFrame,
-} from './utils/animationFrame';
+} from '../utils/animationFrame';
 import Pad from '../Pad';
 
 export default class Player extends React.PureComponent {
