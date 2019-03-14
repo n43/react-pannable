@@ -3,11 +3,6 @@ import Pad from '../Pad';
 
 export default class Player extends React.PureComponent {
   static defaultProps = {
-    children: null,
-    width: 0,
-    height: 0,
-    contentWidth: 0,
-    contentHeight: 0,
     direction: 'vertical',
     autoplayEnabled: true,
     autoplayDelay: 3000,
@@ -29,7 +24,6 @@ export default class Player extends React.PureComponent {
       pageCount,
       activeIndex: 0,
       dragging: false,
-      prevDragging: false,
     };
     this.padRef = React.createRef();
   }
@@ -37,11 +31,6 @@ export default class Player extends React.PureComponent {
   static getDerivedStateFromProps(props, state) {
     const { dragging, prevDragging } = state;
     let nextState = {};
-
-    if (prevDragging !== dragging) {
-      nextState.dragging = dragging;
-      nextState.prevDragging = dragging;
-    }
 
     return nextState;
   }
@@ -66,39 +55,30 @@ export default class Player extends React.PureComponent {
     const { pageCount, activeIndex, dragging } = this.state;
 
     if (
-      (prevProps.width !== width || prevProps.contentWidth !== contentWidth) &&
-      direction === 'horizontal'
+      prevProps.direction !== direction ||
+      prevProps.width !== width ||
+      prevProps.contentWidth !== contentWidth ||
+      prevProps.height !== height ||
+      prevProps.contentHeight !== contentHeight
     ) {
-      this.setState({
-        pageCount: width ? Math.round(contentWidth / width) : 0,
-      });
-    }
+      const padDt = direction === 'horizontal' ? width : height;
+      const contentDt =
+        direction === 'horizontal' ? contentWidth : contentHeight;
+      const nextPageCount = padDt ? Math.round(contentDt / padDt) : 0;
 
-    if (
-      (prevProps.height !== height ||
-        prevProps.contentHeight !== contentHeight) &&
-      direction !== 'horizontal'
-    ) {
-      this.setState({
-        pageCount: height ? Math.round(contentHeight / height) : 0,
-      });
-    }
-
-    if (prevProps.autoplayEnabled !== autoplayEnabled) {
-      if (autoplayEnabled) {
-        this.play();
-      } else {
-        this.pause();
+      if (nextPageCount !== pageCount) {
+        this.setState({ pageCount: nextPageCount });
       }
     }
 
-    if (prevState.dragging !== dragging) {
-      if (autoplayEnabled) {
-        if (!dragging) {
-          this.play();
-        } else {
-          this.pause();
-        }
+    if (
+      prevProps.autoplayEnabled !== autoplayEnabled ||
+      prevState.dragging !== dragging
+    ) {
+      if (autoplayEnabled && !dragging) {
+        this.play();
+      } else {
+        this.pause();
       }
     }
 
@@ -158,30 +138,43 @@ export default class Player extends React.PureComponent {
     this.setFrame(activeIndex + 1);
   }
 
-  _onPadScroll = ({ contentOffset, size, dragging }) => {
-    const { direction } = this.props;
+  _onPadScroll = evt => {
+    const { contentOffset, size, dragging } = evt;
+    const { direction, onScroll } = this.props;
     const [x, width] =
       direction === 'horizontal' ? ['x', 'width'] : ['y', 'height'];
     const activeIndex = Math.abs(Math.floor(contentOffset[x] / size[width]));
-    this.setState({ activeIndex, dragging });
+
+    let nextState = { activeIndex };
+
+    if (this.state.dragging !== dragging) {
+      nextState.dragging = dragging;
+    }
+
+    this.setState(nextState);
+
+    if (onScroll) {
+      onScroll(evt);
+    }
   };
 
   render() {
-    const { width, height, contentWidth, contentHeight, children } = this.props;
+    const {
+      direction,
+      autoplayEnabled,
+      autoplayDelay,
+      children,
+      ...padProps
+    } = this.props;
 
     return (
       <Pad
         ref={this.padRef}
-        width={width}
-        height={height}
-        contentWidth={contentWidth}
-        contentHeight={contentHeight}
+        {...padProps}
         pagingEnabled={true}
         onScroll={this._onPadScroll}
       >
-        {typeof children === 'function'
-          ? children(this.padRef.current)
-          : children}
+        {typeof children === 'function' ? children(this) : children}
       </Pad>
     );
   }
