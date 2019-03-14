@@ -1,8 +1,4 @@
 import React from 'react';
-import {
-  requestAnimationFrame,
-  cancelAnimationFrame,
-} from './utils/animationFrame';
 import Pad from '../Pad';
 
 export default class Player extends React.PureComponent {
@@ -13,76 +9,161 @@ export default class Player extends React.PureComponent {
     contentWidth: 0,
     contentHeight: 0,
     direction: 'vertical',
-    autoplay: {
-      delay: 3000,
-      step: -300,
-      disableOnInteraction: true,
-    },
+    autoplayEnabled: true,
+    autoplayDelay: 3000,
   };
 
   constructor(props) {
     super(props);
 
+    const { width, height, contentWidth, contentHeight, direction } = props;
+    let pageCount = 0;
+
+    if (direction === 'horizontal') {
+      pageCount = width ? Math.round(contentWidth / width) : 0;
+    } else {
+      pageCount = height ? Math.round(contentHeight / height) : 0;
+    }
+
+    this.state = {
+      pageCount,
+      activeIndex: 0,
+      dragging: false,
+      prevDragging: false,
+    };
     this.padRef = React.createRef();
   }
 
+  static getDerivedStateFromProps(props, state) {
+    const { dragging, prevDragging } = state;
+    let nextState = {};
+
+    if (prevDragging !== dragging) {
+      nextState.dragging = dragging;
+      nextState.prevDragging = dragging;
+    }
+
+    return nextState;
+  }
+
   componentDidMount() {
-    const { autoplay } = this.props;
+    const { autoplayEnabled } = this.props;
 
-    if (autoplay) {
-      this._installAutoPlayer();
+    if (autoplayEnabled) {
+      this.play();
     }
   }
 
-  componentDidUpdate(prevProps) {}
-
-  componentWillUnmount() {
-    this._uninstallAutoPlayer();
-  }
-
-  _installAutoPlayer() {
-    const startTime = new Date().getTime();
-    this._autoplayTimer = requestAnimationFrame(() => {
-      this._autoplayTimer = undefined;
-      this._checkForAutoPlaying(startTime);
-    });
-  }
-
-  _uninstallAutoPlayer() {
-    if (this._autoplayTimer) {
-      this._autoplayTimer = undefined;
-      cancelAnimationFrame(this._autoplayTimer);
-    }
-  }
-
-  _checkForAutoPlaying = startTime => {
+  componentDidUpdate(prevProps, prevState) {
     const {
       direction,
-      autoplay: { delay, step },
+      width,
+      height,
+      contentWidth,
+      contentHeight,
+      autoplayEnabled,
     } = this.props;
-    const now = new Date().getTime();
+    const { pageCount, activeIndex, dragging } = this.state;
 
-    if (now - startTime >= delay) {
-      startTime = now;
-      const pad = this.padRef.current;
-      let contentOffset = { ...pad.getContentOffset() };
-      if (direction === 'horizontal') {
-        contentOffset.x += step;
-      } else {
-        contentOffset.y += step;
-      }
-
-      pad.scrollTo({ offset: contentOffset, animated: true });
+    if (
+      (prevProps.width !== width || prevProps.contentWidth !== contentWidth) &&
+      direction === 'horizontal'
+    ) {
+      this.setState({
+        pageCount: width ? Math.round(contentWidth / width) : 0,
+      });
     }
+
+    if (
+      (prevProps.height !== height ||
+        prevProps.contentHeight !== contentHeight) &&
+      direction !== 'horizontal'
+    ) {
+      this.setState({
+        pageCount: height ? Math.round(contentHeight / height) : 0,
+      });
+    }
+
+    if (prevProps.autoplayEnabled !== autoplayEnabled) {
+      if (autoplayEnabled) {
+        this.play();
+      } else {
+        this.pause();
+      }
+    }
+
+    if (prevState.dragging !== dragging) {
+      if (autoplayEnabled) {
+        if (!dragging) {
+          this.play();
+        } else {
+          this.pause();
+        }
+      }
+    }
+
+    if (prevState.activeIndex !== activeIndex) {
+      if (pageCount === activeIndex + 1) {
+        this.pause();
+      }
+    }
+  }
+
+  componentWillUnmount() {
+    this.pause();
+  }
+
+  getActiveIndex() {
+    return this.state.activeIndex;
+  }
+
+  play() {
+    const { autoplayDelay } = this.props;
 
     if (this._autoplayTimer) {
-      cancelAnimationFrame(this._autoplayTimer);
+      this.forward();
+      clearTimeout(this._autoplayTimer);
     }
 
-    this._autoplayTimer = requestAnimationFrame(() => {
+    this._autoplayTimer = setTimeout(() => {
+      this.play();
+    }, autoplayDelay);
+  }
+
+  pause() {
+    if (this._autoplayTimer) {
+      clearTimeout(this._autoplayTimer);
       this._autoplayTimer = undefined;
-      this._checkForAutoPlaying(startTime);
-    });
+    }
+  }
+
+  setFrame(index) {
+    const { direction, width, height } = this.props;
+    const pad = this.padRef.current;
+    const contentOffset = pad.getContentOffset();
+    const offset = {
+      x: direction === 'horizontal' ? -(index * width) : contentOffset.x,
+      y: direction === 'horizontal' ? contentOffset.y : -(index * height),
+    };
+    pad.scrollTo({ offset, animated: true });
+  }
+
+  rewind() {
+    const { activeIndex } = this.state;
+    this.setFrame(activeIndex - 1);
+  }
+
+  forward() {
+    const { activeIndex } = this.state;
+    this.setFrame(activeIndex + 1);
+  }
+
+  _onPadScroll = ({ contentOffset, size, dragging }) => {
+    const { direction } = this.props;
+    const [x, width] =
+      direction === 'horizontal' ? ['x', 'width'] : ['y', 'height'];
+    const activeIndex = Math.abs(Math.floor(contentOffset[x] / size[width]));
+    this.setState({ activeIndex, dragging });
   };
 
   render() {
@@ -95,6 +176,8 @@ export default class Player extends React.PureComponent {
         height={height}
         contentWidth={contentWidth}
         contentHeight={contentHeight}
+        pagingEnabled={true}
+        onScroll={this._onPadScroll}
       >
         {typeof children === 'function'
           ? children(this.padRef.current)

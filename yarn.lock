@@ -946,7 +946,7 @@
     "@emotion/stylis" "^0.7.1"
     "@emotion/utils" "^0.8.2"
 
-"@emotion/core@^0.13.1":
+"@emotion/core@0.13.1", "@emotion/core@^0.13.1":
   version "0.13.1"
   resolved "https://registry.yarnpkg.com/@emotion/core/-/core-0.13.1.tgz#4fa4983e18dbf089fa16584486c8033ca50013ea"
   integrity sha512-5qzKP6bTe2Ah7Wvh1sgtzgy6ycdpxwgMAjQ/K/VxvqBxveG9PCpq+Z0GdVg7Houb1AwYjTfNtXstjSk4sqi/7g==
@@ -6387,13 +6387,6 @@ react-modal@^3.6.1:
     prop-types "^15.5.10"
     react-lifecycles-compat "^3.0.0"
     warning "^3.0.0"
-
-react-pannable@^0.3.0:
-  version "0.3.5"
-  resolved "https://registry.yarnpkg.com/react-pannable/-/react-pannable-0.3.5.tgz#b9242abeac79242545a665cd52ad1e9ee368542a"
-  integrity sha512-QFLgFLFYaaix2CugNGjex9m40LyaHdBiDx4fNJZX6VPpOTXCK9w96U0F9exP+Bjb029tJDpbsYDO18C8Hgw2VA==
-  dependencies:
-    element-resize-detector "1.1.15"
 
 react-split-pane@^0.1.84:
   version "0.1.85"

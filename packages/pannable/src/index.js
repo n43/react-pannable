@@ -7,7 +7,6 @@ import ItemContent from './ItemContent';
 import AutoResizing from './AutoResizing';
 
 export * from './carousel';
-
 export {
   Pad,
   Pannable,
