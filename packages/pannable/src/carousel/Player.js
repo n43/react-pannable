@@ -3,9 +3,9 @@ import {
   requestAnimationFrame,
   cancelAnimationFrame,
 } from './utils/animationFrame';
-import Pad from './Pad';
+import Pad from '../Pad';
 
-export default class PadPlayer extends React.PureComponent {
+export default class Player extends React.PureComponent {
   static defaultProps = {
     children: null,
     width: 0,
