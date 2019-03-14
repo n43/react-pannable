@@ -25,7 +25,7 @@ Some `Pannable` demos
 Some `Pad` demos
 
 - [Scrollable Content](https://n43.github.io/react-pannable-demo/?selectedKind=Pad&selectedStory=Scrollable%20Content&full=0&addons=0&stories=1&panelRight=0)
-- [Loacating Specified Content](https://n43.github.io/react-pannable-demo/?selectedKind=Pad&selectedStory=Locating%20Specified%20Content&full=0&addons=0&stories=1&panelRight=0)
+- [Locating Specified Content](https://n43.github.io/react-pannable-demo/?selectedKind=Pad&selectedStory=Locating%20Specified%20Content&full=0&addons=0&stories=1&panelRight=0)
 - [Auto Resizing with Pad](https://n43.github.io/react-pannable-demo/?selectedKind=Pad&selectedStory=Auto%20Resizing%20with%20Pad&full=0&addons=0&stories=1&panelRight=0)
 - [Layout with General Content](https://n43.github.io/react-pannable-demo/?selectedKind=Pad&selectedStory=Layout%20with%20General%20Content&full=0&addons=0&stories=1&panelRight=0)
 - [Layout with Grid Content](https://n43.github.io/react-pannable-demo/?selectedKind=Pad&selectedStory=Layout%20with%20Grid%20Content&full=0&addons=0&stories=1&panelRight=0)

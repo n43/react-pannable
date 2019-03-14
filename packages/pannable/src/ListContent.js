@@ -116,66 +116,57 @@ export default class ListContent extends React.PureComponent {
     });
   }
 
-  render() {
-    const {
-      direction,
-      width,
-      height,
-      itemCount,
-      visibleRect,
-      renderItem,
-      children,
-    } = this.props;
-    const { itemSizeDict, layoutAttrs } = this.state;
+  _renderItem(attrs) {
+    const { direction, width, height, renderItem } = this.props;
+    const { itemSizeDict } = this.state;
+    const element = renderItem({ ...attrs, Item: ItemContent });
 
-    if (typeof children === 'function') {
-      return children(this);
+    const Item = element.type;
+    const { onResize, style, ...props } = element.props;
+    const key = element.key || attrs.itemIndex;
+    const itemStyle = {
+      position: 'absolute',
+      left: attrs.x,
+      top: attrs.y,
+      width: attrs.width,
+      height: attrs.height,
+      ...style,
+    };
+
+    if (Item === ItemContent) {
+      props.onResize = (size, hash) => {
+        this._calculateLayout(attrs.itemIndex, hash, size);
+
+        onResize(size);
+      };
+      props.getSizeByHash = hash => itemSizeDict[hash];
+
+      if (direction === 'horizontal') {
+        props.height = height;
+      } else {
+        props.width = width;
+      }
+
+      return (
+        <div key={key} style={itemStyle}>
+          <Item {...props} />
+        </div>
+      );
     }
 
+    return <Item {...props} key={key} style={itemStyle} />;
+  }
+
+  render() {
+    const { itemCount, visibleRect } = this.props;
+    const { layoutAttrs } = this.state;
     const items = [];
 
     for (let itemIndex = 0; itemIndex < itemCount; itemIndex++) {
       const attrs = layoutAttrs[itemIndex];
 
       if (attrs && needsRender(attrs, visibleRect)) {
-        let element = renderItem({ ...attrs, Item: ItemContent });
-
-        const Item = element.type;
-        const { onResize, style, ...props } = element.props;
-        const key = element.key || attrs.itemIndex;
-        const itemStyle = {
-          position: 'absolute',
-          left: attrs.x,
-          top: attrs.y,
-          width: attrs.width,
-          height: attrs.height,
-          ...style,
-        };
-
-        if (Item === ItemContent) {
-          props.onResize = (size, hash) => {
-            this._calculateLayout(itemIndex, hash, size);
-
-            onResize(size);
-          };
-          props.getSizeByHash = hash => itemSizeDict[hash];
-
-          if (direction === 'horizontal') {
-            props.height = height;
-          } else {
-            props.width = width;
-          }
-
-          element = (
-            <div key={key} style={itemStyle}>
-              <Item {...props} />
-            </div>
-          );
-        } else {
-          element = <Item {...props} key={key} style={itemStyle} />;
-        }
-
-        items.push(element);
+        items.push(this._renderItem(attrs));
       }
     }
 
