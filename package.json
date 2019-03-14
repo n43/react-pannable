@@ -4,6 +4,9 @@
   "workspaces": [
     "packages/*"
   ],
+  "scripts": {
+    "test": ""
+  },
   "dependencies": {
     "react": "^16.4.0",
     "react-dom": "^16.4.0"
