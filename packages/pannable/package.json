@@ -37,7 +37,7 @@
     "build:umd:min": "NODE_ENV=production rollup -c -o dist/react-pannable.min.js",
     "build": "yarn build:commonjs && yarn build:es && yarn build:umd && yarn build:umd:min",
     "clean": "rimraf lib dist es coverage",
-    "prepare": "yarn lint && yarn clean && yarn build",
+    "prepare": "yarn clean && yarn build",
     "lint": "eslint src",
     "test": "jest",
     "coverage": "codecov"
