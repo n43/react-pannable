@@ -79,17 +79,17 @@ type PadEvent = {
 
 #### Prop Types
 
-| Property               |       Type        | DefaultValue | Description                                                                                                         |
-| :--------------------- | :---------------: | :----------: | :------------------------------------------------------------------------------------------------------------------ |
-| children               | element,Component |     null     | Rendered content. Can be a react component class, a render function, or a rendered element.:`(pad: Pad) => element` |
-| width                  |      number       |      0       | The width of the bounding view.                                                                                     |
-| height                 |      number       |      0       | The height of the bounding view.                                                                                    |
-| contentWidth           |      number       |      0       | The width of the content view.                                                                                      |
-| contentHeight          |      number       |      0       | The height of the content view.                                                                                     |
-| scrollEnabled          |      boolean      |     true     | Determines whether scrolling is enabled.                                                                            |
-| pagingEnabled          |      boolean      |    false     | Determines whether paging is enabled.                                                                               |
-| directionalLockEnabled |      boolean      |    false     | Determines whether scrolling is disabled in a particular direction.                                                 |
-| onScroll               |     function      |   () => {}   | Callback invoked when the content view scrolls.:`({evt: PadEvent}) => void`                                         |
+| Property               |       Type       | DefaultValue | Description                                                                                |
+| :--------------------- | :--------------: | :----------: | :----------------------------------------------------------------------------------------- |
+| children               | element,function |     null     | Rendered content. Can be a render function, or a rendered element.:`(pad: Pad) => element` |
+| width                  |      number      |      0       | The width of the bounding view.                                                            |
+| height                 |      number      |      0       | The height of the bounding view.                                                           |
+| contentWidth           |      number      |      0       | The width of the content view.                                                             |
+| contentHeight          |      number      |      0       | The height of the content view.                                                            |
+| scrollEnabled          |     boolean      |     true     | Determines whether scrolling is enabled.                                                   |
+| pagingEnabled          |     boolean      |    false     | Determines whether paging is enabled.                                                      |
+| directionalLockEnabled |     boolean      |    false     | Determines whether scrolling is disabled in a particular direction.                        |
+| onScroll               |     function     |   () => {}   | Callback invoked when the content view scrolls.:`({evt: PadEvent}) => void`                |
 
 #### Public Methods
 
@@ -111,10 +111,11 @@ type Size = { width: number, height: number };
 
 #### Prop Types
 
-| Property |  Type  | DefaultValue | Description                                                                           |
-| :------- | :----: | :----------: | :------------------------------------------------------------------------------------ |
-| width    | number |      -1      | The width of the content. If you set `-1`, it fills the width of the bounding view.   |
-| height   | number |      -1      | The height of the content. If you set `-1`, it fills the height of the bounding view. |
+| Property |   Type   | DefaultValue | Description                                                                           |
+| :------- | :------: | :----------: | :------------------------------------------------------------------------------------ |
+| children | function |  () => null  | The render function passing computed width and height.:`(size: Size) => element`      |
+| width    |  number  |      -1      | The width of the content. If you set `-1`, it fills the width of the bounding view.   |
+| height   |  number  |      -1      | The height of the content. If you set `-1`, it fills the height of the bounding view. |
 
 ### GeneralContent
 
