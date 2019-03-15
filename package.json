@@ -5,7 +5,7 @@
     "packages/*"
   ],
   "scripts": {
-    "test": "cd ./packages/pannable && yarn test"
+    "lint": "cd ./packages/pannable && yarn lint"
   },
   "dependencies": {
     "react": "^16.4.0",

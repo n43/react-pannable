@@ -38,8 +38,7 @@
     "build": "yarn build:commonjs && yarn build:es && yarn build:umd && yarn build:umd:min",
     "clean": "rimraf lib dist es coverage",
     "lint": "eslint src",
-    "prepare": "yarn clean && yarn build",
-    "test": "yarn lint"
+    "prepare": "yarn clean && yarn build"
   },
   "peerDependencies": {
     "react": "^16.4.0",
