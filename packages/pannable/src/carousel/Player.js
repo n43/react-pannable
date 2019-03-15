@@ -22,6 +22,7 @@ export default class Player extends React.PureComponent {
       pageCount,
       activeIndex: 0,
       dragging: false,
+      decelerating: false,
     };
     this.padRef = React.createRef();
   }
@@ -50,7 +51,7 @@ export default class Player extends React.PureComponent {
       contentHeight,
       autoplayEnabled,
     } = this.props;
-    const { pageCount, activeIndex, dragging } = this.state;
+    const { pageCount, activeIndex, dragging, decelerating } = this.state;
 
     if (
       prevProps.direction !== direction ||
@@ -80,8 +81,11 @@ export default class Player extends React.PureComponent {
       }
     }
 
-    if (prevState.activeIndex !== activeIndex) {
-      if (pageCount === activeIndex + 1) {
+    if (
+      prevState.activeIndex !== activeIndex ||
+      prevState.decelerating !== decelerating
+    ) {
+      if (!decelerating && pageCount === activeIndex + 1) {
         this.pause();
       }
     }
@@ -97,7 +101,7 @@ export default class Player extends React.PureComponent {
 
   play() {
     const { autoplayInterval } = this.props;
-
+    console.log('play');
     if (this._autoplayTimer) {
       this.forward();
       clearTimeout(this._autoplayTimer);
@@ -137,7 +141,7 @@ export default class Player extends React.PureComponent {
   }
 
   _onPadScroll = evt => {
-    const { contentOffset, size, dragging } = evt;
+    const { contentOffset, size, dragging, decelerating } = evt;
     const { direction, onScroll } = this.props;
     const [x, width] =
       direction === 'horizontal' ? ['x', 'width'] : ['y', 'height'];
@@ -147,6 +151,9 @@ export default class Player extends React.PureComponent {
 
     if (this.state.dragging !== dragging) {
       nextState.dragging = dragging;
+    }
+    if (this.state.decelerating !== decelerating) {
+      nextState.decelerating = decelerating;
     }
 
     this.setState(nextState);

@@ -1,9 +1,8 @@
 import React, { Component } from 'react';
 import { Player } from 'react-pannable';
-import SvgPhone from './SvgPhone';
 import TextField from '../../ui/field/TextField';
 import CheckField from '../../ui/field/CheckField';
-import './Pad.css';
+import './Carousel.css';
 
 class Autoplayer extends Component {
   constructor(props) {
@@ -33,11 +32,11 @@ class Autoplayer extends Component {
       const style = {
         position: 'absolute',
         top: 0,
-        left: slide * 700,
+        left: slide * 750,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        width: 700,
+        width: 750,
         height: 300,
         backgroundColor: slide % 2 ? '#defdff' : '#cbf1ff',
         color: '#75d3ec',
@@ -58,16 +57,19 @@ class Autoplayer extends Component {
   render() {
     // const {} = this.state;
     return (
-      <Player
-        ref={this.playerRef}
-        width={700}
-        height={300}
-        contentWidth={700 * 5}
-        contentHeight={300}
-        direction="horizontal"
-      >
-        {this.renderContent()}
-      </Player>
+      <div className="carousel-main">
+        <Player
+          ref={this.playerRef}
+          width={750}
+          height={300}
+          contentWidth={750 * 5}
+          contentHeight={300}
+          direction="horizontal"
+        >
+          {this.renderContent()}
+        </Player>
+        <div className="carousel-optbar" />
+      </div>
     );
   }
 }
