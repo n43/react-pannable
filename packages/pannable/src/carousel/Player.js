@@ -22,7 +22,6 @@ export default class Player extends React.PureComponent {
       pageCount,
       activeIndex: 0,
       dragging: false,
-      prevDragging: false,
     };
     this.padRef = React.createRef();
   }
@@ -54,43 +53,30 @@ export default class Player extends React.PureComponent {
     const { pageCount, activeIndex, dragging } = this.state;
 
     if (
+      prevProps.direction !== direction ||
       prevProps.width !== width ||
-      prevProps.height !== height ||
       prevProps.contentWidth !== contentWidth ||
+      prevProps.height !== height ||
       prevProps.contentHeight !== contentHeight
     ) {
-      const pageCount = calculatePageCount({
-        direction,
-        size: { width, height },
-        contentSize: { width: contentWidth, height: contentHeight },
-      });
-      this.setState({ pageCount });
-    }
+      const padDt = direction === 'horizontal' ? width : height;
+      const contentDt =
+        direction === 'horizontal' ? contentWidth : contentHeight;
+      const nextPageCount = padDt ? Math.round(contentDt / padDt) : 0;
 
-    if (prevProps.direction !== direction) {
-      const pageCount = calculatePageCount({
-        direction,
-        size: { width, height },
-        contentSize: { width: contentWidth, height: contentHeight },
-      });
-      this.setState({ pageCount, activeIndex: 0 });
-    }
-
-    if (prevProps.autoplayEnabled !== autoplayEnabled) {
-      if (autoplayEnabled) {
-        this.play();
-      } else {
-        this.pause();
+      if (nextPageCount !== pageCount) {
+        this.setState({ pageCount: nextPageCount });
       }
     }
 
-    if (prevState.dragging !== dragging) {
-      if (autoplayEnabled) {
-        if (!dragging) {
-          this.play();
-        } else {
-          this.pause();
-        }
+    if (
+      prevProps.autoplayEnabled !== autoplayEnabled ||
+      prevState.dragging !== dragging
+    ) {
+      if (autoplayEnabled && !dragging) {
+        this.play();
+      } else {
+        this.pause();
       }
     }
 
@@ -150,12 +136,24 @@ export default class Player extends React.PureComponent {
     this.setFrame(activeIndex + 1);
   }
 
-  _onPadScroll = ({ contentOffset, size, dragging }) => {
-    const { direction } = this.props;
+  _onPadScroll = evt => {
+    const { contentOffset, size, dragging } = evt;
+    const { direction, onScroll } = this.props;
     const [x, width] =
       direction === 'horizontal' ? ['x', 'width'] : ['y', 'height'];
     const activeIndex = Math.abs(Math.floor(contentOffset[x] / size[width]));
-    this.setState({ activeIndex, dragging });
+
+    let nextState = { activeIndex };
+
+    if (this.state.dragging !== dragging) {
+      nextState.dragging = dragging;
+    }
+
+    this.setState(nextState);
+
+    if (onScroll) {
+      onScroll(evt);
+    }
   };
 
   render() {
