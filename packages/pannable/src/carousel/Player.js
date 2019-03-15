@@ -3,27 +3,20 @@ import Pad from '../Pad';
 
 export default class Player extends React.PureComponent {
   static defaultProps = {
-    children: null,
-    width: 0,
-    height: 0,
-    contentWidth: 0,
-    contentHeight: 0,
     direction: 'vertical',
     autoplayEnabled: true,
-    autoplayDelay: 3000,
+    autoplayInterval: 3000,
   };
 
   constructor(props) {
     super(props);
 
     const { width, height, contentWidth, contentHeight, direction } = props;
-    let pageCount = 0;
-
-    if (direction === 'horizontal') {
-      pageCount = width ? Math.round(contentWidth / width) : 0;
-    } else {
-      pageCount = height ? Math.round(contentHeight / height) : 0;
-    }
+    const pageCount = calculatePageCount({
+      direction,
+      size: { width, height },
+      contentSize: { width: contentWidth, height: contentHeight },
+    });
 
     this.state = {
       pageCount,
@@ -34,17 +27,12 @@ export default class Player extends React.PureComponent {
     this.padRef = React.createRef();
   }
 
-  static getDerivedStateFromProps(props, state) {
-    const { dragging, prevDragging } = state;
-    let nextState = {};
+  // static getDerivedStateFromProps(props, state) {
+  //   const { dragging, prevDragging } = state;
+  //   let nextState = {};
 
-    if (prevDragging !== dragging) {
-      nextState.dragging = dragging;
-      nextState.prevDragging = dragging;
-    }
-
-    return nextState;
-  }
+  //   return nextState;
+  // }
 
   componentDidMount() {
     const { autoplayEnabled } = this.props;
@@ -66,22 +54,26 @@ export default class Player extends React.PureComponent {
     const { pageCount, activeIndex, dragging } = this.state;
 
     if (
-      (prevProps.width !== width || prevProps.contentWidth !== contentWidth) &&
-      direction === 'horizontal'
+      prevProps.width !== width ||
+      prevProps.height !== height ||
+      prevProps.contentWidth !== contentWidth ||
+      prevProps.contentHeight !== contentHeight
     ) {
-      this.setState({
-        pageCount: width ? Math.round(contentWidth / width) : 0,
+      const pageCount = calculatePageCount({
+        direction,
+        size: { width, height },
+        contentSize: { width: contentWidth, height: contentHeight },
       });
+      this.setState({ pageCount });
     }
 
-    if (
-      (prevProps.height !== height ||
-        prevProps.contentHeight !== contentHeight) &&
-      direction !== 'horizontal'
-    ) {
-      this.setState({
-        pageCount: height ? Math.round(contentHeight / height) : 0,
+    if (prevProps.direction !== direction) {
+      const pageCount = calculatePageCount({
+        direction,
+        size: { width, height },
+        contentSize: { width: contentWidth, height: contentHeight },
       });
+      this.setState({ pageCount, activeIndex: 0 });
     }
 
     if (prevProps.autoplayEnabled !== autoplayEnabled) {
@@ -118,7 +110,7 @@ export default class Player extends React.PureComponent {
   }
 
   play() {
-    const { autoplayDelay } = this.props;
+    const { autoplayInterval } = this.props;
 
     if (this._autoplayTimer) {
       this.forward();
@@ -127,7 +119,7 @@ export default class Player extends React.PureComponent {
 
     this._autoplayTimer = setTimeout(() => {
       this.play();
-    }, autoplayDelay);
+    }, autoplayInterval);
   }
 
   pause() {
@@ -167,22 +159,29 @@ export default class Player extends React.PureComponent {
   };
 
   render() {
-    const { width, height, contentWidth, contentHeight, children } = this.props;
+    const {
+      direction,
+      autoplayEnabled,
+      autoplayInterval,
+      children,
+      ...padProps
+    } = this.props;
 
     return (
       <Pad
         ref={this.padRef}
-        width={width}
-        height={height}
-        contentWidth={contentWidth}
-        contentHeight={contentHeight}
+        {...padProps}
         pagingEnabled={true}
         onScroll={this._onPadScroll}
       >
-        {typeof children === 'function'
-          ? children(this.padRef.current)
-          : children}
+        {typeof children === 'function' ? children(this) : children}
       </Pad>
     );
   }
+}
+
+function calculatePageCount({ direction, size, contentSize }) {
+  const dt = direction === 'horizontal' ? 'width' : 'height';
+
+  return size[dt] ? Math.round(contentSize[dt] / size[dt]) : 0;
 }
