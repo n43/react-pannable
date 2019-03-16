@@ -65,39 +65,45 @@ export default class Pad extends React.PureComponent {
     const nextState = {};
 
     if (prevContentOffset !== contentOffset) {
-      let nextContentOffset = getAdjustedContentOffset(
-        contentOffset,
-        size,
-        contentSize
-      );
+      let nextContentOffset = contentOffset;
       let nextContentVelocity = contentVelocity;
       let nextDecelerating = decelerating;
       let nextDecelerationEndOffset = decelerationEndOffset;
+      const adjustedContentOffset = getAdjustedContentOffset(
+        nextContentOffset,
+        size,
+        contentSize
+      );
 
       if (
-        nextContentOffset.x === contentOffset.x &&
-        nextContentOffset.y === contentOffset.y
+        nextContentOffset.x !== adjustedContentOffset.x ||
+        nextContentOffset.y !== adjustedContentOffset.y
       ) {
-        nextContentOffset = contentOffset;
-      } else {
         nextContentVelocity = {
           x:
-            nextContentOffset.x !== contentOffset.x ? 0 : nextContentVelocity.x,
+            nextContentOffset.x !== adjustedContentOffset.x
+              ? 0
+              : nextContentVelocity.x,
           y:
-            nextContentOffset.y !== contentOffset.y ? 0 : nextContentVelocity.y,
+            nextContentOffset.y !== adjustedContentOffset.y
+              ? 0
+              : nextContentVelocity.y,
         };
+
         if (nextDecelerationEndOffset) {
           nextDecelerationEndOffset = {
             x:
-              nextContentOffset.x !== contentOffset.x
-                ? nextContentOffset.x
+              nextContentOffset.x !== adjustedContentOffset.x
+                ? adjustedContentOffset.x
                 : nextDecelerationEndOffset.x,
             y:
-              nextContentOffset.y !== contentOffset.y
-                ? nextContentOffset.y
+              nextContentOffset.y !== adjustedContentOffset.y
+                ? adjustedContentOffset.y
                 : nextDecelerationEndOffset.y,
           };
         }
+
+        nextContentOffset = adjustedContentOffset;
       }
 
       if (nextDecelerationEndOffset) {
@@ -114,7 +120,7 @@ export default class Pad extends React.PureComponent {
         }
       }
 
-      nextState.prevContentOffset = contentOffset;
+      nextState.prevContentOffset = nextContentOffset;
       nextState.contentOffset = nextContentOffset;
 
       if (nextContentVelocity !== contentVelocity) {

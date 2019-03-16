@@ -48,14 +48,14 @@ type PanEvent = {
 
 #### Prop Types
 
-| Property    |       Type       | DefaultValue | Description                                                                                                                                                   |
-| :---------- | :--------------: | :----------: | :------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| enabled     |     boolean      |     true     | Indicate whether the gesture listener is enabled. If you change this property to `false` while the gesture is listening, the gesture transitions to `cancel`. |
-| shouldStart | boolean,function |     true     | Whether to start gesture listening. : `(evt: PanEvent) => void`                                                                                               |
-| onStart     |     function     |   () => {}   | Callback invoked when the gesture starts listening.: `(evt: PanEvent) => void`                                                                                |
-| onMove      |     function     |   () => {}   | Callback invoked when the gesture moves.: `(evt: PanEvent) => void`                                                                                           |
-| onEnd       |     function     |   () => {}   | Callback invoked when the gesture ended listening.: `(evt: PanEvent) => void`                                                                                 |
-| onCancel    |     function     |   () => {}   | Callback invoked when the gesture cancelled.: `(evt: PanEvent) => void`                                                                                       |
+| Property    |   Type   | DefaultValue | Description                                                                                                                                                   |
+| :---------- | :------: | :----------: | :------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| enabled     | boolean  |     true     | Indicate whether the gesture listener is enabled. If you change this property to `false` while the gesture is listening, the gesture transitions to `cancel`. |
+| shouldStart | function |  () => true  | Whether to start gesture listening. : `(evt: PanEvent) => void`                                                                                               |
+| onStart     | function |   () => {}   | Callback invoked when the gesture starts listening.: `(evt: PanEvent) => void`                                                                                |
+| onMove      | function |   () => {}   | Callback invoked when the gesture moves.: `(evt: PanEvent) => void`                                                                                           |
+| onEnd       | function |   () => {}   | Callback invoked when the gesture ended listening.: `(evt: PanEvent) => void`                                                                                 |
+| onCancel    | function |   () => {}   | Callback invoked when the gesture cancelled.: `(evt: PanEvent) => void`                                                                                       |
 
 ### Pad
 

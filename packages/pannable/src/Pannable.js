@@ -6,7 +6,7 @@ const MIN_DISTANCE = 0;
 export default class Pannable extends React.PureComponent {
   static defaultProps = {
     enabled: true,
-    shouldStart: true,
+    shouldStart: () => true,
     onStart: () => {},
     onMove: () => {},
     onEnd: () => {},
@@ -17,9 +17,9 @@ export default class Pannable extends React.PureComponent {
     target: null,
     translation: null,
     velocity: null,
-    startXY: null,
-    moveXY: null,
-    moveT: null,
+    startPoint: null,
+    movePoint: null,
+    moveTime: null,
   };
 
   elemRef = React.createRef();
@@ -38,9 +38,9 @@ export default class Pannable extends React.PureComponent {
 
   _track(evt) {
     this.setState({
-      startXY: { x: evt.pageX, y: evt.pageY },
-      moveXY: { x: evt.pageX, y: evt.pageY },
-      moveT: new Date().getTime(),
+      startPoint: { x: evt.pageX, y: evt.pageY },
+      movePoint: { x: evt.pageX, y: evt.pageY },
+      moveTime: new Date().getTime(),
     });
   }
   _move(evt) {
@@ -48,25 +48,27 @@ export default class Pannable extends React.PureComponent {
 
     this.setState((state, props) => {
       const { shouldStart, onStart, onMove } = props;
-      const { target, startXY, moveXY, moveT } = state;
-      const now = new Date().getTime();
-      const interval = now - moveT;
+      const { target, startPoint, movePoint, moveTime } = state;
 
-      if (!startXY) {
+      if (!startPoint) {
         return null;
       }
 
+      const nextMoveTime = new Date().getTime();
+      const interval = nextMoveTime - moveTime;
+      const nextMovePoint = { x: evt.pageX, y: evt.pageY };
+
       const nextState = {
         translation: {
-          x: evt.pageX - startXY.x,
-          y: evt.pageY - startXY.y,
+          x: nextMovePoint.x - startPoint.x,
+          y: nextMovePoint.y - startPoint.y,
         },
         velocity: {
-          x: (evt.pageX - moveXY.x) / interval,
-          y: (evt.pageY - moveXY.y) / interval,
+          x: (nextMovePoint.x - movePoint.x) / interval,
+          y: (nextMovePoint.y - movePoint.y) / interval,
         },
-        moveXY: { x: evt.pageX, y: evt.pageY },
-        moveT: now,
+        movePoint: nextMovePoint,
+        moveTime: nextMoveTime,
       };
 
       if (!target) {
@@ -77,16 +79,14 @@ export default class Pannable extends React.PureComponent {
           ) > MIN_DISTANCE
         ) {
           if (
-            typeof shouldStart === 'function'
-              ? shouldStart({
-                  target: evt.target,
-                  translation: nextState.translation,
-                  velocity: nextState.velocity,
-                })
-              : shouldStart
+            shouldStart({
+              target: evt.target,
+              translation: nextState.translation,
+              velocity: nextState.velocity,
+            })
           ) {
             nextState.target = evt.target;
-            nextState.startXY = { x: evt.pageX, y: evt.pageY };
+            nextState.startPoint = { x: evt.pageX, y: evt.pageY };
             nextState.translation = { x: 0, y: 0 };
 
             onStart({
@@ -119,9 +119,9 @@ export default class Pannable extends React.PureComponent {
         target: null,
         translation: null,
         velocity: null,
-        startXY: null,
-        moveXY: null,
-        moveT: null,
+        startPoint: null,
+        movePoint: null,
+        moveTime: null,
       };
     });
   }
@@ -137,9 +137,9 @@ export default class Pannable extends React.PureComponent {
         target: null,
         translation: null,
         velocity: null,
-        startXY: null,
-        moveXY: null,
-        moveT: null,
+        startPoint: null,
+        movePoint: null,
+        moveTime: null,
       };
     });
   }
