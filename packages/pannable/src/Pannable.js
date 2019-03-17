@@ -16,6 +16,7 @@ export default class Pannable extends React.PureComponent {
   state = {
     target: null,
     translation: null,
+    interval: null,
     velocity: null,
     startPoint: null,
     movePoint: null,
@@ -67,6 +68,7 @@ export default class Pannable extends React.PureComponent {
           x: (nextMovePoint.x - movePoint.x) / interval,
           y: (nextMovePoint.y - movePoint.y) / interval,
         },
+        interval,
         movePoint: nextMovePoint,
         moveTime: nextMoveTime,
       };
@@ -83,6 +85,7 @@ export default class Pannable extends React.PureComponent {
               target: evt.target,
               translation: nextState.translation,
               velocity: nextState.velocity,
+              interval: nextState.interval,
             })
           ) {
             nextState.target = evt.target;
@@ -93,6 +96,7 @@ export default class Pannable extends React.PureComponent {
               target: nextState.target,
               translation: nextState.translation,
               velocity: nextState.velocity,
+              interval: nextState.interval,
             });
           }
         }
@@ -101,6 +105,7 @@ export default class Pannable extends React.PureComponent {
           target,
           translation: nextState.translation,
           velocity: nextState.velocity,
+          interval: nextState.interval,
         });
       }
 
@@ -109,16 +114,17 @@ export default class Pannable extends React.PureComponent {
   }
   _end() {
     this.setState((state, props) => {
-      const { target, translation, velocity } = state;
+      const { target, translation, velocity, interval } = state;
 
       if (target) {
-        props.onEnd({ target, translation, velocity });
+        props.onEnd({ target, translation, velocity, interval });
       }
 
       return {
         target: null,
         translation: null,
         velocity: null,
+        interval: null,
         startPoint: null,
         movePoint: null,
         moveTime: null,
@@ -127,16 +133,17 @@ export default class Pannable extends React.PureComponent {
   }
   _cancel() {
     this.setState((state, props) => {
-      const { target, translation, velocity } = state;
+      const { target, translation, velocity, interval } = state;
 
       if (target) {
-        props.onCancel({ target, translation, velocity });
+        props.onCancel({ target, translation, velocity, interval });
       }
 
       return {
         target: null,
         translation: null,
         velocity: null,
+        interval: null,
         startPoint: null,
         movePoint: null,
         moveTime: null,

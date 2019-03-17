@@ -1,29 +1,67 @@
-export function getAdjustedContentOffset(offset, size, cSize, name) {
+export function getAdjustedContentOffset(offset, size, cSize, paging, name) {
   if (name) {
     const [x, width] = name === 'y' ? ['y', 'height'] : ['x', 'width'];
 
-    return Math.max(
-      Math.min(size[width] - cSize[width], 0),
-      Math.min(offset[x], 0)
-    );
+    const offsetX = offset[x];
+    const minOffsetX = Math.min(size[width] - cSize[width], 0);
+
+    if (0 <= offsetX) {
+      return 0;
+    }
+    if (offsetX <= minOffsetX) {
+      return minOffsetX;
+    }
+    if (paging) {
+      if (!size[width]) {
+        return 0;
+      }
+
+      return size[width] * Math.round(offset[x] / size[width]);
+    }
+
+    return offsetX;
   }
 
   return {
-    x: getAdjustedContentOffset(offset, size, cSize, 'x'),
-    y: getAdjustedContentOffset(offset, size, cSize, 'y'),
+    x: getAdjustedContentOffset(offset, size, cSize, paging, 'x'),
+    y: getAdjustedContentOffset(offset, size, cSize, paging, 'y'),
   };
 }
 
-export function getAdjustedPagingOffset(offset, size, name) {
+export function getAdjustedBounceOffset(offset, bounce, size, cSize, name) {
   if (name) {
-    const [x, width] = name === 'y' ? ['y', 'height'] : ['x', 'width'];
+    const [x, width, height] =
+      name === 'y' ? ['y', 'height', 'width'] : ['x', 'width', 'height'];
 
-    return size[width] ? size[width] * Math.round(offset[x] / size[width]) : 0;
+    const offsetX = offset[x];
+    const minOffsetX = Math.min(size[width] - cSize[width], 0);
+    const maxDist = 0.25 * Math.min(size[width], size[height]);
+
+    if (0 < offsetX) {
+      if (bounce[x]) {
+        return maxDist - (maxDist * maxDist) / (maxDist + offsetX);
+      } else {
+        return 0;
+      }
+    }
+    if (offsetX < minOffsetX) {
+      if (bounce[x]) {
+        return (
+          minOffsetX -
+          maxDist +
+          (maxDist * maxDist) / (maxDist - offsetX + minOffsetX)
+        );
+      } else {
+        return minOffsetX;
+      }
+    }
+
+    return offsetX;
   }
 
   return {
-    x: getAdjustedPagingOffset(offset, size, 'x'),
-    y: getAdjustedPagingOffset(offset, size, 'y'),
+    x: getAdjustedBounceOffset(offset, bounce, size, cSize, 'x'),
+    y: getAdjustedBounceOffset(offset, bounce, size, cSize, 'y'),
   };
 }
 
@@ -33,32 +71,32 @@ function getAcc(rate, { x, y }) {
   return { x: rate * (x / r), y: rate * (y / r) };
 }
 
-export function getAdjustedPagingVelocity(velocity, size, acc, name) {
+export function getAdjustedPagingVelocity(
+  velocity,
+  offset,
+  offsetEnd,
+  size,
+  rate,
+  name
+) {
   if (name) {
-    const [x, width] = name === 'y' ? ['y', 'height'] : ['x', 'width'];
+    const [x, width, height] =
+      name === 'y' ? ['y', 'height', 'width'] : ['x', 'width', 'height'];
 
-    if (!acc[x]) {
-      return 0;
+    const direction = velocity[x] < 0 ? -1 : 1;
+    const maxDist = 0.125 * Math.min(size[width], size[height]);
+
+    if (direction * (offsetEnd[x] - offset[x]) > 0) {
+      return velocity[x];
     }
-
-    const direction = acc[x] < 0 ? -1 : 1;
-
     return (
-      direction *
-      Math.min(
-        Math.abs(velocity[x]),
-        Math.sqrt(direction * acc[x] * size[width])
-      )
+      direction * Math.min(Math.abs(velocity[x]), Math.sqrt(2 * rate * maxDist))
     );
   }
 
-  if (typeof acc === 'number') {
-    acc = getAcc(acc, velocity);
-  }
-
   return {
-    x: getAdjustedPagingVelocity(velocity, size, acc, 'x'),
-    y: getAdjustedPagingVelocity(velocity, size, acc, 'y'),
+    x: getAdjustedPagingVelocity(velocity, offset, offsetEnd, size, rate, 'x'),
+    y: getAdjustedPagingVelocity(velocity, offset, offsetEnd, size, rate, 'y'),
   };
 }
 

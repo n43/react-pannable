@@ -63,6 +63,7 @@ export default class ListContentLayout extends React.Component {
                 directionalLockEnabled
                 width={346}
                 height={552}
+                alwaysBounceX={false}
               >
                 {pad => {
                   const cOffset = pad.getContentOffset();

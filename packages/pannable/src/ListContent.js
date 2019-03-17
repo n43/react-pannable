@@ -3,7 +3,7 @@ import ItemContent from './ItemContent';
 
 export default class ListContent extends React.PureComponent {
   static defaultProps = {
-    direction: 'vertical',
+    direction: 'y',
     width: -1,
     height: -1,
     spacing: 0,
@@ -141,7 +141,7 @@ export default class ListContent extends React.PureComponent {
       };
       props.getSizeByHash = hash => itemSizeDict[hash];
 
-      if (direction === 'horizontal') {
+      if (direction === 'x') {
         props.height = height;
       } else {
         props.width = width;
@@ -194,7 +194,7 @@ function calculateLayout(
   direction
 ) {
   const [x, y, width, height] =
-    direction === 'horizontal'
+    direction === 'x'
       ? ['y', 'x', 'height', 'width']
       : ['x', 'y', 'width', 'height'];
 

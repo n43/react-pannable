@@ -2,7 +2,7 @@ import React from 'react';
 
 export default class GridContent extends React.PureComponent {
   static defaultProps = {
-    direction: 'vertical',
+    direction: 'y',
     width: -1,
     height: -1,
     rowSpacing: 0,
@@ -162,14 +162,14 @@ function needsRender(rect, vRect, name) {
 
 function calculateItemIndex(index, count, direction) {
   const [row, column] =
-    direction === 'horizontal' ? ['column', 'row'] : ['row', 'column'];
+    direction === 'x' ? ['column', 'row'] : ['row', 'column'];
 
   return index[column] + index[row] * count[column];
 }
 
 function calculateLayout(itemSize, itemCount, spacing, size, direction) {
   const [x, y, width, height, row, column] =
-    direction === 'horizontal'
+    direction === 'x'
       ? ['y', 'x', 'height', 'width', 'column', 'row']
       : ['x', 'y', 'width', 'height', 'row', 'column'];
 

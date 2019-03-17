@@ -64,7 +64,7 @@ class Autoplayer extends Component {
           height={300}
           contentWidth={750 * 5}
           contentHeight={300}
-          direction="horizontal"
+          direction="x"
         >
           {this.renderContent()}
         </Player>

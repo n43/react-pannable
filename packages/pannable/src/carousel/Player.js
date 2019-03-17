@@ -3,7 +3,7 @@ import Pad from '../Pad';
 
 export default class Player extends React.PureComponent {
   static defaultProps = {
-    direction: 'vertical',
+    direction: 'y',
     autoplayEnabled: true,
     autoplayInterval: 3000,
   };
@@ -60,9 +60,8 @@ export default class Player extends React.PureComponent {
       prevProps.height !== height ||
       prevProps.contentHeight !== contentHeight
     ) {
-      const padDt = direction === 'horizontal' ? width : height;
-      const contentDt =
-        direction === 'horizontal' ? contentWidth : contentHeight;
+      const padDt = direction === 'x' ? width : height;
+      const contentDt = direction === 'x' ? contentWidth : contentHeight;
       const nextPageCount = padDt ? Math.round(contentDt / padDt) : 0;
 
       if (nextPageCount !== pageCount) {
@@ -124,8 +123,8 @@ export default class Player extends React.PureComponent {
     const pad = this.padRef.current;
     const contentOffset = pad.getContentOffset();
     const offset = {
-      x: direction === 'horizontal' ? -(index * width) : contentOffset.x,
-      y: direction === 'horizontal' ? contentOffset.y : -(index * height),
+      x: direction === 'x' ? -(index * width) : contentOffset.x,
+      y: direction === 'x' ? contentOffset.y : -(index * height),
     };
     pad.scrollTo({ offset, animated: true });
   }
@@ -143,8 +142,7 @@ export default class Player extends React.PureComponent {
   _onPadScroll = evt => {
     const { contentOffset, size, dragging, decelerating } = evt;
     const { direction, onScroll } = this.props;
-    const [x, width] =
-      direction === 'horizontal' ? ['x', 'width'] : ['y', 'height'];
+    const [x, width] = direction === 'x' ? ['x', 'width'] : ['y', 'height'];
     const activeIndex = Math.abs(Math.floor(contentOffset[x] / size[width]));
 
     let nextState = { activeIndex };
@@ -186,7 +184,7 @@ export default class Player extends React.PureComponent {
 }
 
 function calculatePageCount({ direction, size, contentSize }) {
-  const dt = direction === 'horizontal' ? 'width' : 'height';
+  const dt = direction === 'x' ? 'width' : 'height';
 
   return size[dt] ? Math.round(contentSize[dt] / size[dt]) : 0;
 }
