@@ -1,6 +1,9 @@
 function getAcc(rate, { x, y }) {
   const r = Math.sqrt(x * x + y * y);
 
+  if (r === 0) {
+    return { x: 0, y: 0 };
+  }
   return { x: rate * (x / r), y: rate * (y / r) };
 }
 
@@ -119,8 +122,8 @@ export function getDecelerationEndOffset(offset, velocity, acc, name) {
 export function calculateDeceleration(
   interval,
   acc,
-  offset,
   velocity,
+  offset,
   offsetEnd,
   name
 ) {
@@ -128,22 +131,23 @@ export function calculateDeceleration(
     const x = name;
 
     let offsetX = offset[x];
-    let velocityX = 0;
+    let velocityX = velocity[x];
 
     if (acc[x]) {
       const direction = acc[x] < 0 ? -1 : 1;
-
       const dist = offsetEnd[x] - offsetX;
+
       const velocityH =
-        direction * Math.sqrt(0.5 * velocity[x] * velocity[x] + acc[x] * dist);
-      const timeH = (velocityH - velocity[x]) / acc[x];
-      const time = (2 * velocityH - velocity[x]) / acc[x];
+        direction * Math.sqrt(0.5 * velocityX * velocityX + acc[x] * dist);
+      const timeH = (velocityH - velocityX) / acc[x];
+      const time = (2 * velocityH - velocityX) / acc[x];
 
       if (time < interval) {
         offsetX = offsetEnd[x];
+        velocityX = 0;
       } else {
         offsetX +=
-          0.5 * (velocity[x] + velocityH) * timeH -
+          0.5 * (velocityX + velocityH) * timeH -
           0.5 *
             (2 * velocityH - acc[x] * Math.abs(timeH - interval)) *
             (timeH - interval);
@@ -155,22 +159,31 @@ export function calculateDeceleration(
   }
 
   if (typeof acc === 'number') {
-    acc = getAcc(acc, { x: offsetEnd.x - offset.x, y: offsetEnd.y - offset.y });
+    let vector = {
+      x: offsetEnd.x - offset.x,
+      y: offsetEnd.y - offset.y,
+    };
+
+    if (vector.x === 0 && vector.y === 0) {
+      vector = velocity;
+    }
+
+    acc = getAcc(acc, vector);
   }
 
   const nextX = calculateDeceleration(
     interval,
     acc,
-    offset,
     velocity,
+    offset,
     offsetEnd,
     'x'
   );
   const nextY = calculateDeceleration(
     interval,
     acc,
-    offset,
     velocity,
+    offset,
     offsetEnd,
     'y'
   );

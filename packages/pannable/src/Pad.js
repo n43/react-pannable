@@ -292,8 +292,8 @@ export default class Pad extends React.PureComponent {
   _decelerate(interval) {
     this.setState(
       ({
-        contentVelocity,
         contentOffset,
+        contentVelocity,
         decelerating,
         decelerationEndOffset,
         decelerationRate,
@@ -305,8 +305,8 @@ export default class Pad extends React.PureComponent {
         const next = calculateDeceleration(
           interval,
           decelerationRate,
-          contentOffset,
           contentVelocity,
+          contentOffset,
           decelerationEndOffset
         );
 
