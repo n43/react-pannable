@@ -56,57 +56,41 @@ export default class Pannable extends React.PureComponent {
       }
 
       const nextMoveTime = new Date().getTime();
-      const interval = nextMoveTime - moveTime;
       const nextMovePoint = { x: evt.pageX, y: evt.pageY };
-
+      const interval = nextMoveTime - moveTime;
+      let translation = {
+        x: nextMovePoint.x - startPoint.x,
+        y: nextMovePoint.y - startPoint.y,
+      };
+      const velocity = {
+        x: (nextMovePoint.x - movePoint.x) / interval,
+        y: (nextMovePoint.y - movePoint.y) / interval,
+      };
       const nextState = {
-        translation: {
-          x: nextMovePoint.x - startPoint.x,
-          y: nextMovePoint.y - startPoint.y,
-        },
-        velocity: {
-          x: (nextMovePoint.x - movePoint.x) / interval,
-          y: (nextMovePoint.y - movePoint.y) / interval,
-        },
+        translation,
+        velocity,
         interval,
         movePoint: nextMovePoint,
         moveTime: nextMoveTime,
       };
 
       if (!target) {
-        if (
-          Math.sqrt(
-            nextState.translation.x * nextState.translation.x +
-              nextState.translation.y * nextState.translation.y
-          ) > MIN_DISTANCE
-        ) {
-          if (
-            shouldStart({
-              target: evt.target,
-              translation: nextState.translation,
-              velocity: nextState.velocity,
-              interval: nextState.interval,
-            })
-          ) {
-            nextState.target = evt.target;
-            nextState.startPoint = { x: evt.pageX, y: evt.pageY };
-            nextState.translation = { x: 0, y: 0 };
+        const dist = Math.sqrt(
+          translation.x * translation.x + translation.y * translation.y
+        );
 
-            onStart({
-              target: nextState.target,
-              translation: nextState.translation,
-              velocity: nextState.velocity,
-              interval: nextState.interval,
-            });
-          }
+        if (
+          MIN_DISTANCE <= dist &&
+          shouldStart({ target: evt.target, translation, velocity, interval })
+        ) {
+          nextState.target = evt.target;
+          nextState.startPoint = { x: evt.pageX, y: evt.pageY };
+          nextState.translation = translation = { x: 0, y: 0 };
+
+          onStart({ target: evt.target, translation, velocity, interval });
         }
       } else {
-        onMove({
-          target,
-          translation: nextState.translation,
-          velocity: nextState.velocity,
-          interval: nextState.interval,
-        });
+        onMove({ target, translation, velocity, interval });
       }
 
       return nextState;
@@ -258,7 +242,7 @@ export default class Pannable extends React.PureComponent {
       style,
       ...elemProps
     } = this.props;
-    const styles = StyleSheet.create({
+    const elemStyle = StyleSheet.create({
       touchAction: enabled ? 'none' : 'auto',
       ...style,
     });
@@ -267,7 +251,7 @@ export default class Pannable extends React.PureComponent {
       <div
         {...elemProps}
         ref={this.elemRef}
-        style={styles}
+        style={elemStyle}
         onTouchStart={this._onTouchStart}
         onTouchEnd={this._onTouchEnd}
         onTouchMove={this._onTouchMove}

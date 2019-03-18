@@ -1,34 +1,43 @@
 {
   "name": "react-pannable",
-  "version": "0.5.0",
-  "description": "",
+  "version": "0.5.1",
+  "description": "Simulate pan gesture and scroll view for touch devices with React",
   "keywords": [
     "react",
     "scroll",
-    "grid",
-    "page",
     "pan",
     "drag",
+    "grid",
     "list",
-    "table",
-    "collection",
+    "page",
+    "carousel",
     "slide",
     "swiper",
+    "table",
+    "collection",
     "virtualized"
   ],
-  "homepage": "https://github.com/n43/react-pannable",
-  "bugs": "https://github.com/n43/react-pannable/issues",
   "license": "MIT",
+  "homepage": "https://github.com/n43/react-pannable",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/n43/react-pannable.git"
+  },
+  "bugs": {
+    "url": "https://github.com/n43/react-pannable/issues"
+  },
   "author": "Zhu DeMing <mingenesis@qq.com>",
   "contributors": [
     "Chen SiHui <502672047@qq.com>"
   ],
   "main": "lib/index.js",
   "module": "es/index.js",
+  "unpkg": "dist/react-pannable.js",
   "files": [
     "dist",
     "es",
-    "lib"
+    "lib",
+    "src"
   ],
   "scripts": {
     "build:commonjs": "BABEL_ENV=commonjs babel src --out-dir lib",
