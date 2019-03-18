@@ -57,7 +57,6 @@ export default class Pad extends React.PureComponent {
   }
 
   static getDerivedStateFromProps(props, state) {
-    const { pagingEnabled, onScroll } = props;
     const {
       size,
       contentSize,
@@ -81,7 +80,7 @@ export default class Pad extends React.PureComponent {
         contentOffset,
         size,
         contentSize,
-        pagingEnabled
+        false
       );
 
       if (
@@ -149,7 +148,7 @@ export default class Pad extends React.PureComponent {
         nextState.decelerationRate = nextDecelerationRate;
       }
 
-      onScroll({
+      props.onScroll({
         contentOffset,
         contentVelocity: nextContentVelocity,
         decelerating: nextDecelerating,
@@ -241,14 +240,14 @@ export default class Pad extends React.PureComponent {
           return null;
         }
 
-        if (!animated) {
-          offset = getAdjustedContentOffset(
-            offset,
-            size,
-            contentSize,
-            pagingEnabled
-          );
+        offset = getAdjustedContentOffset(
+          offset,
+          size,
+          contentSize,
+          pagingEnabled
+        );
 
+        if (!animated) {
           return {
             contentOffset: offset,
             contentVelocity: { x: 0, y: 0 },
@@ -366,26 +365,40 @@ export default class Pad extends React.PureComponent {
   };
 
   _onDragEnd = () => {
-    this.setState(({ contentOffset, contentVelocity }, { pagingEnabled }) => {
-      const decelerationRate = pagingEnabled
-        ? DECELERATION_RATE_STRONG
-        : DECELERATION_RATE_WEAK;
-      let decelerationEndOffset = getDecelerationEndOffset(
-        contentOffset,
-        contentVelocity,
-        decelerationRate
-      );
+    this.setState(
+      (
+        { contentOffset, contentVelocity, size, contentSize },
+        { pagingEnabled }
+      ) => {
+        const decelerationRate = pagingEnabled
+          ? DECELERATION_RATE_STRONG
+          : DECELERATION_RATE_WEAK;
+        let decelerationEndOffset = getDecelerationEndOffset(
+          contentOffset,
+          contentVelocity,
+          decelerationRate
+        );
 
-      return {
-        contentOffset: { ...contentOffset },
-        dragging: false,
-        dragStartOffset: null,
-        dragDirection: 'xy',
-        decelerating: true,
-        decelerationEndOffset,
-        decelerationRate,
-      };
-    });
+        if (pagingEnabled) {
+          decelerationEndOffset = getAdjustedContentOffset(
+            decelerationEndOffset,
+            size,
+            contentSize,
+            true
+          );
+        }
+
+        return {
+          contentOffset: { ...contentOffset },
+          dragging: false,
+          dragStartOffset: null,
+          dragDirection: 'xy',
+          decelerating: true,
+          decelerationEndOffset,
+          decelerationRate,
+        };
+      }
+    );
   };
 
   _onDragCancel = () => {

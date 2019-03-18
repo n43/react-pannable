@@ -8,21 +8,17 @@ export function getAdjustedContentOffset(offset, size, cSize, paging, name) {
   if (name) {
     const [x, width] = name === 'y' ? ['y', 'height'] : ['x', 'width'];
 
-    const offsetX = offset[x];
     const minOffsetX = Math.min(size[width] - cSize[width], 0);
+    let offsetX = offset[x];
 
-    if (0 < offsetX) {
-      return 0;
-    }
-    if (offsetX < minOffsetX) {
-      return minOffsetX;
-    }
+    offsetX = Math.max(minOffsetX, Math.min(offsetX, 0));
+
     if (paging) {
-      if (!size[width]) {
-        return 0;
+      if (size[width] === 0) {
+        offsetX = 0;
+      } else {
+        offsetX = size[width] * Math.round(offsetX / size[width]);
       }
-
-      return size[width] * Math.round(offset[x] / size[width]);
     }
 
     return offsetX;
@@ -31,35 +27,6 @@ export function getAdjustedContentOffset(offset, size, cSize, paging, name) {
   return {
     x: getAdjustedContentOffset(offset, size, cSize, paging, 'x'),
     y: getAdjustedContentOffset(offset, size, cSize, paging, 'y'),
-  };
-}
-
-export function getAdjustedContentVelocity(
-  velocity,
-  offset,
-  offsetEnd,
-  size,
-  rate,
-  name
-) {
-  if (name) {
-    const [x, width, height] =
-      name === 'y' ? ['y', 'height', 'width'] : ['x', 'width', 'height'];
-
-    const direction = velocity[x] < 0 ? -1 : 1;
-    const maxDist = 0.125 * Math.min(size[width], size[height]);
-
-    if (direction * (offsetEnd[x] - offset[x]) > 0) {
-      return velocity[x];
-    }
-    return (
-      direction * Math.min(Math.abs(velocity[x]), Math.sqrt(2 * rate * maxDist))
-    );
-  }
-
-  return {
-    x: getAdjustedContentVelocity(velocity, offset, offsetEnd, size, rate, 'x'),
-    y: getAdjustedContentVelocity(velocity, offset, offsetEnd, size, rate, 'y'),
   };
 }
 
@@ -94,6 +61,35 @@ export function getAdjustedBounceOffset(offset, bounce, size, cSize, name) {
   return {
     x: getAdjustedBounceOffset(offset, bounce, size, cSize, 'x'),
     y: getAdjustedBounceOffset(offset, bounce, size, cSize, 'y'),
+  };
+}
+
+export function getAdjustedContentVelocity(
+  velocity,
+  offset,
+  offsetEnd,
+  size,
+  rate,
+  name
+) {
+  if (name) {
+    const [x, width, height] =
+      name === 'y' ? ['y', 'height', 'width'] : ['x', 'width', 'height'];
+
+    const direction = velocity[x] < 0 ? -1 : 1;
+    const maxDist = 0.125 * Math.min(size[width], size[height]);
+
+    if (direction * (offsetEnd[x] - offset[x]) > 0) {
+      return velocity[x];
+    }
+    return (
+      direction * Math.min(Math.abs(velocity[x]), Math.sqrt(2 * rate * maxDist))
+    );
+  }
+
+  return {
+    x: getAdjustedContentVelocity(velocity, offset, offsetEnd, size, rate, 'x'),
+    y: getAdjustedContentVelocity(velocity, offset, offsetEnd, size, rate, 'y'),
   };
 }
 
