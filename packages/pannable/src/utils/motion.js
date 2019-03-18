@@ -67,35 +67,6 @@ export function getAdjustedBounceOffset(offset, bounce, size, cSize, name) {
   };
 }
 
-export function getAdjustedContentVelocity(
-  velocity,
-  offset,
-  offsetEnd,
-  size,
-  rate,
-  name
-) {
-  if (name) {
-    const [x, width, height] =
-      name === 'y' ? ['y', 'height', 'width'] : ['x', 'width', 'height'];
-
-    const direction = velocity[x] < 0 ? -1 : 1;
-    const maxDist = 0.125 * Math.min(size[width], size[height]);
-
-    if (direction * (offsetEnd[x] - offset[x]) > 0) {
-      return velocity[x];
-    }
-    return (
-      direction * Math.min(Math.abs(velocity[x]), Math.sqrt(2 * rate * maxDist))
-    );
-  }
-
-  return {
-    x: getAdjustedContentVelocity(velocity, offset, offsetEnd, size, rate, 'x'),
-    y: getAdjustedContentVelocity(velocity, offset, offsetEnd, size, rate, 'y'),
-  };
-}
-
 export function getDecelerationEndOffset(offset, velocity, acc, name) {
   if (name) {
     const x = name;
@@ -125,10 +96,11 @@ export function calculateDeceleration(
   velocity,
   offset,
   offsetEnd,
+  size,
   name
 ) {
   if (name) {
-    const x = name;
+    const [x, width] = name === 'y' ? ['y', 'height'] : ['x', 'width'];
 
     let offsetX = offset[x];
     let velocityX = velocity[x];
@@ -136,22 +108,36 @@ export function calculateDeceleration(
     if (acc[x]) {
       const direction = acc[x] < 0 ? -1 : 1;
       const dist = offsetEnd[x] - offsetX;
-
-      const velocityH =
+      let velocityH =
         direction * Math.sqrt(0.5 * velocityX * velocityX + acc[x] * dist);
-      const timeH = (velocityH - velocityX) / acc[x];
+      let timeH = (velocityH - velocityX) / acc[x];
+
+      if (timeH < 0) {
+        velocityH = velocityX;
+        timeH = 0;
+      }
+
       const time = (2 * velocityH - velocityX) / acc[x];
 
       if (time < interval) {
-        offsetX = offsetEnd[x];
         velocityX = 0;
+        offsetX = offsetEnd[x];
       } else {
-        offsetX +=
-          0.5 * (velocityX + velocityH) * timeH -
-          0.5 *
-            (2 * velocityH - acc[x] * Math.abs(timeH - interval)) *
-            (timeH - interval);
         velocityX = velocityH - acc[x] * Math.abs(timeH - interval);
+        offsetX +=
+          0.5 * (velocity[x] + velocityH) * timeH -
+          0.5 * (velocityH + velocityX) * (timeH - interval);
+
+        if (direction * (offsetEnd[x] - offsetX) <= 0) {
+          const direction2 = velocityX < 0 ? -1 : 1;
+
+          velocityX =
+            direction2 *
+            Math.min(
+              Math.abs(velocityX),
+              Math.sqrt(2 * direction * acc[x] * 0.5 * size[width])
+            );
+        }
       }
     }
 
@@ -177,6 +163,7 @@ export function calculateDeceleration(
     velocity,
     offset,
     offsetEnd,
+    size,
     'x'
   );
   const nextY = calculateDeceleration(
@@ -185,6 +172,7 @@ export function calculateDeceleration(
     velocity,
     offset,
     offsetEnd,
+    size,
     'y'
   );
 

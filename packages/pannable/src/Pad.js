@@ -9,7 +9,6 @@ import {
   getAdjustedContentOffset,
   getAdjustedBounceOffset,
   getDecelerationEndOffset,
-  getAdjustedContentVelocity,
   calculateDeceleration,
   calculateRectOffset,
 } from './utils/motion';
@@ -71,7 +70,6 @@ export default class Pad extends React.PureComponent {
     const nextState = {};
 
     if (prevContentOffset !== contentOffset) {
-      let nextContentVelocity = contentVelocity;
       let nextDecelerating = decelerating;
       let nextDecelerationEndOffset = decelerationEndOffset;
       let nextDecelerationRate = decelerationRate;
@@ -87,47 +85,15 @@ export default class Pad extends React.PureComponent {
         contentOffset.x !== adjustedContentOffset.x ||
         contentOffset.y !== adjustedContentOffset.y
       ) {
-        if (
-          nextDecelerationEndOffset &&
-          !(
-            nextDecelerationEndOffset.x === adjustedContentOffset.x &&
-            nextDecelerationEndOffset.y === adjustedContentOffset.y
-          )
-        ) {
-          nextDecelerationEndOffset = {
-            x:
-              contentOffset.x !== adjustedContentOffset.x
-                ? adjustedContentOffset.x
-                : nextDecelerationEndOffset.x,
-            y:
-              contentOffset.y !== adjustedContentOffset.y
-                ? adjustedContentOffset.y
-                : nextDecelerationEndOffset.y,
-          };
-          nextDecelerationRate = DECELERATION_RATE_STRONG;
-
-          const adjustedContentVelocity = getAdjustedContentVelocity(
-            nextContentVelocity,
-            contentOffset,
-            nextDecelerationEndOffset,
-            size,
-            nextDecelerationRate
-          );
-          if (
-            nextContentVelocity.x !== adjustedContentVelocity.x ||
-            nextContentVelocity.y !== adjustedContentVelocity.y
-          ) {
-            nextContentVelocity = adjustedContentVelocity;
-          }
-        }
+        nextDecelerationRate = DECELERATION_RATE_STRONG;
       }
 
       if (
         nextDecelerationEndOffset &&
         nextDecelerationEndOffset.x === contentOffset.x &&
         nextDecelerationEndOffset.y === contentOffset.y &&
-        nextContentVelocity.x === 0 &&
-        nextContentVelocity.y === 0
+        contentVelocity.x === 0 &&
+        contentVelocity.y === 0
       ) {
         nextDecelerating = false;
         nextDecelerationEndOffset = null;
@@ -135,9 +101,6 @@ export default class Pad extends React.PureComponent {
 
       nextState.prevContentOffset = contentOffset;
 
-      if (nextContentVelocity !== contentVelocity) {
-        nextState.contentVelocity = nextContentVelocity;
-      }
       if (nextDecelerating !== decelerating) {
         nextState.decelerating = nextDecelerating;
       }
@@ -150,7 +113,7 @@ export default class Pad extends React.PureComponent {
 
       props.onScroll({
         contentOffset,
-        contentVelocity: nextContentVelocity,
+        contentVelocity,
         decelerating: nextDecelerating,
         dragging,
         size,
@@ -274,24 +237,32 @@ export default class Pad extends React.PureComponent {
   }
 
   _setStateAndUpdateContentOffset(state = {}) {
-    this.setState(({ dragging, contentOffset }) => {
-      if (dragging) {
-        return state;
-      }
+    this.setState(
+      ({ dragging, contentOffset, size, contentSize }, { pagingEnabled }) => {
+        if (dragging) {
+          return state;
+        }
 
-      return {
-        ...state,
-        contentOffset: { ...contentOffset },
-        decelerating: true,
-        decelerationEndOffset: contentOffset,
-        decelerationRate: DECELERATION_RATE_STRONG,
-      };
-    });
+        return {
+          ...state,
+          contentOffset: { ...contentOffset },
+          decelerating: true,
+          decelerationEndOffset: getAdjustedContentOffset(
+            contentOffset,
+            size,
+            contentSize,
+            pagingEnabled
+          ),
+          decelerationRate: DECELERATION_RATE_STRONG,
+        };
+      }
+    );
   }
 
   _decelerate(interval) {
     this.setState(
       ({
+        size,
         contentOffset,
         contentVelocity,
         decelerating,
@@ -307,7 +278,8 @@ export default class Pad extends React.PureComponent {
           decelerationRate,
           contentVelocity,
           contentOffset,
-          decelerationEndOffset
+          decelerationEndOffset,
+          size
         );
 
         return { contentOffset: next.offset, contentVelocity: next.velocity };
@@ -379,14 +351,12 @@ export default class Pad extends React.PureComponent {
           decelerationRate
         );
 
-        if (pagingEnabled) {
-          decelerationEndOffset = getAdjustedContentOffset(
-            decelerationEndOffset,
-            size,
-            contentSize,
-            true
-          );
-        }
+        decelerationEndOffset = getAdjustedContentOffset(
+          decelerationEndOffset,
+          size,
+          contentSize,
+          pagingEnabled
+        );
 
         return {
           contentOffset: { ...contentOffset },
@@ -402,19 +372,27 @@ export default class Pad extends React.PureComponent {
   };
 
   _onDragCancel = () => {
-    this.setState(({ contentOffset, dragStartOffset }) => {
-      let decelerationEndOffset = dragStartOffset;
-
-      return {
-        contentOffset: { ...contentOffset },
-        dragging: false,
-        dragStartOffset: null,
-        dragDirection: 'xy',
-        decelerating: true,
-        decelerationEndOffset,
-        decelerationRate: DECELERATION_RATE_STRONG,
-      };
-    });
+    this.setState(
+      (
+        { contentOffset, dragStartOffset, size, contentSize },
+        { pagingEnabled }
+      ) => {
+        return {
+          contentOffset: { ...contentOffset },
+          dragging: false,
+          dragStartOffset: null,
+          dragDirection: 'xy',
+          decelerating: true,
+          decelerationEndOffset: getAdjustedContentOffset(
+            dragStartOffset,
+            size,
+            contentSize,
+            pagingEnabled
+          ),
+          decelerationRate: DECELERATION_RATE_STRONG,
+        };
+      }
+    );
   };
 
   render() {
