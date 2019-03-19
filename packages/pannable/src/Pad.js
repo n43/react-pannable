@@ -209,26 +209,19 @@ export default class Pad extends React.PureComponent {
         nState = nState(state, props);
       }
 
-      let { contentOffset: offset, ...nextState } = nState || {};
-      const { contentOffset, size, contentSize, dragging } = state;
+      const { contentOffset, ...nextState } = nState || {};
       const { pagingEnabled } = props;
+      const dragging =
+        nextState.dragging === undefined ? nextState.dragging : state.dragging;
+      const size = nextState.size || state.size;
+      const cSize = nextState.contentSize || state.contentSize;
+      let offset = contentOffset || state.contentOffset;
 
       if (dragging) {
         return nextState;
       }
 
-      const nextSize = nextState.size || size;
-      const nextContentSize = nextState.contentSize || contentSize;
-
-      if (!offset) {
-        offset = contentOffset;
-      }
-      offset = getAdjustedContentOffset(
-        offset,
-        nextSize,
-        nextContentSize,
-        pagingEnabled
-      );
+      offset = getAdjustedContentOffset(offset, size, cSize, pagingEnabled);
 
       if (!animated) {
         return {
@@ -241,7 +234,7 @@ export default class Pad extends React.PureComponent {
 
       return {
         ...nextState,
-        contentOffset: { ...contentOffset },
+        contentOffset: { ...state.contentOffset },
         decelerating: true,
         decelerationEndOffset: offset,
         decelerationRate: DECELERATION_RATE_STRONG,
@@ -367,24 +360,12 @@ export default class Pad extends React.PureComponent {
   };
 
   _onDragCancel = () => {
-    this.setState(
-      (
-        { contentOffset, dragStartOffset, size, contentSize },
-        { pagingEnabled }
-      ) => {
-        return {
-          contentOffset: { ...contentOffset },
-          dragging: false,
-          decelerating: true,
-          decelerationEndOffset: getAdjustedContentOffset(
-            dragStartOffset,
-            size,
-            contentSize,
-            pagingEnabled
-          ),
-          decelerationRate: DECELERATION_RATE_STRONG,
-        };
-      }
+    this._setStateWithScroll(
+      ({ dragStartOffset }) => ({
+        dragging: false,
+        contentOffset: dragStartOffset,
+      }),
+      true
     );
   };
 
