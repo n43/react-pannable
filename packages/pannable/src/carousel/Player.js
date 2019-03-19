@@ -19,20 +19,28 @@ export default class Player extends React.PureComponent {
     });
 
     this.state = {
+      prevDirection: direction,
       pageCount,
       activeIndex: 0,
       dragging: false,
       decelerating: false,
+      mouseEntered: false,
     };
     this.padRef = React.createRef();
   }
 
-  // static getDerivedStateFromProps(props, state) {
-  //   const { dragging, prevDragging } = state;
-  //   let nextState = {};
+  static getDerivedStateFromProps(props, state) {
+    const { direction } = props;
+    const { prevDirection } = state;
+    let nextState = {};
 
-  //   return nextState;
-  // }
+    if (prevDirection !== direction) {
+      nextState.prevDirection = direction;
+      nextState.activeIndex = 0;
+    }
+
+    return nextState;
+  }
 
   componentDidMount() {
     const { autoplayEnabled } = this.props;
@@ -51,7 +59,13 @@ export default class Player extends React.PureComponent {
       contentHeight,
       autoplayEnabled,
     } = this.props;
-    const { pageCount, activeIndex, dragging, decelerating } = this.state;
+    const {
+      pageCount,
+      activeIndex,
+      dragging,
+      decelerating,
+      mouseEntered,
+    } = this.state;
 
     if (
       prevProps.direction !== direction ||
@@ -67,24 +81,27 @@ export default class Player extends React.PureComponent {
       if (nextPageCount !== pageCount) {
         this.setState({ pageCount: nextPageCount });
       }
+      // if (prevProps.direction !== direction) {
+      //   this.setFrame(0);
+      // }
     }
 
     if (
       prevProps.autoplayEnabled !== autoplayEnabled ||
-      prevState.dragging !== dragging
+      prevState.dragging !== dragging ||
+      prevState.decelerating !== decelerating ||
+      prevState.activeIndex !== activeIndex ||
+      prevState.mouseEntered !== mouseEntered
     ) {
-      if (autoplayEnabled && !dragging) {
+      if (
+        autoplayEnabled &&
+        !dragging &&
+        !mouseEntered &&
+        !decelerating &&
+        pageCount > activeIndex + 1
+      ) {
         this.play();
       } else {
-        this.pause();
-      }
-    }
-
-    if (
-      prevState.activeIndex !== activeIndex ||
-      prevState.decelerating !== decelerating
-    ) {
-      if (!decelerating && pageCount === activeIndex + 1) {
         this.pause();
       }
     }
@@ -100,7 +117,6 @@ export default class Player extends React.PureComponent {
 
   play() {
     const { autoplayInterval } = this.props;
-    console.log('play');
     if (this._autoplayTimer) {
       this.forward();
       clearTimeout(this._autoplayTimer);
@@ -122,10 +138,17 @@ export default class Player extends React.PureComponent {
     const { direction, width, height } = this.props;
     const pad = this.padRef.current;
     const contentOffset = pad.getContentOffset();
-    const offset = {
-      x: direction === 'x' ? -(index * width) : contentOffset.x,
-      y: direction === 'x' ? contentOffset.y : -(index * height),
-    };
+    let offset;
+
+    if (index === 0) {
+      offset = { x: 0, y: 0 };
+    } else {
+      offset = {
+        x: direction === 'x' ? -(index * width) : contentOffset.x,
+        y: direction === 'x' ? contentOffset.y : -(index * height),
+      };
+    }
+
     pad.scrollTo({ offset, animated: true });
   }
 
@@ -161,6 +184,14 @@ export default class Player extends React.PureComponent {
     }
   };
 
+  _onMouseEnter = () => {
+    this.setState({ mouseEntered: true });
+  };
+
+  _onMouseLeave = () => {
+    this.setState({ mouseEntered: false });
+  };
+
   render() {
     const {
       direction,
@@ -170,12 +201,22 @@ export default class Player extends React.PureComponent {
       ...padProps
     } = this.props;
 
+    let bounceConfig = { alwaysBounceX: false, alwaysBounceY: false };
+    if (direction === 'x') {
+      bounceConfig.alwaysBounceX = true;
+    } else {
+      bounceConfig.alwaysBounceY = true;
+    }
+
     return (
       <Pad
         ref={this.padRef}
         {...padProps}
+        {...bounceConfig}
         pagingEnabled={true}
         onScroll={this._onPadScroll}
+        onMouseEnter={this._onMouseEnter}
+        onMouseLeave={this._onMouseLeave}
       >
         {typeof children === 'function' ? children(this) : children}
       </Pad>

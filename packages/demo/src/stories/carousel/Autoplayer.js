@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Player } from 'react-pannable';
 import TextField from '../../ui/field/TextField';
-import CheckField from '../../ui/field/CheckField';
+import RadioField from '../../ui/field/RadioField';
 import './Carousel.css';
 
 class Autoplayer extends Component {
@@ -9,11 +9,7 @@ class Autoplayer extends Component {
     super(props);
 
     this.state = {
-      pagingEnabled: false,
-      scrollEnabled: true,
-      directionalLockEnabled: false,
-      scrollToX: 0,
-      scrollToY: 0,
+      direction: 'x',
     };
     this.playerRef = React.createRef();
   }
@@ -26,13 +22,14 @@ class Autoplayer extends Component {
   };
 
   renderContent() {
+    const { direction } = this.state;
     const items = [];
 
     for (let slide = 0; slide < 5; slide++) {
       const style = {
         position: 'absolute',
-        top: 0,
-        left: slide * 750,
+        top: direction === 'x' ? 0 : slide * 300,
+        left: direction === 'x' ? slide * 750 : 0,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -55,20 +52,32 @@ class Autoplayer extends Component {
   }
 
   render() {
-    // const {} = this.state;
+    const { direction } = this.state;
+
+    const directionOptions = [
+      { title: 'x', value: 'x', checked: direction === 'x' },
+      { title: 'y', value: 'y', checked: direction === 'y' },
+    ];
+
     return (
       <div className="carousel-main">
         <Player
           ref={this.playerRef}
           width={750}
           height={300}
-          contentWidth={750 * 5}
-          contentHeight={300}
-          direction="x"
+          contentWidth={direction === 'x' ? 750 * 5 : 750}
+          contentHeight={direction === 'x' ? 300 : 300 * 5}
+          direction={direction}
         >
           {this.renderContent()}
         </Player>
-        <div className="carousel-optbar" />
+        <div className="carousel-optbar">
+          <RadioField
+            name="direction"
+            options={directionOptions}
+            onChange={this.handleInputChange}
+          />
+        </div>
       </div>
     );
   }
