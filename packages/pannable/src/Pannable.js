@@ -200,6 +200,7 @@ export default class Pannable extends React.PureComponent {
     this._shouldPreventClick = enabled;
 
     if (enabled) {
+      this._removeMousePanListener();
       this._addMousePanListener();
       this._track(evt);
     }
