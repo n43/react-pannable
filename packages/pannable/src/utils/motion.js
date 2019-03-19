@@ -40,7 +40,7 @@ export function getAdjustedBounceOffset(offset, bounce, size, cSize, name) {
 
     const offsetX = offset[x];
     const minOffsetX = Math.min(size[width] - cSize[width], 0);
-    const maxDist = 0.25 * Math.min(size[width], size[height]);
+    const maxDist = 0.5 * Math.min(size[width], size[height]);
 
     if (0 < offsetX) {
       if (bounce[x]) {
@@ -135,26 +135,19 @@ export function calculateDeceleration(
             direction2 *
             Math.min(
               Math.abs(velocityX),
-              Math.sqrt(2 * direction * acc[x] * 0.5 * size[width])
+              Math.sqrt(2 * direction * acc[x] * 0.25 * size[width])
             );
         }
       }
+    } else {
+      offsetX += velocityX * interval;
     }
 
     return { offset: offsetX, velocity: velocityX };
   }
 
   if (typeof acc === 'number') {
-    let vector = {
-      x: offsetEnd.x - offset.x,
-      y: offsetEnd.y - offset.y,
-    };
-
-    if (vector.x === 0 && vector.y === 0) {
-      vector = velocity;
-    }
-
-    acc = getAcc(acc, vector);
+    acc = getAcc(acc, { x: offsetEnd.x - offset.x, y: offsetEnd.y - offset.y });
   }
 
   const nextX = calculateDeceleration(

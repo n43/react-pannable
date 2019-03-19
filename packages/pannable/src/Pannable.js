@@ -80,7 +80,7 @@ export default class Pannable extends React.PureComponent {
         );
 
         if (
-          MIN_DISTANCE <= dist &&
+          MIN_DISTANCE < dist &&
           shouldStart({ target: evt.target, translation, velocity, interval })
         ) {
           nextState.target = evt.target;
