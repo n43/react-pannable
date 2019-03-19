@@ -20,7 +20,7 @@
   "scripts": {
     "start": "start-storybook -p 9001 -c .storybook",
     "build": "rm -rf ./dist & build-storybook -c .storybook -o dist",
-    "deploy": "storybook-to-ghpages -- --existing-output-dir=dist"
+    "deploy": "yarn build && storybook-to-ghpages -- --existing-output-dir=dist"
   },
   "eslintConfig": {
     "extends": "react-app"
