@@ -16,7 +16,8 @@
     "bounce",
     "table",
     "collection",
-    "virtualized"
+    "virtualized",
+    "infinite-scroll"
   ],
   "license": "MIT",
   "homepage": "https://github.com/n43/react-pannable",
