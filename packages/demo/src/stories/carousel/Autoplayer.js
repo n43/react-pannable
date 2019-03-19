@@ -54,10 +54,10 @@ class Autoplayer extends Component {
   render() {
     const { direction } = this.state;
 
-    const directionOptions = [
-      { title: 'x', value: 'x', checked: direction === 'x' },
-      { title: 'y', value: 'y', checked: direction === 'y' },
-    ];
+    // const directionOptions = [
+    //   { title: 'x', value: 'x', checked: direction === 'x' },
+    //   { title: 'y', value: 'y', checked: direction === 'y' },
+    // ];
 
     return (
       <div className="carousel-main">
@@ -72,11 +72,11 @@ class Autoplayer extends Component {
           {this.renderContent()}
         </Player>
         <div className="carousel-optbar">
-          <RadioField
+          {/* <RadioField
             name="direction"
             options={directionOptions}
             onChange={this.handleInputChange}
-          />
+          /> */}
         </div>
       </div>
     );
