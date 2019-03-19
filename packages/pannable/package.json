@@ -1,6 +1,6 @@
 {
   "name": "react-pannable",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "description": "Simulate pan gesture and scroll view for touch devices with React",
   "keywords": [
     "react",
@@ -52,7 +52,8 @@
     "test": "yarn lint",
     "prepare": "yarn test",
     "lint": "eslint src",
-    "cover": "yarn lint"
+    "cover": "yarn lint",
+    "prepublish": "cd ../demo && yarn deploy"
   },
   "peerDependencies": {
     "react": "^16.4.0",
