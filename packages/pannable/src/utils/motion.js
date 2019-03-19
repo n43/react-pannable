@@ -17,7 +17,7 @@ export function getAdjustedContentOffset(offset, size, cSize, paging, name) {
     offsetX = Math.max(minOffsetX, Math.min(offsetX, 0));
 
     if (paging) {
-      if (size[width] === 0) {
+      if (!size[width]) {
         offsetX = 0;
       } else {
         offsetX = size[width] * Math.round(offsetX / size[width]);
@@ -87,6 +87,35 @@ export function getDecelerationEndOffset(offset, velocity, acc, name) {
   return {
     x: getDecelerationEndOffset(offset, velocity, acc, 'x'),
     y: getDecelerationEndOffset(offset, velocity, acc, 'y'),
+  };
+}
+
+export function getAdjustedPagingOffset(offset, offsetEnd, size, cSize, name) {
+  if (name) {
+    const [x, width] = name === 'y' ? ['y', 'height'] : ['x', 'width'];
+
+    let offsetEndX = offsetEnd[x];
+    let minOffsetX = Math.min(size[width] - cSize[width], 0);
+
+    minOffsetX = Math.max(minOffsetX, Math.min(offset[x], 0));
+
+    if (!size[width]) {
+      minOffsetX = 0;
+    } else {
+      minOffsetX = size[width] * Math.floor(offset[x] / size[width]);
+    }
+
+    offsetEndX = Math.max(
+      minOffsetX,
+      Math.min(offsetEndX, minOffsetX + size[width])
+    );
+
+    return offsetEndX;
+  }
+
+  return {
+    x: getAdjustedPagingOffset(offset, offsetEnd, size, cSize, 'x'),
+    y: getAdjustedPagingOffset(offset, offsetEnd, size, cSize, 'y'),
   };
 }
 

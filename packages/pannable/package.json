@@ -1,6 +1,6 @@
 {
   "name": "react-pannable",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "Simulate pan gesture and scroll view for touch devices with React",
   "keywords": [
     "react",
@@ -46,10 +46,13 @@
     "build:umd": "NODE_ENV=development rollup -c -o dist/react-pannable.js",
     "build:umd:min": "NODE_ENV=production rollup -c -o dist/react-pannable.min.js",
     "build": "yarn build:commonjs && yarn build:es && yarn build:umd && yarn build:umd:min",
+    "prebuild": "yarn clean",
     "clean": "rimraf lib dist es coverage",
+    "pretest": "yarn build",
+    "test": "yarn lint",
+    "prepare": "yarn test",
     "lint": "eslint src",
-    "prepare": "yarn clean && yarn build",
-    "test": "yarn lint"
+    "cover": "yarn lint"
   },
   "peerDependencies": {
     "react": "^16.4.0",
@@ -68,8 +71,9 @@
     "@babel/preset-react": "^7.0.0",
     "babel-eslint": "^9.0.0",
     "babel-jest": "^24.5.0",
+    "coveralls": "^3.0.3",
     "eslint": "^5.14.1",
-    "eslint-config-react-app": "^3.0.7",
+    "eslint-config-react-app": "^3.0.8",
     "eslint-plugin-flowtype": "^2.50.3",
     "eslint-plugin-import": "^2.16.0",
     "eslint-plugin-jsx-a11y": "^6.2.1",

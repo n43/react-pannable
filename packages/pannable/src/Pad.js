@@ -8,6 +8,7 @@ import {
 import {
   getAdjustedContentOffset,
   getAdjustedBounceOffset,
+  getAdjustedPagingOffset,
   getDecelerationEndOffset,
   calculateDeceleration,
   calculateRectOffset,
@@ -359,6 +360,14 @@ export default class Pad extends React.PureComponent {
           contentSize,
           pagingEnabled
         );
+        if (pagingEnabled) {
+          decelerationEndOffset = getAdjustedPagingOffset(
+            contentOffset,
+            decelerationEndOffset,
+            size,
+            contentSize
+          );
+        }
 
         return {
           contentOffset: { ...contentOffset },
