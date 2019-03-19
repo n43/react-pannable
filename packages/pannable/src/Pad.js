@@ -74,18 +74,20 @@ export default class Pad extends React.PureComponent {
       let nextDecelerationEndOffset = decelerationEndOffset;
       let nextDecelerationRate = decelerationRate;
 
-      const adjustedContentOffset = getAdjustedContentOffset(
-        contentOffset,
-        size,
-        contentSize,
-        false
-      );
+      if (nextDecelerationRate !== DECELERATION_RATE_STRONG) {
+        const adjustedContentOffset = getAdjustedContentOffset(
+          contentOffset,
+          size,
+          contentSize,
+          false
+        );
 
-      if (
-        contentOffset.x !== adjustedContentOffset.x ||
-        contentOffset.y !== adjustedContentOffset.y
-      ) {
-        nextDecelerationRate = DECELERATION_RATE_STRONG;
+        if (
+          contentOffset.x !== adjustedContentOffset.x ||
+          contentOffset.y !== adjustedContentOffset.y
+        ) {
+          nextDecelerationRate = DECELERATION_RATE_STRONG;
+        }
       }
 
       if (
