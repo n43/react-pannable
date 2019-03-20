@@ -11,10 +11,8 @@ export function getAdjustedContentOffset(offset, size, cSize, paging, name) {
   if (name) {
     const [x, width] = name === 'y' ? ['y', 'height'] : ['x', 'width'];
 
-    const minOffsetX = Math.min(size[width] - cSize[width], 0);
-    let offsetX = offset[x];
-
-    offsetX = Math.max(minOffsetX, Math.min(offsetX, 0));
+    let offsetX = Math.min(size[width] - cSize[width], 0);
+    offsetX = Math.max(offsetX, Math.min(offset[x], 0));
 
     if (paging) {
       if (!size[width]) {
@@ -30,6 +28,32 @@ export function getAdjustedContentOffset(offset, size, cSize, paging, name) {
   return {
     x: getAdjustedContentOffset(offset, size, cSize, paging, 'x'),
     y: getAdjustedContentOffset(offset, size, cSize, paging, 'y'),
+  };
+}
+
+export function getAdjustedPagingOffset(offsetEnd, offset, size, cSize, name) {
+  if (name) {
+    const [x, width] = name === 'y' ? ['y', 'height'] : ['x', 'width'];
+
+    let offsetX = Math.min(size[width] - cSize[width], 0);
+    offsetX = Math.max(offsetX, Math.min(offset[x], 0));
+
+    if (!size[width]) {
+      offsetX = 0;
+    } else {
+      offsetX = size[width] * Math.floor(offsetX / size[width]);
+    }
+
+    if (offsetEnd[x] < offsetX + 0.5 * size[width]) {
+      return offsetX;
+    } else {
+      return offsetX + size[width];
+    }
+  }
+
+  return {
+    x: getAdjustedPagingOffset(offsetEnd, offset, size, cSize, 'x'),
+    y: getAdjustedPagingOffset(offsetEnd, offset, size, cSize, 'y'),
   };
 }
 
@@ -87,35 +111,6 @@ export function getDecelerationEndOffset(offset, velocity, acc, name) {
   return {
     x: getDecelerationEndOffset(offset, velocity, acc, 'x'),
     y: getDecelerationEndOffset(offset, velocity, acc, 'y'),
-  };
-}
-
-export function getAdjustedPagingOffset(offset, offsetEnd, size, cSize, name) {
-  if (name) {
-    const [x, width] = name === 'y' ? ['y', 'height'] : ['x', 'width'];
-
-    let offsetEndX = offsetEnd[x];
-    let minOffsetX = Math.min(size[width] - cSize[width], 0);
-
-    minOffsetX = Math.max(minOffsetX, Math.min(offset[x], 0));
-
-    if (!size[width]) {
-      minOffsetX = 0;
-    } else {
-      minOffsetX = size[width] * Math.floor(offset[x] / size[width]);
-    }
-
-    offsetEndX = Math.max(
-      minOffsetX,
-      Math.min(offsetEndX, minOffsetX + size[width])
-    );
-
-    return offsetEndX;
-  }
-
-  return {
-    x: getAdjustedPagingOffset(offset, offsetEnd, size, cSize, 'x'),
-    y: getAdjustedPagingOffset(offset, offsetEnd, size, cSize, 'y'),
   };
 }
 
