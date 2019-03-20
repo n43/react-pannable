@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
-import { Player } from 'react-pannable';
+import { Carousel } from 'react-pannable';
 import TextField from '../../ui/field/TextField';
 import RadioField from '../../ui/field/RadioField';
 import './Carousel.css';
 
-class Autoplayer extends Component {
+class BasicCarousel extends Component {
   constructor(props) {
     super(props);
 
@@ -54,33 +54,34 @@ class Autoplayer extends Component {
   render() {
     const { direction } = this.state;
 
-    const directionOptions = [
-      { title: 'x', value: 'x', checked: direction === 'x' },
-      { title: 'y', value: 'y', checked: direction === 'y' },
-    ];
+    // const directionOptions = [
+    //   { title: 'x', value: 'x', checked: direction === 'x' },
+    //   { title: 'y', value: 'y', checked: direction === 'y' },
+    // ];
 
     return (
       <div className="carousel-main">
-        <Player
+        <Carousel
           ref={this.playerRef}
           width={750}
           height={300}
           contentWidth={direction === 'x' ? 750 * 5 : 750}
           contentHeight={direction === 'x' ? 300 : 300 * 5}
           direction={direction}
+          loop={true}
         >
           {this.renderContent()}
-        </Player>
+        </Carousel>
         <div className="carousel-optbar">
-          <RadioField
+          {/* <RadioField
             name="direction"
             options={directionOptions}
             onChange={this.handleInputChange}
-          />
+          /> */}
         </div>
       </div>
     );
   }
 }
 
-export default Autoplayer;
+export default BasicCarousel;

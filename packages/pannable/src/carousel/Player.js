@@ -11,16 +11,8 @@ export default class Player extends React.PureComponent {
   constructor(props) {
     super(props);
 
-    const { width, height, contentWidth, contentHeight, direction } = props;
-    const pageCount = calculatePageCount({
-      direction,
-      size: { width, height },
-      contentSize: { width: contentWidth, height: contentHeight },
-    });
-
     this.state = {
-      prevDirection: direction,
-      pageCount,
+      pageCount: 0,
       activeIndex: 0,
       dragging: false,
       decelerating: false,
@@ -29,21 +21,18 @@ export default class Player extends React.PureComponent {
     this.padRef = React.createRef();
   }
 
-  static getDerivedStateFromProps(props, state) {
-    const { direction } = props;
-    const { prevDirection } = state;
-    let nextState = {};
-
-    if (prevDirection !== direction) {
-      nextState.prevDirection = direction;
-      nextState.activeIndex = 0;
-    }
-
-    return nextState;
-  }
-
   componentDidMount() {
-    const { autoplayEnabled } = this.props;
+    const { direction, autoplayEnabled } = this.props;
+    const pad = this.padRef.current;
+
+    const size = pad.getSize();
+    const contentSize = pad.getContentSize();
+    const pageCount = calculatePageCount({
+      direction,
+      size,
+      contentSize,
+    });
+    this.setState({ pageCount });
 
     if (autoplayEnabled) {
       this.play();
@@ -74,16 +63,17 @@ export default class Player extends React.PureComponent {
       prevProps.height !== height ||
       prevProps.contentHeight !== contentHeight
     ) {
-      const padDt = direction === 'x' ? width : height;
-      const contentDt = direction === 'x' ? contentWidth : contentHeight;
-      const nextPageCount = padDt ? Math.round(contentDt / padDt) : 0;
+      const pad = this.padRef.current;
+      const size = pad.getSize();
+      const contentSize = pad.getContentSize();
+      const dt = direction === 'x' ? 'width' : 'height';
+      const nextPageCount = size[dt]
+        ? Math.round(contentSize[dt] / size[dt])
+        : 0;
 
       if (nextPageCount !== pageCount) {
         this.setState({ pageCount: nextPageCount });
       }
-      // if (prevProps.direction !== direction) {
-      //   this.setFrame(0);
-      // }
     }
 
     if (
@@ -134,22 +124,23 @@ export default class Player extends React.PureComponent {
     }
   }
 
-  setFrame(index) {
-    const { direction, width, height } = this.props;
+  setFrame(index, animated = true) {
+    const { direction } = this.props;
     const pad = this.padRef.current;
     const contentOffset = pad.getContentOffset();
+    const size = pad.getSize();
     let offset;
 
     if (index === 0) {
       offset = { x: 0, y: 0 };
     } else {
       offset = {
-        x: direction === 'x' ? -(index * width) : contentOffset.x,
-        y: direction === 'x' ? contentOffset.y : -(index * height),
+        x: direction === 'x' ? -(index * size.width) : contentOffset.x,
+        y: direction === 'x' ? contentOffset.y : -(index * size.height),
       };
     }
 
-    pad.scrollTo({ offset, animated: true });
+    pad.scrollTo({ offset, animated });
   }
 
   rewind() {
