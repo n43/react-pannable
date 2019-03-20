@@ -1,4 +1,5 @@
 import React from 'react';
+import { getItemVisibleRect, needsRender } from './utils/visible';
 
 export default class GridContent extends React.PureComponent {
   static defaultProps = {
@@ -113,9 +114,9 @@ export default class GridContent extends React.PureComponent {
     });
   }
 
-  _renderItem(attrs) {
+  _renderItem(attrs, visibleRect) {
     const { renderItem } = this.props;
-    const element = renderItem({ ...attrs });
+    const element = renderItem({ ...attrs, visibleRect });
 
     const Item = element.type;
     const { style, ...props } = element.props;
@@ -141,23 +142,14 @@ export default class GridContent extends React.PureComponent {
       const attrs = layoutAttrs[itemIndex];
 
       if (attrs && needsRender(attrs.rect, visibleRect)) {
-        items.push(this._renderItem(attrs));
+        items.push(
+          this._renderItem(attrs, getItemVisibleRect(attrs.rect, visibleRect))
+        );
       }
     }
 
     return items;
   }
-}
-
-function needsRender(rect, vRect, name) {
-  if (name) {
-    const [x, width] = name === 'y' ? ['y', 'height'] : ['x', 'width'];
-
-    const dx = rect[x] - vRect[x];
-    return -0.25 * vRect[width] < dx + rect[width] && dx < 1.25 * vRect[width];
-  }
-
-  return needsRender(rect, vRect, 'x') && needsRender(rect, vRect, 'y');
 }
 
 function calculateItemIndex(index, count, direction) {

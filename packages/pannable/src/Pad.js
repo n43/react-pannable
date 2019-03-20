@@ -30,6 +30,8 @@ export default class Pad extends React.PureComponent {
     alwaysBounceX: true,
     alwaysBounceY: true,
     onScroll: () => {},
+    onResize: () => {},
+    onContentResize: () => {},
   };
 
   constructor(props) {
@@ -126,17 +128,24 @@ export default class Pad extends React.PureComponent {
       contentWidth,
       contentHeight,
       pagingEnabled,
+      onResize,
+      onContentResize,
     } = this.props;
 
     if (prevProps.width !== width || prevProps.height !== height) {
-      this._setStateWithScroll({ size: { width, height } }, true);
+      const size = { width, height };
+
+      this._setStateWithScroll({ size }, true);
+      onResize(size);
     }
     if (
       prevProps.contentWidth !== contentWidth ||
       prevProps.contentHeight !== contentHeight
     ) {
       const contentSize = { width: contentWidth, height: contentHeight };
+
       this._setStateWithScroll({ contentSize }, true);
+      onContentResize(contentSize);
     }
     if (prevProps.pagingEnabled !== pagingEnabled) {
       if (pagingEnabled) {
@@ -186,8 +195,20 @@ export default class Pad extends React.PureComponent {
     return this.state.decelerating;
   }
 
+  getVisibleRect() {
+    const { contentOffset, size } = this.state;
+
+    return {
+      x: -contentOffset.x,
+      y: -contentOffset.y,
+      width: size.width,
+      height: size.height,
+    };
+  }
+
   setContentSize(contentSize) {
     this._setStateWithScroll({ contentSize }, true);
+    this.props.onContentResize(contentSize);
   }
 
   scrollToRect({ rect, align = 'auto', animated }) {
@@ -210,7 +231,6 @@ export default class Pad extends React.PureComponent {
       }
 
       const { contentOffset, ...nextState } = nState || {};
-      const { pagingEnabled } = props;
       const dragging =
         nextState.dragging === undefined ? nextState.dragging : state.dragging;
       const size = nextState.size || state.size;
@@ -221,7 +241,16 @@ export default class Pad extends React.PureComponent {
         return nextState;
       }
 
-      offset = getAdjustedContentOffset(offset, size, cSize, pagingEnabled);
+      const adjustedOffset = getAdjustedContentOffset(
+        offset,
+        size,
+        cSize,
+        props.pagingEnabled
+      );
+
+      if (adjustedOffset.x !== offset.x || adjustedOffset.y !== offset.y) {
+        offset = adjustedOffset;
+      }
 
       if (!animated) {
         return {
@@ -384,6 +413,9 @@ export default class Pad extends React.PureComponent {
       directionalLockEnabled,
       alwaysBounceX,
       alwaysBounceY,
+      onScroll,
+      onResize,
+      onContentResize,
       style,
       children,
       ...boundingProps
