@@ -14,12 +14,6 @@ export default class SectionContent extends React.PureComponent {
     listVisibleRect: { x: 0, y: 0, width: 0, height: 0 },
   };
 
-  componentDidMount() {
-    this.setState({
-      listVisibleRect: { x: 0, y: 0, ...this.listRef.current.state.size },
-    });
-  }
-
   _onListResize(size) {
     this.setState({
       listVisibleRect: { x: 0, y: 0, ...size },
