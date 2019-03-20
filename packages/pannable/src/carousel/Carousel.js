@@ -1,5 +1,4 @@
 import React from 'react';
-import StyleSheet from '../utils/StyleSheet';
 import Player from './Player';
 import ListContent from '../ListContent';
 
@@ -12,10 +11,17 @@ export default class Carousel extends React.PureComponent {
   constructor(props) {
     super(props);
 
+    this.state = {
+      playerExisted: false,
+    };
     this.playerRef = React.createRef();
   }
 
-  componentDidMount() {}
+  componentDidMount() {
+    if (this.playerRef) {
+      this.setState({ playerExisted: true });
+    }
+  }
 
   componentDidUpdate(prevProps, prevState) {}
 
@@ -28,26 +34,27 @@ export default class Carousel extends React.PureComponent {
   slideNext() {}
 
   _buildLoopContent() {
-    const player = this.playerRef && this.playerRef.current;
-    console.log(2342423432, player);
-    if (!player) {
-      return null;
-    }
+    const { direction, children } = this.props;
+    const pad = this.playerRef.current.padRef.current;
 
-    const { direction } = this.props;
-    const pad = player.padRef.current;
-    const size = pad.getSize();
     const contentSize = pad.getContentSize();
-    const cOffset = pad.getContentOffset();
+    const visibleRect = pad.getVisibleRect();
 
-    const wrapperStyle = StyleSheet.create({
+    const playerContentSize = {
+      width: direction === 'x' ? contentSize.width * 2 : contentSize.width,
+      height: direction === 'x' ? contentSize.height : contentSize.height * 2,
+    };
+
+    const wrapperStyle = {
       display: 'flex',
-    });
-    const contentStyle = StyleSheet.create({
+      width: playerContentSize.width,
+      height: playerContentSize.height,
+    };
+    const contentStyle = {
       position: 'relative',
       width: contentSize.width,
       height: contentSize.height,
-    });
+    };
 
     return (
       <div style={wrapperStyle}>
@@ -59,16 +66,21 @@ export default class Carousel extends React.PureComponent {
             estimatedItemWidth={contentSize.width}
             estimatedItemHeight={contentSize.height}
             itemCount={1}
-            renderItem={({ itemIndex, Item }) => {
-              return <Item hash={'' + itemIndex}>{children}</Item>;
+            renderItem={() => {
+              return (
+                <div
+                  key="loopElem"
+                  style={{
+                    width: contentSize.width,
+                    height: contentSize.height,
+                  }}
+                >
+                  {children}
+                </div>
+              );
             }}
-            visibleRect={{
-              x: -cOffset.x,
-              y: -cOffset.y,
-              width: size.width,
-              height: size.height,
-            }}
-            onResize={size => pad.setContentSize(size)}
+            visibleRect={visibleRect}
+            onResize={() => pad.setContentSize(playerContentSize)}
           />
         </div>
       </div>
@@ -77,32 +89,15 @@ export default class Carousel extends React.PureComponent {
 
   render() {
     const { loop, children, ...playerProps } = this.props;
-    const { direction, contentWidth, contentHeight } = playerProps;
+    const { playerExisted } = this.state;
     let renderChildren = children;
-    let playerContentWidth = contentWidth;
-    let playerContentHeight = contentHeight;
 
-    if (loop) {
-      const loopContent = this._buildLoopContent();
-
-      if (loopContent) {
-        renderChildren = loopContent;
-        console.log(424423242);
-        if (direction === 'x') {
-          playerContentWidth = contentWidth * 2;
-        } else {
-          playerContentHeight = contentHeight * 2;
-        }
-      }
+    if (loop && playerExisted) {
+      renderChildren = this._buildLoopContent();
     }
 
     return (
-      <Player
-        ref={this.playerRef}
-        {...playerProps}
-        contentWidth={playerContentWidth}
-        contentHeight={playerContentHeight}
-      >
+      <Player ref={this.playerRef} {...playerProps}>
         {renderChildren}
       </Player>
     );

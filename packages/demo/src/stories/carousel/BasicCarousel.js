@@ -25,7 +25,7 @@ class BasicCarousel extends Component {
     const { direction } = this.state;
     const items = [];
 
-    for (let slide = 0; slide < 5; slide++) {
+    for (let slide = 0; slide < 6; slide++) {
       const style = {
         position: 'absolute',
         top: direction === 'x' ? 0 : slide * 300,
@@ -65,8 +65,8 @@ class BasicCarousel extends Component {
           ref={this.playerRef}
           width={750}
           height={300}
-          contentWidth={direction === 'x' ? 750 * 5 : 750}
-          contentHeight={direction === 'x' ? 300 : 300 * 5}
+          contentWidth={direction === 'x' ? 750 * 6 : 750}
+          contentHeight={direction === 'x' ? 300 : 300 * 6}
           direction={direction}
           loop={true}
         >
