@@ -65,55 +65,45 @@ export default class ListContentLayout extends React.Component {
                 height={552}
                 alwaysBounceX={false}
               >
-                {pad => {
-                  const cOffset = pad.getContentOffset();
-                  const size = pad.getSize();
+                {pad => (
+                  <ListContent
+                    ref={this.listRef}
+                    width={346}
+                    spacing={10}
+                    estimatedItemWidth={itemWidth}
+                    estimatedItemHeight={itemHeight}
+                    itemCount={20}
+                    renderItem={({ itemIndex, Item, visibleRect }) => {
+                      let backgroundColor =
+                        itemIndex % 2 ? '#defdff' : '#cbf1ff';
 
-                  return (
-                    <ListContent
-                      ref={this.listRef}
-                      width={346}
-                      spacing={10}
-                      estimatedItemWidth={itemWidth}
-                      estimatedItemHeight={itemHeight}
-                      itemCount={20}
-                      renderItem={({ itemIndex, Item }) => {
-                        let backgroundColor =
-                          itemIndex % 2 ? '#defdff' : '#cbf1ff';
+                      const body = [];
+                      for (let idx = 0; idx < itemIndex; idx++) {
+                        body.push(<div key={idx}>{idx}</div>);
+                      }
 
-                        const body = [];
-                        for (let idx = 0; idx < itemIndex; idx++) {
-                          body.push(<div key={idx}>{idx}</div>);
-                        }
-
-                        return (
-                          <Item
-                            hash={'' + itemIndex}
-                            style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              backgroundColor,
-                              color: '#75d3ec',
-                              whiteSpace: 'pre-line',
-                              textAlign: 'center',
-                            }}
-                          >
-                            <div>hi</div>
-                            {body}
-                          </Item>
-                        );
-                      }}
-                      visibleRect={{
-                        x: -cOffset.x,
-                        y: -cOffset.y,
-                        width: size.width,
-                        height: size.height,
-                      }}
-                      onResize={size => pad.setContentSize(size)}
-                    />
-                  );
-                }}
+                      return (
+                        <Item
+                          hash={'' + itemIndex}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            backgroundColor,
+                            color: '#75d3ec',
+                            whiteSpace: 'pre-line',
+                            textAlign: 'center',
+                          }}
+                        >
+                          {body}
+                          <div>{JSON.stringify(visibleRect)}</div>
+                        </Item>
+                      );
+                    }}
+                    visibleRect={pad.getVisibleRect()}
+                    onResize={size => pad.setContentSize(size)}
+                  />
+                )}
               </Pad>
             </div>
           </div>

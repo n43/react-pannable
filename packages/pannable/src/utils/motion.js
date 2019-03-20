@@ -172,7 +172,7 @@ export function calculateDeceleration(
       offsetX += velocityX * interval;
     }
 
-    return { offset: offsetX, velocity: velocityX };
+    return { offset: { [x]: offsetX }, velocity: { [x]: velocityX } };
   }
 
   if (typeof acc === 'number') {
@@ -199,8 +199,8 @@ export function calculateDeceleration(
   );
 
   return {
-    offset: { x: nextX.offset, y: nextY.offset },
-    velocity: { x: nextX.velocity, y: nextY.velocity },
+    offset: { ...nextX.offset, ...nextY.offset },
+    velocity: { ...nextX.velocity, ...nextY.velocity },
   };
 }
 

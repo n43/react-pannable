@@ -1,4 +1,5 @@
 import React from 'react';
+import { getItemVisibleRect, needsRender } from './utils/visible';
 import ItemContent from './ItemContent';
 
 export default class ListContent extends React.PureComponent {
@@ -116,10 +117,10 @@ export default class ListContent extends React.PureComponent {
     });
   }
 
-  _renderItem(attrs) {
+  _renderItem(attrs, visibleRect) {
     const { direction, width, height, renderItem } = this.props;
     const { itemSizeDict } = this.state;
-    const element = renderItem({ ...attrs, Item: ItemContent });
+    const element = renderItem({ ...attrs, visibleRect, Item: ItemContent });
 
     const Item = element.type;
     const { onResize, style, ...props } = element.props;
@@ -166,23 +167,14 @@ export default class ListContent extends React.PureComponent {
       const attrs = layoutAttrs[itemIndex];
 
       if (attrs && needsRender(attrs.rect, visibleRect)) {
-        items.push(this._renderItem(attrs));
+        items.push(
+          this._renderItem(attrs, getItemVisibleRect(attrs.rect, visibleRect))
+        );
       }
     }
 
     return items;
   }
-}
-
-function needsRender(rect, vRect, name) {
-  if (name) {
-    const [x, width] = name === 'y' ? ['y', 'height'] : ['x', 'width'];
-
-    const dx = rect[x] - vRect[x];
-    return -0.25 * vRect[width] < dx + rect[width] && dx < 1.25 * vRect[width];
-  }
-
-  return needsRender(rect, vRect, 'x') && needsRender(rect, vRect, 'y');
 }
 
 function calculateLayout(

@@ -195,6 +195,17 @@ export default class Pad extends React.PureComponent {
     return this.state.decelerating;
   }
 
+  getVisibleRect() {
+    const { contentOffset, size } = this.state;
+
+    return {
+      x: -contentOffset.x,
+      y: -contentOffset.y,
+      width: size.width,
+      height: size.height,
+    };
+  }
+
   setContentSize(contentSize) {
     this._setStateWithScroll({ contentSize }, true);
     this.props.onContentResize(contentSize);
@@ -402,6 +413,9 @@ export default class Pad extends React.PureComponent {
       directionalLockEnabled,
       alwaysBounceX,
       alwaysBounceY,
+      onScroll,
+      onResize,
+      onContentResize,
       style,
       children,
       ...boundingProps
