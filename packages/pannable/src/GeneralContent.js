@@ -62,15 +62,16 @@ export default class GeneralContent extends React.PureComponent {
   }
 
   render() {
-    const { width, height, children } = this.props;
-    const style = {
+    const { width, height, onResize, style, children, ...props } = this.props;
+    const elemStyle = {
       position: 'absolute',
       width: width < 0 ? 'auto' : width,
       height: height < 0 ? 'auto' : height,
+      ...style,
     };
 
     return (
-      <div ref={this.resizeRef} style={style}>
+      <div {...props} ref={this.resizeRef} style={elemStyle}>
         {typeof children === 'function' ? children(this) : children}
       </div>
     );

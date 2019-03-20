@@ -319,7 +319,7 @@ export default class Pad extends React.PureComponent {
         return null;
       }
 
-      const { offset, velocity } = calculateDeceleration(
+      const { xOffset, yOffset, xVelocity, yVelocity } = calculateDeceleration(
         interval,
         decelerationRate,
         contentVelocity,
@@ -328,7 +328,10 @@ export default class Pad extends React.PureComponent {
         size
       );
 
-      return { contentOffset: offset, contentVelocity: velocity };
+      return {
+        contentOffset: { x: xOffset, y: yOffset },
+        contentVelocity: { x: xVelocity, y: yVelocity },
+      };
     });
   }
 

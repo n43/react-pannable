@@ -167,35 +167,32 @@ export function calculateDeceleration(
       offsetX += velocityX * interval;
     }
 
-    return { offset: { [x]: offsetX }, velocity: { [x]: velocityX } };
+    return { [x + 'Offset']: offsetX, [x + 'Velocity']: velocityX };
   }
 
   if (typeof acc === 'number') {
     acc = getAcc(acc, { x: offsetEnd.x - offset.x, y: offsetEnd.y - offset.y });
   }
 
-  const nextX = calculateDeceleration(
-    interval,
-    acc,
-    velocity,
-    offset,
-    offsetEnd,
-    size,
-    'x'
-  );
-  const nextY = calculateDeceleration(
-    interval,
-    acc,
-    velocity,
-    offset,
-    offsetEnd,
-    size,
-    'y'
-  );
-
   return {
-    offset: { ...nextX.offset, ...nextY.offset },
-    velocity: { ...nextX.velocity, ...nextY.velocity },
+    ...calculateDeceleration(
+      interval,
+      acc,
+      velocity,
+      offset,
+      offsetEnd,
+      size,
+      'x'
+    ),
+    ...calculateDeceleration(
+      interval,
+      acc,
+      velocity,
+      offset,
+      offsetEnd,
+      size,
+      'y'
+    ),
   };
 }
 

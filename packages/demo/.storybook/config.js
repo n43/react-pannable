@@ -14,10 +14,13 @@ addDecorator(
 
 addDecorator(story => <Main>{story()}</Main>);
 
-const req = require.context('../src/stories', true, /\.stories\.js$/);
+// const req = require.context('../src/stories', true, /\.stories\.js$/);
 
 function loadStories() {
-  req.keys().forEach(filename => req(filename));
+  // req.keys().forEach(filename => req(filename));
+  require('../src/stories/pad/index.stories');
+  require('../src/stories/pannable/index.stories');
+  require('../src/stories/carousel/index.stories');
 }
 
 configure(loadStories, module);

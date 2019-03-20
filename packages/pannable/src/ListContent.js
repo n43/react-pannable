@@ -120,10 +120,8 @@ export default class ListContent extends React.PureComponent {
   _renderItem(attrs, visibleRect) {
     const { direction, width, height, renderItem } = this.props;
     const { itemSizeDict } = this.state;
-    const element = renderItem({ ...attrs, visibleRect, Item: ItemContent });
 
-    const Item = element.type;
-    const { onResize, style, ...props } = element.props;
+    let element = renderItem({ ...attrs, visibleRect, Item: ItemContent });
     const key = element.key || attrs.itemIndex;
     const itemStyle = {
       position: 'absolute',
@@ -131,31 +129,32 @@ export default class ListContent extends React.PureComponent {
       top: attrs.rect.y,
       width: attrs.rect.width,
       height: attrs.rect.height,
-      ...style,
     };
 
-    if (Item === ItemContent) {
-      props.onResize = (size, hash) => {
-        this._calculateLayout(attrs.itemIndex, hash, size);
-
-        onResize(size);
-      };
-      props.getSizeByHash = hash => itemSizeDict[hash];
-
-      if (direction === 'x') {
-        props.height = height;
-      } else {
-        props.width = width;
-      }
-
-      return (
-        <div key={key} style={itemStyle}>
-          <Item {...props} />
-        </div>
-      );
+    if (element.type !== ItemContent) {
+      element = <ItemContent hash={key}>{element}</ItemContent>;
     }
 
-    return <Item {...props} key={key} style={itemStyle} />;
+    const { onResize, ...props } = element.props;
+
+    props.onResize = (size, hash) => {
+      this._calculateLayout(attrs.itemIndex, hash, size);
+
+      onResize(size);
+    };
+    props.getSizeByHash = hash => itemSizeDict[hash];
+
+    if (direction === 'x') {
+      props.height = height;
+    } else {
+      props.width = width;
+    }
+
+    return (
+      <div key={key} style={itemStyle}>
+        <ItemContent {...props} />
+      </div>
+    );
   }
 
   render() {
@@ -165,6 +164,7 @@ export default class ListContent extends React.PureComponent {
 
     for (let itemIndex = 0; itemIndex < itemCount; itemIndex++) {
       const attrs = layoutAttrs[itemIndex];
+
       if (attrs && needsRender(attrs.rect, visibleRect)) {
         items.push(
           this._renderItem(attrs, getItemVisibleRect(attrs.rect, visibleRect))

@@ -10,14 +10,14 @@ export default class ListContentLayout extends React.Component {
     super(props);
 
     this.state = {
-      itemWidth: 100,
-      itemHeight: 100,
+      spacing: 10,
       scrollToIndex: 0,
-      separator: '-',
     };
+
     this.padRef = React.createRef();
     this.listRef = React.createRef();
   }
+
   handleInputChange = evt => {
     const node = evt.target;
     const value = parseInt(node.value, 10);
@@ -30,13 +30,7 @@ export default class ListContentLayout extends React.Component {
       [node.name]: value,
     });
   };
-  handleRadioChange = evt => {
-    const node = evt.target;
 
-    this.setState({
-      [node.name]: node.value,
-    });
-  };
   handleScrollToPos = () => {
     const { scrollToIndex } = this.state;
     const rect = this.listRef.current.getItemRect({
@@ -44,99 +38,77 @@ export default class ListContentLayout extends React.Component {
     });
     this.padRef.current.scrollToRect({ rect, animated: true });
   };
+
   render() {
-    const { itemWidth, itemHeight, separator, scrollToIndex } = this.state;
-    const separatorOptions = [
-      { title: '-', value: '-', checked: separator === '-' },
-      { title: ',', value: ',', checked: separator === ',' },
-    ];
+    const { spacing, scrollToIndex } = this.state;
 
     return (
-      <React.Fragment>
-        <div className="pad-main">
-          <div className="pad-preview">
-            <SvgPhone className="pad-preview-bg" />
-            <div className="pad-preview-content">
-              <Pad
-                ref={this.padRef}
-                className="autoadjust-pad"
-                directionalLockEnabled
-                width={346}
-                height={552}
-                alwaysBounceX={false}
-              >
-                {pad => (
-                  <ListContent
-                    ref={this.listRef}
-                    width={346}
-                    spacing={10}
-                    estimatedItemWidth={itemWidth}
-                    estimatedItemHeight={itemHeight}
-                    itemCount={20}
-                    renderItem={({ itemIndex, Item }) => {
-                      let backgroundColor =
-                        itemIndex % 2 ? '#defdff' : '#cbf1ff';
+      <div className="pad-main">
+        <div className="pad-preview">
+          <SvgPhone className="pad-preview-bg" />
+          <div className="pad-preview-content">
+            <Pad
+              ref={this.padRef}
+              className="autoadjust-pad"
+              directionalLockEnabled
+              width={346}
+              height={552}
+              alwaysBounceX={false}
+            >
+              {pad => (
+                <ListContent
+                  ref={this.listRef}
+                  width={346}
+                  spacing={spacing}
+                  estimatedItemWidth={100}
+                  estimatedItemHeight={100}
+                  itemCount={20}
+                  renderItem={({ itemIndex, Item }) => {
+                    let backgroundColor = itemIndex % 2 ? '#defdff' : '#cbf1ff';
 
-                      const body = [];
-                      for (let idx = 0; idx < itemIndex; idx++) {
-                        body.push(<div key={idx}>{idx}</div>);
-                      }
+                    const body = [];
+                    for (let idx = 0; idx <= itemIndex; idx++) {
+                      body.push(<div key={idx}>{idx}</div>);
+                    }
 
-                      return (
-                        <Item
-                          hash={'' + itemIndex}
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            backgroundColor,
-                            color: '#75d3ec',
-                            whiteSpace: 'pre-line',
-                            textAlign: 'center',
-                          }}
-                        >
-                          {body}
-                          <div>hi</div>
-                        </Item>
-                      );
-                    }}
-                    visibleRect={pad.getVisibleRect()}
-                    onResize={size => pad.setContentSize(size)}
-                  />
-                )}
-              </Pad>
-            </div>
-          </div>
-          <div className="pad-optbar">
-            <TextField
-              name="itemWidth"
-              defaultValue={itemWidth}
-              placeholder="integer"
-              onChange={this.handleInputChange}
-            />
-            <TextField
-              name="itemHeight"
-              defaultValue={itemHeight}
-              placeholder="integer"
-              onChange={this.handleInputChange}
-            />
-            <RadioField
-              name="separator"
-              options={separatorOptions}
-              onChange={this.handleRadioChange}
-            />
-            <TextField
-              name="scrollToIndex"
-              defaultValue={scrollToIndex}
-              placeholder="integer"
-              onChange={this.handleInputChange}
-            />
-            <div className="pad-btn" onClick={this.handleScrollToPos}>
-              scroll
-            </div>
+                    return (
+                      <Item
+                        hash={'' + itemIndex}
+                        style={{
+                          backgroundColor,
+                          color: '#75d3ec',
+                          textAlign: 'center',
+                        }}
+                      >
+                        {body}
+                      </Item>
+                    );
+                  }}
+                  visibleRect={pad.getVisibleRect()}
+                  onResize={size => pad.setContentSize(size)}
+                />
+              )}
+            </Pad>
           </div>
         </div>
-      </React.Fragment>
+        <div className="pad-optbar">
+          <TextField
+            name="spacing"
+            defaultValue={spacing}
+            placeholder="integer"
+            onChange={this.handleInputChange}
+          />
+          <TextField
+            name="scrollToIndex"
+            defaultValue={scrollToIndex}
+            placeholder="integer"
+            onChange={this.handleInputChange}
+          />
+          <div className="pad-btn" onClick={this.handleScrollToPos}>
+            Scroll
+          </div>
+        </div>
+      </div>
     );
   }
 }
