@@ -165,7 +165,6 @@ export default class ListContent extends React.PureComponent {
 
     for (let itemIndex = 0; itemIndex < itemCount; itemIndex++) {
       const attrs = layoutAttrs[itemIndex];
-
       if (attrs && needsRender(attrs.rect, visibleRect)) {
         items.push(
           this._renderItem(attrs, getItemVisibleRect(attrs.rect, visibleRect))

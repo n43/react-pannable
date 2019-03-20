@@ -66,10 +66,7 @@ export default class Player extends React.PureComponent {
       const pad = this.padRef.current;
       const size = pad.getSize();
       const contentSize = pad.getContentSize();
-      const dt = direction === 'x' ? 'width' : 'height';
-      const nextPageCount = size[dt]
-        ? Math.round(contentSize[dt] / size[dt])
-        : 0;
+      const nextPageCount = calculatePageCount(direction, size, contentSize);
 
       if (nextPageCount !== pageCount) {
         this.setState({ pageCount: nextPageCount });
@@ -94,11 +91,19 @@ export default class Player extends React.PureComponent {
       } else {
         this.pause();
       }
+
+      // if (prevState.activeIndex !== activeIndex && onFrameChange) {
+      //   onFrameChange(activeIndex);
+      // }
     }
   }
 
   componentWillUnmount() {
     this.pause();
+  }
+
+  getPageCount() {
+    return this.state.pageCount;
   }
 
   getActiveIndex() {
@@ -153,6 +158,48 @@ export default class Player extends React.PureComponent {
     this.setFrame(activeIndex + 1);
   }
 
+  _onPadResize = size => {
+    const { direction, onResize } = this.props;
+    const { pageCount } = this.state;
+    const pad = this.padRef.current;
+    const contentSize = pad.getContentSize();
+
+    const nextPageCount = calculatePageCount({
+      direction,
+      size,
+      contentSize,
+    });
+
+    if (nextPageCount !== pageCount) {
+      this.setState({ pageCount: nextPageCount });
+    }
+
+    if (onResize) {
+      onResize(size);
+    }
+  };
+
+  _onPadContentResize = contentSize => {
+    const { direction, onContentResize } = this.props;
+    const { pageCount } = this.state;
+    const pad = this.padRef.current;
+    const size = pad.getSize();
+
+    const nextPageCount = calculatePageCount({
+      direction,
+      size,
+      contentSize,
+    });
+
+    if (nextPageCount !== pageCount) {
+      this.setState({ pageCount: nextPageCount });
+    }
+
+    if (onContentResize) {
+      onContentResize(contentSize);
+    }
+  };
+
   _onPadScroll = evt => {
     const { contentOffset, size, dragging, decelerating } = evt;
     const { direction, onScroll } = this.props;
@@ -206,6 +253,8 @@ export default class Player extends React.PureComponent {
         {...bounceConfig}
         pagingEnabled={true}
         onScroll={this._onPadScroll}
+        onResize={this._onPadResize}
+        onContentResize={this._onPadContentResize}
         onMouseEnter={this._onMouseEnter}
         onMouseLeave={this._onMouseLeave}
       >

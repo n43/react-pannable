@@ -33,72 +33,71 @@ export default class Carousel extends React.PureComponent {
 
   slideNext() {}
 
-  _buildLoopContent() {
-    const { direction, children } = this.props;
-    const pad = this.playerRef.current.padRef.current;
+  _onPlayerFrameChange = activeIndex => {
+    const { loop } = this.props;
+    const player = this.playerRef.current;
+    const pageCount = player.pageCount;
 
-    const contentSize = pad.getContentSize();
-    const visibleRect = pad.getVisibleRect();
-
-    const playerContentSize = {
-      width: direction === 'x' ? contentSize.width * 2 : contentSize.width,
-      height: direction === 'x' ? contentSize.height : contentSize.height * 2,
-    };
-
-    const wrapperStyle = {
-      display: 'flex',
-      width: playerContentSize.width,
-      height: playerContentSize.height,
-    };
-    const contentStyle = {
-      position: 'relative',
-      width: contentSize.width,
-      height: contentSize.height,
-    };
-
-    return (
-      <div style={wrapperStyle}>
-        <div style={contentStyle}>{children}</div>
-        <div style={contentStyle}>
-          <ListContent
-            direction={direction}
-            height={contentSize.height}
-            estimatedItemWidth={contentSize.width}
-            estimatedItemHeight={contentSize.height}
-            itemCount={1}
-            renderItem={() => {
-              return (
-                <div
-                  key="loopElem"
-                  style={{
-                    width: contentSize.width,
-                    height: contentSize.height,
-                  }}
-                >
-                  {children}
-                </div>
-              );
-            }}
-            visibleRect={visibleRect}
-            onResize={() => pad.setContentSize(playerContentSize)}
-          />
-        </div>
-      </div>
-    );
-  }
+    // if(loop){
+    //   if(activeIndex+1 > pageCount/2){
+    //     player.setFrame()
+    //   }
+    // }
+  };
 
   render() {
     const { loop, children, ...playerProps } = this.props;
-    const { playerExisted } = this.state;
-    let renderChildren = children;
-
-    if (loop && playerExisted) {
-      renderChildren = this._buildLoopContent();
-    }
 
     return (
       <Player ref={this.playerRef} {...playerProps}>
-        {renderChildren}
+        {player => {
+          if (loop) {
+            const pad = player.padRef.current;
+            const { direction } = playerProps;
+
+            const contentSize = pad
+              ? pad.getContentSize()
+              : {
+                  width: playerProps.contentWidth,
+                  height: playerProps.conte,
+                };
+            const visibleRect = pad
+              ? pad.getVisibleRect()
+              : {
+                  x: 0,
+                  y: 0,
+                  width: 0,
+                  height: 0,
+                };
+
+            return (
+              <ListContent
+                direction={direction}
+                height={contentSize.height}
+                estimatedItemWidth={contentSize.width}
+                estimatedItemHeight={contentSize.height}
+                itemCount={2}
+                renderItem={() => {
+                  return (
+                    <div
+                      style={{
+                        position: 'relative',
+                        width: contentSize.width,
+                        height: contentSize.height,
+                      }}
+                    >
+                      {children}
+                    </div>
+                  );
+                }}
+                visibleRect={visibleRect}
+                onResize={size => pad.setContentSize(size)}
+              />
+            );
+          }
+
+          return children;
+        }}
       </Player>
     );
   }
