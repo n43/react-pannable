@@ -73,7 +73,7 @@ export default class ListContentLayout extends React.Component {
                     estimatedItemWidth={itemWidth}
                     estimatedItemHeight={itemHeight}
                     itemCount={20}
-                    renderItem={({ itemIndex, Item, visibleRect }) => {
+                    renderItem={({ itemIndex, Item }) => {
                       let backgroundColor =
                         itemIndex % 2 ? '#defdff' : '#cbf1ff';
 
@@ -96,7 +96,7 @@ export default class ListContentLayout extends React.Component {
                           }}
                         >
                           {body}
-                          <div>{JSON.stringify(visibleRect)}</div>
+                          <div>hi</div>
                         </Item>
                       );
                     }}
