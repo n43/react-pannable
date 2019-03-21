@@ -11,13 +11,27 @@ export function getAdjustedContentOffset(offset, size, cSize, paging, name) {
   if (name) {
     const [x, width] = name === 'y' ? ['y', 'height'] : ['x', 'width'];
 
-    let offsetX = Math.min(size[width] - cSize[width], 0);
-    offsetX = Math.max(offsetX, Math.min(offset[x], 0));
+    if (paging && size[width] === 0) {
+      return 0;
+    }
 
-    if (paging) {
-      if (!size[width]) {
-        offsetX = 0;
-      } else {
+    const minOffsetX = Math.min(size[width] - cSize[width], 0);
+    let offsetX = offset[x];
+
+    if (offsetX < minOffsetX) {
+      offsetX = minOffsetX;
+
+      if (paging) {
+        offsetX = size[width] * Math.ceil(offsetX / size[width]);
+      }
+    } else if (0 < offsetX) {
+      offsetX = 0;
+
+      if (paging) {
+        offsetX = size[width] * Math.floor(offsetX / size[width]);
+      }
+    } else {
+      if (paging) {
         offsetX = size[width] * Math.round(offsetX / size[width]);
       }
     }
@@ -28,32 +42,6 @@ export function getAdjustedContentOffset(offset, size, cSize, paging, name) {
   return {
     x: getAdjustedContentOffset(offset, size, cSize, paging, 'x'),
     y: getAdjustedContentOffset(offset, size, cSize, paging, 'y'),
-  };
-}
-
-export function getAdjustedPagingOffset(offsetEnd, offset, size, cSize, name) {
-  if (name) {
-    const [x, width] = name === 'y' ? ['y', 'height'] : ['x', 'width'];
-
-    let offsetX = Math.min(size[width] - cSize[width], 0);
-    offsetX = Math.max(offsetX, Math.min(offset[x], 0));
-
-    if (!size[width]) {
-      offsetX = 0;
-    } else {
-      offsetX = size[width] * Math.floor(offsetX / size[width]);
-    }
-
-    if (offsetEnd[x] < offsetX + 0.5 * size[width]) {
-      return offsetX;
-    } else {
-      return offsetX + size[width];
-    }
-  }
-
-  return {
-    x: getAdjustedPagingOffset(offsetEnd, offset, size, cSize, 'x'),
-    y: getAdjustedPagingOffset(offsetEnd, offset, size, cSize, 'y'),
   };
 }
 
@@ -114,17 +102,69 @@ export function getDecelerationEndOffset(offset, velocity, acc, name) {
   };
 }
 
+export function getAdjustedDecelerationEndOffset(
+  prevOffset,
+  offset,
+  velocity,
+  size,
+  cSize,
+  acc
+) {
+  const aPrevOffset = getAdjustedContentOffset(prevOffset, size, cSize, false);
+  const aOffset = getAdjustedContentOffset(offset, size, cSize, false);
+
+  if (
+    !(aPrevOffset.x === prevOffset.x && aOffset.x !== offset.x) &&
+    !(aPrevOffset.y === prevOffset.y && aOffset.y !== offset.y)
+  ) {
+    return null;
+  }
+
+  return getDecelerationEndOffset(offset, velocity, acc);
+}
+
+export function getAdjustedContentVelocity(velocity, size, acc, name) {
+  if (name) {
+    const [x, width] = name === 'y' ? ['y', 'height'] : ['x', 'width'];
+
+    if (!velocity[x]) {
+      return 1;
+    }
+
+    const direction = velocity[x] < 0 ? -1 : 1;
+    const maxDist = 0.5 * size[width];
+    const maxVelocity =
+      direction *
+      Math.min(
+        direction * velocity[x],
+        Math.sqrt(2 * maxDist * direction * acc[x])
+      );
+
+    return maxVelocity / velocity[x];
+  }
+
+  if (typeof acc === 'number') {
+    acc = getAcc(acc, velocity);
+  }
+
+  const n = Math.min(
+    getAdjustedContentVelocity(velocity, size, acc, 'x'),
+    getAdjustedContentVelocity(velocity, size, acc, 'y')
+  );
+
+  return { x: n * velocity.x, y: n * velocity.y };
+}
+
 export function calculateDeceleration(
   interval,
   acc,
   velocity,
   offset,
   offsetEnd,
-  size,
   name
 ) {
   if (name) {
-    const [x, width] = name === 'y' ? ['y', 'height'] : ['x', 'width'];
+    const [x] = name === 'y' ? ['y'] : ['x'];
 
     let offsetX = offset[x];
     let velocityX = velocity[x];
@@ -151,17 +191,6 @@ export function calculateDeceleration(
         offsetX +=
           0.5 * (velocity[x] + velocityH) * timeH -
           0.5 * (velocityH + velocityX) * (timeH - interval);
-
-        if (direction * (offsetEnd[x] - offsetX) <= 0) {
-          const direction2 = velocityX < 0 ? -1 : 1;
-
-          velocityX =
-            direction2 *
-            Math.min(
-              Math.abs(velocityX),
-              Math.sqrt(2 * direction * acc[x] * 0.25 * size[width])
-            );
-        }
       }
     } else {
       offsetX += velocityX * interval;
@@ -175,24 +204,8 @@ export function calculateDeceleration(
   }
 
   return {
-    ...calculateDeceleration(
-      interval,
-      acc,
-      velocity,
-      offset,
-      offsetEnd,
-      size,
-      'x'
-    ),
-    ...calculateDeceleration(
-      interval,
-      acc,
-      velocity,
-      offset,
-      offsetEnd,
-      size,
-      'y'
-    ),
+    ...calculateDeceleration(interval, acc, velocity, offset, offsetEnd, 'x'),
+    ...calculateDeceleration(interval, acc, velocity, offset, offsetEnd, 'y'),
   };
 }
 
