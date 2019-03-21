@@ -55,27 +55,29 @@ export default class Carousel extends React.PureComponent {
             const pad = player.padRef.current;
             const { direction } = playerProps;
 
-            const contentSize = pad
-              ? pad.getContentSize()
-              : {
-                  width: playerProps.contentWidth,
-                  height: playerProps.conte,
-                };
-            const visibleRect = pad
-              ? pad.getVisibleRect()
-              : {
-                  x: 0,
-                  y: 0,
-                  width: 0,
-                  height: 0,
-                };
+            let padContentSize = {
+              width:
+                direction === 'x'
+                  ? playerProps.contentWidth * 2
+                  : playerProps.contentWidth,
+              height:
+                direction === 'x'
+                  ? playerProps.contentHeight
+                  : playerProps.contentHeight * 2,
+            };
+            let padVisibleRect = { x: 0, y: 0, width: 0, height: 0 };
+
+            if (pad) {
+              padContentSize = pad.getContentSize();
+              padVisibleRect = pad.getVisibleRect();
+            }
 
             return (
               <ListContent
                 direction={direction}
-                height={contentSize.height}
-                estimatedItemWidth={contentSize.width}
-                estimatedItemHeight={contentSize.height}
+                height={padContentSize.height}
+                estimatedItemWidth={padContentSize.width / 2}
+                estimatedItemHeight={contentSize.height / 2}
                 itemCount={2}
                 renderItem={() => {
                   return (
@@ -90,7 +92,7 @@ export default class Carousel extends React.PureComponent {
                     </div>
                   );
                 }}
-                visibleRect={visibleRect}
+                visibleRect={padVisibleRect}
                 onResize={size => pad.setContentSize(size)}
               />
             );
