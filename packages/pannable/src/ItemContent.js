@@ -13,10 +13,11 @@ export default class ItemContent extends React.PureComponent {
   constructor(props) {
     super(props);
 
+    const { hash, onResize } = props;
     const size = calculateSize(props);
 
     if (size) {
-      props.onResize(size);
+      onResize(size, hash);
     }
     this.state = { size };
 

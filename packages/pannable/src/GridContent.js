@@ -16,14 +16,18 @@ export default class GridContent extends React.PureComponent {
     onResize: () => {},
   };
 
-  state = {
-    size: { width: 0, height: 0 },
-    layoutAttrs: [],
-    count: { row: 0, column: 0 },
-  };
+  constructor(props) {
+    super(props);
 
-  componentDidMount() {
-    this._calculateLayout();
+    const layout = calculateLayout(props);
+
+    props.onResize(layout.size);
+
+    this.state = {
+      size: layout.size,
+      count: layout.count,
+      layoutAttrs: layout.layoutAttrs,
+    };
   }
 
   componentDidUpdate(prevProps) {
@@ -83,31 +87,15 @@ export default class GridContent extends React.PureComponent {
 
   _calculateLayout() {
     this.setState((state, props) => {
-      const {
-        direction,
-        width,
-        height,
-        rowSpacing,
-        columnSpacing,
-        itemCount,
-        itemWidth,
-        itemHeight,
-        onResize,
-      } = props;
-
-      const nextState = calculateLayout(
-        { width: itemWidth, height: itemHeight },
-        itemCount,
-        { row: rowSpacing, column: columnSpacing },
-        { width, height },
-        direction
-      );
+      const nextState = {};
+      const layout = calculateLayout(props);
 
       if (
-        state.size.width !== nextState.size.width ||
-        state.size.height !== nextState.size.height
+        layout.size.width !== state.size.width ||
+        layout.size.height !== state.size.height
       ) {
-        onResize(nextState.size);
+        nextState.size = layout.size;
+        props.onResize(layout.size);
       }
 
       return nextState;
@@ -163,7 +151,12 @@ function calculateItemIndex(index, count, direction) {
   return index[column] + index[row] * count[column];
 }
 
-function calculateLayout(itemSize, itemCount, spacing, size, direction) {
+function calculateLayout(props) {
+  const { direction, itemCount } = props;
+  const size = { width: props.width, height: props.height };
+  const itemSize = { width: props.itemWidth, height: props.itemWidth };
+  const spacing = { row: props.rowSpacing, column: props.columnSpacing };
+
   const [x, y, width, height, row, column] =
     direction === 'x'
       ? ['y', 'x', 'height', 'width', 'column', 'row']
@@ -235,8 +228,8 @@ function calculateLayout(itemSize, itemCount, spacing, size, direction) {
   }
 
   return {
-    count: { [row]: countRow, [column]: countColumn },
     size: { [width]: sizeWidth, [height]: sizeHeight },
+    count: { [row]: countRow, [column]: countColumn },
     layoutAttrs,
   };
 }

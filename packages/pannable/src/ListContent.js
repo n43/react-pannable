@@ -16,15 +16,21 @@ export default class ListContent extends React.PureComponent {
     onResize: () => {},
   };
 
-  state = {
-    size: { width: 0, height: 0 },
-    layoutAttrs: [],
-    itemHashList: [],
-    itemSizeDict: {},
-  };
+  constructor(props) {
+    super(props);
 
-  componentDidMount() {
-    this._calculateLayout();
+    const itemHashList = [];
+    const itemSizeDict = {};
+    const layout = calculateLayout(props, itemHashList, itemSizeDict);
+
+    props.onResize(layout.size);
+
+    this.state = {
+      size: layout.size,
+      layoutAttrs: layout.layoutAttrs,
+      itemHashList,
+      itemSizeDict,
+    };
   }
 
   componentDidUpdate(prevProps) {
@@ -66,24 +72,15 @@ export default class ListContent extends React.PureComponent {
     return attrs.rect;
   }
 
-  _calculateLayout(itemIndex, itemHash, itemSize) {
+  _calculateLayout(changedItem) {
     this.setState((state, props) => {
-      const {
-        direction,
-        width,
-        height,
-        spacing,
-        itemCount,
-        estimatedItemWidth,
-        estimatedItemHeight,
-        onResize,
-      } = props;
       const { itemHashList, itemSizeDict } = state;
-
+      const nextState = {};
       let nextItemHashList = itemHashList;
       let nextItemSizeDict = itemSizeDict;
+      if (changedItem) {
+        const { itemIndex, itemHash, itemSize } = changedItem;
 
-      if (itemIndex !== undefined) {
         if (nextItemHashList[itemIndex] === itemHash) {
           return null;
         }
@@ -93,15 +90,9 @@ export default class ListContent extends React.PureComponent {
         nextItemSizeDict = { ...nextItemSizeDict, [itemHash]: itemSize };
       }
 
-      const nextState = calculateLayout(
-        { width, height },
-        { width: estimatedItemWidth, height: estimatedItemHeight },
-        nextItemHashList,
-        nextItemSizeDict,
-        itemCount,
-        spacing,
-        direction
-      );
+      const layout = calculateLayout(props, nextItemHashList, nextItemSizeDict);
+
+      nextState.layoutAttrs = layout.layoutAttrs;
 
       if (nextItemHashList !== itemHashList) {
         nextState.itemHashList = nextItemHashList;
@@ -109,12 +100,12 @@ export default class ListContent extends React.PureComponent {
       if (nextItemSizeDict !== itemSizeDict) {
         nextState.itemSizeDict = nextItemSizeDict;
       }
-
       if (
-        state.size.width !== nextState.size.width ||
-        state.size.height !== nextState.size.height
+        layout.size.width !== state.size.width ||
+        layout.size.height !== state.size.height
       ) {
-        onResize(nextState.size);
+        nextState.size = layout.size;
+        props.onResize(layout.size);
       }
 
       return nextState;
@@ -146,19 +137,19 @@ export default class ListContent extends React.PureComponent {
 
     const { onResize, ...props } = element.props;
 
-    props.onResize = (size, hash) => {
-      this._calculateLayout(itemIndex, hash, size);
+    props.onResize = (itemSize, itemHash) => {
+      this._calculateLayout({ itemIndex, itemHash, itemSize });
 
-      onResize(size);
+      onResize(itemSize, itemHash);
     };
     props.getSizeByHash = hash => itemSizeDict[hash];
 
     if (direction === 'x') {
-      if (typeof props.height !== 'number') {
+      if (typeof props.height !== 'number' && height) {
         props.height = height;
       }
     } else {
-      if (typeof props.width !== 'number') {
+      if (typeof props.width !== 'number' && width) {
         props.width = width;
       }
     }
@@ -193,15 +184,14 @@ export default class ListContent extends React.PureComponent {
   }
 }
 
-function calculateLayout(
-  size,
-  estimatedItemSize,
-  itemHashList,
-  itemSizeDict,
-  itemCount,
-  spacing,
-  direction
-) {
+function calculateLayout(props, itemHashList, itemSizeDict) {
+  const { direction, spacing, itemCount } = props;
+  const size = { width: props.width, height: props.height };
+  const estimatedItemSize = {
+    width: props.estimatedItemWidth,
+    height: props.estimatedItemHeight,
+  };
+
   const [x, y, width, height] =
     direction === 'x'
       ? ['y', 'x', 'height', 'width']
@@ -218,7 +208,7 @@ function calculateLayout(
 
     const itemHash = itemHashList[itemIndex];
     let itemSize = itemSizeDict[itemHash] || {
-      [width]: size[width],
+      [width]: size[width] || estimatedItemSize[width],
       [height]: estimatedItemSize[height],
     };
 
