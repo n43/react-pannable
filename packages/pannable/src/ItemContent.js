@@ -10,6 +10,10 @@ export default class ItemContent extends React.PureComponent {
     onResize: () => {},
   };
 
+  state = {
+    size: { width: 0, height: 0 },
+  };
+
   resizeRef = React.createRef();
 
   componentDidMount() {
@@ -28,17 +32,25 @@ export default class ItemContent extends React.PureComponent {
   }
 
   _calculateSize() {
-    const { width, height, hash, getSizeByHash, onResize } = this.props;
+    this.setState((state, props) => {
+      const { width, height, hash, getSizeByHash, onResize } = props;
+      const { size } = state;
+      let nextSize;
 
-    let size;
+      if (width >= 0 && height >= 0) {
+        nextSize = { width, height };
+      } else {
+        const resizeNode = this.resizeRef.current;
 
-    if (width < 0 || height < 0) {
-      size = getSizeByHash(hash) || getElementSize(this.resizeRef.current);
-    } else {
-      size = { width, height };
-    }
+        nextSize = getSizeByHash(hash) || getElementSize(resizeNode);
+      }
 
-    onResize(size, hash);
+      if (nextSize.width !== size.width || nextSize.height !== size.height) {
+        onResize(nextSize, hash);
+      }
+
+      return { size: nextSize };
+    });
   }
 
   render() {
@@ -54,8 +66,8 @@ export default class ItemContent extends React.PureComponent {
     } = this.props;
     const elemStyle = {
       position: 'absolute',
-      width: width < 0 ? 'auto' : width,
-      height: height < 0 ? 'auto' : height,
+      width: width >= 0 ? width : 'auto',
+      height: height >= 0 ? height : 'auto',
       ...style,
     };
 

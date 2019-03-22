@@ -34,10 +34,9 @@ export default class Carousel extends React.PureComponent {
   slideNext() {}
 
   _onPlayerFrameChange = activeIndex => {
-    const { loop } = this.props;
-    const player = this.playerRef.current;
-    const pageCount = player.pageCount;
-
+    // const { loop } = this.props;
+    // const player = this.playerRef.current;
+    // const pageCount = player.pageCount;
     // if(loop){
     //   if(activeIndex+1 > pageCount/2){
     //     player.setFrame()
@@ -77,15 +76,15 @@ export default class Carousel extends React.PureComponent {
                 direction={direction}
                 height={padContentSize.height}
                 estimatedItemWidth={padContentSize.width / 2}
-                estimatedItemHeight={contentSize.height / 2}
+                estimatedItemHeight={padContentSize.height / 2}
                 itemCount={2}
                 renderItem={() => {
                   return (
                     <div
                       style={{
                         position: 'relative',
-                        width: contentSize.width,
-                        height: contentSize.height,
+                        width: padContentSize.width,
+                        height: padContentSize.height,
                       }}
                     >
                       {children}

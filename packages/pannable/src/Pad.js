@@ -8,7 +8,6 @@ import {
 import {
   getAdjustedContentOffset,
   getAdjustedBounceOffset,
-  getAdjustedDecelerationEndOffset,
   getAdjustedContentVelocity,
   getDecelerationEndOffset,
   calculateDeceleration,
@@ -56,10 +55,10 @@ export default class Pad extends React.PureComponent {
 
     this.boundingRef = React.createRef();
     this.contentRef = React.createRef();
-    this.setContentSize = this.setContentSize.bind(this);
   }
 
   static getDerivedStateFromProps(props, state) {
+    const { pagingEnabled } = props;
     const {
       prevContentOffset,
       contentOffset,
@@ -79,16 +78,34 @@ export default class Pad extends React.PureComponent {
       let nextDecelerationEndOffset = decelerationEndOffset;
 
       if (nextDecelerating) {
-        let adjustedDecelerationEndOffset = getAdjustedDecelerationEndOffset(
+        const adjustedPrevContentOffset = getAdjustedContentOffset(
           prevContentOffset,
-          contentOffset,
-          contentVelocity,
           size,
           contentSize,
-          DECELERATION_RATE_STRONG
+          false
+        );
+        const adjustedContentOffset = getAdjustedContentOffset(
+          contentOffset,
+          size,
+          contentSize,
+          false
         );
 
-        if (adjustedDecelerationEndOffset) {
+        if (
+          nextDecelerationRate !== DECELERATION_RATE_STRONG &&
+          ((adjustedPrevContentOffset.x === prevContentOffset.x &&
+            adjustedContentOffset.x !== contentOffset.x) ||
+            (adjustedPrevContentOffset.y === prevContentOffset.y &&
+              adjustedContentOffset.y !== contentOffset.y))
+        ) {
+          const adjustedDecelerationEndOffset = getDecelerationEndOffset(
+            contentOffset,
+            contentVelocity,
+            size,
+            pagingEnabled,
+            DECELERATION_RATE_STRONG
+          );
+
           if (
             adjustedDecelerationEndOffset.x !== nextDecelerationEndOffset.x ||
             adjustedDecelerationEndOffset.y !== nextDecelerationEndOffset.y
@@ -104,11 +121,11 @@ export default class Pad extends React.PureComponent {
           contentVelocity.x === 0 &&
           contentVelocity.y === 0
         ) {
-          adjustedDecelerationEndOffset = getAdjustedContentOffset(
+          const adjustedDecelerationEndOffset = getAdjustedContentOffset(
             contentOffset,
             size,
             contentSize,
-            false
+            pagingEnabled
           );
 
           if (
@@ -257,6 +274,7 @@ export default class Pad extends React.PureComponent {
       }
 
       const { contentOffset, size, contentSize, dragging } = state;
+      const { pagingEnabled } = props;
 
       if (dragging) {
         return null;
@@ -266,7 +284,7 @@ export default class Pad extends React.PureComponent {
         offset,
         size,
         contentSize,
-        props.pagingEnabled
+        pagingEnabled
       );
 
       if (!animated) {
@@ -289,6 +307,7 @@ export default class Pad extends React.PureComponent {
   _setStateWithScroll(nextState) {
     this.setState((state, props) => {
       const { dragging, contentOffset, size, contentSize } = state;
+      const { pagingEnabled } = props;
 
       if (dragging) {
         return nextState;
@@ -298,7 +317,7 @@ export default class Pad extends React.PureComponent {
         contentOffset,
         size,
         contentSize,
-        props.pagingEnabled
+        pagingEnabled
       );
 
       if (
@@ -350,8 +369,9 @@ export default class Pad extends React.PureComponent {
   _onDragStart = ({ velocity }) => {
     this.setState((state, props) => {
       const { contentOffset } = state;
+      const { directionalLockEnabled } = props;
 
-      const dragDirection = !props.directionalLockEnabled
+      const dragDirection = !directionalLockEnabled
         ? { x: 1, y: 1 }
         : Math.abs(velocity.x) > Math.abs(velocity.y)
         ? { x: 1, y: 0 }
@@ -406,10 +426,8 @@ export default class Pad extends React.PureComponent {
       const { contentOffset, contentVelocity, size, contentSize } = state;
       const { pagingEnabled } = props;
 
-      const decelerationRate = pagingEnabled
-        ? DECELERATION_RATE_STRONG
-        : DECELERATION_RATE_WEAK;
       let nextContentVelocity = contentVelocity;
+      let decelerationRate = DECELERATION_RATE_STRONG;
 
       const adjustedContentVelocity = getAdjustedContentVelocity(
         nextContentVelocity,
@@ -424,22 +442,29 @@ export default class Pad extends React.PureComponent {
         nextContentVelocity = adjustedContentVelocity;
       }
 
+      if (!pagingEnabled) {
+        const adjustedContentOffset = getAdjustedContentOffset(
+          contentOffset,
+          size,
+          contentSize,
+          false
+        );
+
+        if (
+          adjustedContentOffset.x === contentOffset.x &&
+          adjustedContentOffset.y === contentOffset.y
+        ) {
+          decelerationRate = DECELERATION_RATE_WEAK;
+        }
+      }
+
       let decelerationEndOffset = getDecelerationEndOffset(
         contentOffset,
         nextContentVelocity,
+        size,
+        pagingEnabled,
         decelerationRate
       );
-
-      if (pagingEnabled) {
-        decelerationEndOffset = getAdjustedContentOffset(
-          decelerationEndOffset,
-          size,
-          contentSize,
-          true
-        );
-      }
-
-      console.log('_onDragEnd', decelerationEndOffset);
 
       return {
         contentOffset: { ...contentOffset },
@@ -455,16 +480,14 @@ export default class Pad extends React.PureComponent {
   _onDragCancel = () => {
     this.setState((state, props) => {
       const { contentOffset, size, contentSize, dragStartOffset } = state;
-      let decelerationEndOffset = dragStartOffset;
+      const { pagingEnabled } = props;
 
-      if (props.pagingEnabled) {
-        decelerationEndOffset = getAdjustedContentOffset(
-          decelerationEndOffset,
-          size,
-          contentSize,
-          true
-        );
-      }
+      const decelerationEndOffset = getAdjustedContentOffset(
+        dragStartOffset,
+        size,
+        contentSize,
+        pagingEnabled
+      );
 
       return {
         contentOffset: { ...contentOffset },
@@ -495,6 +518,7 @@ export default class Pad extends React.PureComponent {
       ...boundingProps
     } = this.props;
     const { size, contentSize, contentOffset } = this.state;
+
     const boundingStyles = StyleSheet.create({
       overflow: 'hidden',
       position: 'relative',

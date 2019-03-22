@@ -145,9 +145,13 @@ export default class ListContent extends React.PureComponent {
     props.getSizeByHash = hash => itemSizeDict[hash];
 
     if (direction === 'x') {
-      props.height = height;
+      if (props.height < 0 && height >= 0) {
+        props.height = height;
+      }
     } else {
-      props.width = width;
+      if (props.width < 0 && width >= 0) {
+        props.width = width;
+      }
     }
 
     return (
