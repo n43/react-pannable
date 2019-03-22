@@ -6,6 +6,7 @@ export default class Player extends React.PureComponent {
     direction: 'y',
     autoplayEnabled: true,
     autoplayInterval: 3000,
+    onFrameChange: () => {},
   };
 
   constructor(props) {
@@ -47,14 +48,9 @@ export default class Player extends React.PureComponent {
       contentWidth,
       contentHeight,
       autoplayEnabled,
+      onFrameChange,
     } = this.props;
-    const {
-      pageCount,
-      activeIndex,
-      dragging,
-      decelerating,
-      mouseEntered,
-    } = this.state;
+    const { pageCount, activeIndex, dragging, mouseEntered } = this.state;
 
     if (
       prevProps.direction !== direction ||
@@ -76,25 +72,26 @@ export default class Player extends React.PureComponent {
     if (
       prevProps.autoplayEnabled !== autoplayEnabled ||
       prevState.dragging !== dragging ||
-      prevState.decelerating !== decelerating ||
-      prevState.activeIndex !== activeIndex ||
       prevState.mouseEntered !== mouseEntered
     ) {
-      if (
-        autoplayEnabled &&
-        !dragging &&
-        !mouseEntered &&
-        !decelerating &&
-        pageCount > activeIndex + 1
-      ) {
-        this.play();
+      if (autoplayEnabled && !dragging && !mouseEntered) {
+        if (pageCount > activeIndex + 1) {
+          this.play();
+        }
       } else {
         this.pause();
       }
+    }
 
-      // if (prevState.activeIndex !== activeIndex && onFrameChange) {
-      //   onFrameChange(activeIndex);
-      // }
+    if (prevState.activeIndex !== activeIndex) {
+      if (pageCount <= activeIndex + 1) {
+        this.pause();
+      } else if (prevState.activeIndex + 1 === pageCount) {
+        if (autoplayEnabled && !dragging && !mouseEntered) {
+          this.play();
+        }
+      }
+      onFrameChange({ activeIndex, pageCount });
     }
   }
 
@@ -112,8 +109,12 @@ export default class Player extends React.PureComponent {
 
   play() {
     const { autoplayInterval } = this.props;
+    const { decelerating } = this.state;
+
     if (this._autoplayTimer) {
-      this.forward();
+      if (!decelerating) {
+        this.forward();
+      }
       clearTimeout(this._autoplayTimer);
     }
 
@@ -129,7 +130,7 @@ export default class Player extends React.PureComponent {
     }
   }
 
-  setFrame(index, animated = true) {
+  setFrame({ index, animated = true }) {
     const { direction } = this.props;
     const pad = this.padRef.current;
     const contentOffset = pad.getContentOffset();
@@ -150,12 +151,12 @@ export default class Player extends React.PureComponent {
 
   rewind() {
     const { activeIndex } = this.state;
-    this.setFrame(activeIndex - 1);
+    this.setFrame({ index: activeIndex - 1 });
   }
 
   forward() {
     const { activeIndex } = this.state;
-    this.setFrame(activeIndex + 1);
+    this.setFrame({ index: activeIndex + 1 });
   }
 
   _onPadResize = size => {
@@ -204,8 +205,7 @@ export default class Player extends React.PureComponent {
     const { contentOffset, size, dragging, decelerating } = evt;
     const { direction, onScroll } = this.props;
     const [x, width] = direction === 'x' ? ['x', 'width'] : ['y', 'height'];
-    const activeIndex = Math.abs(Math.floor(contentOffset[x] / size[width]));
-
+    const activeIndex = Math.abs(Math.floor(-contentOffset[x] / size[width]));
     let nextState = { activeIndex };
 
     if (this.state.dragging !== dragging) {
@@ -235,6 +235,7 @@ export default class Player extends React.PureComponent {
       direction,
       autoplayEnabled,
       autoplayInterval,
+      onFrameChange,
       children,
       ...padProps
     } = this.props;
