@@ -6,94 +6,172 @@ export default class Carousel extends React.PureComponent {
   static defaultProps = {
     direction: 'y',
     loop: true,
+    onSlideChange: () => {},
   };
 
   constructor(props) {
     super(props);
 
     this.state = {
-      playerExisted: false,
+      loopContentSize: { width: 0, height: 0 },
     };
     this.playerRef = React.createRef();
   }
 
-  componentDidMount() {
-    if (this.playerRef) {
-      this.setState({ playerExisted: true });
+  componentDidMount() {}
+
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.loopContentSize !== this.state.loopContentSize) {
+      const player = this.playerRef.current;
+      const activeIndex = player.getActiveIndex();
+      const pageCount = player.getPageCount();
+      this._alternateFramesForLoop({ activeIndex, pageCount });
     }
   }
 
-  componentDidUpdate(prevProps, prevState) {}
-
-  componentWillUnmount() {}
-
-  slideTo(index) {}
-
-  slidePrev() {}
-
-  slideNext() {}
-
-  _onPlayerFrameChange = activeIndex => {
+  getActiveIndex() {
     const { loop } = this.props;
     const player = this.playerRef.current;
-    const pageCount = player.pageCount;
+    const activeIndex = player.getActiveIndex();
+    const pageCount = player.getPageCount();
 
-    // if(loop){
-    //   if(activeIndex+1 > pageCount/2){
-    //     player.setFrame()
-    //   }
-    // }
+    if (loop) {
+      return this._calculateActiveSlideForLoop({ activeIndex, pageCount });
+    }
+
+    return activeIndex;
+  }
+
+  slideTo({ index, animated = true }) {
+    const player = this.playerRef.current;
+    const pageCount = player.getPageCount();
+
+    if (index < pageCount / 2 - 1 || index > pageCount - 2) {
+      let m = index > pageCount - 2 ? -1 : 1;
+      index = index + (pageCount / 2) * m;
+    }
+
+    player.setFrame({ index, animated });
+  }
+
+  slidePrev() {
+    const player = this.playerRef.current;
+    player.rewind();
+  }
+
+  slideNext() {
+    const player = this.playerRef.current;
+    player.forward();
+  }
+
+  _onSlideChange = ({ activeIndex, pageCount }) => {
+    const { loop, onSlideChange } = this.props;
+    let activeSlide = activeIndex;
+
+    if (loop) {
+      activeSlide = this._calculateActiveSlideForLoop({
+        activeIndex,
+        pageCount,
+      });
+      this._alternateFramesForLoop({ activeIndex, pageCount });
+    }
+
+    onSlideChange({ activeIndex: activeSlide, pageCount });
   };
 
+  _calculateActiveSlideForLoop({ activeIndex, pageCount }) {
+    if (activeIndex < pageCount / 2) {
+      return activeIndex;
+    }
+
+    return activeIndex - pageCount / 2;
+  }
+
+  _alternateFramesForLoop({ activeIndex, pageCount }) {
+    const player = this.playerRef.current;
+
+    if (activeIndex < pageCount / 2 - 1 || activeIndex > pageCount - 2) {
+      let m = activeIndex > pageCount - 2 ? -1 : 1;
+      const nextFrame = activeIndex + (pageCount / 2) * m;
+      player.setFrame({ index: nextFrame, animated: false });
+    }
+  }
+
   render() {
-    const { loop, children, ...playerProps } = this.props;
+    const { loop, children, onSlideChange, ...playerProps } = this.props;
+    const { loopContentSize } = this.state;
 
     return (
-      <Player ref={this.playerRef} {...playerProps}>
+      <Player
+        ref={this.playerRef}
+        {...playerProps}
+        onFrameChange={this._onSlideChange}
+      >
         {player => {
           if (loop) {
             const pad = player.padRef.current;
             const { direction } = playerProps;
 
             let padContentSize = {
-              width:
-                direction === 'x'
-                  ? playerProps.contentWidth * 2
-                  : playerProps.contentWidth,
-              height:
-                direction === 'x'
-                  ? playerProps.contentHeight
-                  : playerProps.contentHeight * 2,
+              width: playerProps.contentWidth,
+              height: playerProps.contentHeight,
             };
-            let padVisibleRect = { x: 0, y: 0, width: 0, height: 0 };
+            let visibleRect = { x: 0, y: 0, width: 0, height: 0 };
+            let itemWidth, itemHeight;
 
             if (pad) {
               padContentSize = pad.getContentSize();
-              padVisibleRect = pad.getVisibleRect();
+              visibleRect = pad.getVisibleRect();
+            }
+
+            const {
+              width: calculatedWidth,
+              height: calculatedHeight,
+            } = loopContentSize;
+            const {
+              width: contentWidth,
+              height: contentHeight,
+            } = padContentSize;
+
+            if (direction === 'x') {
+              itemWidth =
+                calculatedWidth === contentWidth
+                  ? contentWidth / 2
+                  : contentWidth;
+              itemHeight = contentHeight;
+            } else {
+              itemWidth = contentWidth;
+              itemHeight =
+                calculatedHeight === contentHeight
+                  ? contentHeight / 2
+                  : contentHeight;
             }
 
             return (
               <ListContent
                 direction={direction}
                 height={padContentSize.height}
-                estimatedItemWidth={padContentSize.width / 2}
-                estimatedItemHeight={contentSize.height / 2}
+                estimatedItemWidth={itemWidth}
+                estimatedItemHeight={itemHeight}
                 itemCount={2}
                 renderItem={() => {
                   return (
                     <div
                       style={{
                         position: 'relative',
-                        width: contentSize.width,
-                        height: contentSize.height,
+                        width: itemWidth,
+                        height: itemHeight,
                       }}
                     >
                       {children}
                     </div>
                   );
                 }}
-                visibleRect={padVisibleRect}
-                onResize={size => pad.setContentSize(size)}
+                visibleRect={visibleRect}
+                onResize={size => {
+                  pad.setContentSize(size);
+                  this.setState({ loopContentSize: size });
+                }}
               />
             );
           }
