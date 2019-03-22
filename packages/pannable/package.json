@@ -1,6 +1,6 @@
 {
   "name": "react-pannable",
-  "version": "0.6.3",
+  "version": "0.7.0",
   "description": "Simulate pan gesture and scroll view for touch devices with React",
   "keywords": [
     "react",

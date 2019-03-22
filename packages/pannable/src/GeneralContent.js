@@ -9,6 +9,10 @@ export default class GeneralContent extends React.PureComponent {
     onResize: () => {},
   };
 
+  state = {
+    size: { width: 0, height: 0 },
+  };
+
   resizeRef = React.createRef();
 
   componentDidMount() {
@@ -31,34 +35,37 @@ export default class GeneralContent extends React.PureComponent {
   }
 
   _calculateSize() {
-    const { width, height, onResize } = this.props;
-    let size;
+    this.setState((state, props) => {
+      const { width, height, onResize } = props;
+      const { size } = state;
+      let nextSize;
 
-    if (width < 0 || height < 0) {
-      if (!this._resizeNode) {
-        const resizeNode = this.resizeRef.current;
-
-        if (!resizeNode) {
-          return;
+      if (width >= 0 && height >= 0) {
+        if (this._resizeNode) {
+          resizeDetector.uninstall(this._resizeNode);
+          this._resizeNode = undefined;
         }
 
-        this._resizeNode = resizeNode;
-        resizeDetector.listenTo(resizeNode, () => this._calculateSize());
+        nextSize = { width, height };
+      } else {
+        if (!this._resizeNode) {
+          const resizeNode = this.resizeRef.current;
 
-        return;
+          this._resizeNode = resizeNode;
+          resizeDetector.listenTo(resizeNode, () => this._calculateSize());
+
+          return null;
+        }
+
+        nextSize = getElementSize(this._resizeNode);
       }
 
-      size = getElementSize(this._resizeNode);
-    } else {
-      if (this._resizeNode) {
-        resizeDetector.uninstall(this._resizeNode);
-        this._resizeNode = undefined;
+      if (nextSize.width !== size.width || nextSize.height !== size.height) {
+        onResize(nextSize);
       }
 
-      size = { width, height };
-    }
-
-    onResize(size);
+      return { size: nextSize };
+    });
   }
 
   render() {
