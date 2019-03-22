@@ -163,8 +163,12 @@ export default class Player extends React.PureComponent {
     const { direction, onResize } = this.props;
     const { pageCount } = this.state;
     const pad = this.padRef.current;
-    const contentSize = pad.getContentSize();
 
+    if (!pad) {
+      return;
+    }
+
+    const contentSize = pad.getContentSize();
     const nextPageCount = calculatePageCount({
       direction,
       size,
@@ -184,8 +188,12 @@ export default class Player extends React.PureComponent {
     const { direction, onContentResize } = this.props;
     const { pageCount } = this.state;
     const pad = this.padRef.current;
-    const size = pad.getSize();
 
+    if (!pad) {
+      return;
+    }
+
+    const size = pad.getSize();
     const nextPageCount = calculatePageCount({
       direction,
       size,

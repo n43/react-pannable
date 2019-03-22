@@ -11,7 +11,7 @@ class BasicCarousel extends Component {
     this.state = {
       direction: 'x',
     };
-    this.playerRef = React.createRef();
+    this.carouselRef = React.createRef();
   }
   handleInputChange = evt => {
     const node = evt.target;
@@ -19,6 +19,12 @@ class BasicCarousel extends Component {
     this.setState({
       [node.name]: node.value,
     });
+  };
+  handleSlidePrev = () => {
+    this.carouselRef.current.slidePrev();
+  };
+  handleSlideNext = () => {
+    this.carouselRef.current.slideNext();
   };
 
   renderContent() {
@@ -62,7 +68,7 @@ class BasicCarousel extends Component {
     return (
       <div className="carousel-main">
         <Carousel
-          ref={this.playerRef}
+          ref={this.carouselRef}
           width={750}
           height={300}
           contentWidth={direction === 'x' ? 750 * 6 : 750}
@@ -73,6 +79,8 @@ class BasicCarousel extends Component {
           {this.renderContent()}
         </Carousel>
         <div className="carousel-optbar">
+          <button onClick={this.handleSlidePrev}>prev</button>
+          <button onClick={this.handleSlideNext}>next</button>
           {/* <RadioField
             name="direction"
             options={directionOptions}
