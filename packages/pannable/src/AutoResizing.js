@@ -4,26 +4,39 @@ import resizeDetector from './utils/resizeDetector';
 
 export default class AutoResizing extends React.Component {
   static defaultProps = {
-    children: () => null,
-    width: -1,
-    height: -1,
+    width: null,
+    height: null,
+    onResize: () => {},
   };
 
-  state = {
-    size: { width: 0, height: 0 },
-  };
+  constructor(props) {
+    super(props);
 
-  resizeRef = React.createRef();
+    const { width, height, onResize } = props;
+    let size = null;
+
+    if (typeof width === 'number' && typeof height === 'number') {
+      size = { width, height };
+    }
+
+    if (size) {
+      onResize(size);
+    }
+    this.state = { size };
+
+    this.resizeRef = React.createRef();
+  }
 
   componentDidMount() {
-    this._calculateSize();
+    if (!this.state.size) {
+      this._calculateSize();
+    }
   }
 
   componentDidUpdate(prevProps) {
-    if (
-      prevProps.width !== this.props.width ||
-      prevProps.height !== this.props.height
-    ) {
+    const { width, height } = this.props;
+
+    if (prevProps.width !== width || prevProps.height !== height) {
       this._calculateSize();
     }
   }
@@ -36,44 +49,56 @@ export default class AutoResizing extends React.Component {
   }
 
   _calculateSize() {
-    const { width, height } = this.props;
-    let size;
+    this.setState((state, props) => {
+      const { width, height, onResize } = props;
+      const { size } = state;
+      let nextSize;
 
-    if (width < 0 || height < 0) {
-      if (!this._resizeNode) {
-        const resizeNode = this.resizeRef.current;
-        if (!resizeNode) {
-          return;
+      if (typeof width === 'number' && typeof height === 'number') {
+        if (this._resizeNode) {
+          resizeDetector.uninstall(this._resizeNode);
+          this._resizeNode = undefined;
         }
 
-        this._resizeNode = resizeNode;
-        resizeDetector.listenTo(resizeNode, () => this._calculateSize());
+        nextSize = { width, height };
+      } else {
+        if (!this._resizeNode) {
+          const resizeNode = this.resizeRef.current;
 
-        return;
+          this._resizeNode = resizeNode;
+          resizeDetector.listenTo(resizeNode, () => this._calculateSize());
+
+          return null;
+        }
+
+        nextSize = getElementSize(this._resizeNode);
       }
-      size = getElementSize(this._resizeNode);
-    } else {
-      if (this._resizeNode) {
-        resizeDetector.uninstall(this._resizeNode);
-        this._resizeNode = undefined;
+
+      if (
+        size &&
+        nextSize.width === size.width &&
+        nextSize.height === size.height
+      ) {
+        return null;
       }
 
-      size = { width, height };
-    }
-
-    this.setState({ size });
+      onResize(nextSize);
+      return { size: nextSize };
+    });
   }
 
   render() {
-    const { width, height, children } = this.props;
-    const style = {
-      width: width < 0 ? '100%' : width,
-      height: height < 0 ? '100%' : height,
+    const { width, height, onResize, style, children, ...props } = this.props;
+    const { size } = this.state;
+    const elemStyle = {
+      width: typeof width === 'number' ? width : '100%',
+      height: typeof height === 'number' ? height : '100%',
+      ...style,
     };
 
     return (
-      <div ref={this.resizeRef} style={style}>
-        {children(this.state.size)}
+      <div {...props} ref={this.resizeRef} style={elemStyle}>
+        {typeof children === 'function' ? size && children(size) : children}
       </div>
     );
   }

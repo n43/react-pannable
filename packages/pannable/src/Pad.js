@@ -37,14 +37,26 @@ export default class Pad extends React.PureComponent {
   constructor(props) {
     super(props);
 
-    const { width, height, contentWidth, contentHeight } = props;
+    const {
+      width,
+      height,
+      contentWidth,
+      contentHeight,
+      onResize,
+      onContentResize,
+    } = props;
+    const size = { width, height };
+    const contentSize = { width: contentWidth, height: contentHeight };
+
+    onResize(size);
+    onContentResize(contentSize);
 
     this.state = {
       prevContentOffset: null,
       contentOffset: { x: 0, y: 0 },
       contentVelocity: { x: 0, y: 0 },
-      size: { width, height },
-      contentSize: { width: contentWidth, height: contentHeight },
+      size,
+      contentSize,
       dragging: false,
       dragStartOffset: null,
       dragDirection: null,

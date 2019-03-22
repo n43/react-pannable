@@ -8,26 +8,22 @@ export default class SectionContent extends React.PureComponent {
     renderFooter: () => null,
   };
 
-  listRef = React.createRef();
-
   state = {
     listVisibleRect: { x: 0, y: 0, width: 0, height: 0 },
   };
+
+  listRef = React.createRef();
 
   _onListResize(size) {
     this.setState({
       listVisibleRect: { x: 0, y: 0, ...size },
     });
+
+    this.props.onResize(size);
   }
 
   render() {
-    const {
-      renderHeader,
-      renderBody,
-      renderFooter,
-      visibleRect,
-      ...props
-    } = this.props;
+    const { renderHeader, renderBody, renderFooter, ...props } = this.props;
     const { listVisibleRect } = this.state;
 
     return (
@@ -36,13 +32,13 @@ export default class SectionContent extends React.PureComponent {
         ref={this.listRef}
         visibleRect={listVisibleRect}
         itemCount={3}
-        renderItem={({ itemIndex, rect, Item }) => {
+        renderItem={({ itemIndex, rect, visibleRect, Item }) => {
           if (itemIndex === 0) {
-            return renderHeader({ rect, Item });
+            return renderHeader({ rect, Item, visibleRect });
           } else if (itemIndex === 1) {
-            return renderBody({ rect, Item });
+            return renderBody({ rect, Item, visibleRect });
           } else if (itemIndex === 2) {
-            return renderFooter({ rect, Item });
+            return renderFooter({ rect, Item, visibleRect });
           }
         }}
         onResize={this._onListResize}

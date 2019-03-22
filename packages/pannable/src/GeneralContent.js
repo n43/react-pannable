@@ -4,19 +4,33 @@ import resizeDetector from './utils/resizeDetector';
 
 export default class GeneralContent extends React.PureComponent {
   static defaultProps = {
-    width: -1,
-    height: -1,
+    width: null,
+    height: null,
     onResize: () => {},
   };
 
-  state = {
-    size: { width: 0, height: 0 },
-  };
+  constructor(props) {
+    super(props);
 
-  resizeRef = React.createRef();
+    const { width, height, onResize } = props;
+    let size = null;
+
+    if (typeof width === 'number' && typeof height === 'number') {
+      size = { width, height };
+    }
+
+    if (size) {
+      onResize(size);
+    }
+    this.state = { size };
+
+    this.resizeRef = React.createRef();
+  }
 
   componentDidMount() {
-    this._calculateSize();
+    if (!this.state.size) {
+      this._calculateSize();
+    }
   }
 
   componentDidUpdate(prevProps) {
@@ -40,7 +54,7 @@ export default class GeneralContent extends React.PureComponent {
       const { size } = state;
       let nextSize;
 
-      if (width >= 0 && height >= 0) {
+      if (typeof width === 'number' && typeof height === 'number') {
         if (this._resizeNode) {
           resizeDetector.uninstall(this._resizeNode);
           this._resizeNode = undefined;
@@ -60,10 +74,15 @@ export default class GeneralContent extends React.PureComponent {
         nextSize = getElementSize(this._resizeNode);
       }
 
-      if (nextSize.width !== size.width || nextSize.height !== size.height) {
-        onResize(nextSize);
+      if (
+        size &&
+        nextSize.width === size.width &&
+        nextSize.height === size.height
+      ) {
+        return null;
       }
 
+      onResize(nextSize);
       return { size: nextSize };
     });
   }
@@ -72,8 +91,8 @@ export default class GeneralContent extends React.PureComponent {
     const { width, height, onResize, style, children, ...props } = this.props;
     const elemStyle = {
       position: 'absolute',
-      width: width < 0 ? 'auto' : width,
-      height: height < 0 ? 'auto' : height,
+      width: typeof width === 'number' ? width : 'auto',
+      height: typeof height === 'number' ? height : 'auto',
       ...style,
     };
 

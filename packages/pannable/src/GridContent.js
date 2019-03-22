@@ -4,8 +4,8 @@ import { getItemVisibleRect, needsRender } from './utils/visible';
 export default class GridContent extends React.PureComponent {
   static defaultProps = {
     direction: 'y',
-    width: -1,
-    height: -1,
+    width: 0,
+    height: 0,
     rowSpacing: 0,
     columnSpacing: 0,
     itemCount: 0,
@@ -114,13 +114,13 @@ export default class GridContent extends React.PureComponent {
     });
   }
 
-  _renderItem(attrs, visibleRect) {
+  _renderItem(itemIndex, attrs, visibleRect) {
     const { renderItem } = this.props;
-    const element = renderItem({ ...attrs, visibleRect });
+    const element = renderItem({ ...attrs, itemIndex, visibleRect });
 
     const Item = element.type;
     const { style, ...props } = element.props;
-    const key = element.key || attrs.itemIndex;
+    const key = element.key || itemIndex;
     const itemStyle = {
       position: 'absolute',
       left: attrs.rect.x,
@@ -143,7 +143,11 @@ export default class GridContent extends React.PureComponent {
 
       if (attrs && needsRender(attrs.rect, visibleRect)) {
         items.push(
-          this._renderItem(attrs, getItemVisibleRect(attrs.rect, visibleRect))
+          this._renderItem(
+            itemIndex,
+            attrs,
+            getItemVisibleRect(attrs.rect, visibleRect)
+          )
         );
       }
     }
@@ -171,13 +175,13 @@ function calculateLayout(itemSize, itemCount, spacing, size, direction) {
   let countColumn = 0;
   const layoutAttrs = [];
 
-  if (sizeWidth < 0) {
+  if (sizeWidth <= 0) {
+    countColumn = itemCount;
     sizeWidth = itemCount * itemSize[width];
 
     if (itemCount > 1) {
       sizeWidth += (itemCount - 1) * spacing[column];
     }
-    countColumn = itemCount;
   } else {
     if (itemSize[width] === 0 && spacing[column] === 0) {
       countColumn = itemCount;
@@ -211,19 +215,20 @@ function calculateLayout(itemSize, itemCount, spacing, size, direction) {
         );
       }
 
-      if (itemIndex < itemCount) {
-        layoutAttrs.push({
-          rect: {
-            [x]: attrX,
-            [y]: sizeHeight,
-            [width]: itemSize[width],
-            [height]: itemSize[height],
-          },
-          [row + 'Index']: rowIndex,
-          [column + 'Index']: columnIndex,
-          itemIndex,
-        });
+      if (itemIndex >= itemCount) {
+        break;
       }
+
+      layoutAttrs.push({
+        rect: {
+          [x]: attrX,
+          [y]: sizeHeight,
+          [width]: itemSize[width],
+          [height]: itemSize[height],
+        },
+        [row + 'Index']: rowIndex,
+        [column + 'Index']: columnIndex,
+      });
     }
 
     sizeHeight += itemSize[height];

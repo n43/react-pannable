@@ -5,8 +5,8 @@ import ItemContent from './ItemContent';
 export default class ListContent extends React.PureComponent {
   static defaultProps = {
     direction: 'y',
-    width: -1,
-    height: -1,
+    width: 0,
+    height: 0,
     spacing: 0,
     itemCount: 0,
     estimatedItemWidth: 0,
@@ -70,6 +70,8 @@ export default class ListContent extends React.PureComponent {
     this.setState((state, props) => {
       const {
         direction,
+        width,
+        height,
         spacing,
         itemCount,
         estimatedItemWidth,
@@ -77,6 +79,7 @@ export default class ListContent extends React.PureComponent {
         onResize,
       } = props;
       const { itemHashList, itemSizeDict } = state;
+
       let nextItemHashList = itemHashList;
       let nextItemSizeDict = itemSizeDict;
 
@@ -91,6 +94,7 @@ export default class ListContent extends React.PureComponent {
       }
 
       const nextState = calculateLayout(
+        { width, height },
         { width: estimatedItemWidth, height: estimatedItemHeight },
         nextItemHashList,
         nextItemSizeDict,
@@ -117,12 +121,17 @@ export default class ListContent extends React.PureComponent {
     });
   }
 
-  _renderItem(attrs, visibleRect) {
+  _renderItem(itemIndex, attrs, visibleRect) {
     const { direction, width, height, renderItem } = this.props;
     const { itemSizeDict } = this.state;
 
-    let element = renderItem({ ...attrs, visibleRect, Item: ItemContent });
-    const key = element.key || attrs.itemIndex;
+    let element = renderItem({
+      ...attrs,
+      itemIndex,
+      visibleRect,
+      Item: ItemContent,
+    });
+    const key = element.key || itemIndex;
     const itemStyle = {
       position: 'absolute',
       left: attrs.rect.x,
@@ -138,18 +147,18 @@ export default class ListContent extends React.PureComponent {
     const { onResize, ...props } = element.props;
 
     props.onResize = (size, hash) => {
-      this._calculateLayout(attrs.itemIndex, hash, size);
+      this._calculateLayout(itemIndex, hash, size);
 
       onResize(size);
     };
     props.getSizeByHash = hash => itemSizeDict[hash];
 
     if (direction === 'x') {
-      if (props.height < 0 && height >= 0) {
+      if (typeof props.height !== 'number') {
         props.height = height;
       }
     } else {
-      if (props.width < 0 && width >= 0) {
+      if (typeof props.width !== 'number') {
         props.width = width;
       }
     }
@@ -171,7 +180,11 @@ export default class ListContent extends React.PureComponent {
 
       if (attrs && needsRender(attrs.rect, visibleRect)) {
         items.push(
-          this._renderItem(attrs, getItemVisibleRect(attrs.rect, visibleRect))
+          this._renderItem(
+            itemIndex,
+            attrs,
+            getItemVisibleRect(attrs.rect, visibleRect)
+          )
         );
       }
     }
@@ -181,6 +194,7 @@ export default class ListContent extends React.PureComponent {
 }
 
 function calculateLayout(
+  size,
   estimatedItemSize,
   itemHashList,
   itemSizeDict,
@@ -203,7 +217,10 @@ function calculateLayout(
     }
 
     const itemHash = itemHashList[itemIndex];
-    let itemSize = itemSizeDict[itemHash] || estimatedItemSize;
+    let itemSize = itemSizeDict[itemHash] || {
+      [width]: size[width],
+      [height]: estimatedItemSize[height],
+    };
 
     layoutAttrs.push({
       rect: {
@@ -212,7 +229,6 @@ function calculateLayout(
         [width]: itemSize[width],
         [height]: itemSize[height],
       },
-      itemIndex,
     });
 
     sizeHeight += itemSize[height];

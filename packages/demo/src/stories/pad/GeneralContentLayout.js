@@ -19,22 +19,17 @@ const images = [
 
 class GeneralContentLayout extends Component {
   state = {
-    contentFixedWidth: 346,
-    contentFixedHeight: -1,
+    contentFixedWidth: '346',
+    contentFixedHeight: '',
     imagesCount: 5,
-    imageWidth: 346,
+    imageWidth: '346',
   };
 
   handleInputChange = evt => {
     const node = evt.target;
-    const value = parseInt(node.value, 10);
-
-    if (isNaN(value)) {
-      return;
-    }
 
     this.setState({
-      [node.name]: value,
+      [node.name]: node.value,
     });
   };
 
@@ -60,9 +55,7 @@ class GeneralContentLayout extends Component {
     for (let idx = 0; idx < Math.max(0, imagesCount); idx++) {
       const imgStyle = { display: 'block' };
 
-      if (imageWidth > 0) {
-        imgStyle.width = imageWidth;
-      }
+      imgStyle.width = +imageWidth || 0;
 
       elements.push(
         <img key={idx} src={images[idx % images.length]} style={imgStyle} />
@@ -100,11 +93,18 @@ class GeneralContentLayout extends Component {
           <div className="pad-preview">
             <SvgPhone className="pad-preview-bg" />
             <div className="pad-preview-content">
-              <Pad className="autoadjust-pad" width={346} height={552}>
+              <Pad
+                className="autoadjust-pad"
+                width={346}
+                height={552}
+                alwaysBounceX={false}
+              >
                 {pad => (
                   <GeneralContent
-                    width={contentFixedWidth}
-                    height={contentFixedHeight}
+                    width={contentFixedWidth ? +contentFixedWidth || 0 : null}
+                    height={
+                      contentFixedHeight ? +contentFixedHeight || 0 : null
+                    }
                     onResize={size => pad.setContentSize(size)}
                   >
                     {this.renderArticle()}

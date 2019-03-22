@@ -7,20 +7,16 @@ import './AutoResizingPad.css';
 
 class AutoResizingPad extends Component {
   state = {
-    headerHeight: 50,
-    padWidth: -1,
-    padHeight: -1,
+    headerHeight: '50',
+    padWidth: '',
+    padHeight: '',
   };
 
   handleInputChange = evt => {
     const node = evt.target;
-    const value = parseInt(node.value, 10);
-    if (isNaN(value)) {
-      return;
-    }
 
     this.setState({
-      [node.name]: value,
+      [node.name]: node.value,
     });
   };
 
@@ -66,12 +62,15 @@ class AutoResizingPad extends Component {
               <div className="autoresize-wrapper">
                 <div
                   className="autoresize-header"
-                  style={{ height: headerHeight }}
+                  style={{ height: +headerHeight || 0 }}
                 >
                   Header
                 </div>
                 <div className="autoresize-main">
-                  <AutoResizing width={padWidth} height={padHeight}>
+                  <AutoResizing
+                    width={padWidth ? +padWidth || 0 : null}
+                    height={padHeight ? +padHeight || 0 : null}
+                  >
                     {({ width, height }) => (
                       <Pad
                         className="autoadjust-pad"
