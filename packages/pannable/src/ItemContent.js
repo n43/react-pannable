@@ -95,7 +95,7 @@ function calculateLayout(props) {
   const { width, height, hash, getSizeByHash } = props;
 
   if (typeof width === 'number' && typeof height === 'number') {
-    return { hash: [width, height].join(','), size: { width, height } };
+    return { hash: 'size:' + width + ',' + height, size: { width, height } };
   }
 
   return { hash, size: getSizeByHash(hash) || null };
