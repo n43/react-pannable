@@ -3,9 +3,9 @@ import { getElementSize } from './utils/sizeGetter';
 
 export default class ItemContent extends React.PureComponent {
   static defaultProps = {
-    width: 'auto',
-    height: 'auto',
-    hash: 'Item',
+    width: null,
+    height: null,
+    hash: '',
     getSizeByHash: () => null,
     onResize: () => {},
   };
@@ -13,20 +13,19 @@ export default class ItemContent extends React.PureComponent {
   constructor(props) {
     super(props);
 
-    const { hash, onResize } = props;
-    const size = calculateSize(props);
+    const layout = calculateLayout(props);
 
-    if (size) {
-      onResize(size, hash);
+    if (layout.size) {
+      props.onResize(layout.size, layout.hash);
     }
-    this.state = { size };
+    this.state = { size: layout.size };
 
     this.resizeRef = React.createRef();
   }
 
   componentDidMount() {
     if (!this.state.size) {
-      this._calculateSize();
+      this._calculateLayout();
     }
   }
 
@@ -38,31 +37,31 @@ export default class ItemContent extends React.PureComponent {
       prevProps.height !== height ||
       prevProps.hash !== hash
     ) {
-      this._calculateSize();
+      this._calculateLayout();
     }
   }
 
-  _calculateSize() {
+  _calculateLayout() {
     this.setState((state, props) => {
-      const { hash, onResize } = props;
+      const { onResize } = props;
       const { size } = state;
-      let nextSize = calculateSize(props);
+      const layout = calculateLayout(props);
 
-      if (!nextSize) {
+      if (!layout.size) {
         const resizeNode = this.resizeRef.current;
-        nextSize = getElementSize(resizeNode);
+        layout.size = getElementSize(resizeNode);
       }
 
       if (
         size &&
-        nextSize.width === size.width &&
-        nextSize.height === size.height
+        layout.size.width === size.width &&
+        layout.size.height === size.height
       ) {
         return null;
       }
 
-      onResize(nextSize, hash);
-      return { size: nextSize };
+      onResize(layout.size, layout.hash);
+      return { size: layout.size };
     });
   }
 
@@ -92,12 +91,12 @@ export default class ItemContent extends React.PureComponent {
   }
 }
 
-function calculateSize(props) {
+function calculateLayout(props) {
   const { width, height, hash, getSizeByHash } = props;
 
   if (typeof width === 'number' && typeof height === 'number') {
-    return { width, height };
+    return { hash: [width, height].join(','), size: { width, height } };
   }
 
-  return getSizeByHash(hash) || null;
+  return { hash, size: getSizeByHash(hash) || null };
 }

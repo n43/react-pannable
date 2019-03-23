@@ -132,10 +132,14 @@ export default class ListContent extends React.PureComponent {
     };
 
     if (element.type !== ItemContent) {
-      element = <ItemContent hash={key}>{element}</ItemContent>;
+      element = <ItemContent>{element}</ItemContent>;
     }
 
     const { onResize, ...props } = element.props;
+
+    if (props.hash === '') {
+      props.hash = key;
+    }
 
     props.onResize = (itemSize, itemHash) => {
       this._calculateLayout({ itemIndex, itemHash, itemSize });
