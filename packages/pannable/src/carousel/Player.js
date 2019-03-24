@@ -50,7 +50,12 @@ export default class Player extends React.PureComponent {
       autoplayEnabled,
       onFrameChange,
     } = this.props;
-    const { pageCount, activeIndex, dragging, mouseEntered } = this.state;
+    const {
+      pageCount,
+      activeIndex,
+      dragging,
+      mouseEntered,
+    } = this.state;
 
     if (
       prevProps.direction !== direction ||
@@ -72,16 +77,24 @@ export default class Player extends React.PureComponent {
     if (
       prevProps.autoplayEnabled !== autoplayEnabled ||
       prevState.dragging !== dragging ||
-      prevState.mouseEntered !== mouseEntered
+      prevState.mouseEntered !== mouseEntered ||
     ) {
       if (autoplayEnabled && !dragging && !mouseEntered) {
         if (pageCount > activeIndex + 1) {
           this.play();
-        }
+        } 
       } else {
         this.pause();
       }
     }
+
+    // if (prevState.decelerating !== decelerating) {
+    //   if (decelerating) {
+    //     console.log('pause');
+    //   } else {
+    //     console.log('play');
+    //   }
+    // }
 
     if (prevState.activeIndex !== activeIndex) {
       if (pageCount <= activeIndex + 1) {
@@ -109,12 +122,9 @@ export default class Player extends React.PureComponent {
 
   play() {
     const { autoplayInterval } = this.props;
-    const { decelerating } = this.state;
 
     if (this._autoplayTimer) {
-      if (!decelerating) {
-        this.forward();
-      }
+      this.forward();
       clearTimeout(this._autoplayTimer);
     }
 

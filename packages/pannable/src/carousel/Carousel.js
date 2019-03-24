@@ -169,7 +169,7 @@ export default class Carousel extends React.PureComponent {
                 }}
                 visibleRect={visibleRect}
                 onResize={size => {
-                  pad.setContentSize(size);
+                  // pad.setContentSize(size);
                   this.setState({ loopContentSize: size });
                 }}
               />
