@@ -150,10 +150,8 @@ type LayoutAttrs = {
   itemIndex: number,
   rowIndex: number,
   columnIndex: number,
-  x: number,
-  y: number,
-  width: number,
-  height: number,
+  rect: Rect,
+  visibleRect: Rect,
 };
 ```
 
@@ -188,10 +186,8 @@ type Size = { width: number, height: number };
 type Rect = { x: number, y: number, width: number, height: number };
 type LayoutAttrs = {
   itemIndex: number,
-  x: number,
-  y: number,
-  width: number,
-  height: number,
+  rect: Rect,
+  visibleRect: Rect,
   Item: ItemContent,
 };
 ```

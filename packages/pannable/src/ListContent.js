@@ -27,7 +27,7 @@ export default class ListContent extends React.PureComponent {
 
     this.state = {
       size: layout.size,
-      layoutAttrs: layout.layoutAttrs,
+      layoutList: layout.layoutList,
       itemHashList,
       itemSizeDict,
     };
@@ -62,8 +62,8 @@ export default class ListContent extends React.PureComponent {
   }
 
   getItemRect({ itemIndex }) {
-    const { layoutAttrs } = this.state;
-    const attrs = layoutAttrs[itemIndex];
+    const { layoutList } = this.state;
+    const attrs = layoutList[itemIndex];
 
     if (!attrs) {
       return null;
@@ -92,7 +92,7 @@ export default class ListContent extends React.PureComponent {
 
       const layout = calculateLayout(props, nextItemHashList, nextItemSizeDict);
 
-      nextState.layoutAttrs = layout.layoutAttrs;
+      nextState.layoutList = layout.layoutList;
 
       if (nextItemHashList !== itemHashList) {
         nextState.itemHashList = nextItemHashList;
@@ -167,11 +167,11 @@ export default class ListContent extends React.PureComponent {
 
   render() {
     const { itemCount, visibleRect } = this.props;
-    const { layoutAttrs } = this.state;
+    const { layoutList } = this.state;
     const items = [];
 
     for (let itemIndex = 0; itemIndex < itemCount; itemIndex++) {
-      const attrs = layoutAttrs[itemIndex];
+      const attrs = layoutList[itemIndex];
 
       if (attrs && needsRender(attrs.rect, visibleRect)) {
         items.push(
@@ -203,7 +203,7 @@ function calculateLayout(props, itemHashList, itemSizeDict) {
 
   let sizeWidth = 0;
   let sizeHeight = 0;
-  const layoutAttrs = [];
+  const layoutList = [];
 
   for (let itemIndex = 0; itemIndex < itemCount; itemIndex++) {
     if (itemIndex > 0) {
@@ -216,7 +216,7 @@ function calculateLayout(props, itemHashList, itemSizeDict) {
       [height]: estimatedItemSize[height],
     };
 
-    layoutAttrs.push({
+    layoutList.push({
       rect: {
         [x]: 0,
         [y]: sizeHeight,
@@ -233,6 +233,6 @@ function calculateLayout(props, itemHashList, itemSizeDict) {
 
   return {
     size: { [width]: sizeWidth, [height]: sizeHeight },
-    layoutAttrs,
+    layoutList,
   };
 }

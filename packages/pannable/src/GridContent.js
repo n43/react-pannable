@@ -26,7 +26,7 @@ export default class GridContent extends React.PureComponent {
     this.state = {
       size: layout.size,
       count: layout.count,
-      layoutAttrs: layout.layoutAttrs,
+      layoutList: layout.layoutList,
     };
   }
 
@@ -66,7 +66,7 @@ export default class GridContent extends React.PureComponent {
 
   getItemRect({ itemIndex, rowIndex, columnIndex }) {
     const { direction } = this.props;
-    const { count, layoutAttrs } = this.state;
+    const { count, layoutList } = this.state;
 
     if (rowIndex !== undefined && columnIndex !== undefined) {
       itemIndex = calculateItemIndex(
@@ -76,7 +76,7 @@ export default class GridContent extends React.PureComponent {
       );
     }
 
-    const attrs = layoutAttrs[itemIndex];
+    const attrs = layoutList[itemIndex];
 
     if (!attrs) {
       return null;
@@ -123,11 +123,11 @@ export default class GridContent extends React.PureComponent {
 
   render() {
     const { itemCount, visibleRect } = this.props;
-    const { layoutAttrs } = this.state;
+    const { layoutList } = this.state;
     const items = [];
 
     for (let itemIndex = 0; itemIndex < itemCount; itemIndex++) {
-      const attrs = layoutAttrs[itemIndex];
+      const attrs = layoutList[itemIndex];
 
       if (attrs && needsRender(attrs.rect, visibleRect)) {
         items.push(
@@ -166,7 +166,7 @@ function calculateLayout(props) {
   let sizeHeight = 0;
   let countRow = 0;
   let countColumn = 0;
-  const layoutAttrs = [];
+  const layoutList = [];
 
   if (sizeWidth <= 0) {
     countColumn = itemCount;
@@ -212,7 +212,7 @@ function calculateLayout(props) {
         break;
       }
 
-      layoutAttrs.push({
+      layoutList.push({
         rect: {
           [x]: attrX,
           [y]: sizeHeight,
@@ -230,6 +230,6 @@ function calculateLayout(props) {
   return {
     size: { [width]: sizeWidth, [height]: sizeHeight },
     count: { [row]: countRow, [column]: countColumn },
-    layoutAttrs,
+    layoutList,
   };
 }
