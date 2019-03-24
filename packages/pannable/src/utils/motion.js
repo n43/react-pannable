@@ -31,10 +31,16 @@ export function getAdjustedContentOffset(offset, size, cSize, paging, name) {
     return offsetX;
   }
 
-  return {
+  const adjustedOffset = {
     x: getAdjustedContentOffset(offset, size, cSize, paging, 'x'),
     y: getAdjustedContentOffset(offset, size, cSize, paging, 'y'),
   };
+
+  if (adjustedOffset.x === offset.x && adjustedOffset.y === offset.y) {
+    return offset;
+  }
+
+  return adjustedOffset;
 }
 
 export function getAdjustedBounceOffset(offset, bounce, size, cSize, name) {
@@ -65,10 +71,16 @@ export function getAdjustedBounceOffset(offset, bounce, size, cSize, name) {
     return offsetX;
   }
 
-  return {
+  const adjustedOffset = {
     x: getAdjustedBounceOffset(offset, bounce, size, cSize, 'x'),
     y: getAdjustedBounceOffset(offset, bounce, size, cSize, 'y'),
   };
+
+  if (adjustedOffset.x === offset.x && adjustedOffset.y === offset.y) {
+    return offset;
+  }
+
+  return adjustedOffset;
 }
 
 export function getDecelerationEndOffset(
@@ -132,6 +144,10 @@ export function getAdjustedContentVelocity(velocity, size, acc, name) {
     getAdjustedContentVelocity(velocity, size, acc, 'x'),
     getAdjustedContentVelocity(velocity, size, acc, 'y')
   );
+
+  if (n === 1) {
+    return velocity;
+  }
 
   return { x: n * velocity.x, y: n * velocity.y };
 }
