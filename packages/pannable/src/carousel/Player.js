@@ -32,6 +32,7 @@ export default class Player extends React.PureComponent {
   componentDidUpdate(prevProps, prevState) {
     const { direction, autoplayEnabled, onFrameChange } = this.props;
     const {
+<<<<<<< HEAD
       size,
       contentSize,
       pageCount,
@@ -40,6 +41,17 @@ export default class Player extends React.PureComponent {
       decelerating,
       mouseEntered,
     } = this.state;
+=======
+      direction,
+      width,
+      height,
+      contentWidth,
+      contentHeight,
+      autoplayEnabled,
+      onFrameChange,
+    } = this.props;
+    const { pageCount, activeIndex, dragging, mouseEntered } = this.state;
+>>>>>>> ceddd538713aa8eced693087f7e65944f32d9530
 
     if (
       prevProps.direction !== direction ||

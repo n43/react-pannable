@@ -206,21 +206,22 @@ export function calculateDeceleration(
   };
 }
 
-export function calculateRectOffset(rect, align, offset, size, name) {
+export function calculateRectOffset(rect, vRect, align, name) {
   if (name) {
     const [x, width] = name === 'y' ? ['y', 'height'] : ['x', 'width'];
 
     let offsetX = -rect[x];
-    const maxOffsetX = size[width] - rect[width];
+    const maxOffsetX = vRect[width] - rect[width];
 
     if (align[x] === 'auto') {
       const direction = maxOffsetX < 0 ? -1 : 1;
+      const vOffsetX = -vRect[x];
 
       offsetX +=
         direction *
         Math.max(
           0,
-          Math.min(direction * (offset[x] - offsetX), direction * maxOffsetX)
+          Math.min(direction * (vOffsetX - offsetX), direction * maxOffsetX)
         );
     } else {
       if (align[x] === 'start') {
@@ -245,7 +246,7 @@ export function calculateRectOffset(rect, align, offset, size, name) {
   }
 
   return {
-    x: calculateRectOffset(rect, align, offset, size, 'x'),
-    y: calculateRectOffset(rect, align, offset, size, 'y'),
+    x: calculateRectOffset(rect, vRect, align, 'x'),
+    y: calculateRectOffset(rect, vRect, align, 'y'),
   };
 }
