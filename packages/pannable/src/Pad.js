@@ -299,7 +299,7 @@ export default class Pad extends React.PureComponent {
   }
 
   _setStateWithScroll(nextState) {
-    this.setState(state => {
+    this.setState((state, props) => {
       const { size, contentOffset, dragging, decelerating } = state;
       const { pagingEnabled } = props;
 
