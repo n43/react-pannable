@@ -109,7 +109,7 @@ export default class Carousel extends React.PureComponent {
       >
         {player => {
           if (loop) {
-            const pad = player.padRef.current;
+            const pad = player.padRef;
             const { direction } = playerProps;
 
             let padContentSize = {
@@ -169,7 +169,7 @@ export default class Carousel extends React.PureComponent {
                 }}
                 visibleRect={visibleRect}
                 onResize={size => {
-                  // pad.setContentSize(size);
+                  player.padRef.setContentSize(size);
                   this.setState({ loopContentSize: size });
                 }}
               />

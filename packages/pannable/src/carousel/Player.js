@@ -9,31 +9,20 @@ export default class Player extends React.PureComponent {
     onFrameChange: () => {},
   };
 
-  constructor(props) {
-    super(props);
+  state = {
+    size: { width: 0, height: 0 },
+    contentSize: { width: 0, height: 0 },
+    pageCount: 0,
+    activeIndex: 0,
+    dragging: false,
+    decelerating: false,
+    mouseEntered: false,
+  };
 
-    this.state = {
-      pageCount: 0,
-      activeIndex: 0,
-      dragging: false,
-      decelerating: false,
-      mouseEntered: false,
-    };
-    this.padRef = React.createRef();
-  }
+  _decelerateTimestamp = 0;
 
   componentDidMount() {
-    const { direction, autoplayEnabled } = this.props;
-    const pad = this.padRef.current;
-
-    const size = pad.getSize();
-    const contentSize = pad.getContentSize();
-    const pageCount = calculatePageCount({
-      direction,
-      size,
-      contentSize,
-    });
-    this.setState({ pageCount });
+    const { autoplayEnabled } = this.props;
 
     if (autoplayEnabled) {
       this.play();
@@ -41,33 +30,27 @@ export default class Player extends React.PureComponent {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    const { direction, autoplayEnabled, onFrameChange } = this.props;
     const {
-      direction,
-      width,
-      height,
-      contentWidth,
-      contentHeight,
-      autoplayEnabled,
-      onFrameChange,
-    } = this.props;
-    const {
+      size,
+      contentSize,
       pageCount,
       activeIndex,
       dragging,
+      decelerating,
       mouseEntered,
     } = this.state;
 
     if (
       prevProps.direction !== direction ||
-      prevProps.width !== width ||
-      prevProps.contentWidth !== contentWidth ||
-      prevProps.height !== height ||
-      prevProps.contentHeight !== contentHeight
+      prevState.size !== size ||
+      prevState.contentSize !== contentSize
     ) {
-      const pad = this.padRef.current;
-      const size = pad.getSize();
-      const contentSize = pad.getContentSize();
-      const nextPageCount = calculatePageCount(direction, size, contentSize);
+      const nextPageCount = calculatePageCount({
+        direction,
+        size,
+        contentSize,
+      });
 
       if (nextPageCount !== pageCount) {
         this.setState({ pageCount: nextPageCount });
@@ -77,34 +60,31 @@ export default class Player extends React.PureComponent {
     if (
       prevProps.autoplayEnabled !== autoplayEnabled ||
       prevState.dragging !== dragging ||
-      prevState.mouseEntered !== mouseEntered ||
+      prevState.mouseEntered !== mouseEntered
     ) {
       if (autoplayEnabled && !dragging && !mouseEntered) {
         if (pageCount > activeIndex + 1) {
           this.play();
-        } 
+        }
       } else {
         this.pause();
       }
     }
 
-    // if (prevState.decelerating !== decelerating) {
-    //   if (decelerating) {
-    //     console.log('pause');
-    //   } else {
-    //     console.log('play');
-    //   }
-    // }
-
     if (prevState.activeIndex !== activeIndex) {
       if (pageCount <= activeIndex + 1) {
         this.pause();
-      } else if (prevState.activeIndex + 1 === pageCount) {
-        if (autoplayEnabled && !dragging && !mouseEntered) {
-          this.play();
-        }
+      } else if (!this._autoplayTimer) {
+        this.play();
       }
+      console.log(prevState.activeIndex, activeIndex);
       onFrameChange({ activeIndex, pageCount });
+    }
+
+    if (prevState.decelerating !== decelerating) {
+      if (decelerating) {
+        this._decelerateTimestamp = new Date().getTime();
+      }
     }
   }
 
@@ -122,9 +102,12 @@ export default class Player extends React.PureComponent {
 
   play() {
     const { autoplayInterval } = this.props;
+    const now = new Date().getTime();
 
     if (this._autoplayTimer) {
-      this.forward();
+      if (now - this._decelerateTimestamp >= autoplayInterval) {
+        this.forward();
+      }
       clearTimeout(this._autoplayTimer);
     }
 
@@ -137,14 +120,15 @@ export default class Player extends React.PureComponent {
     if (this._autoplayTimer) {
       clearTimeout(this._autoplayTimer);
       this._autoplayTimer = undefined;
+      this._decelerateTimestamp = 0;
     }
   }
 
   setFrame({ index, animated = true }) {
     const { direction } = this.props;
-    const pad = this.padRef.current;
+    const { size } = this.state;
+    const pad = this.padRef;
     const contentOffset = pad.getContentOffset();
-    const size = pad.getSize();
     let offset;
 
     if (index === 0) {
@@ -170,24 +154,9 @@ export default class Player extends React.PureComponent {
   }
 
   _onPadResize = size => {
-    const { direction, onResize } = this.props;
-    const { pageCount } = this.state;
-    const pad = this.padRef.current;
+    const { onResize } = this.props;
 
-    if (!pad) {
-      return;
-    }
-
-    const contentSize = pad.getContentSize();
-    const nextPageCount = calculatePageCount({
-      direction,
-      size,
-      contentSize,
-    });
-
-    if (nextPageCount !== pageCount) {
-      this.setState({ pageCount: nextPageCount });
-    }
+    this.setState({ size });
 
     if (onResize) {
       onResize(size);
@@ -195,24 +164,9 @@ export default class Player extends React.PureComponent {
   };
 
   _onPadContentResize = contentSize => {
-    const { direction, onContentResize } = this.props;
-    const { pageCount } = this.state;
-    const pad = this.padRef.current;
+    const { onContentResize } = this.props;
 
-    if (!pad) {
-      return;
-    }
-
-    const size = pad.getSize();
-    const nextPageCount = calculatePageCount({
-      direction,
-      size,
-      contentSize,
-    });
-
-    if (nextPageCount !== pageCount) {
-      this.setState({ pageCount: nextPageCount });
-    }
+    this.setState({ contentSize });
 
     if (onContentResize) {
       onContentResize(contentSize);
@@ -267,7 +221,6 @@ export default class Player extends React.PureComponent {
 
     return (
       <Pad
-        ref={this.padRef}
         {...padProps}
         {...bounceConfig}
         pagingEnabled={true}
@@ -277,7 +230,10 @@ export default class Player extends React.PureComponent {
         onMouseEnter={this._onMouseEnter}
         onMouseLeave={this._onMouseLeave}
       >
-        {typeof children === 'function' ? children(this) : children}
+        {pad => {
+          this.padRef = pad;
+          return typeof children === 'function' ? children(this) : children;
+        }}
       </Pad>
     );
   }
