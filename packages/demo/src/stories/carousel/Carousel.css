@@ -1,4 +1,25 @@
 .carousel-optbar {
   display: flex;
-  justify-content: space-around;
+  justify-content: center;
+  align-items: center;
+  padding: 15px 0;
+}
+.carousel-btn {
+  display: inline-block;
+  padding: 10px;
+  background-color: #ececec;
+  font-size: 14px;
+  color: #434343;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: 'sans-serif';
+}
+.carousel-btn + .carousel-btn {
+  margin-left: 10px;
+}
+.carousel-btn:hover {
+  background-color: #dedede;
+}
+.carsousel-status {
+  padding-right: 20px;
 }

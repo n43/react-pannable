@@ -10,6 +10,7 @@ class Autoplayer extends Component {
 
     this.state = {
       direction: 'x',
+      statusText: 'start',
     };
     this.playerRef = React.createRef();
   }
@@ -19,6 +20,16 @@ class Autoplayer extends Component {
     this.setState({
       [node.name]: node.value,
     });
+  };
+
+  handlePlay = () => {
+    this.playerRef.current.startAutoplay();
+    this.setState({ statusText: 'start' });
+  };
+
+  handlePause = () => {
+    this.playerRef.current.stopAutoplay();
+    this.setState({ statusText: 'stop' });
   };
 
   renderContent() {
@@ -52,12 +63,7 @@ class Autoplayer extends Component {
   }
 
   render() {
-    const { direction } = this.state;
-
-    // const directionOptions = [
-    //   { title: 'x', value: 'x', checked: direction === 'x' },
-    //   { title: 'y', value: 'y', checked: direction === 'y' },
-    // ];
+    const { direction, statusText } = this.state;
 
     return (
       <div className="carousel-main">
@@ -72,11 +78,13 @@ class Autoplayer extends Component {
           {this.renderContent()}
         </Player>
         <div className="carousel-optbar">
-          {/* <RadioField
-            name="direction"
-            options={directionOptions}
-            onChange={this.handleInputChange}
-          /> */}
+          <div className="carsousel-status">autoplay is {statusText} now </div>
+          <div className="carousel-btn" onClick={this.handlePlay}>
+            Play
+          </div>
+          <div className="carousel-btn" onClick={this.handlePause}>
+            Pause
+          </div>
         </div>
       </div>
     );

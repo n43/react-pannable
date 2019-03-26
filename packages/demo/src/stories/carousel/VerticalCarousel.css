@@ -1,0 +1,28 @@
+.carousel-box {
+  position: relative;
+}
+.vcarousel-pagination {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 18px;
+  width: 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.vcarousel-pagination .pagination-item {
+  margin: 6px 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+  background-color: #ffffff;
+  cursor: pointer;
+}
+.vcarousel-pagination .pagination-active {
+  margin: 6px 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+  background-color: #75d3ec;
+}

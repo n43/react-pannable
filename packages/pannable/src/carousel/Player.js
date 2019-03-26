@@ -9,23 +9,28 @@ export default class Player extends React.PureComponent {
     onFrameChange: () => {},
   };
 
-  state = {
-    size: { width: 0, height: 0 },
-    contentSize: { width: 0, height: 0 },
-    pageCount: 0,
-    activeIndex: 0,
-    dragging: false,
-    decelerating: false,
-    mouseEntered: false,
-  };
+  constructor(props) {
+    super(props);
 
-  _decelerateTimestamp = 0;
+    this.state = {
+      size: { width: 0, height: 0 },
+      contentSize: { width: 0, height: 0 },
+      autoplayStatus: props.autoplayEnabled ? 1 : -1,
+      pageCount: 0,
+      activeIndex: 0,
+      dragging: false,
+      decelerating: false,
+      mouseEntered: false,
+    };
+
+    this._decelerateTimestamp = 0;
+  }
 
   componentDidMount() {
     const { autoplayEnabled } = this.props;
 
     if (autoplayEnabled) {
-      this.play();
+      this._play();
     }
   }
 
@@ -34,12 +39,17 @@ export default class Player extends React.PureComponent {
     const {
       size,
       contentSize,
+      autoplayStatus,
       pageCount,
       activeIndex,
       dragging,
       decelerating,
       mouseEntered,
     } = this.state;
+
+    if (prevProps.autoplayEnabled !== autoplayEnabled) {
+      this.setState({ autoplayStatus: autoplayEnabled ? 1 : -1 });
+    }
 
     if (
       prevProps.direction !== direction ||
@@ -58,27 +68,26 @@ export default class Player extends React.PureComponent {
     }
 
     if (
-      prevProps.autoplayEnabled !== autoplayEnabled ||
+      prevState.autoplayStatus !== autoplayStatus ||
       prevState.dragging !== dragging ||
-      prevState.mouseEntered !== mouseEntered
+      prevState.mouseEntered !== mouseEntered ||
+      prevState.activeIndex !== activeIndex
     ) {
-      if (autoplayEnabled && !dragging && !mouseEntered) {
-        if (pageCount > activeIndex + 1) {
-          this.play();
+      if (pageCount > activeIndex + 1) {
+        if (autoplayStatus !== -1 && !dragging && !mouseEntered) {
+          if (!this._autoplayTimer) {
+            this._play();
+          }
+        } else {
+          this._pause();
         }
       } else {
-        this.pause();
+        this._pause();
       }
-    }
 
-    if (prevState.activeIndex !== activeIndex) {
-      if (pageCount <= activeIndex + 1) {
-        this.pause();
-      } else if (!this._autoplayTimer) {
-        this.play();
+      if (prevState.activeIndex !== activeIndex) {
+        onFrameChange({ activeIndex, pageCount });
       }
-      // console.log(prevState.activeIndex, activeIndex);
-      onFrameChange({ activeIndex, pageCount });
     }
 
     if (prevState.decelerating !== decelerating) {
@@ -89,7 +98,7 @@ export default class Player extends React.PureComponent {
   }
 
   componentWillUnmount() {
-    this.pause();
+    this._pause();
   }
 
   getPageCount() {
@@ -98,30 +107,6 @@ export default class Player extends React.PureComponent {
 
   getActiveIndex() {
     return this.state.activeIndex;
-  }
-
-  play() {
-    const { autoplayInterval } = this.props;
-    const now = new Date().getTime();
-
-    if (this._autoplayTimer) {
-      if (now - this._decelerateTimestamp >= autoplayInterval) {
-        this.forward();
-      }
-      clearTimeout(this._autoplayTimer);
-    }
-
-    this._autoplayTimer = setTimeout(() => {
-      this.play();
-    }, autoplayInterval);
-  }
-
-  pause() {
-    if (this._autoplayTimer) {
-      clearTimeout(this._autoplayTimer);
-      this._autoplayTimer = undefined;
-      this._decelerateTimestamp = 0;
-    }
   }
 
   setFrame({ index, animated = true }) {
@@ -153,6 +138,42 @@ export default class Player extends React.PureComponent {
     this.setFrame({ index: activeIndex + 1 });
   }
 
+  startAutoplay() {
+    if (this.state.autoplayStatus === -1) {
+      this.setState({ autoplayStatus: 1 });
+    }
+  }
+
+  stopAutoplay() {
+    if (this.state.autoplayStatus !== -1) {
+      this.setState({ autoplayStatus: -1 });
+    }
+  }
+
+  _play() {
+    const { autoplayInterval } = this.props;
+    const now = new Date().getTime();
+
+    if (this._autoplayTimer) {
+      if (now - this._decelerateTimestamp >= autoplayInterval) {
+        this.forward();
+      }
+      clearTimeout(this._autoplayTimer);
+    }
+
+    this._autoplayTimer = setTimeout(() => {
+      this._play();
+    }, autoplayInterval);
+  }
+
+  _pause() {
+    if (this._autoplayTimer) {
+      clearTimeout(this._autoplayTimer);
+      this._autoplayTimer = undefined;
+      this._decelerateTimestamp = 0;
+    }
+  }
+
   _onPadResize = size => {
     const { onResize } = this.props;
 
@@ -177,14 +198,19 @@ export default class Player extends React.PureComponent {
     const { contentOffset, size, dragging, decelerating } = evt;
     const { direction, onScroll } = this.props;
     const [x, width] = direction === 'x' ? ['x', 'width'] : ['y', 'height'];
-    const activeIndex = Math.abs(Math.floor(-contentOffset[x] / size[width]));
-    let nextState = { activeIndex };
+    let nextState = {};
 
     if (this.state.dragging !== dragging) {
       nextState.dragging = dragging;
     }
     if (this.state.decelerating !== decelerating) {
       nextState.decelerating = decelerating;
+    }
+
+    if (!dragging && !decelerating) {
+      nextState.activeIndex = Math.abs(
+        Math.floor(-contentOffset[x] / size[width])
+      );
     }
 
     this.setState(nextState);

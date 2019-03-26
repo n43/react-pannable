@@ -44,11 +44,15 @@ export default class Carousel extends React.PureComponent {
 
   slideTo({ index, animated = true }) {
     const player = this.playerRef.current;
+    const activeIndex = player.getActiveIndex();
     const pageCount = player.getPageCount();
 
-    if (index < pageCount / 2 - 1 || index > pageCount - 2) {
-      let m = index > pageCount - 2 ? -1 : 1;
-      index = index + (pageCount / 2) * m;
+    if (index > pageCount / 2 - 1) {
+      return;
+    }
+
+    if (activeIndex >= pageCount / 2) {
+      index = pageCount / 2 + index;
     }
 
     player.setFrame({ index, animated });
