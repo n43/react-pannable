@@ -15,23 +15,13 @@ export default class Carousel extends React.PureComponent {
     this.state = {
       loopContentSize: { width: 0, height: 0 },
     };
-    this.playerRef = React.createRef();
   }
 
-  componentDidMount() {}
-
-  componentDidUpdate(prevProps, prevState) {
-    if (prevState.loopContentSize !== this.state.loopContentSize) {
-      const player = this.playerRef.current;
-      const activeIndex = player.getActiveIndex();
-      const pageCount = player.getPageCount();
-      this._alternateFramesForLoop({ activeIndex, pageCount });
-    }
-  }
+  componentDidUpdate(prevProps, prevState) {}
 
   getActiveIndex() {
     const { loop } = this.props;
-    const player = this.playerRef.current;
+    const player = this.playerRef;
     const activeIndex = player.getActiveIndex();
     const pageCount = player.getPageCount();
 
@@ -43,7 +33,7 @@ export default class Carousel extends React.PureComponent {
   }
 
   slideTo({ index, animated = true }) {
-    const player = this.playerRef.current;
+    const player = this.playerRef;
     const activeIndex = player.getActiveIndex();
     const pageCount = player.getPageCount();
 
@@ -59,12 +49,12 @@ export default class Carousel extends React.PureComponent {
   }
 
   slidePrev() {
-    const player = this.playerRef.current;
+    const player = this.playerRef;
     player.rewind();
   }
 
   slideNext() {
-    const player = this.playerRef.current;
+    const player = this.playerRef;
     player.forward();
   }
 
@@ -92,8 +82,7 @@ export default class Carousel extends React.PureComponent {
   }
 
   _alternateFramesForLoop({ activeIndex, pageCount }) {
-    const player = this.playerRef.current;
-
+    const player = this.playerRef;
     if (activeIndex < pageCount / 2 - 1 || activeIndex > pageCount - 2) {
       let m = activeIndex > pageCount - 2 ? -1 : 1;
       const nextFrame = activeIndex + (pageCount / 2) * m;
@@ -106,12 +95,10 @@ export default class Carousel extends React.PureComponent {
     const { loopContentSize } = this.state;
 
     return (
-      <Player
-        ref={this.playerRef}
-        {...playerProps}
-        onFrameChange={this._onSlideChange}
-      >
+      <Player {...playerProps} onFrameChange={this._onSlideChange}>
         {player => {
+          this.playerRef = player;
+
           if (loop) {
             const pad = player.padRef;
             const { direction } = playerProps;
@@ -167,7 +154,9 @@ export default class Carousel extends React.PureComponent {
                         height: itemHeight,
                       }}
                     >
-                      {children}
+                      {typeof children === 'function'
+                        ? children(this)
+                        : children}
                     </div>
                   );
                 }}
@@ -180,7 +169,7 @@ export default class Carousel extends React.PureComponent {
             );
           }
 
-          return children;
+          return typeof children === 'function' ? children(this) : children;
         }}
       </Player>
     );
