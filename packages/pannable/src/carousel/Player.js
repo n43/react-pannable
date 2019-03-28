@@ -185,6 +185,7 @@ export default class Player extends React.PureComponent {
 
   _onPadContentResize = contentSize => {
     this._setStateWithResize({ contentSize });
+    console.log('player:', contentSize);
   };
 
   _setStateWithResize(nextState) {

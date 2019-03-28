@@ -12,6 +12,7 @@ export default class Carousel extends React.PureComponent {
   state = {
     size: { width: 0, height: 0 },
     contentSize: { width: 0, height: 0 },
+    calculatedSizeForLoop: { width: 0, height: 0 },
   };
 
   componentDidUpdate(prevProps, prevState) {
@@ -113,7 +114,7 @@ export default class Carousel extends React.PureComponent {
 
   render() {
     const { loop, children, onSlideChange, ...playerProps } = this.props;
-    const { contentSize } = this.state;
+    const { calculatedSizeForLoop } = this.state;
 
     return (
       <Player
@@ -128,20 +129,14 @@ export default class Carousel extends React.PureComponent {
           if (loop) {
             const pad = player.padRef;
             const { direction } = playerProps;
-
-            let padContentSize = {
-              width: playerProps.contentWidth,
-              height: playerProps.contentHeight,
-            };
-            let visibleRect = { x: 0, y: 0, width: 0, height: 0 };
+            const padContentSize = pad.getContentSize();
+            const visibleRect = pad.getVisibleRect();
             let itemWidth, itemHeight;
 
-            if (pad) {
-              padContentSize = pad.getContentSize();
-              visibleRect = pad.getVisibleRect();
-            }
-
-            const { width: resizeWidth, height: resizeHeight } = contentSize;
+            const {
+              width: resizeWidth,
+              height: resizeHeight,
+            } = calculatedSizeForLoop;
             const { width: realWidth, height: realHeight } = padContentSize;
 
             if (direction === 'x') {
@@ -156,27 +151,17 @@ export default class Carousel extends React.PureComponent {
             return (
               <ListContent
                 direction={direction}
-                height={padContentSize.height}
-                estimatedItemWidth={itemWidth}
-                estimatedItemHeight={itemHeight}
+                width={realWidth}
+                height={realHeight}
                 itemCount={2}
-                renderItem={() => {
-                  return (
-                    <div
-                      style={{
-                        position: 'relative',
-                        width: itemWidth,
-                        height: itemHeight,
-                      }}
-                    >
-                      {typeof children === 'function'
-                        ? children(this)
-                        : children}
-                    </div>
-                  );
-                }}
+                renderItem={({ Item }) => (
+                  <Item width={itemWidth} height={itemHeight}>
+                    {typeof children === 'function' ? children(this) : children}
+                  </Item>
+                )}
                 visibleRect={visibleRect}
                 onResize={size => {
+                  this.setState({ calculatedSizeForLoop: size });
                   player.padRef.setContentSize(size);
                 }}
               />

@@ -242,6 +242,7 @@ export default class Pad extends React.PureComponent {
   }
 
   setContentSize(contentSize) {
+    console.log('pad:', contentSize);
     this._setStateWithScroll({ contentSize });
     this.props.onContentResize(contentSize);
   }
