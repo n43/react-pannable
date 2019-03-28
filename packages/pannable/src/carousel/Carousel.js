@@ -9,29 +9,29 @@ export default class Carousel extends React.Component {
     onSlideChange: () => {},
   };
 
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      loopContentSize: { width: 0, height: 0 },
-    };
-    this.playerRef = React.createRef();
-  }
-
-  componentDidMount() {}
+  state = {
+    size: { width: 0, height: 0 },
+    contentSize: { width: 0, height: 0 },
+  };
 
   componentDidUpdate(prevProps, prevState) {
-    if (prevState.loopContentSize !== this.state.loopContentSize) {
-      const player = this.playerRef.current;
-      const activeIndex = player.getActiveIndex();
-      const pageCount = player.getPageCount();
-      this._alternateFramesForLoop({ activeIndex, pageCount });
+    const { size, contentSize } = this.state;
+    const { loop } = this.props;
+
+    if (prevState.size !== size || prevState.contentSize !== contentSize) {
+      if (loop) {
+        const player = this.playerRef;
+        const activeIndex = player.getActiveIndex();
+        const pageCount = player.getPageCount();
+
+        this._alternateFramesForLoop({ activeIndex, pageCount });
+      }
     }
   }
 
   getActiveIndex() {
     const { loop } = this.props;
-    const player = this.playerRef.current;
+    const player = this.playerRef;
     const activeIndex = player.getActiveIndex();
     const pageCount = player.getPageCount();
 
@@ -43,24 +43,30 @@ export default class Carousel extends React.Component {
   }
 
   slideTo({ index, animated = true }) {
-    const player = this.playerRef.current;
+    const player = this.playerRef;
+    const activeIndex = player.getActiveIndex();
     const pageCount = player.getPageCount();
 
-    if (index < pageCount / 2 - 1 || index > pageCount - 2) {
-      let m = index > pageCount - 2 ? -1 : 1;
-      index = index + (pageCount / 2) * m;
+    if (index > pageCount / 2 - 1) {
+      return;
+    }
+
+    if (activeIndex >= pageCount / 2) {
+      index = pageCount / 2 + index;
     }
 
     player.setFrame({ index, animated });
   }
 
   slidePrev() {
-    const player = this.playerRef.current;
+    const player = this.playerRef;
+
     player.rewind();
   }
 
   slideNext() {
-    const player = this.playerRef.current;
+    const player = this.playerRef;
+
     player.forward();
   }
 
@@ -79,6 +85,14 @@ export default class Carousel extends React.Component {
     onSlideChange({ activeIndex: activeSlide, pageCount });
   };
 
+  _onPlayerResize = size => {
+    this.setState({ size });
+  };
+
+  _onPlayerContentResize = contentSize => {
+    this.setState({ contentSize });
+  };
+
   _calculateActiveSlideForLoop({ activeIndex, pageCount }) {
     if (activeIndex < pageCount / 2) {
       return activeIndex;
@@ -88,7 +102,7 @@ export default class Carousel extends React.Component {
   }
 
   _alternateFramesForLoop({ activeIndex, pageCount }) {
-    const player = this.playerRef.current;
+    const player = this.playerRef;
 
     if (activeIndex < pageCount / 2 - 1 || activeIndex > pageCount - 2) {
       let m = activeIndex > pageCount - 2 ? -1 : 1;
@@ -99,15 +113,18 @@ export default class Carousel extends React.Component {
 
   render() {
     const { loop, children, onSlideChange, ...playerProps } = this.props;
-    const { loopContentSize } = this.state;
+    const { contentSize } = this.state;
 
     return (
       <Player
-        ref={this.playerRef}
         {...playerProps}
         onFrameChange={this._onSlideChange}
+        onResize={this._onPlayerResize}
+        onContentResize={this._onPlayerContentResize}
       >
         {player => {
+          this.playerRef = player;
+
           if (loop) {
             const pad = player.padRef;
             const { direction } = playerProps;
@@ -124,27 +141,16 @@ export default class Carousel extends React.Component {
               visibleRect = pad.getVisibleRect();
             }
 
-            const {
-              width: calculatedWidth,
-              height: calculatedHeight,
-            } = loopContentSize;
-            const {
-              width: contentWidth,
-              height: contentHeight,
-            } = padContentSize;
+            const { width: resizeWidth, height: resizeHeight } = contentSize;
+            const { width: realWidth, height: realHeight } = padContentSize;
 
             if (direction === 'x') {
-              itemWidth =
-                calculatedWidth === contentWidth
-                  ? contentWidth / 2
-                  : contentWidth;
-              itemHeight = contentHeight;
+              itemWidth = resizeWidth === realWidth ? realWidth / 2 : realWidth;
+              itemHeight = realHeight;
             } else {
-              itemWidth = contentWidth;
+              itemWidth = realWidth;
               itemHeight =
-                calculatedHeight === contentHeight
-                  ? contentHeight / 2
-                  : contentHeight;
+                resizeHeight === realHeight ? realHeight / 2 : realHeight;
             }
 
             return (
@@ -163,20 +169,21 @@ export default class Carousel extends React.Component {
                         height: itemHeight,
                       }}
                     >
-                      {children}
+                      {typeof children === 'function'
+                        ? children(this)
+                        : children}
                     </div>
                   );
                 }}
                 visibleRect={visibleRect}
                 onResize={size => {
                   player.padRef.setContentSize(size);
-                  this.setState({ loopContentSize: size });
                 }}
               />
             );
           }
 
-          return children;
+          return typeof children === 'function' ? children(this) : children;
         }}
       </Player>
     );

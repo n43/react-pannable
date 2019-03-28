@@ -1,0 +1,46 @@
+.carousel-box {
+  position: relative;
+}
+.carousel-box-prev {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  margin-top: -22px;
+  cursor: pointer;
+}
+.carousel-box-prev:hover {
+  opacity: 0.7;
+}
+.carousel-box-next {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  margin-top: -22px;
+  cursor: pointer;
+}
+.carousel-box-next:hover {
+  opacity: 0.7;
+}
+.hcarousel-pagination {
+  position: absolute;
+  bottom: 18px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+}
+.hcarousel-pagination .pagination-item {
+  margin: 0 4px;
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+  background-color: #ffffff;
+  cursor: pointer;
+}
+.hcarousel-pagination .pagination-active {
+  margin: 0 4px;
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+  background-color: #75d3ec;
+}

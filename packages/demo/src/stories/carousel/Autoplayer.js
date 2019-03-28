@@ -10,6 +10,8 @@ class Autoplayer extends Component {
 
     this.state = {
       direction: 'x',
+      statusText: 'start',
+      slideArr: [1, 2, 3, 4, 5],
     };
     this.playerRef = React.createRef();
   }
@@ -21,11 +23,21 @@ class Autoplayer extends Component {
     });
   };
 
+  handleStart = () => {
+    this.playerRef.current.startAutoplay();
+    this.setState({ statusText: 'start' });
+  };
+
+  handleStop = () => {
+    this.playerRef.current.stopAutoplay();
+    this.setState({ statusText: 'stop' });
+  };
+
   renderContent() {
-    const { direction } = this.state;
+    const { direction, slideArr } = this.state;
     const items = [];
 
-    for (let slide = 0; slide < 5; slide++) {
+    for (let slide = 0; slide < slideArr.length; slide++) {
       const style = {
         position: 'absolute',
         top: direction === 'x' ? 0 : slide * 300,
@@ -43,7 +55,7 @@ class Autoplayer extends Component {
 
       items.push(
         <div key={slide} style={style}>
-          slide {slide}
+          slide {slideArr[slide]}
         </div>
       );
     }
@@ -52,12 +64,7 @@ class Autoplayer extends Component {
   }
 
   render() {
-    const { direction } = this.state;
-
-    // const directionOptions = [
-    //   { title: 'x', value: 'x', checked: direction === 'x' },
-    //   { title: 'y', value: 'y', checked: direction === 'y' },
-    // ];
+    const { direction, statusText } = this.state;
 
     return (
       <div className="carousel-main">
@@ -72,11 +79,13 @@ class Autoplayer extends Component {
           {this.renderContent()}
         </Player>
         <div className="carousel-optbar">
-          {/* <RadioField
-            name="direction"
-            options={directionOptions}
-            onChange={this.handleInputChange}
-          /> */}
+          <div className="carsousel-status">autoplay is {statusText} now </div>
+          <div className="carousel-btn" onClick={this.handleStart}>
+            Start
+          </div>
+          <div className="carousel-btn" onClick={this.handleStop}>
+            Stop
+          </div>
         </div>
       </div>
     );
