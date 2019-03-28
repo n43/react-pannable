@@ -3,7 +3,7 @@ import StyleSheet from './utils/StyleSheet';
 
 const MIN_DISTANCE = 0;
 
-export default class Pannable extends React.PureComponent {
+export default class Pannable extends React.Component {
   static defaultProps = {
     enabled: true,
     shouldStart: () => true,

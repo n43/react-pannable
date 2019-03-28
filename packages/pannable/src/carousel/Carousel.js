@@ -2,7 +2,7 @@ import React from 'react';
 import Player from './Player';
 import ListContent from '../ListContent';
 
-export default class Carousel extends React.PureComponent {
+export default class Carousel extends React.Component {
   static defaultProps = {
     direction: 'y',
     loop: true,

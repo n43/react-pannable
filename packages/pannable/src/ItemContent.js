@@ -1,7 +1,7 @@
 import React from 'react';
 import { getElementSize } from './utils/sizeGetter';
 
-export default class ItemContent extends React.PureComponent {
+export default class ItemContent extends React.Component {
   static defaultProps = {
     width: null,
     height: null,

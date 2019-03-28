@@ -2,7 +2,7 @@ import React from 'react';
 import { getItemVisibleRect, needsRender } from './utils/visible';
 import ItemContent from './ItemContent';
 
-export default class ListContent extends React.PureComponent {
+export default class ListContent extends React.Component {
   static defaultProps = {
     direction: 'y',
     width: 0,

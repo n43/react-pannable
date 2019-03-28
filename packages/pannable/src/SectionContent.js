@@ -1,7 +1,7 @@
 import React from 'react';
 import ListContent from './ListContent';
 
-export default class SectionContent extends React.PureComponent {
+export default class SectionContent extends React.Component {
   static defaultProps = {
     renderHeader: () => null,
     renderBody: () => null,
