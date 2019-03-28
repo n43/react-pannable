@@ -16,11 +16,17 @@ export default class Carousel extends React.Component {
   };
 
   componentDidUpdate(prevProps, prevState) {
-    const { size, contentSize } = this.state;
-    const { loop } = this.props;
+    const { size, contentSize, calculatedSizeForLoop } = this.state;
+    const { loop, direction } = this.props;
 
-    if (prevState.size !== size || prevState.contentSize !== contentSize) {
-      if (loop) {
+    if (
+      prevState.size !== size ||
+      prevState.contentSize !== contentSize ||
+      prevState.calculatedSizeForLoop !== calculatedSizeForLoop
+    ) {
+      const dt = direction === 'x' ? 'width' : 'height';
+
+      if (loop && contentSize[dt] === calculatedSizeForLoop[dt]) {
         const player = this.playerRef;
         const activeIndex = player.getActiveIndex();
         const pageCount = player.getPageCount();
@@ -109,6 +115,7 @@ export default class Carousel extends React.Component {
       let m = activeIndex > pageCount - 2 ? -1 : 1;
       const nextFrame = activeIndex + (pageCount / 2) * m;
       player.setFrame({ index: nextFrame, animated: false });
+      console.log('nextFrame:', activeIndex, nextFrame);
     }
   }
 
