@@ -27,15 +27,21 @@ export default class Player extends React.PureComponent {
   }
 
   componentDidMount() {
-    const { autoplayEnabled } = this.props;
+    const { autoplayStatus } = this.state;
 
-    if (autoplayEnabled) {
+    if (autoplayStatus !== -1) {
       this._play();
     }
   }
 
   componentDidUpdate(prevProps, prevState) {
-    const { direction, autoplayEnabled, onFrameChange } = this.props;
+    const {
+      direction,
+      autoplayEnabled,
+      onFrameChange,
+      onResize,
+      onContentResize,
+    } = this.props;
     const {
       size,
       contentSize,
@@ -56,14 +62,11 @@ export default class Player extends React.PureComponent {
       prevState.size !== size ||
       prevState.contentSize !== contentSize
     ) {
-      const nextPageCount = calculatePageCount({
-        direction,
-        size,
-        contentSize,
-      });
-
-      if (nextPageCount !== pageCount) {
-        this.setState({ pageCount: nextPageCount });
+      if (prevState.size !== size && onResize) {
+        onResize(size);
+      }
+      if (prevState.contentSize !== contentSize && onContentResize) {
+        onContentResize(contentSize);
       }
     }
 
@@ -111,12 +114,14 @@ export default class Player extends React.PureComponent {
 
   setFrame({ index, animated = true }) {
     const { direction } = this.props;
-    const { size } = this.state;
+    const { size, pageCount } = this.state;
     const pad = this.padRef;
     const contentOffset = pad.getContentOffset();
     let offset;
 
-    if (index === 0) {
+    if (index < 0 || index >= pageCount) {
+      return;
+    } else if (index === 0) {
       offset = { x: 0, y: 0 };
     } else {
       offset = {
@@ -175,24 +180,39 @@ export default class Player extends React.PureComponent {
   }
 
   _onPadResize = size => {
-    const { onResize } = this.props;
-
-    this.setState({ size });
-
-    if (onResize) {
-      onResize(size);
-    }
+    this._setStateWithResize({ size });
   };
 
   _onPadContentResize = contentSize => {
-    const { onContentResize } = this.props;
-
-    this.setState({ contentSize });
-
-    if (onContentResize) {
-      onContentResize(contentSize);
-    }
+    this._setStateWithResize({ contentSize });
   };
+
+  _setStateWithResize(nextState) {
+    this.setState((state, props) => {
+      const { pageCount } = state;
+      const { direction } = props;
+      let size = state.size,
+        contentSize = state.contentSize;
+
+      if (nextState.size) {
+        size = nextState.size;
+      }
+      if (nextState.contentSize) {
+        contentSize = nextState.contentSize;
+      }
+
+      const nextPageCount = calculatePageCount({
+        direction,
+        size,
+        contentSize,
+      });
+      if (nextPageCount !== pageCount) {
+        nextState.pageCount = nextPageCount;
+      }
+
+      return nextState;
+    });
+  }
 
   _onPadScroll = evt => {
     const { contentOffset, size, dragging, decelerating } = evt;

@@ -9,15 +9,25 @@ export default class Carousel extends React.PureComponent {
     onSlideChange: () => {},
   };
 
-  constructor(props) {
-    super(props);
+  state = {
+    size: { width: 0, height: 0 },
+    contentSize: { width: 0, height: 0 },
+  };
 
-    this.state = {
-      loopContentSize: { width: 0, height: 0 },
-    };
+  componentDidUpdate(prevProps, prevState) {
+    const { size, contentSize } = this.state;
+    const { loop } = this.props;
+
+    if (prevState.size !== size || prevState.contentSize !== contentSize) {
+      if (loop) {
+        const player = this.playerRef;
+        const activeIndex = player.getActiveIndex();
+        const pageCount = player.getPageCount();
+
+        this._alternateFramesForLoop({ activeIndex, pageCount });
+      }
+    }
   }
-
-  componentDidUpdate(prevProps, prevState) {}
 
   getActiveIndex() {
     const { loop } = this.props;
@@ -50,11 +60,13 @@ export default class Carousel extends React.PureComponent {
 
   slidePrev() {
     const player = this.playerRef;
+
     player.rewind();
   }
 
   slideNext() {
     const player = this.playerRef;
+
     player.forward();
   }
 
@@ -73,6 +85,14 @@ export default class Carousel extends React.PureComponent {
     onSlideChange({ activeIndex: activeSlide, pageCount });
   };
 
+  _onPlayerResize = size => {
+    this.setState({ size });
+  };
+
+  _onPlayerContentResize = contentSize => {
+    this.setState({ contentSize });
+  };
+
   _calculateActiveSlideForLoop({ activeIndex, pageCount }) {
     if (activeIndex < pageCount / 2) {
       return activeIndex;
@@ -83,6 +103,7 @@ export default class Carousel extends React.PureComponent {
 
   _alternateFramesForLoop({ activeIndex, pageCount }) {
     const player = this.playerRef;
+
     if (activeIndex < pageCount / 2 - 1 || activeIndex > pageCount - 2) {
       let m = activeIndex > pageCount - 2 ? -1 : 1;
       const nextFrame = activeIndex + (pageCount / 2) * m;
@@ -92,10 +113,15 @@ export default class Carousel extends React.PureComponent {
 
   render() {
     const { loop, children, onSlideChange, ...playerProps } = this.props;
-    const { loopContentSize } = this.state;
+    const { contentSize } = this.state;
 
     return (
-      <Player {...playerProps} onFrameChange={this._onSlideChange}>
+      <Player
+        {...playerProps}
+        onFrameChange={this._onSlideChange}
+        onResize={this._onPlayerResize}
+        onContentResize={this._onPlayerContentResize}
+      >
         {player => {
           this.playerRef = player;
 
@@ -115,27 +141,16 @@ export default class Carousel extends React.PureComponent {
               visibleRect = pad.getVisibleRect();
             }
 
-            const {
-              width: calculatedWidth,
-              height: calculatedHeight,
-            } = loopContentSize;
-            const {
-              width: contentWidth,
-              height: contentHeight,
-            } = padContentSize;
+            const { width: resizeWidth, height: resizeHeight } = contentSize;
+            const { width: realWidth, height: realHeight } = padContentSize;
 
             if (direction === 'x') {
-              itemWidth =
-                calculatedWidth === contentWidth
-                  ? contentWidth / 2
-                  : contentWidth;
-              itemHeight = contentHeight;
+              itemWidth = resizeWidth === realWidth ? realWidth / 2 : realWidth;
+              itemHeight = realHeight;
             } else {
-              itemWidth = contentWidth;
+              itemWidth = realWidth;
               itemHeight =
-                calculatedHeight === contentHeight
-                  ? contentHeight / 2
-                  : contentHeight;
+                resizeHeight === realHeight ? realHeight / 2 : realHeight;
             }
 
             return (
@@ -163,7 +178,6 @@ export default class Carousel extends React.PureComponent {
                 visibleRect={visibleRect}
                 onResize={size => {
                   player.padRef.setContentSize(size);
-                  this.setState({ loopContentSize: size });
                 }}
               />
             );
