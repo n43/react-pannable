@@ -1,7 +1,7 @@
 import React from 'react';
 import { getItemVisibleRect, needsRender } from './utils/visible';
 
-export default class GridContent extends React.PureComponent {
+export default class GridContent extends React.Component {
   static defaultProps = {
     direction: 'y',
     width: 0,

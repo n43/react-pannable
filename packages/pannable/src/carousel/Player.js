@@ -1,7 +1,7 @@
 import React from 'react';
 import Pad from '../Pad';
 
-export default class Player extends React.PureComponent {
+export default class Player extends React.Component {
   static defaultProps = {
     direction: 'y',
     autoplayEnabled: true,
