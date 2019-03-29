@@ -19,12 +19,12 @@ export default class GeneralContent extends React.Component {
       size = { width, height };
     }
 
+    this.state = { size };
+    this.resizeRef = React.createRef();
+
     if (size) {
       onResize(size);
     }
-    this.state = { size };
-
-    this.resizeRef = React.createRef();
   }
 
   componentDidMount() {
@@ -33,11 +33,15 @@ export default class GeneralContent extends React.Component {
     }
   }
 
-  componentDidUpdate(prevProps) {
-    const { width, height } = this.props;
+  componentDidUpdate(prevProps, prevState) {
+    const { width, height, onResize } = this.props;
+    const { size } = this.state;
 
     if (prevProps.width !== width || prevProps.height !== height) {
       this._calculateSize();
+    }
+    if (prevState.size !== size) {
+      onResize(size);
     }
   }
 
@@ -50,7 +54,7 @@ export default class GeneralContent extends React.Component {
 
   _calculateSize() {
     this.setState((state, props) => {
-      const { width, height, onResize } = props;
+      const { width, height } = props;
       const { size } = state;
       let nextSize;
 
@@ -82,23 +86,27 @@ export default class GeneralContent extends React.Component {
         return null;
       }
 
-      onResize(nextSize);
       return { size: nextSize };
     });
   }
 
   render() {
-    const { width, height, onResize, style, children, ...props } = this.props;
+    const { width, height, onResize, ...props } = this.props;
     const elemStyle = {
       position: 'absolute',
       width: typeof width === 'number' ? width : 'auto',
       height: typeof height === 'number' ? height : 'auto',
-      ...style,
+      ...props.style,
     };
+    let element = props.children;
+
+    if (typeof element === 'function') {
+      element = element(this);
+    }
 
     return (
       <div {...props} ref={this.resizeRef} style={elemStyle}>
-        {typeof children === 'function' ? children(this) : children}
+        {element}
       </div>
     );
   }

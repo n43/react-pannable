@@ -7,6 +7,42 @@ function getAcc(rate, { x, y }) {
   return { x: rate * (x / r), y: rate * (y / r) };
 }
 
+export function getAdjustedContentVelocity(velocity, size, acc, name) {
+  if (name) {
+    const [x, width] = name === 'y' ? ['y', 'height'] : ['x', 'width'];
+
+    if (!velocity[x]) {
+      return 0;
+    }
+
+    const direction = velocity[x] < 0 ? -1 : 1;
+    const maxDist = 0.25 * size[width];
+    const maxVelocity =
+      direction *
+      Math.min(
+        direction * velocity[x],
+        Math.sqrt(2 * maxDist * direction * acc[x])
+      );
+
+    return maxVelocity;
+  }
+
+  if (typeof acc === 'number') {
+    acc = getAcc(acc, velocity);
+  }
+
+  const adjustedVelocity = {
+    x: getAdjustedContentVelocity(velocity, size, acc, 'x'),
+    y: getAdjustedContentVelocity(velocity, size, acc, 'y'),
+  };
+
+  if (adjustedVelocity.x === velocity.x && adjustedVelocity.y === velocity.y) {
+    return velocity;
+  }
+
+  return adjustedVelocity;
+}
+
 export function getAdjustedContentOffset(offset, size, cSize, paging, name) {
   if (name) {
     const [x, width] = name === 'y' ? ['y', 'height'] : ['x', 'width'];
@@ -114,42 +150,6 @@ export function getDecelerationEndOffset(
     x: getDecelerationEndOffset(offset, velocity, size, paging, acc, 'x'),
     y: getDecelerationEndOffset(offset, velocity, size, paging, acc, 'y'),
   };
-}
-
-export function getAdjustedContentVelocity(velocity, size, acc, name) {
-  if (name) {
-    const [x, width] = name === 'y' ? ['y', 'height'] : ['x', 'width'];
-
-    if (!velocity[x]) {
-      return 1;
-    }
-
-    const direction = velocity[x] < 0 ? -1 : 1;
-    const maxDist = 0.25 * size[width];
-    const maxVelocity =
-      direction *
-      Math.min(
-        direction * velocity[x],
-        Math.sqrt(2 * maxDist * direction * acc[x])
-      );
-
-    return maxVelocity / velocity[x];
-  }
-
-  if (typeof acc === 'number') {
-    acc = getAcc(acc, velocity);
-  }
-
-  const n = Math.min(
-    getAdjustedContentVelocity(velocity, size, acc, 'x'),
-    getAdjustedContentVelocity(velocity, size, acc, 'y')
-  );
-
-  if (n === 1) {
-    return velocity;
-  }
-
-  return { x: n * velocity.x, y: n * velocity.y };
 }
 
 export function calculateDeceleration(deceleration, moveTime, name) {

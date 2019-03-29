@@ -8,40 +8,29 @@ export default class SectionContent extends React.Component {
     renderFooter: () => null,
   };
 
-  state = {
-    listVisibleRect: { x: 0, y: 0, width: 0, height: 0 },
-  };
+  constructor(props) {
+    super(props);
 
-  listRef = React.createRef();
-
-  _onListResize(size) {
-    this.setState({
-      listVisibleRect: { x: 0, y: 0, ...size },
-    });
-
-    this.props.onResize(size);
+    this.listRef = React.createRef();
   }
 
   render() {
     const { renderHeader, renderBody, renderFooter, ...props } = this.props;
-    const { listVisibleRect } = this.state;
 
     return (
       <ListContent
         {...props}
         ref={this.listRef}
-        visibleRect={listVisibleRect}
         itemCount={3}
         renderItem={({ itemIndex, rect, visibleRect, Item }) => {
           if (itemIndex === 0) {
-            return renderHeader({ rect, Item, visibleRect });
+            return renderHeader({ rect, visibleRect, Item });
           } else if (itemIndex === 1) {
-            return renderBody({ rect, Item, visibleRect });
+            return renderBody({ rect, visibleRect, Item });
           } else if (itemIndex === 2) {
-            return renderFooter({ rect, Item, visibleRect });
+            return renderFooter({ rect, visibleRect, Item });
           }
         }}
-        onResize={this._onListResize}
       />
     );
   }

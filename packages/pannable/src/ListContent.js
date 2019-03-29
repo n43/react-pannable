@@ -23,17 +23,17 @@ export default class ListContent extends React.Component {
     const itemSizeDict = {};
     const layout = calculateLayout(props, itemHashList, itemSizeDict);
 
-    props.onResize(layout.size);
-
     this.state = {
       size: layout.size,
       layoutList: layout.layoutList,
       itemHashList,
       itemSizeDict,
     };
+
+    props.onResize(layout.size);
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps, prevState) {
     const {
       direction,
       width,
@@ -42,7 +42,9 @@ export default class ListContent extends React.Component {
       itemCount,
       estimatedItemWidth,
       estimatedItemHeight,
+      onResize,
     } = this.props;
+    const { size } = this.state;
 
     if (
       prevProps.direction !== direction ||
@@ -55,6 +57,9 @@ export default class ListContent extends React.Component {
     ) {
       this._calculateLayout();
     }
+    if (prevState.size !== size) {
+      onResize(size);
+    }
   }
 
   getSize() {
@@ -65,19 +70,16 @@ export default class ListContent extends React.Component {
     const { layoutList } = this.state;
     const attrs = layoutList[itemIndex];
 
-    if (!attrs) {
-      return null;
-    }
-
-    return attrs.rect;
+    return (attrs && attrs.rect) || null;
   }
 
   _calculateLayout(changedItem) {
     this.setState((state, props) => {
-      const { itemHashList, itemSizeDict } = state;
-      const nextState = {};
+      const { size, itemHashList, itemSizeDict } = state;
       let nextItemHashList = itemHashList;
       let nextItemSizeDict = itemSizeDict;
+      const nextState = {};
+
       if (changedItem) {
         const { itemIndex, itemHash, itemSize } = changedItem;
 
@@ -101,11 +103,10 @@ export default class ListContent extends React.Component {
         nextState.itemSizeDict = nextItemSizeDict;
       }
       if (
-        layout.size.width !== state.size.width ||
-        layout.size.height !== state.size.height
+        layout.size.width !== size.width ||
+        layout.size.height !== size.height
       ) {
         nextState.size = layout.size;
-        props.onResize(layout.size);
       }
 
       return nextState;

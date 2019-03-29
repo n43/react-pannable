@@ -6,9 +6,9 @@ import {
   cancelAnimationFrame,
 } from './utils/animationFrame';
 import {
+  getAdjustedContentVelocity,
   getAdjustedContentOffset,
   getAdjustedBounceOffset,
-  getAdjustedContentVelocity,
   getDecelerationEndOffset,
   createDeceleration,
   calculateDeceleration,
@@ -80,27 +80,26 @@ export default class Pad extends React.Component {
     const nextState = {};
 
     if (contentOffset !== prevContentOffset) {
-      const adjustedContentOffset = getAdjustedContentOffset(
-        contentOffset,
-        size,
-        contentSize,
-        false
-      );
+      const validContentOffset =
+        contentOffset ===
+        getAdjustedContentOffset(contentOffset, size, contentSize, false);
 
-      if (adjustedContentOffset !== contentOffset) {
+      if (!validContentOffset) {
         let nextDeceleration = deceleration;
         let decelerationRate = DECELERATION_RATE_STRONG;
         let decelerationEndOffset;
 
         if (nextDeceleration) {
-          const adjustedEndOffset = getAdjustedContentOffset(
-            nextDeceleration.endOffset,
-            size,
-            contentSize,
-            false
-          );
+          const validEndOffset =
+            nextDeceleration.endOffset ===
+            getAdjustedContentOffset(
+              nextDeceleration.endOffset,
+              size,
+              contentSize,
+              false
+            );
 
-          if (adjustedEndOffset !== nextDeceleration.endOffset) {
+          if (!validEndOffset) {
             decelerationEndOffset = getDecelerationEndOffset(
               contentOffset,
               contentVelocity,
@@ -343,11 +342,13 @@ export default class Pad extends React.Component {
   _decelerate() {
     this.setState(state => {
       const { deceleration } = state;
-      const moveTime = new Date().getTime();
 
       if (!deceleration) {
         return null;
       }
+
+      const moveTime = new Date().getTime();
+
       if (deceleration.startTime + deceleration.duration <= moveTime) {
         return {
           contentOffset: deceleration.endOffset,
@@ -358,7 +359,7 @@ export default class Pad extends React.Component {
 
       const { xOffset, yOffset, xVelocity, yVelocity } = calculateDeceleration(
         deceleration,
-        new Date().getTime()
+        moveTime
       );
 
       return {
@@ -422,12 +423,11 @@ export default class Pad extends React.Component {
       const { contentOffset, contentVelocity, size } = state;
       const { pagingEnabled } = props;
 
-      let nextContentVelocity = getAdjustedContentVelocity(
+      const nextContentVelocity = getAdjustedContentVelocity(
         contentVelocity,
         size,
         DECELERATION_RATE_STRONG
       );
-
       const decelerationRate = pagingEnabled
         ? DECELERATION_RATE_STRONG
         : DECELERATION_RATE_WEAK;
@@ -493,41 +493,44 @@ export default class Pad extends React.Component {
       onScroll,
       onResize,
       onContentResize,
-      style,
-      children,
-      ...boundingProps
+      ...props
     } = this.props;
     const { size, contentSize, contentOffset } = this.state;
 
-    const boundingStyles = StyleSheet.create({
+    const boundingStyle = StyleSheet.create({
       overflow: 'hidden',
       position: 'relative',
       boxSizing: 'border-box',
       width: size.width,
       height: size.height,
-      ...style,
+      ...props.style,
     });
-    const contentStyles = StyleSheet.create({
+    const contentStyle = StyleSheet.create({
       position: 'relative',
       boxSizing: 'border-box',
       width: contentSize.width,
       height: contentSize.height,
       transformTranslate: [contentOffset.x, contentOffset.y],
     });
+    let element = props.children;
+
+    if (typeof element === 'function') {
+      element = element(this);
+    }
 
     return (
       <Pannable
-        {...boundingProps}
+        {...props}
         ref={this.boundingRef}
-        style={boundingStyles}
+        style={boundingStyle}
         enabled={scrollEnabled}
         onStart={this._onDragStart}
         onMove={this._onDragMove}
         onEnd={this._onDragEnd}
         onCancel={this._onDragCancel}
       >
-        <div ref={this.contentRef} style={contentStyles}>
-          {typeof children === 'function' ? children(this) : children}
+        <div ref={this.contentRef} style={contentStyle}>
+          {element}
         </div>
       </Pannable>
     );
