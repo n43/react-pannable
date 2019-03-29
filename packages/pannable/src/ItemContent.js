@@ -59,9 +59,9 @@ export default class ItemContent extends React.Component {
         layout.size = getElementSize(resizeNode);
       }
       if (
-        size &&
-        layout.size.width === size.width &&
-        layout.size.height === size.height
+        !size ||
+        layout.size.width !== size.width ||
+        layout.size.height !== size.height
       ) {
         nextState.size = layout.size;
       }
