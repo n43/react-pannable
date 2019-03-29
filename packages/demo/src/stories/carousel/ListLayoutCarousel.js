@@ -119,7 +119,7 @@ class ListLayoutCarousel extends Component {
               //   }}
               // />
               // );
-              return this.renderContent();
+              // return this.renderContent();
             }}
           </Carousel>
           <SvgPrev
