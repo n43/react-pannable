@@ -15,12 +15,12 @@ export default class ItemContent extends React.Component {
 
     const layout = calculateLayout(props);
 
+    this.state = { size: layout.size, sizeHash: layout.hash };
+    this.resizeRef = React.createRef();
+
     if (layout.size) {
       props.onResize(layout.size, layout.hash);
     }
-    this.state = { size: layout.size };
-
-    this.resizeRef = React.createRef();
   }
 
   componentDidMount() {
@@ -29,8 +29,9 @@ export default class ItemContent extends React.Component {
     }
   }
 
-  componentDidUpdate(prevProps) {
-    const { width, height, hash } = this.props;
+  componentDidUpdate(prevProps, prevState) {
+    const { width, height, hash, onResize } = this.props;
+    const { size, sizeHash } = this.state;
 
     if (
       prevProps.width !== width ||
@@ -39,29 +40,33 @@ export default class ItemContent extends React.Component {
     ) {
       this._calculateLayout();
     }
+    if (prevState.size !== size) {
+      onResize(size, sizeHash);
+    }
   }
 
   _calculateLayout() {
     this.setState((state, props) => {
-      const { onResize } = props;
       const { size } = state;
+      const nextState = {};
+
       const layout = calculateLayout(props);
+
+      nextState.hash = layout.hash;
 
       if (!layout.size) {
         const resizeNode = this.resizeRef.current;
         layout.size = getElementSize(resizeNode);
       }
-
       if (
-        size &&
-        layout.size.width === size.width &&
-        layout.size.height === size.height
+        !size ||
+        layout.size.width !== size.width ||
+        layout.size.height !== size.height
       ) {
-        return null;
+        nextState.size = layout.size;
       }
 
-      onResize(layout.size, layout.hash);
-      return { size: layout.size };
+      return nextState;
     });
   }
 
@@ -72,20 +77,24 @@ export default class ItemContent extends React.Component {
       hash,
       getSizeByHash,
       onResize,
-      style,
-      children,
       ...props
     } = this.props;
+
     const elemStyle = {
       position: 'absolute',
       width: typeof width === 'number' ? width : 'auto',
       height: typeof height === 'number' ? height : 'auto',
-      ...style,
+      ...props.style,
     };
+    let element = props.children;
+
+    if (typeof element === 'function') {
+      element = element(this);
+    }
 
     return (
       <div {...props} ref={this.resizeRef} style={elemStyle}>
-        {typeof children === 'function' ? children(this) : children}
+        {element}
       </div>
     );
   }

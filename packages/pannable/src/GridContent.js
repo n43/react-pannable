@@ -21,16 +21,16 @@ export default class GridContent extends React.Component {
 
     const layout = calculateLayout(props);
 
-    props.onResize(layout.size);
-
     this.state = {
       size: layout.size,
       count: layout.count,
       layoutList: layout.layoutList,
     };
+
+    props.onResize(layout.size);
   }
 
-  componentDidUpdate(prevProps) {
+  componentDidUpdate(prevProps, prevState) {
     const {
       direction,
       width,
@@ -40,7 +40,9 @@ export default class GridContent extends React.Component {
       itemCount,
       itemWidth,
       itemHeight,
+      onResize,
     } = this.props;
+    const { size } = this.state;
 
     if (
       prevProps.direction !== direction ||
@@ -54,12 +56,14 @@ export default class GridContent extends React.Component {
     ) {
       this._calculateLayout();
     }
+    if (prevState.size !== size) {
+      onResize(size);
+    }
   }
 
   getSize() {
     return this.state.size;
   }
-
   getCount() {
     return this.state.count;
   }
@@ -78,24 +82,24 @@ export default class GridContent extends React.Component {
 
     const attrs = layoutList[itemIndex];
 
-    if (!attrs) {
-      return null;
-    }
-
-    return attrs.rect;
+    return (attrs && attrs.rect) || null;
   }
 
   _calculateLayout() {
     this.setState((state, props) => {
+      const { size } = state;
       const nextState = {};
+
       const layout = calculateLayout(props);
 
+      nextState.count = layout.count;
+      nextState.layoutList = layout.layoutList;
+
       if (
-        layout.size.width !== state.size.width ||
-        layout.size.height !== state.size.height
+        layout.size.width !== size.width ||
+        layout.size.height !== size.height
       ) {
         nextState.size = layout.size;
-        props.onResize(layout.size);
       }
 
       return nextState;
