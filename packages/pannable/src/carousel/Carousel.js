@@ -12,14 +12,21 @@ export default class Carousel extends React.Component {
   state = {
     size: { width: 0, height: 0 },
     contentSize: { width: 0, height: 0 },
+    calculatedSizeForLoop: { width: 0, height: 0 },
   };
 
   componentDidUpdate(prevProps, prevState) {
-    const { size, contentSize } = this.state;
-    const { loop } = this.props;
+    const { size, contentSize, calculatedSizeForLoop } = this.state;
+    const { loop, direction } = this.props;
 
-    if (prevState.size !== size || prevState.contentSize !== contentSize) {
-      if (loop) {
+    if (
+      prevState.size !== size ||
+      prevState.contentSize !== contentSize ||
+      prevState.calculatedSizeForLoop !== calculatedSizeForLoop
+    ) {
+      const dt = direction === 'x' ? 'width' : 'height';
+
+      if (loop && contentSize[dt] === calculatedSizeForLoop[dt]) {
         const player = this.playerRef;
         const activeIndex = player.getActiveIndex();
         const pageCount = player.getPageCount();
@@ -108,12 +115,13 @@ export default class Carousel extends React.Component {
       let m = activeIndex > pageCount - 2 ? -1 : 1;
       const nextFrame = activeIndex + (pageCount / 2) * m;
       player.setFrame({ index: nextFrame, animated: false });
+      console.log('nextFrame:', activeIndex, nextFrame);
     }
   }
 
   render() {
     const { loop, children, onSlideChange, ...playerProps } = this.props;
-    const { contentSize } = this.state;
+    const { calculatedSizeForLoop } = this.state;
 
     return (
       <Player
@@ -128,20 +136,14 @@ export default class Carousel extends React.Component {
           if (loop) {
             const pad = player.padRef;
             const { direction } = playerProps;
-
-            let padContentSize = {
-              width: playerProps.contentWidth,
-              height: playerProps.contentHeight,
-            };
-            let visibleRect = { x: 0, y: 0, width: 0, height: 0 };
+            const padContentSize = pad.getContentSize();
+            const visibleRect = pad.getVisibleRect();
             let itemWidth, itemHeight;
 
-            if (pad) {
-              padContentSize = pad.getContentSize();
-              visibleRect = pad.getVisibleRect();
-            }
-
-            const { width: resizeWidth, height: resizeHeight } = contentSize;
+            const {
+              width: resizeWidth,
+              height: resizeHeight,
+            } = calculatedSizeForLoop;
             const { width: realWidth, height: realHeight } = padContentSize;
 
             if (direction === 'x') {
@@ -156,27 +158,17 @@ export default class Carousel extends React.Component {
             return (
               <ListContent
                 direction={direction}
-                height={padContentSize.height}
-                estimatedItemWidth={itemWidth}
-                estimatedItemHeight={itemHeight}
+                width={realWidth}
+                height={realHeight}
                 itemCount={2}
-                renderItem={() => {
-                  return (
-                    <div
-                      style={{
-                        position: 'relative',
-                        width: itemWidth,
-                        height: itemHeight,
-                      }}
-                    >
-                      {typeof children === 'function'
-                        ? children(this)
-                        : children}
-                    </div>
-                  );
-                }}
+                renderItem={({ Item }) => (
+                  <Item width={itemWidth} height={itemHeight}>
+                    {typeof children === 'function' ? children(this) : children}
+                  </Item>
+                )}
                 visibleRect={visibleRect}
                 onResize={size => {
+                  this.setState({ calculatedSizeForLoop: size });
                   player.padRef.setContentSize(size);
                 }}
               />

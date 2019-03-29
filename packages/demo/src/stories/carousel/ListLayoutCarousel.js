@@ -16,6 +16,14 @@ class ListLayoutCarousel extends Component {
     };
     this.carouselRef = React.createRef();
   }
+  componentDidMount() {
+    setTimeout(() => {
+      this.carouselRef.current.playerRef.padRef.setContentSize({
+        width: 4500,
+        height: 300,
+      });
+    }, 3000);
+  }
   handleInputChange = evt => {
     const node = evt.target;
 
@@ -29,12 +37,41 @@ class ListLayoutCarousel extends Component {
   handleSlideNext = () => {
     this.carouselRef.current.slideNext();
   };
-  handleSlideChange = ({ activeIndex }) => {
+  handleSlideChange = ({ activeIndex, pageCount }) => {
     this.setState({ activeIndex });
   };
   handlePaginationClick = index => {
     this.carouselRef.current.slideTo({ index });
   };
+  renderContent() {
+    const { direction, slideArr } = this.state;
+    const items = [];
+
+    for (let slide = 0; slide < slideArr.length; slide++) {
+      const style = {
+        position: 'absolute',
+        top: direction === 'x' ? 0 : slide * 300,
+        left: direction === 'x' ? slide * 750 : 0,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: 750,
+        height: 300,
+        backgroundColor: slide % 2 ? '#defdff' : '#cbf1ff',
+        color: '#75d3ec',
+        fontSize: 24,
+        textAlign: 'center',
+      };
+
+      items.push(
+        <div key={slide} style={style}>
+          slide {slideArr[slide]}
+        </div>
+      );
+    }
+
+    return items;
+  }
 
   render() {
     const { direction, activeIndex, slideArr } = this.state;
@@ -48,30 +85,41 @@ class ListLayoutCarousel extends Component {
             height={300}
             direction={direction}
             loop={true}
+            autoplayEnabled={false}
             onSlideChange={this.handleSlideChange}
           >
             {carousel => {
-              return (
-                <ListContent
-                  direction="x"
-                  renderItem={({ itemIndex }) => {
-                    // const style = {
-                    //   display: 'flex',
-                    //   alignItems: 'center',
-                    //   justifyContent: 'center',
-                    //   width: 750,
-                    //   height: 300,
-                    //   backgroundColor: slide % 2 ? '#defdff' : '#cbf1ff',
-                    //   color: '#75d3ec',
-                    //   fontSize: 24,
-                    //   textAlign: 'center',
-                    // };
-                    return (
-                      <div key={itemIndex}>slide {slideArr[itemIndex]}</div>
-                    );
-                  }}
-                />
-              );
+              // return (
+              // <ListContent
+              //   direction="x"
+              //   height={300}
+              //   estimatedItemWidth={750}
+              //   estimatedItemHeight={300}
+              //   itemCount={slideArr.length}
+              //   renderItem={({ itemIndex }) => {
+              //     const style = {
+              //       display: 'flex',
+              //       alignItems: 'center',
+              //       justifyContent: 'center',
+              //       backgroundColor: itemIndex % 2 ? '#defdff' : '#cbf1ff',
+              //       color: '#75d3ec',
+              //       fontSize: 24,
+              //       textAlign: 'center',
+              //     };
+              //     return (
+              //       <div key={itemIndex} style={style}>
+              //         slide {slideArr[itemIndex]}
+              //       </div>
+              //     );
+              //   }}
+              //   visibleRect={carousel.playerRef.padRef.getVisibleRect()}
+              //   onResize={size => {
+              //     console.log('list carousel:', size);
+              //     carousel.playerRef.padRef.setContentSize(size);
+              //   }}
+              // />
+              // );
+              return this.renderContent();
             }}
           </Carousel>
           <SvgPrev
