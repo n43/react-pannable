@@ -158,19 +158,18 @@ export function calculateDeceleration(deceleration, moveTime, name) {
     const { points, duration, startTime } = deceleration;
     const t = Math.max(0, Math.min((moveTime - startTime) / duration, 1));
     const [p0, p1, p2, p3] = points[x];
+    const offsetX =
+      p0 -
+      3 * (p0 - p1) * t +
+      3 * (p0 - 2 * p1 + p2) * Math.pow(t, 2) -
+      (p0 - 3 * p1 + 3 * p2 - p3) * Math.pow(t, 3);
+    const velocityX =
+      (-3 * (p0 - p1) +
+        6 * (p0 - 2 * p1 + p2) * t -
+        3 * (p0 - 3 * p1 + 3 * p2 - p3) * Math.pow(t, 2)) /
+      duration;
 
-    return {
-      [x + 'Offset']:
-        p0 -
-        3 * (p0 - p1) * t +
-        3 * (p0 - 2 * p1 + p2) * Math.pow(t, 2) -
-        (p0 - 3 * p1 + 3 * p2 - p3) * Math.pow(t, 3),
-      [x + 'Velocity']:
-        (-3 * (p0 - p1) +
-          6 * (p0 - 2 * p1 + p2) * t -
-          3 * (p0 - 3 * p1 + 3 * p2 - p3) * Math.pow(t, 2)) *
-        (3.0 / duration),
-    };
+    return { [x + 'Offset']: offsetX, [x + 'Velocity']: velocityX };
   }
 
   return {
@@ -189,6 +188,7 @@ export function createDeceleration(
     x: endOffset.x - startOffset.x,
     y: endOffset.y - startOffset.y,
   };
+
   const sm = Math.sqrt(Math.pow(s.x, 2) + Math.pow(s.y, 2));
   let vm;
   let duration;
@@ -205,7 +205,6 @@ export function createDeceleration(
     }
 
     duration = th + vh / rate;
-    console.log('sm', sm, 'vm', vm, 'd', duration, 'vh', vh, 'th', th);
   } else {
     vm = Math.sqrt(Math.pow(startVelocity.x, 2) + Math.pow(startVelocity.y, 2));
     duration = ((Math.sqrt(2) + 1) * vm) / rate;
@@ -229,7 +228,7 @@ export function createDeceleration(
       endOffset.y,
     ],
   };
-  console.log('points', points.x);
+
   return {
     points,
     duration,
