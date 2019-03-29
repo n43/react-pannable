@@ -114,7 +114,7 @@ export default class Carousel extends React.Component {
 
   render() {
     const { loop, children, onSlideChange, ...playerProps } = this.props;
-    const { calculatedSizeForLoop } = this.state;
+    const { contentSize, calculatedSizeForLoop } = this.state;
 
     return (
       <Player
@@ -129,30 +129,32 @@ export default class Carousel extends React.Component {
           if (loop) {
             const pad = player.padRef;
             const { direction } = playerProps;
-            const padContentSize = pad.getContentSize();
             const visibleRect = pad.getVisibleRect();
             let itemWidth, itemHeight;
 
             const {
-              width: resizeWidth,
-              height: resizeHeight,
+              width: loopWidth,
+              height: loopHeight,
             } = calculatedSizeForLoop;
-            const { width: realWidth, height: realHeight } = padContentSize;
+            const { width: contentWidth, height: contentHeight } = contentSize;
 
             if (direction === 'x') {
-              itemWidth = resizeWidth === realWidth ? realWidth / 2 : realWidth;
-              itemHeight = realHeight;
+              itemWidth =
+                loopWidth === contentWidth ? contentWidth / 2 : contentWidth;
+              itemHeight = contentHeight;
             } else {
-              itemWidth = realWidth;
+              itemWidth = contentWidth;
               itemHeight =
-                resizeHeight === realHeight ? realHeight / 2 : realHeight;
+                loopHeight === contentHeight
+                  ? contentHeight / 2
+                  : contentHeight;
             }
 
             return (
               <ListContent
                 direction={direction}
-                width={realWidth}
-                height={realHeight}
+                width={contentWidth}
+                height={contentHeight}
                 itemCount={2}
                 renderItem={({ Item }) => (
                   <Item width={itemWidth} height={itemHeight}>
