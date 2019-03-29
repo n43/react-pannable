@@ -106,23 +106,26 @@ export default class GridContent extends React.Component {
     });
   }
 
-  _renderItem(itemIndex, attrs, visibleRect) {
+  _renderItem(layoutAttrs) {
     const { renderItem } = this.props;
-    const element = renderItem({ ...attrs, itemIndex, visibleRect });
 
-    const Item = element.type;
-    const { style, ...props } = element.props;
+    const { itemIndex, rect } = layoutAttrs;
+    const element = renderItem(layoutAttrs);
     const key = element.key || itemIndex;
+
     const itemStyle = {
       position: 'absolute',
-      left: attrs.rect.x,
-      top: attrs.rect.y,
-      width: attrs.rect.width,
-      height: attrs.rect.height,
-      ...style,
+      left: rect.x,
+      top: rect.y,
+      width: rect.width,
+      height: rect.height,
     };
 
-    return <Item {...props} key={key} style={itemStyle} />;
+    return (
+      <div key={key} style={itemStyle}>
+        {element}
+      </div>
+    );
   }
 
   render() {
@@ -132,15 +135,14 @@ export default class GridContent extends React.Component {
 
     for (let itemIndex = 0; itemIndex < itemCount; itemIndex++) {
       const attrs = layoutList[itemIndex];
+      const layoutAttrs = {
+        ...attrs,
+        itemIndex,
+        visibleRect: getItemVisibleRect(attrs.rect, visibleRect),
+      };
 
-      if (attrs && needsRender(attrs.rect, visibleRect)) {
-        items.push(
-          this._renderItem(
-            itemIndex,
-            attrs,
-            getItemVisibleRect(attrs.rect, visibleRect)
-          )
-        );
+      if (needsRender(layoutAttrs.rect, visibleRect)) {
+        items.push(this._renderItem(layoutAttrs));
       }
     }
 
