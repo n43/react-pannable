@@ -52,7 +52,7 @@ export default class ItemContent extends React.Component {
 
       const layout = calculateLayout(props);
 
-      nextState.hash = layout.hash;
+      nextState.sizeHash = layout.hash;
 
       if (!layout.size) {
         const resizeNode = this.resizeRef.current;

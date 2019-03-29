@@ -9,11 +9,18 @@ export default class Carousel extends React.Component {
     onSlideChange: () => {},
   };
 
-  state = {
-    size: { width: 0, height: 0 },
-    contentSize: { width: 0, height: 0 },
-    calculatedSizeForLoop: { width: 0, height: 0 },
-  };
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      size: { width: props.width || 0, height: props.height || 0 },
+      contentSize: {
+        width: props.contentWidth || 0,
+        height: props.contentHeight || 0,
+      },
+      calculatedSizeForLoop: { width: 0, height: 0 },
+    };
+  }
 
   componentDidUpdate(prevProps, prevState) {
     const { size, contentSize, calculatedSizeForLoop } = this.state;
@@ -115,7 +122,6 @@ export default class Carousel extends React.Component {
       let m = activeIndex > pageCount - 2 ? -1 : 1;
       const nextFrame = activeIndex + (pageCount / 2) * m;
       player.setFrame({ index: nextFrame, animated: false });
-      console.log('nextFrame:', activeIndex, nextFrame);
     }
   }
 
@@ -170,6 +176,7 @@ export default class Carousel extends React.Component {
                 )}
                 visibleRect={visibleRect}
                 onResize={size => {
+                  console.log('loop:', size);
                   this.setState({ calculatedSizeForLoop: size });
                   player.padRef.setContentSize(size);
                 }}
