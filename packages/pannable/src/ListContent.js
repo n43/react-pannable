@@ -182,8 +182,8 @@ export default class ListContent extends React.Component {
 
     const elemStyle = {
       position: 'relative',
-      width: (size && size.width) || null,
-      height: (size && size.height) || null,
+      width: size ? size.width : 'auto',
+      height: size ? size.height : 'auto',
       ...props.style,
     };
     const items = [];
