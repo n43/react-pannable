@@ -95,7 +95,6 @@ export default class ListContent extends React.Component {
       }
 
       const layout = calculateLayout(props, nextItemHashList, nextItemSizeDict);
-
       nextState.layoutList = layout.layoutList;
 
       if (nextItemHashList !== itemHashList) {

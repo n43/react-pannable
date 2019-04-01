@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Carousel, ListContent, ItemContent } from 'react-pannable';
+import { Carousel, ListContent } from 'react-pannable';
 import SvgPrev from './SvgPrev';
 import SvgNext from './SvgNext';
 import './Carousel.css';
@@ -39,7 +39,7 @@ class ListLayoutCarousel extends Component {
   };
 
   render() {
-    const { direction, activeIndex, slideArr, listSize } = this.state;
+    const { direction, activeIndex, slideArr } = this.state;
     return (
       <div className="carousel-main">
         <div className="carousel-box">
@@ -54,30 +54,29 @@ class ListLayoutCarousel extends Component {
           >
             {carousel => {
               return (
-                <ItemContent hash={`size:${750 * slideArr.length}`}>
-                  <ListContent
-                    direction="x"
-                    height={300}
-                    itemCount={slideArr.length}
-                    renderItem={({ itemIndex, Item }) => {
-                      const style = {
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        backgroundColor: itemIndex % 2 ? '#defdff' : '#cbf1ff',
-                        color: '#75d3ec',
-                        fontSize: 24,
-                        textAlign: 'center',
-                      };
-                      return (
-                        <Item width={750} height={300} style={style}>
-                          slide {slideArr[itemIndex]}
-                        </Item>
-                      );
-                    }}
-                    visibleRect={carousel.getVisibleRect()}
-                  />
-                </ItemContent>
+                <ListContent
+                  direction="x"
+                  height={300}
+                  itemCount={slideArr.length}
+                  renderItem={({ itemIndex, Item }) => {
+                    const style = {
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: itemIndex % 2 ? '#defdff' : '#cbf1ff',
+                      color: '#75d3ec',
+                      fontSize: 24,
+                      textAlign: 'center',
+                    };
+                    return (
+                      <Item width={750} height={300} style={style}>
+                        slide {slideArr[itemIndex]}
+                      </Item>
+                    );
+                  }}
+                  visibleRect={carousel.getVisibleRect()}
+                  onResize={size => carousel.setContentSize(size)}
+                />
               );
             }}
           </Carousel>
