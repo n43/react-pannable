@@ -29,8 +29,10 @@ export default class ListContent extends React.Component {
       itemHashList,
       itemSizeDict,
     };
+  }
 
-    props.onResize(layout.size);
+  componentDidMount() {
+    this.props.onResize(this.state.size);
   }
 
   componentDidUpdate(prevProps, prevState) {
