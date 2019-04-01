@@ -41,6 +41,7 @@ export default class ItemContent extends React.Component {
       this._calculateLayout();
     }
     if (prevState.size !== size) {
+      console.log('ItemzContent:', size, sizeHash);
       onResize(size, sizeHash);
     }
   }
@@ -53,10 +54,11 @@ export default class ItemContent extends React.Component {
       const layout = calculateLayout(props);
 
       nextState.sizeHash = layout.hash;
-
+      console.log('_calculateLayout size:', layout.size);
       if (!layout.size) {
         const resizeNode = this.resizeRef.current;
         layout.size = getElementSize(resizeNode);
+        console.log('_calculateLayout size2:', layout.size);
       }
       if (
         !size ||
@@ -65,7 +67,7 @@ export default class ItemContent extends React.Component {
       ) {
         nextState.size = layout.size;
       }
-
+      console.log('_calculateLayout:', props, nextState);
       return nextState;
     });
   }

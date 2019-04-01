@@ -184,7 +184,6 @@ export default class Carousel extends React.Component {
                 }}
                 visibleRect={visibleRect}
                 onResize={size => {
-                  console.log('onresize:', size);
                   this.setState({ calculatedSizeForLoop: size });
                   player.padRef.setContentSize(size);
                 }}

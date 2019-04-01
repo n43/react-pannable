@@ -108,7 +108,6 @@ export default class ListContent extends React.Component {
       ) {
         nextState.size = layout.size;
       }
-
       return nextState;
     });
   }

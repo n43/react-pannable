@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Carousel, ListContent } from 'react-pannable';
+import { Carousel, ListContent, ItemContent } from 'react-pannable';
 import SvgPrev from './SvgPrev';
 import SvgNext from './SvgNext';
 import './Carousel.css';
@@ -40,7 +40,7 @@ class ListLayoutCarousel extends Component {
 
   render() {
     const { direction, activeIndex, slideArr, listSize } = this.state;
-
+    console.log('render:', listSize);
     return (
       <div className="carousel-main">
         <div className="carousel-box">
@@ -53,9 +53,14 @@ class ListLayoutCarousel extends Component {
             autoplayEnabled={false}
             onSlideChange={this.handleSlideChange}
           >
-            {(carousel, LoopItem) => {
+            {carousel => {
               return (
-                <LoopItem hash={`size:${listSize.width},${listSize.height}`}>
+                <ItemContent
+                  hash={`size:${listSize.width},${listSize.height}`}
+                  onResize={(size, hash) =>
+                    console.log('ItemContent:', listSize, size, hash)
+                  }
+                >
                   <ListContent
                     direction="x"
                     height={300}
@@ -78,10 +83,11 @@ class ListLayoutCarousel extends Component {
                     }}
                     visibleRect={carousel.getVisibleRect()}
                     onResize={size => {
+                      console.log('onResize:', size);
                       this.setState({ listSize: size });
                     }}
                   />
-                </LoopItem>
+                </ItemContent>
               );
             }}
           </Carousel>
