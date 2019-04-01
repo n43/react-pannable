@@ -163,8 +163,27 @@ export default class ListContent extends React.Component {
   }
 
   render() {
-    const { itemCount, visibleRect } = this.props;
-    const { layoutList } = this.state;
+    const {
+      direction,
+      width,
+      height,
+      spacing,
+      itemCount,
+      estimatedItemWidth,
+      estimatedItemHeight,
+      renderItem,
+      visibleRect,
+      onResize,
+      ...props
+    } = this.props;
+    const { size, layoutList } = this.state;
+
+    const elemStyle = {
+      position: 'absolute',
+      width: (size && size.width) || null,
+      height: (size && size.height) || null,
+      ...props.style,
+    };
     const items = [];
 
     for (let itemIndex = 0; itemIndex < itemCount; itemIndex++) {
@@ -181,7 +200,11 @@ export default class ListContent extends React.Component {
       }
     }
 
-    return items;
+    return (
+      <div {...props} style={elemStyle}>
+        {items}
+      </div>
+    );
   }
 }
 
