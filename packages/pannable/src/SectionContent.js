@@ -57,17 +57,17 @@ export default class SectionContent extends React.Component {
   }
 
   render() {
-    const {
-      direction,
-      width,
-      height,
-      renderHeader,
-      renderBody,
-      renderFooter,
-      visibleRect,
-      onResize,
-      ...props
-    } = this.props;
+    // const {
+    //   direction,
+    //   width,
+    //   height,
+    //   renderHeader,
+    //   renderBody,
+    //   renderFooter,
+    //   visibleRect,
+    //   onResize,
+    //   ...props
+    // } = this.props;
 
     return null;
   }
