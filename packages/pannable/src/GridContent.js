@@ -146,7 +146,7 @@ export default class GridContent extends React.Component {
     const { size, layoutList } = this.state;
 
     const elemStyle = {
-      position: 'absolute',
+      position: 'relative',
       width: (size && size.width) || null,
       height: (size && size.height) || null,
       ...props.style,

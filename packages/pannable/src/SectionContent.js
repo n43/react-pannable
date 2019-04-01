@@ -17,16 +17,16 @@ export default class SectionContent extends React.Component {
   constructor(props) {
     super(props);
 
-    // const itemSizeDict = {};
-    // const layout = calculateLayout(props, itemSizeDict);
+    const itemSizeDict = {};
+    const layout = calculateLayout(props, itemSizeDict);
 
-    // this.state = {
-    //   size: layout.size,
-    //   layoutDict: layout.layoutDict,
-    //   itemSizeDict,
-    // };
+    this.state = {
+      size: layout.size,
+      layoutDict: layout.layoutDict,
+      itemSizeDict,
+    };
 
-    // props.onResize(layout.size);
+    props.onResize(layout.size);
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -49,16 +49,28 @@ export default class SectionContent extends React.Component {
     return this.state.size;
   }
 
-  getItemRect({ itemIndex }) {
-    const { layoutList } = this.state;
-    const attrs = layoutList[itemIndex];
+  getItemRect({ name }) {
+    const { layoutDict } = this.state;
+    const attrs = layoutDict[name];
 
     return (attrs && attrs.rect) || null;
   }
 
   render() {
-    const { renderHeader, renderBody, renderFooter, ...props } = this.props;
+    const {
+      direction,
+      width,
+      height,
+      renderHeader,
+      renderBody,
+      renderFooter,
+      visibleRect,
+      onResize,
+      ...props
+    } = this.props;
 
     return null;
   }
 }
+
+function calculateLayout(props) {}
