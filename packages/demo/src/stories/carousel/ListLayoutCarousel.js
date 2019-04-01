@@ -40,7 +40,6 @@ class ListLayoutCarousel extends Component {
 
   render() {
     const { direction, activeIndex, slideArr, listSize } = this.state;
-    console.log('render:', listSize);
     return (
       <div className="carousel-main">
         <div className="carousel-box">
@@ -55,12 +54,7 @@ class ListLayoutCarousel extends Component {
           >
             {carousel => {
               return (
-                <ItemContent
-                  hash={`size:${listSize.width},${listSize.height}`}
-                  onResize={(size, hash) =>
-                    console.log('ItemContent:', listSize, size, hash)
-                  }
-                >
+                <ItemContent hash={`size:${750 * slideArr.length}`}>
                   <ListContent
                     direction="x"
                     height={300}
@@ -82,10 +76,6 @@ class ListLayoutCarousel extends Component {
                       );
                     }}
                     visibleRect={carousel.getVisibleRect()}
-                    onResize={size => {
-                      console.log('onResize:', size);
-                      this.setState({ listSize: size });
-                    }}
                   />
                 </ItemContent>
               );
