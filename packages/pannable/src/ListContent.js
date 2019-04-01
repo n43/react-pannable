@@ -113,30 +113,26 @@ export default class ListContent extends React.Component {
     });
   }
 
-  _renderItem(itemIndex, attrs, visibleRect) {
+  _renderItem(layoutAttrs) {
     const { direction, width, height, renderItem } = this.props;
     const { itemSizeDict } = this.state;
 
-    let element = renderItem({
-      ...attrs,
-      itemIndex,
-      visibleRect,
-      Item: ItemContent,
-    });
+    const { itemIndex, rect, Item } = layoutAttrs;
+    let element = renderItem(layoutAttrs);
     const key = element.key || itemIndex;
-    const itemStyle = {
-      position: 'absolute',
-      left: attrs.rect.x,
-      top: attrs.rect.y,
-      width: attrs.rect.width,
-      height: attrs.rect.height,
-    };
 
-    if (element.type !== ItemContent) {
-      element = <ItemContent>{element}</ItemContent>;
+    if (element.type !== Item) {
+      element = <Item>{element}</Item>;
     }
 
     const { onResize, ...props } = element.props;
+    const itemStyle = {
+      position: 'absolute',
+      left: rect.x,
+      top: rect.y,
+      width: rect.width,
+      height: rect.height,
+    };
 
     if (props.hash === '') {
       props.hash = key;
@@ -161,7 +157,7 @@ export default class ListContent extends React.Component {
 
     return (
       <div key={key} style={itemStyle}>
-        <ItemContent {...props} />
+        <Item {...props} />
       </div>
     );
   }
@@ -173,15 +169,15 @@ export default class ListContent extends React.Component {
 
     for (let itemIndex = 0; itemIndex < itemCount; itemIndex++) {
       const attrs = layoutList[itemIndex];
+      const layoutAttrs = {
+        ...attrs,
+        itemIndex,
+        visibleRect: getItemVisibleRect(attrs.rect, visibleRect),
+        Item: ItemContent,
+      };
 
-      if (attrs && needsRender(attrs.rect, visibleRect)) {
-        items.push(
-          this._renderItem(
-            itemIndex,
-            attrs,
-            getItemVisibleRect(attrs.rect, visibleRect)
-          )
-        );
+      if (needsRender(layoutAttrs.rect, visibleRect)) {
+        items.push(this._renderItem(layoutAttrs));
       }
     }
 
