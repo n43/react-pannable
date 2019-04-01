@@ -26,8 +26,10 @@ export default class GridContent extends React.Component {
       count: layout.count,
       layoutList: layout.layoutList,
     };
+  }
 
-    props.onResize(layout.size);
+  componentDidMount() {
+    this.props.onResize(this.state.size);
   }
 
   componentDidUpdate(prevProps, prevState) {

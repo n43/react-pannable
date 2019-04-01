@@ -17,14 +17,14 @@ export default class ItemContent extends React.Component {
 
     this.state = { size: layout.size, sizeHash: layout.hash };
     this.resizeRef = React.createRef();
-
-    if (layout.size) {
-      props.onResize(layout.size, layout.hash);
-    }
   }
 
   componentDidMount() {
-    if (!this.state.size) {
+    const { size, sizeHash } = this.state;
+
+    if (size) {
+      this.props.onResize(size, sizeHash);
+    } else {
       this._calculateLayout();
     }
   }
