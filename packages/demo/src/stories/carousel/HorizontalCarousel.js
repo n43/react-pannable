@@ -82,7 +82,15 @@ class HorizontalCarousel extends Component {
             loop={true}
             onSlideChange={this.handleSlideChange}
           >
-            {this.renderContent()}
+            <div
+              style={{
+                position: 'relative',
+                width: direction === 'x' ? 750 * 6 : 750,
+                height: direction === 'x' ? 300 : 300 * 6,
+              }}
+            >
+              {this.renderContent()}
+            </div>
           </Carousel>
           <SvgPrev
             className="carousel-box-prev"
