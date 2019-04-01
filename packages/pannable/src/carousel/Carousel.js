@@ -1,6 +1,5 @@
 import React from 'react';
 import Player from './Player';
-import ListContent from '../ListContent';
 
 export default class Carousel extends React.Component {
   static defaultProps = {
@@ -27,14 +26,28 @@ export default class Carousel extends React.Component {
     };
   }
 
+  componentDidMount() {
+    const { direction, loop } = this.props;
+    const { contentSize } = this.state;
+    const dt = direction === 'x' ? 'width' : height;
+
+    if (loop && contentSize[dt] > 0) {
+      const player = this.playerRef;
+      const activeIndex = player.getActiveIndex();
+      const pageCount = player.getPageCount();
+
+      this._alternateFramesForLoop({ activeIndex, pageCount });
+    }
+  }
+
   componentDidUpdate(prevProps, prevState) {
-    const { size, contentSize, calculatedSizeForLoop } = this.state;
+    const { size, contentSize } = this.state;
     const { loop, direction } = this.props;
 
     if (prevState.size !== size || prevState.contentSize !== contentSize) {
       const dt = direction === 'x' ? 'width' : 'height';
 
-      if (loop && contentSize[dt] === calculatedSizeForLoop[dt]) {
+      if (loop && contentSize[dt] > 0) {
         const player = this.playerRef;
         const activeIndex = player.getActiveIndex();
         const pageCount = player.getPageCount();
@@ -70,10 +83,9 @@ export default class Carousel extends React.Component {
     }
 
     let visibleRectForLoop = { ...visibleRect };
-    const dt = direction === 'x' ? 'width' : 'height';
-    const x = direction === 'x' ? 'x' : 'y';
+    const [width, x] = direction === x ? ['width', 'x'] : ['height', 'y'];
 
-    if (contentSize[dt] !== calculatedSizeForLoop[dt]) {
+    if (contentSize[width] !== calculatedSizeForLoop[width]) {
       return visibleRect;
     }
 
@@ -83,12 +95,11 @@ export default class Carousel extends React.Component {
   }
 
   setContentSize(size) {
-    console.log(size);
-    const layout = calculateLayout(size);
-    this.setState({
-      layoutList: layout.layoutList,
-    });
-    this.playerRef.padRef.setContentSize(layout.size);
+    const layout = calculateLayout(this.props, size);
+    // this.setState({
+    //   layoutList: layout.layoutList,
+    // });
+    // this.playerRef.padRef.setContentSize(layout.size);
   }
 
   slideTo({ index, animated = true }) {
@@ -201,7 +212,6 @@ export default class Carousel extends React.Component {
 function calculateLayout(props, size) {
   const { direction, loop } = props;
   let layoutList = [];
-
   layoutList.push({
     position: 'absolute',
     x: 0,

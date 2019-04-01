@@ -17,7 +17,6 @@ class ListLayoutCarousel extends Component {
     };
     this.carouselRef = React.createRef();
   }
-  componentDidMount() {}
   handleInputChange = evt => {
     const node = evt.target;
 
@@ -75,7 +74,10 @@ class ListLayoutCarousel extends Component {
                     );
                   }}
                   visibleRect={carousel.getVisibleRect()}
-                  onResize={size => carousel.setContentSize(size)}
+                  onResize={size => {
+                    console.log('onResize:', size);
+                    carousel.setContentSize(size);
+                  }}
                 />
               );
             }}
