@@ -17,12 +17,12 @@ class ListLayoutCarousel extends Component {
     this.carouselRef = React.createRef();
   }
   componentDidMount() {
-    setTimeout(() => {
-      this.carouselRef.current.playerRef.padRef.setContentSize({
-        width: 4500,
-        height: 300,
-      });
-    }, 3000);
+    // setTimeout(() => {
+    //   this.carouselRef.current.playerRef.padRef.setContentSize({
+    //     width: 4500,
+    //     height: 300,
+    //   });
+    // }, 3000);
   }
   handleInputChange = evt => {
     const node = evt.target;
@@ -89,34 +89,39 @@ class ListLayoutCarousel extends Component {
             onSlideChange={this.handleSlideChange}
           >
             {carousel => {
-              // return (
-              //   <ListContent
-              //     direction="x"
-              //     height={300}
-              //     estimatedItemWidth={750}
-              //     estimatedItemHeight={300}
-              //     itemCount={slideArr.length}
-              //     renderItem={({ itemIndex, Item }) => {
-              //       const style = {
-              //         display: 'flex',
-              //         alignItems: 'center',
-              //         justifyContent: 'center',
-              //         backgroundColor: itemIndex % 2 ? '#defdff' : '#cbf1ff',
-              //         color: '#75d3ec',
-              //         fontSize: 24,
-              //         textAlign: 'center',
-              //       };
-              //       return (
-              //         <Item style={style}>slide {slideArr[itemIndex]}</Item>
-              //       );
-              //     }}
-              //     visibleRect={carousel.playerRef.padRef.getVisibleRect()}
-              //     onResize={size => {
-              //       carousel.playerRef.padRef.setContentSize(size);
-              //     }}
-              //   />
-              // );
-              return this.renderContent();
+              console.log(carousel.playerRef.padRef.getVisibleRect());
+              return (
+                <ListContent
+                  direction="x"
+                  height={300}
+                  estimatedItemWidth={750}
+                  estimatedItemHeight={300}
+                  itemCount={slideArr.length}
+                  renderItem={({ itemIndex, Item, visibleRect }) => {
+                    console.log(visibleRect);
+                    const style = {
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: itemIndex % 2 ? '#defdff' : '#cbf1ff',
+                      color: '#75d3ec',
+                      fontSize: 24,
+                      textAlign: 'center',
+                    };
+                    return (
+                      <Item width={750} height={300} style={style}>
+                        slide {slideArr[itemIndex]}
+                      </Item>
+                    );
+                  }}
+                  visibleRect={carousel.playerRef.padRef.getVisibleRect()}
+                  onResize={size => {
+                    console.log('demo resize:', size);
+                    carousel.playerRef.padRef.setContentSize(size);
+                  }}
+                />
+              );
+              // return this.renderContent();
             }}
           </Carousel>
           <SvgPrev
