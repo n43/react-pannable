@@ -29,6 +29,8 @@ export default class Player extends React.Component {
     this.state = {
       size,
       contentSize,
+      contentOffset: { x: 0, y: 0 },
+      touchDirection: 0,
       autoplayStatus: props.autoplayEnabled ? 1 : -1,
       pageCount,
       activeIndex: 0,
@@ -231,9 +233,11 @@ export default class Player extends React.Component {
   _onPadScroll = evt => {
     const { contentOffset, size, dragging, decelerating } = evt;
     const { direction, onScroll } = this.props;
-    const { activeIndex } = this.state;
     const [x, width] = direction === 'x' ? ['x', 'width'] : ['y', 'height'];
     let nextState = {};
+    let touchDirection = 0;
+
+    nextState.contentOffset = contentOffset;
 
     if (this.state.dragging !== dragging) {
       nextState.dragging = dragging;
@@ -242,11 +246,19 @@ export default class Player extends React.Component {
       nextState.decelerating = decelerating;
     }
 
-    const nextActiveIndex = Math.abs(
-      Math.floor(-contentOffset[x] / size[width])
-    );
-    if (nextActiveIndex !== activeIndex && !decelerating) {
-      nextState.activeIndex = nextActiveIndex;
+    if (!(this.state.decelerating && !decelerating)) {
+      touchDirection =
+        contentOffset[x] - this.state.contentOffset[x] > 0 ? 1 : -1;
+    }
+    nextState.touchDirection = touchDirection;
+
+    const activeIndex =
+      touchDirection === -1
+        ? Math.abs(Math.floor(-contentOffset[x] / size[width]))
+        : Math.abs(Math.ceil(-contentOffset[x] / size[width]));
+
+    if (activeIndex !== this.state.activeIndex && !decelerating) {
+      nextState.activeIndex = activeIndex;
     }
 
     this.setState(nextState);

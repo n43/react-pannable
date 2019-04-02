@@ -164,8 +164,11 @@ export default class Carousel extends React.Component {
 
   _alternateFramesForLoop({ activeIndex, pageCount }) {
     const player = this.playerRef;
-    if (activeIndex < pageCount / 2 - 1 || activeIndex > pageCount - 2) {
-      let m = activeIndex > pageCount - 2 ? -1 : 1;
+    const min = parseFloat(pageCount / 4);
+    const max = parseFloat((pageCount * 3) / 4);
+
+    if (activeIndex < min || activeIndex >= max) {
+      let m = activeIndex < min ? 1 : -1;
       const nextFrame = activeIndex + (pageCount / 2) * m;
       player.setFrame({ index: nextFrame, animated: false });
     }
