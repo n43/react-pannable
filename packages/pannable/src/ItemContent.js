@@ -12,9 +12,14 @@ export default class ItemContent extends React.Component {
   constructor(props) {
     super(props);
 
-    const layout = calculateLayout(props);
+    const { width, height } = props;
+    let size = null;
 
-    this.state = { size: layout.size };
+    if (typeof width === 'number' && typeof height === 'number') {
+      size = { width, height };
+    }
+
+    this.state = { size };
     this.resizeRef = React.createRef();
   }
 
@@ -47,23 +52,22 @@ export default class ItemContent extends React.Component {
   _calculateLayout() {
     this.setState((state, props) => {
       const { size } = state;
+      const { width, height } = props;
+      let nextSize = size;
       const nextState = {};
 
-      const layout = calculateLayout(props);
-
-      if (!layout.size) {
+      if (typeof width === 'number' && typeof height === 'number') {
+        nextSize = { width, height };
+      } else {
         const resizeNode = this.resizeRef.current;
 
         if (resizeNode) {
-          layout.size = getElementSize(resizeNode);
+          nextSize = getElementSize(resizeNode);
         }
       }
-      if (
-        !size ||
-        layout.size.width !== size.width ||
-        layout.size.height !== size.height
-      ) {
-        nextState.size = layout.size;
+
+      if (nextSize !== size) {
+        nextState.size = nextSize;
       }
 
       return nextState;
@@ -74,30 +78,18 @@ export default class ItemContent extends React.Component {
     const { width, height, hash, onResize, ...props } = this.props;
     const { size } = this.state;
 
-    const elemStyle = {
-      position: 'relative',
-      width: size ? size.width : 'auto',
-      height: size ? size.height : 'auto',
-      ...props.style,
-    };
     let element = props.children;
 
     if (typeof element === 'function') {
       element = element(this);
     }
-
     if (React.isValidElement(element) && element.props.onResize) {
-      const Resizable = element.type;
-
-      element = (
-        <Resizable
-          {...element.props}
-          onResize={size => {
-            this.setState({ size });
-            element.props.onResize(size);
-          }}
-        />
-      );
+      element = React.cloneElement(element, {
+        onResize: size => {
+          this.setState({ size });
+          element.props.onResize(size);
+        },
+      });
     } else {
       element = (
         <div
@@ -113,20 +105,14 @@ export default class ItemContent extends React.Component {
       );
     }
 
-    return (
-      <div {...props} style={elemStyle}>
-        {element}
-      </div>
-    );
+    props.children = element;
+    props.style = {
+      position: 'relative',
+      width: size ? size.width : 'auto',
+      height: size ? size.height : 'auto',
+      ...props.style,
+    };
+
+    return <div {...props} />;
   }
-}
-
-function calculateLayout(props) {
-  const { width, height } = props;
-
-  if (typeof width === 'number' && typeof height === 'number') {
-    return { size: { width, height } };
-  }
-
-  return { size: null };
 }

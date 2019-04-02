@@ -4,8 +4,8 @@ import { getItemVisibleRect, needsRender } from './utils/visible';
 export default class GridContent extends React.Component {
   static defaultProps = {
     direction: 'y',
-    width: 0,
-    height: 0,
+    width: null,
+    height: null,
     rowSpacing: 0,
     columnSpacing: 0,
     itemCount: 0,
@@ -153,12 +153,6 @@ export default class GridContent extends React.Component {
     } = this.props;
     const { size, layoutList } = this.state;
 
-    const elemStyle = {
-      position: 'relative',
-      width: size.width,
-      height: size.height,
-      ...props.style,
-    };
     const items = [];
 
     for (let itemIndex = 0; itemIndex < itemCount; itemIndex++) {
@@ -174,11 +168,15 @@ export default class GridContent extends React.Component {
       }
     }
 
-    return (
-      <div {...props} style={elemStyle}>
-        {items}
-      </div>
-    );
+    props.children = items;
+    props.style = {
+      position: 'relative',
+      width: size.width,
+      height: size.height,
+      ...props.style,
+    };
+
+    return <div {...props} />;
   }
 }
 
@@ -190,10 +188,20 @@ function calculateItemIndex(index, count, direction) {
 }
 
 function calculateLayout(props) {
-  const { direction, itemCount } = props;
-  const size = { width: props.width, height: props.height };
-  const itemSize = { width: props.itemWidth, height: props.itemWidth };
-  const spacing = { row: props.rowSpacing, column: props.columnSpacing };
+  const {
+    direction,
+    rowSpacing,
+    columnSpacing,
+    itemCount,
+    itemWidth,
+    itemHeight,
+  } = props;
+  const size = {
+    width: typeof props.width === 'number' ? props.width : 0,
+    height: typeof props.height === 'number' ? props.height : 0,
+  };
+  const itemSize = { width: itemWidth, height: itemHeight };
+  const spacing = { row: rowSpacing, column: columnSpacing };
 
   const [x, y, width, height, row, column] =
     direction === 'x'

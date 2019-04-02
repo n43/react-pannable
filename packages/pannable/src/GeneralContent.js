@@ -12,7 +12,7 @@ export default class GeneralContent extends React.Component {
   constructor(props) {
     super(props);
 
-    const { width, height, onResize } = props;
+    const { width, height } = props;
     let size = null;
 
     if (typeof width === 'number' && typeof height === 'number') {
@@ -21,15 +21,15 @@ export default class GeneralContent extends React.Component {
 
     this.state = { size };
     this.resizeRef = React.createRef();
-
-    if (size) {
-      onResize(size);
-    }
   }
 
   componentDidMount() {
-    if (!this.state.size) {
-      this._calculateSize();
+    const { size } = this.state;
+
+    if (size) {
+      this.props.onResize(size);
+    } else {
+      this._calculateLayout();
     }
   }
 
@@ -38,7 +38,7 @@ export default class GeneralContent extends React.Component {
     const { size } = this.state;
 
     if (prevProps.width !== width || prevProps.height !== height) {
-      this._calculateSize();
+      this._calculateLayout();
     }
     if (prevState.size !== size) {
       onResize(size);
@@ -52,62 +52,84 @@ export default class GeneralContent extends React.Component {
     }
   }
 
-  _calculateSize() {
+  _calculateLayout() {
+    const resizeNode = this.resizeRef.current;
+
+    if (resizeNode) {
+      if (!this._resizeNode) {
+        this._resizeNode = resizeNode;
+        resizeDetector.listenTo(resizeNode, () => this._calculateLayout());
+
+        return;
+      }
+    } else {
+      if (this._resizeNode) {
+        resizeDetector.uninstall(this._resizeNode);
+        this._resizeNode = undefined;
+      }
+    }
+
     this.setState((state, props) => {
-      const { width, height } = props;
       const { size } = state;
-      let nextSize;
+      const { width, height } = props;
+      let nextSize = size;
+      const nextState = {};
 
       if (typeof width === 'number' && typeof height === 'number') {
-        if (this._resizeNode) {
-          resizeDetector.uninstall(this._resizeNode);
-          this._resizeNode = undefined;
-        }
-
         nextSize = { width, height };
       } else {
-        if (!this._resizeNode) {
-          const resizeNode = this.resizeRef.current;
-
-          this._resizeNode = resizeNode;
-          resizeDetector.listenTo(resizeNode, () => this._calculateSize());
-
-          return null;
+        if (this._resizeNode) {
+          nextSize = getElementSize(this._resizeNode);
         }
-
-        nextSize = getElementSize(this._resizeNode);
       }
 
-      if (
-        size &&
-        nextSize.width === size.width &&
-        nextSize.height === size.height
-      ) {
-        return null;
+      if (nextSize !== size) {
+        nextState.size = nextSize;
       }
 
-      return { size: nextSize };
+      return nextState;
     });
   }
 
   render() {
     const { width, height, onResize, ...props } = this.props;
-    const elemStyle = {
-      position: 'absolute',
-      width: typeof width === 'number' ? width : 'auto',
-      height: typeof height === 'number' ? height : 'auto',
-      ...props.style,
-    };
+    const { size } = this.state;
+
     let element = props.children;
 
     if (typeof element === 'function') {
       element = element(this);
     }
+    if (React.isValidElement(element) && element.props.onResize) {
+      element = React.cloneElement(element, {
+        onResize: size => {
+          this.setState({ size });
+          element.props.onResize(size);
+        },
+      });
+    } else {
+      element = (
+        <div
+          ref={this.resizeRef}
+          style={{
+            position: 'absolute',
+            width: typeof width === 'number' ? width : 'auto',
+            height: typeof height === 'number' ? height : 'auto',
+          }}
+        >
+          {element}
+        </div>
+      );
+    }
 
-    return (
-      <div {...props} ref={this.resizeRef} style={elemStyle}>
-        {element}
-      </div>
-    );
+    props.children = element;
+    props.style = {
+      position: 'relative',
+      width: size ? size.width : 'auto',
+      height: size ? size.height : 'auto',
+      ...props.style,
+    };
+
+    return <div {...props} />;
   }
 }

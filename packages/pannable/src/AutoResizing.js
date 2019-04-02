@@ -93,25 +93,24 @@ export default class AutoResizing extends React.Component {
   render() {
     const { width, height, onResize, ...props } = this.props;
     const { size } = this.state;
-    const elemStyle = {
+
+    let element = props.children;
+
+    if (size) {
+      if (typeof element === 'function') {
+        element = element(size);
+      }
+    } else {
+      element = null;
+    }
+
+    props.children = element;
+    props.style = {
       width: typeof width === 'number' ? width : '100%',
       height: typeof height === 'number' ? height : '100%',
       ...props.style,
     };
-    let element = props.children;
 
-    if (typeof element === 'function') {
-      if (size) {
-        element = element(size);
-      } else {
-        element = null;
-      }
-    }
-
-    return (
-      <div {...props} ref={this.resizeRef} style={elemStyle}>
-        {element}
-      </div>
-    );
+    return <div {...props} ref={this.resizeRef} />;
   }
 }

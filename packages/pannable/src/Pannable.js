@@ -240,26 +240,20 @@ export default class Pannable extends React.Component {
       onMove,
       onEnd,
       onCancel,
-      style,
-      ...elemProps
+      ...props
     } = this.props;
-    const elemStyle = StyleSheet.create({
+
+    props.onTouchStart = this._onTouchStart;
+    props.onTouchEnd = this._onTouchEnd;
+    props.onTouchMove = this._onTouchMove;
+    props.onTouchCancel = this._onTouchCancel;
+    props.onMouseDown = this._onMouseDown;
+    props.onClick = this._onClick;
+    props.style = StyleSheet.create({
       touchAction: enabled ? 'none' : 'auto',
-      ...style,
+      ...props.style,
     });
 
-    return (
-      <div
-        {...elemProps}
-        ref={this.elemRef}
-        style={elemStyle}
-        onTouchStart={this._onTouchStart}
-        onTouchEnd={this._onTouchEnd}
-        onTouchMove={this._onTouchMove}
-        onTouchCancel={this._onTouchCancel}
-        onMouseDown={this._onMouseDown}
-        onClick={this._onClick}
-      />
-    );
+    return <div {...props} ref={this.elemRef} />;
   }
 }
