@@ -113,27 +113,27 @@ export default class GridContent extends React.Component {
 
     const { itemIndex, rect } = layoutAttrs;
     let key = itemIndex;
-    const element = renderItem(layoutAttrs);
+    let element = renderItem(layoutAttrs);
 
     if (React.isValidElement(element)) {
-      if (element.key !== undefined) {
+      if (element.key) {
         key = element.key;
       }
+    } else {
+      element = <div>{element}</div>;
     }
 
-    const itemStyle = {
-      position: 'absolute',
-      left: rect.x,
-      top: rect.y,
-      width: rect.width,
-      height: rect.height,
-    };
-
-    return (
-      <div key={key} style={itemStyle}>
-        {element}
-      </div>
-    );
+    return React.cloneElement(element, {
+      key,
+      style: {
+        position: 'absolute',
+        left: rect.x,
+        top: rect.y,
+        width: rect.width,
+        height: rect.height,
+        ...element.props.style,
+      },
+    });
   }
 
   render() {
@@ -196,10 +196,7 @@ function calculateLayout(props) {
     itemWidth,
     itemHeight,
   } = props;
-  const size = {
-    width: typeof props.width === 'number' ? props.width : 0,
-    height: typeof props.height === 'number' ? props.height : 0,
-  };
+  const size = { width: props.width, height: props.height };
   const itemSize = { width: itemWidth, height: itemHeight };
   const spacing = { row: rowSpacing, column: columnSpacing };
 
@@ -214,7 +211,7 @@ function calculateLayout(props) {
   let countColumn = 0;
   const layoutList = [];
 
-  if (sizeWidth <= 0) {
+  if (typeof sizeWidth !== 'number') {
     countColumn = itemCount;
     sizeWidth = itemCount * itemSize[width];
 
@@ -231,6 +228,8 @@ function calculateLayout(props) {
         countColumn += Math.floor(
           (sizeWidth - itemSize[width]) / (itemSize[width] + spacing[column])
         );
+      } else {
+        sizeWidth = itemSize[width];
       }
     }
   }
