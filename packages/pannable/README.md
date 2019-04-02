@@ -160,8 +160,8 @@ type LayoutAttrs = {
 | Property      |   Type   |            DefaultValue             | Description                                                      |
 | :------------ | :------: | :---------------------------------: | :--------------------------------------------------------------- |
 | direction     | 'x','y'  |                 'y'                 | The direction of the grid.                                       |
-| width         |  number  |                  0                  | The suggested width of the content.                              |
-| height        |  number  |                  0                  | The suggested height of the content.                             |
+| width         |  number  |                null                 | The suggested width of the content.                              |
+| height        |  number  |                null                 | The suggested height of the content.                             |
 | rowSpacing    |  number  |                  0                  | The minimum spacing to use between rows of items in the grid.    |
 | columnSpacing |  number  |                  0                  | The minimum spacing to use between columns of items in the grid. |
 | itemCount     |  number  |                  0                  | The number of items.                                             |
@@ -197,8 +197,8 @@ type LayoutAttrs = {
 | Property            |   Type   |            DefaultValue             | Description                                                      |
 | :------------------ | :------: | :---------------------------------: | :--------------------------------------------------------------- |
 | direction           | 'x','y'  |                 'y'                 | The direction of the list.                                       |
-| width               |  number  |                  0                  | The suggested width of the content.                              |
-| height              |  number  |                  0                  | The suggested height of the content.                             |
+| width               |  number  |                null                 | The suggested width of the content.                              |
+| height              |  number  |                null                 | The suggested height of the content.                             |
 | spacing             |  number  |                  0                  | The minimum spacing to use between items in the list.            |
 | itemCount           |  number  |                  0                  | The number of items.                                             |
 | estimatedItemWidth  |  number  |                  0                  | The estimated width of the item.                                 |

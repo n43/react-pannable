@@ -510,7 +510,28 @@ export default class Pad extends React.Component {
     } = this.props;
     const { size, contentSize, contentOffset } = this.state;
 
-    const boundingStyle = StyleSheet.create({
+    const contentProps = {};
+    let element = props.children;
+
+    if (typeof element === 'function') {
+      element = element(this);
+    }
+
+    contentProps.children = element;
+    contentProps.style = StyleSheet.create({
+      position: 'relative',
+      boxSizing: 'border-box',
+      width: contentSize.width,
+      height: contentSize.height,
+      transformTranslate: [contentOffset.x, contentOffset.y],
+    });
+
+    props.enabled = scrollEnabled;
+    props.onStart = this._onDragStart;
+    props.onMove = this._onDragMove;
+    props.onEnd = this._onDragEnd;
+    props.onCancel = this._onDragCancel;
+    props.style = StyleSheet.create({
       overflow: 'hidden',
       position: 'relative',
       boxSizing: 'border-box',
@@ -518,33 +539,10 @@ export default class Pad extends React.Component {
       height: size.height,
       ...props.style,
     });
-    const contentStyle = StyleSheet.create({
-      position: 'relative',
-      boxSizing: 'border-box',
-      width: contentSize.width,
-      height: contentSize.height,
-      transformTranslate: [contentOffset.x, contentOffset.y],
-    });
-    let element = props.children;
-
-    if (typeof element === 'function') {
-      element = element(this);
-    }
 
     return (
-      <Pannable
-        {...props}
-        ref={this.boundingRef}
-        style={boundingStyle}
-        enabled={scrollEnabled}
-        onStart={this._onDragStart}
-        onMove={this._onDragMove}
-        onEnd={this._onDragEnd}
-        onCancel={this._onDragCancel}
-      >
-        <div ref={this.contentRef} style={contentStyle}>
-          {element}
-        </div>
+      <Pannable {...props} ref={this.boundingRef}>
+        <div {...contentProps} ref={this.contentRef} />
       </Pannable>
     );
   }

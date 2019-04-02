@@ -5,8 +5,8 @@ import ItemContent from './ItemContent';
 export default class ListContent extends React.Component {
   static defaultProps = {
     direction: 'y',
-    width: 0,
-    height: 0,
+    width: null,
+    height: null,
     spacing: 0,
     itemCount: 0,
     estimatedItemWidth: 0,
@@ -184,12 +184,6 @@ export default class ListContent extends React.Component {
     } = this.props;
     const { size, layoutList } = this.state;
 
-    const elemStyle = {
-      position: 'relative',
-      width: size.width,
-      height: size.height,
-      ...props.style,
-    };
     const items = [];
 
     for (let itemIndex = 0; itemIndex < itemCount; itemIndex++) {
@@ -206,19 +200,23 @@ export default class ListContent extends React.Component {
       }
     }
 
-    return (
-      <div {...props} style={elemStyle}>
-        {items}
-      </div>
-    );
+    props.children = items;
+    props.style = {
+      position: 'relative',
+      width: size.width,
+      height: size.height,
+      ...props.style,
+    };
+
+    return <div {...props} />;
   }
 }
 
 function calculateLayout(props, itemHashList, itemSizeDict) {
   const { direction, spacing, itemCount } = props;
   const size = {
-    width: props.width,
-    height: props.height,
+    width: typeof props.width === 'number' ? props.width : 0,
+    height: typeof props.height === 'number' ? props.height : 0,
   };
 
   const estimatedItemSize = {
