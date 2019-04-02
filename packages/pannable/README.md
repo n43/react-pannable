@@ -223,13 +223,12 @@ type Size = { width: number, height: number };
 
 #### Prop Types
 
-| Property      |   Type   | DefaultValue | Description                                                                       |
-| :------------ | :------: | :----------: | :-------------------------------------------------------------------------------- |
-| width         |  number  |     null     | The width of the content. If not specified, it shrinks the width of the content.  |
-| height        |  number  |     null     | The width of the content. If not specified, it shrinks the width of the content.  |
-| hash          |  string  |      ''      | The hash of the content. if this property changes, the content size recalculates. |
-| getSizeByHash | function |  () => null  | The content size getter by hash.:`(hash: string) => Size`                         |
-| onResize      | function |   () => {}   | Callback invoked when the content resize.:`(size: Size, hash: string) => void`    |
+| Property |   Type   | DefaultValue | Description                                                                       |
+| :------- | :------: | :----------: | :-------------------------------------------------------------------------------- |
+| width    |  number  |     null     | The width of the content. If not specified, it shrinks the width of the content.  |
+| height   |  number  |     null     | The width of the content. If not specified, it shrinks the width of the content.  |
+| hash     |  string  |      ''      | The hash of the content. if this property changes, the content size recalculates. |
+| onResize | function |   () => {}   | Callback invoked when the content resize.:`(size: Size) => void`                  |
 
 ## License
 
