@@ -266,39 +266,52 @@ export default class Pad extends React.Component {
         offset = offset(state, props);
       }
 
-      const { contentOffset, contentVelocity, size, drag } = state;
-      const { pagingEnabled } = props;
-
-      if (drag) {
-        return null;
-      }
-
-      if (!animated) {
-        return {
-          contentOffset: offset,
-          contentVelocity: { x: 0, y: 0 },
-          deceleration: null,
-        };
-      }
-
-      const decelerationRate = DECELERATION_RATE_STRONG;
-      const decelerationEndOffset = getDecelerationEndOffset(
-        offset,
-        { x: 0, y: 0 },
+      const {
+        contentOffset,
+        contentVelocity,
         size,
-        pagingEnabled,
-        decelerationRate
-      );
+        drag,
+        deceleration,
+      } = state;
+      const { pagingEnabled } = props;
+      const nextState = {};
 
-      return {
-        contentOffset: { ...contentOffset },
-        deceleration: createDeceleration(
+      if (drag || !animated) {
+        nextState.contentOffset = offset;
+        nextState.contentVelocity = { x: 0, y: 0 };
+
+        if (drag) {
+          nextState.drag = {
+            ...drag,
+            startOffset: {
+              x: drag.startOffset.x + offset.x - contentOffset.x,
+              y: drag.startOffset.y + offset.y - contentOffset.y,
+            },
+          };
+        }
+        if (deceleration) {
+          nextState.deceleration = null;
+        }
+      } else {
+        const decelerationRate = DECELERATION_RATE_STRONG;
+        const decelerationEndOffset = getDecelerationEndOffset(
+          offset,
+          { x: 0, y: 0 },
+          size,
+          pagingEnabled,
+          decelerationRate
+        );
+
+        nextState.contentOffset = { ...contentOffset };
+        nextState.deceleration = createDeceleration(
           contentOffset,
           contentVelocity,
           decelerationEndOffset,
           decelerationRate
-        ),
-      };
+        );
+      }
+
+      return nextState;
     });
   }
 

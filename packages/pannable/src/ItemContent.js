@@ -56,7 +56,10 @@ export default class ItemContent extends React.Component {
 
       if (!layout.size) {
         const resizeNode = this.resizeRef.current;
-        layout.size = getElementSize(resizeNode);
+
+        if (resizeNode) {
+          layout.size = getElementSize(resizeNode);
+        }
       }
       if (
         !size ||
@@ -90,6 +93,25 @@ export default class ItemContent extends React.Component {
 
     if (typeof element === 'function') {
       element = element(this);
+    }
+
+    if (React.isValidElement(element)) {
+      if (element.props.onResize) {
+        const Resizable = element.type;
+
+        element = (
+          <Resizable
+            {...element.props}
+            onResize={size => {
+              this.setState({
+                sizeHash: 'size:' + size.width + ',' + size.height,
+                size,
+              });
+              element.props.onResize(size);
+            }}
+          />
+        );
+      }
     }
 
     return (

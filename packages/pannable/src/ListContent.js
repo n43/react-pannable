@@ -120,14 +120,20 @@ export default class ListContent extends React.Component {
     const { itemSizeDict } = this.state;
 
     const { itemIndex, rect, Item } = layoutAttrs;
+    let key = itemIndex;
     let element = renderItem(layoutAttrs);
-    const key = element.key || itemIndex;
 
+    if (!React.isValidElement(element)) {
+      element = <Item>{element}</Item>;
+    }
+    if (element.key !== undefined) {
+      key = element.key;
+    }
     if (element.type !== Item) {
       element = <Item>{element}</Item>;
     }
 
-    const { onResize, ...props } = element.props;
+    const props = { ...element.props };
     const itemStyle = {
       position: 'absolute',
       left: rect.x,
@@ -143,7 +149,7 @@ export default class ListContent extends React.Component {
     props.onResize = (itemSize, itemHash) => {
       this._calculateLayout({ itemIndex, itemHash, itemSize });
 
-      onResize(itemSize, itemHash);
+      element.props.onResize(itemSize, itemHash);
     };
     props.getSizeByHash = hash => itemSizeDict[hash];
 
@@ -159,7 +165,7 @@ export default class ListContent extends React.Component {
 
     return (
       <div key={key} style={itemStyle}>
-        <Item {...props} />
+        {React.createElement(Item, props)}
       </div>
     );
   }
@@ -182,8 +188,8 @@ export default class ListContent extends React.Component {
 
     const elemStyle = {
       position: 'relative',
-      width: size ? size.width : 'auto',
-      height: size ? size.height : 'auto',
+      width: size.width,
+      height: size.height,
       ...props.style,
     };
     const items = [];

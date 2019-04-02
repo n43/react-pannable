@@ -112,8 +112,14 @@ export default class GridContent extends React.Component {
     const { renderItem } = this.props;
 
     const { itemIndex, rect } = layoutAttrs;
+    let key = itemIndex;
     const element = renderItem(layoutAttrs);
-    const key = element.key || itemIndex;
+
+    if (React.isValidElement(element)) {
+      if (element.key !== undefined) {
+        key = element.key;
+      }
+    }
 
     const itemStyle = {
       position: 'absolute',
@@ -149,8 +155,8 @@ export default class GridContent extends React.Component {
 
     const elemStyle = {
       position: 'relative',
-      width: size ? size.width : 'auto',
-      height: size ? size.height : 'auto',
+      width: size.width,
+      height: size.height,
       ...props.style,
     };
     const items = [];
