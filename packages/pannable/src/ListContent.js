@@ -121,33 +121,23 @@ export default class ListContent extends React.Component {
     let key = itemIndex;
     let element = renderItem(layoutAttrs);
 
-    if (!React.isValidElement(element)) {
-      element = <Item>{element}</Item>;
-    }
-    if (element.key) {
-      key = element.key;
-    }
-    if (element.type !== Item) {
+    if (React.isValidElement(element)) {
+      if (element.key) {
+        key = element.key;
+      }
+      if (element.type !== Item) {
+        element = <Item>{element}</Item>;
+      }
+    } else {
       element = <Item>{element}</Item>;
     }
 
-    const props = { ...element.props, key };
+    const { onResize, ...props } = element.props;
 
-    props.style = {
-      position: 'absolute',
-      left: rect.x,
-      top: rect.y,
-      ...props.style,
-    };
+    props.key = key;
     if (props.hash === '') {
       props.hash = key;
     }
-
-    props.onResize = itemSize => {
-      this._calculateLayout({ itemIndex, itemHash: props.hash, itemSize });
-
-      element.props.onResize(itemSize);
-    };
 
     const size = itemSizeDict[props.hash];
 
@@ -164,6 +154,21 @@ export default class ListContent extends React.Component {
         props.width = width;
       }
     }
+
+    props.onResize = itemSize => {
+      this._calculateLayout({ itemIndex, itemHash: props.hash, itemSize });
+
+      onResize(itemSize);
+    };
+
+    props.style = {
+      position: 'absolute',
+      left: rect.x,
+      top: rect.y,
+      width: rect.width,
+      height: rect.height,
+      ...props.style,
+    };
 
     return React.createElement(Item, props);
   }
@@ -214,10 +219,7 @@ export default class ListContent extends React.Component {
 
 function calculateLayout(props, itemHashList, itemSizeDict) {
   const { direction, spacing, itemCount } = props;
-  const size = {
-    width: typeof props.width === 'number' ? props.width : 0,
-    height: typeof props.height === 'number' ? props.height : 0,
-  };
+  const size = { width: props.width, height: props.height };
 
   const estimatedItemSize = {
     width: props.estimatedItemWidth,
@@ -240,7 +242,10 @@ function calculateLayout(props, itemHashList, itemSizeDict) {
 
     const itemHash = itemHashList[itemIndex];
     let itemSize = itemSizeDict[itemHash] || {
-      [width]: size[width] || estimatedItemSize[width],
+      [width]:
+        typeof size[width] === 'number'
+          ? size[width]
+          : estimatedItemSize[width],
       [height]: estimatedItemSize[height],
     };
 
