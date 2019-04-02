@@ -124,33 +124,37 @@ export default class ListContent extends React.Component {
     if (!React.isValidElement(element)) {
       element = <Item>{element}</Item>;
     }
-    if (element.key !== undefined) {
+    if (element.key) {
       key = element.key;
     }
     if (element.type !== Item) {
       element = <Item>{element}</Item>;
     }
 
-    const props = { ...element.props };
-    const itemStyle = {
+    const props = { ...element.props, key };
+
+    props.style = {
       position: 'absolute',
       left: rect.x,
       top: rect.y,
-      width: rect.width,
-      height: rect.height,
+      ...props.style,
     };
-
     if (props.hash === '') {
       props.hash = key;
     }
 
-    props.onResize = (itemSize, itemHash) => {
-      this._calculateLayout({ itemIndex, itemHash, itemSize });
+    props.onResize = itemSize => {
+      this._calculateLayout({ itemIndex, itemHash: props.hash, itemSize });
 
-      element.props.onResize(itemSize, itemHash);
+      element.props.onResize(itemSize);
     };
-    props.getSizeByHash = hash => itemSizeDict[hash];
 
+    const size = itemSizeDict[props.hash];
+
+    if (size) {
+      props.width = size.width;
+      props.height = size.height;
+    }
     if (direction === 'x') {
       if (typeof props.height !== 'number' && height) {
         props.height = height;
@@ -161,11 +165,7 @@ export default class ListContent extends React.Component {
       }
     }
 
-    return (
-      <div key={key} style={itemStyle}>
-        {React.createElement(Item, props)}
-      </div>
-    );
+    return React.createElement(Item, props);
   }
 
   render() {

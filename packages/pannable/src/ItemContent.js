@@ -6,7 +6,6 @@ export default class ItemContent extends React.Component {
     width: null,
     height: null,
     hash: '',
-    getSizeByHash: () => null,
     onResize: () => {},
   };
 
@@ -15,15 +14,15 @@ export default class ItemContent extends React.Component {
 
     const layout = calculateLayout(props);
 
-    this.state = { size: layout.size, sizeHash: layout.hash };
+    this.state = { size: layout.size };
     this.resizeRef = React.createRef();
   }
 
   componentDidMount() {
-    const { size, sizeHash } = this.state;
+    const { size } = this.state;
 
     if (size) {
-      this.props.onResize(size, sizeHash);
+      this.props.onResize(size);
     } else {
       this._calculateLayout();
     }
@@ -31,7 +30,7 @@ export default class ItemContent extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     const { width, height, hash, onResize } = this.props;
-    const { size, sizeHash } = this.state;
+    const { size } = this.state;
 
     if (
       prevProps.width !== width ||
@@ -41,7 +40,7 @@ export default class ItemContent extends React.Component {
       this._calculateLayout();
     }
     if (prevState.size !== size) {
-      onResize(size, sizeHash);
+      onResize(size);
     }
   }
 
@@ -52,7 +51,6 @@ export default class ItemContent extends React.Component {
 
       const layout = calculateLayout(props);
 
-      nextState.sizeHash = layout.hash;
       if (!layout.size) {
         const resizeNode = this.resizeRef.current;
 
@@ -67,24 +65,19 @@ export default class ItemContent extends React.Component {
       ) {
         nextState.size = layout.size;
       }
+
       return nextState;
     });
   }
 
   render() {
-    const {
-      width,
-      height,
-      hash,
-      getSizeByHash,
-      onResize,
-      ...props
-    } = this.props;
+    const { width, height, hash, onResize, ...props } = this.props;
+    const { size } = this.state;
 
     const elemStyle = {
-      position: 'absolute',
-      width: typeof width === 'number' ? width : 'auto',
-      height: typeof height === 'number' ? height : 'auto',
+      position: 'relative',
+      width: size ? size.width : 'auto',
+      height: size ? size.height : 'auto',
       ...props.style,
     };
     let element = props.children;
@@ -93,27 +86,35 @@ export default class ItemContent extends React.Component {
       element = element(this);
     }
 
-    if (React.isValidElement(element)) {
-      if (element.props.onResize) {
-        const Resizable = element.type;
+    if (React.isValidElement(element) && element.props.onResize) {
+      const Resizable = element.type;
 
-        element = (
-          <Resizable
-            {...element.props}
-            onResize={size => {
-              this.setState({
-                sizeHash: 'size:' + size.width + ',' + size.height,
-                size,
-              });
-              element.props.onResize(size);
-            }}
-          />
-        );
-      }
+      element = (
+        <Resizable
+          {...element.props}
+          onResize={size => {
+            this.setState({ size });
+            element.props.onResize(size);
+          }}
+        />
+      );
+    } else {
+      element = (
+        <div
+          ref={this.resizeRef}
+          style={{
+            position: 'absolute',
+            width: typeof width === 'number' ? width : 'auto',
+            height: typeof height === 'number' ? height : 'auto',
+          }}
+        >
+          {element}
+        </div>
+      );
     }
 
     return (
-      <div {...props} ref={this.resizeRef} style={elemStyle}>
+      <div {...props} style={elemStyle}>
         {element}
       </div>
     );
@@ -121,11 +122,11 @@ export default class ItemContent extends React.Component {
 }
 
 function calculateLayout(props) {
-  const { width, height, hash, getSizeByHash } = props;
+  const { width, height } = props;
 
   if (typeof width === 'number' && typeof height === 'number') {
-    return { hash: 'size:' + width + ',' + height, size: { width, height } };
+    return { size: { width, height } };
   }
 
-  return { hash, size: getSizeByHash(hash) || null };
+  return { size: null };
 }
