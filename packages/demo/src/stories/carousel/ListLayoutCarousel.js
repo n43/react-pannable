@@ -75,7 +75,6 @@ class ListLayoutCarousel extends Component {
                   }}
                   visibleRect={carousel.getVisibleRect()}
                   onResize={size => {
-                    console.log('onResize:', size);
                     carousel.setContentSize(size);
                   }}
                 />

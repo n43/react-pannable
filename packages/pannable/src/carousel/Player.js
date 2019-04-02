@@ -73,24 +73,19 @@ export default class Player extends React.Component {
     if (
       prevState.autoplayStatus !== autoplayStatus ||
       prevState.dragging !== dragging ||
-      prevState.mouseEntered !== mouseEntered ||
-      prevState.activeIndex !== activeIndex
+      prevState.mouseEntered !== mouseEntered
     ) {
-      if (pageCount > activeIndex + 1) {
-        if (autoplayStatus !== -1 && !dragging && !mouseEntered) {
-          if (!this._autoplayTimer) {
-            this._play();
-          }
-        } else {
-          this._pause();
+      if (autoplayStatus !== -1 && !dragging && !mouseEntered) {
+        if (!this._autoplayTimer) {
+          this._play();
         }
       } else {
         this._pause();
       }
+    }
 
-      if (prevState.activeIndex !== activeIndex) {
-        onFrameChange({ activeIndex, pageCount });
-      }
+    if (prevState.activeIndex !== activeIndex) {
+      onFrameChange({ activeIndex, pageCount });
     }
 
     if (prevState.decelerating !== decelerating) {
@@ -128,6 +123,7 @@ export default class Player extends React.Component {
         x: direction === 'x' ? -(index * size.width) : contentOffset.x,
         y: direction === 'x' ? contentOffset.y : -(index * size.height),
       };
+      // console.log('setFrame:', index, offset);
     }
 
     pad.scrollTo({ offset, animated });
@@ -157,11 +153,16 @@ export default class Player extends React.Component {
 
   _play() {
     const { autoplayInterval } = this.props;
+    const { activeIndex, pageCount } = this.state;
     const now = new Date().getTime();
 
     if (this._autoplayTimer) {
       if (now - this._decelerateTimestamp >= autoplayInterval) {
-        this.forward();
+        if (activeIndex < pageCount - 1) {
+          this.forward();
+        } else {
+          this.setFrame({ index: 0 });
+        }
       }
       clearTimeout(this._autoplayTimer);
     }
@@ -217,6 +218,7 @@ export default class Player extends React.Component {
   _onPadScroll = evt => {
     const { contentOffset, size, dragging, decelerating } = evt;
     const { direction, onScroll } = this.props;
+    const { activeIndex } = this.state;
     const [x, width] = direction === 'x' ? ['x', 'width'] : ['y', 'height'];
     let nextState = {};
 
@@ -227,10 +229,11 @@ export default class Player extends React.Component {
       nextState.decelerating = decelerating;
     }
 
-    if (!dragging && !decelerating) {
-      nextState.activeIndex = Math.abs(
-        Math.floor(-contentOffset[x] / size[width])
-      );
+    const nextActiveIndex = Math.abs(
+      Math.floor(-contentOffset[x] / size[width])
+    );
+    if (nextActiveIndex !== activeIndex) {
+      nextState.activeIndex = nextActiveIndex;
     }
 
     this.setState(nextState);
