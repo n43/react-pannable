@@ -34,7 +34,6 @@ export default class Carousel extends React.Component {
       const player = this.playerRef;
       const activeIndex = player.getActiveIndex();
       const pageCount = player.getPageCount();
-
       this._alternateFramesForLoop({ activeIndex, pageCount });
     }
   }
@@ -90,7 +89,6 @@ export default class Carousel extends React.Component {
 
   setContentSize(contentSize) {
     const layout = calculateLayout(this.props, contentSize);
-    console.log('setContentSize:', layout);
     this.setState({
       layoutList: layout.layoutList,
       contentSize: layout.contentSize,
@@ -166,7 +164,6 @@ export default class Carousel extends React.Component {
 
   _alternateFramesForLoop({ activeIndex, pageCount }) {
     const player = this.playerRef;
-    console.log('_alternateFramesForLoop', activeIndex);
     if (activeIndex < pageCount / 2 - 1 || activeIndex > pageCount - 2) {
       let m = activeIndex > pageCount - 2 ? -1 : 1;
       const nextFrame = activeIndex + (pageCount / 2) * m;

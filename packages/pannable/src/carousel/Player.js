@@ -12,11 +12,25 @@ export default class Player extends React.Component {
   constructor(props) {
     super(props);
 
+    const size = {
+      width: props.width || 0,
+      height: props.height || 0,
+    };
+    const contentSize = {
+      width: props.contentWidth || 0,
+      height: props.contentHeight || 0,
+    };
+    const pageCount = calculatePageCount({
+      direction: props.direction,
+      size,
+      contentSize,
+    });
+
     this.state = {
-      size: { width: 0, height: 0 },
-      contentSize: { width: 0, height: 0 },
+      size,
+      contentSize,
       autoplayStatus: props.autoplayEnabled ? 1 : -1,
-      pageCount: 0,
+      pageCount,
       activeIndex: 0,
       dragging: false,
       decelerating: false,
@@ -123,7 +137,6 @@ export default class Player extends React.Component {
         x: direction === 'x' ? -(index * size.width) : contentOffset.x,
         y: direction === 'x' ? contentOffset.y : -(index * size.height),
       };
-      // console.log('setFrame:', index, offset);
     }
 
     pad.scrollTo({ offset, animated });
@@ -232,7 +245,7 @@ export default class Player extends React.Component {
     const nextActiveIndex = Math.abs(
       Math.floor(-contentOffset[x] / size[width])
     );
-    if (nextActiveIndex !== activeIndex) {
+    if (nextActiveIndex !== activeIndex && !decelerating) {
       nextState.activeIndex = nextActiveIndex;
     }
 
