@@ -62,21 +62,19 @@ class ListLayoutCarousel extends Component {
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
+                      height: '100%',
                       backgroundColor: itemIndex % 2 ? '#defdff' : '#cbf1ff',
                       color: '#75d3ec',
                       fontSize: 24,
                       textAlign: 'center',
                     };
                     return (
-                      <Item width={750} height={300} style={style}>
-                        slide {slideArr[itemIndex]}
+                      <Item width={750} height={300}>
+                        <div style={style}>slide {slideArr[itemIndex]}</div>
                       </Item>
                     );
                   }}
                   visibleRect={carousel.getVisibleRect()}
-                  onResize={size => {
-                    carousel.setContentSize(size);
-                  }}
                 />
               );
             }}

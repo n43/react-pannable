@@ -27,8 +27,6 @@ export default class Player extends React.Component {
     });
 
     this.state = {
-      size,
-      contentSize,
       contentOffset: { x: 0, y: 0 },
       touchDirection: 0,
       autoplayStatus: props.autoplayEnabled ? 1 : -1,
@@ -51,16 +49,8 @@ export default class Player extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    const { autoplayEnabled, onFrameChange } = this.props;
     const {
-      direction,
-      autoplayEnabled,
-      onFrameChange,
-      onResize,
-      onContentResize,
-    } = this.props;
-    const {
-      size,
-      contentSize,
       autoplayStatus,
       pageCount,
       activeIndex,
@@ -71,19 +61,6 @@ export default class Player extends React.Component {
 
     if (prevProps.autoplayEnabled !== autoplayEnabled) {
       this.setState({ autoplayStatus: autoplayEnabled ? 1 : -1 });
-    }
-
-    if (
-      prevProps.direction !== direction ||
-      prevState.size !== size ||
-      prevState.contentSize !== contentSize
-    ) {
-      if (prevState.size !== size && onResize) {
-        onResize(size);
-      }
-      if (prevState.contentSize !== contentSize && onContentResize) {
-        onContentResize(contentSize);
-      }
     }
 
     if (
@@ -125,8 +102,9 @@ export default class Player extends React.Component {
 
   setFrame({ index, animated = true }) {
     const { direction } = this.props;
-    const { size, pageCount } = this.state;
+    const { pageCount } = this.state;
     const pad = this.padRef;
+    const size = pad.getSize();
     const contentOffset = pad.getContentOffset();
     let offset;
 
@@ -196,26 +174,36 @@ export default class Player extends React.Component {
   }
 
   _onPadResize = size => {
-    this._setStateWithResize({ size });
+    const { onResize } = this.props;
+    this._setStateWithResize();
+
+    if (onResize) {
+      onResize(size);
+    }
   };
 
   _onPadContentResize = contentSize => {
-    this._setStateWithResize({ contentSize });
+    const { onContentResize } = this.props;
+    this._setStateWithResize();
+
+    if (onContentResize) {
+      onContentResize(contentSize);
+    }
   };
 
-  _setStateWithResize(nextState) {
+  _setStateWithResize() {
+    const pad = this.padRef;
+
+    if (!pad) {
+      return;
+    }
+
     this.setState((state, props) => {
       const { pageCount } = state;
       const { direction } = props;
-      let size = state.size,
-        contentSize = state.contentSize;
-
-      if (nextState.size) {
-        size = nextState.size;
-      }
-      if (nextState.contentSize) {
-        contentSize = nextState.contentSize;
-      }
+      const size = pad.getSize();
+      const contentSize = pad.getContentSize();
+      let nextState = {};
 
       const nextPageCount = calculatePageCount({
         direction,
