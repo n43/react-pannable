@@ -79,12 +79,8 @@ class Autoplayer extends Component {
           {this.renderContent()}
         </Player>
         <div className="carousel-optbar">
-          <div className="carsousel-status">autoplay is {statusText} now </div>
-          <div className="carousel-btn" onClick={this.handleStart}>
-            Start
-          </div>
-          <div className="carousel-btn" onClick={this.handleStop}>
-            Stop
+          <div className="carsousel-status">
+            Autoplay will stop when the mouse or finger is on it
           </div>
         </div>
       </div>

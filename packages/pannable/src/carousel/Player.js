@@ -3,250 +3,180 @@ import Pad from '../Pad';
 
 export default class Player extends React.Component {
   static defaultProps = {
-    direction: 'y',
+    direction: 'x',
     autoplayEnabled: true,
     autoplayInterval: 3000,
+    pagingEnabled: true,
     onFrameChange: () => {},
   };
 
   constructor(props) {
     super(props);
 
-    const size = {
-      width: props.width || 0,
-      height: props.height || 0,
-    };
-    const contentSize = {
-      width: props.contentWidth || 0,
-      height: props.contentHeight || 0,
-    };
-    const pageCount = calculatePageCount({
-      direction: props.direction,
-      size,
-      contentSize,
-    });
-
     this.state = {
       contentOffset: { x: 0, y: 0 },
       touchDirection: 0,
-      autoplayStatus: props.autoplayEnabled ? 1 : -1,
-      pageCount,
-      activeIndex: 0,
       dragging: false,
       decelerating: false,
       mouseEntered: false,
+      playingEnabled: props.autoplayEnabled,
     };
 
     this._decelerateTimestamp = 0;
   }
 
-  componentDidMount() {
-    const { autoplayStatus } = this.state;
+  static getDerivedStateFromProps(props, state) {
+    const { autoplayEnabled } = props;
+    const { dragging, decelerating, mouseEntered, playingEnabled } = state;
 
-    if (autoplayStatus !== -1) {
-      this._play();
+    let nextState = {};
+    let nextPlayingEnabled;
+
+    if (autoplayEnabled && !dragging && !decelerating && !mouseEntered) {
+      nextPlayingEnabled = true;
+    } else {
+      nextPlayingEnabled = false;
+    }
+
+    if (playingEnabled !== nextPlayingEnabled) {
+      nextState.playingEnabled = nextPlayingEnabled;
+    }
+
+    return nextState;
+  }
+
+  componentDidMount() {
+    if (this.props.autoplayEnabled) {
+      this._start();
     }
   }
 
   componentDidUpdate(prevProps, prevState) {
-    const { autoplayEnabled, onFrameChange } = this.props;
-    const {
-      autoplayStatus,
-      pageCount,
-      activeIndex,
-      dragging,
-      decelerating,
-      mouseEntered,
-    } = this.state;
+    const { playingEnabled } = this.state;
 
-    if (prevProps.autoplayEnabled !== autoplayEnabled) {
-      this.setState({ autoplayStatus: autoplayEnabled ? 1 : -1 });
-    }
-
-    if (
-      prevState.autoplayStatus !== autoplayStatus ||
-      prevState.dragging !== dragging ||
-      prevState.mouseEntered !== mouseEntered
-    ) {
-      if (autoplayStatus !== -1 && !dragging && !mouseEntered) {
-        if (!this._autoplayTimer) {
-          this._play();
-        }
+    if (prevState.playingEnabled !== playingEnabled) {
+      if (playingEnabled) {
+        this._start();
       } else {
-        this._pause();
-      }
-    }
-
-    if (prevState.activeIndex !== activeIndex) {
-      onFrameChange({ activeIndex, pageCount });
-    }
-
-    if (prevState.decelerating !== decelerating) {
-      if (decelerating) {
-        this._decelerateTimestamp = new Date().getTime();
+        this._stop();
       }
     }
   }
 
   componentWillUnmount() {
-    this._pause();
+    this._stop();
   }
 
-  getPageCount() {
-    return this.state.pageCount;
-  }
-
-  getActiveIndex() {
-    return this.state.activeIndex;
-  }
-
-  setFrame({ index, animated = true }) {
+  setFrame({ offset, animated = true }) {
     const { direction } = this.props;
-    const { pageCount } = this.state;
     const pad = this.padRef;
-    const size = pad.getSize();
+    const contentSize = pad.getContentSize();
     const contentOffset = pad.getContentOffset();
-    let offset;
 
-    if (index < 0 || index >= pageCount) {
+    const [width, height, x, y] =
+      direction === 'x'
+        ? ['width', 'height', 'x', 'y']
+        : ['height', 'width', 'y', 'x'];
+
+    let nextContentOffset = {
+      [x]: contentOffset[x] + offset[x],
+      [y]: contentOffset[y] + offset[y],
+    };
+
+    if (
+      nextContentOffset[x] > 0 ||
+      nextContentOffset[y] > 0 ||
+      Math.abs(nextContentOffset[x]) >= contentSize[width] ||
+      Math.abs(nextContentOffset[y]) >= contentSize[height]
+    ) {
       return;
-    } else if (index === 0) {
-      offset = { x: 0, y: 0 };
-    } else {
-      offset = {
-        x: direction === 'x' ? -(index * size.width) : contentOffset.x,
-        y: direction === 'x' ? contentOffset.y : -(index * size.height),
-      };
     }
 
-    pad.scrollTo({ offset, animated });
+    pad.scrollTo({ offset: nextContentOffset, animated });
   }
 
   rewind() {
-    const { activeIndex } = this.state;
-    this.setFrame({ index: activeIndex - 1 });
+    const { direction } = this.props;
+    const pad = this.padRef;
+    const size = pad.getSize();
+    const [width, x, y] =
+      direction === 'x' ? ['width', 'x', 'y'] : ['height', 'y', 'x'];
+
+    this.setFrame({
+      offset: { [x]: size[width], [y]: 0 },
+    });
   }
 
   forward() {
-    const { activeIndex } = this.state;
-    this.setFrame({ index: activeIndex + 1 });
+    const { direction } = this.props;
+    const pad = this.padRef;
+    const size = pad.getSize();
+    const [width, x, y] =
+      direction === 'x' ? ['width', 'x', 'y'] : ['height', 'y', 'x'];
+
+    this.setFrame({
+      offset: { [x]: -size[width], [y]: 0 },
+    });
   }
 
-  startAutoplay() {
-    if (this.state.autoplayStatus === -1) {
-      this.setState({ autoplayStatus: 1 });
-    }
-  }
-
-  stopAutoplay() {
-    if (this.state.autoplayStatus !== -1) {
-      this.setState({ autoplayStatus: -1 });
-    }
-  }
-
-  _play() {
+  _start() {
     const { autoplayInterval } = this.props;
-    const { activeIndex, pageCount } = this.state;
-    const now = new Date().getTime();
 
     if (this._autoplayTimer) {
-      if (now - this._decelerateTimestamp >= autoplayInterval) {
-        if (activeIndex < pageCount - 1) {
-          this.forward();
-        } else {
-          this.setFrame({ index: 0 });
-        }
-      }
       clearTimeout(this._autoplayTimer);
     }
 
     this._autoplayTimer = setTimeout(() => {
+      this._autoplayTimer = undefined;
       this._play();
     }, autoplayInterval);
   }
 
-  _pause() {
-    if (this._autoplayTimer) {
-      clearTimeout(this._autoplayTimer);
-      this._autoplayTimer = undefined;
-      this._decelerateTimestamp = 0;
-    }
-  }
+  _play() {
+    const { direction } = this.props;
+    const { playingEnabled } = this.state;
 
-  _onPadResize = size => {
-    const { onResize } = this.props;
-    this._setStateWithResize();
-
-    if (onResize) {
-      onResize(size);
-    }
-  };
-
-  _onPadContentResize = contentSize => {
-    const { onContentResize } = this.props;
-    this._setStateWithResize();
-
-    if (onContentResize) {
-      onContentResize(contentSize);
-    }
-  };
-
-  _setStateWithResize() {
-    const pad = this.padRef;
-
-    if (!pad) {
+    if (!playingEnabled) {
       return;
     }
 
-    this.setState((state, props) => {
-      const { pageCount } = state;
-      const { direction } = props;
-      const size = pad.getSize();
-      const contentSize = pad.getContentSize();
-      let nextState = {};
+    const pad = this.padRef;
+    const size = pad.getSize();
+    const contentSize = pad.getContentSize();
+    const contentOffset = pad.getContentOffset();
+    const [width, x, y] =
+      direction === 'x' ? ['width', 'x', 'y'] : ['height', 'y', 'x'];
 
-      const nextPageCount = calculatePageCount({
-        direction,
-        size,
-        contentSize,
+    if (contentSize[width] - Math.abs(contentOffset[x]) >= 2 * size[width]) {
+      this.forward();
+    } else {
+      this.setFrame({
+        offset: { [x]: -contentOffset[x], [y]: 0 },
       });
-      if (nextPageCount !== pageCount) {
-        nextState.pageCount = nextPageCount;
-      }
+    }
 
-      return nextState;
-    });
+    if (this._autoplayTimer) {
+      clearTimeout(this._autoplayTimer);
+    }
+  }
+
+  _stop() {
+    if (this._autoplayTimer) {
+      clearTimeout(this._autoplayTimer);
+      this._autoplayTimer = undefined;
+    }
   }
 
   _onPadScroll = evt => {
-    const { contentOffset, size, dragging, decelerating } = evt;
-    const { direction, onScroll } = this.props;
-    const [x, width] = direction === 'x' ? ['x', 'width'] : ['y', 'height'];
+    const { dragging, decelerating } = evt;
+    const { onScroll } = this.props;
     let nextState = {};
-    let touchDirection = 0;
-
-    nextState.contentOffset = contentOffset;
 
     if (this.state.dragging !== dragging) {
       nextState.dragging = dragging;
     }
     if (this.state.decelerating !== decelerating) {
       nextState.decelerating = decelerating;
-    }
-
-    if (!(this.state.decelerating && !decelerating)) {
-      touchDirection =
-        contentOffset[x] - this.state.contentOffset[x] > 0 ? 1 : -1;
-    }
-    nextState.touchDirection = touchDirection;
-
-    const activeIndex =
-      touchDirection === -1
-        ? Math.abs(Math.floor(-contentOffset[x] / size[width]))
-        : Math.abs(Math.ceil(-contentOffset[x] / size[width]));
-
-    if (activeIndex !== this.state.activeIndex && !decelerating) {
-      nextState.activeIndex = activeIndex;
     }
 
     this.setState(nextState);
@@ -281,28 +211,21 @@ export default class Player extends React.Component {
       bounceConfig.alwaysBounceY = true;
     }
 
+    const element = typeof children === 'function' ? children(this) : children;
+
     return (
       <Pad
         {...padProps}
         {...bounceConfig}
-        pagingEnabled={true}
         onScroll={this._onPadScroll}
-        onResize={this._onPadResize}
-        onContentResize={this._onPadContentResize}
         onMouseEnter={this._onMouseEnter}
         onMouseLeave={this._onMouseLeave}
       >
         {pad => {
           this.padRef = pad;
-          return typeof children === 'function' ? children(this) : children;
+          return element;
         }}
       </Pad>
     );
   }
-}
-
-function calculatePageCount({ direction, size, contentSize }) {
-  const dt = direction === 'x' ? 'width' : 'height';
-
-  return size[dt] ? Math.round(contentSize[dt] / size[dt]) : 0;
 }
