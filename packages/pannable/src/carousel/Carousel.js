@@ -1,6 +1,5 @@
 import React from 'react';
 import Player from './Player';
-import ListContent from '../ListContent';
 
 export default class Carousel extends React.Component {
   static defaultProps = {
@@ -12,28 +11,43 @@ export default class Carousel extends React.Component {
   constructor(props) {
     super(props);
 
+    let contentSize = {
+      width: props.contentWidth || 0,
+      height: props.contentHeight || 0,
+    };
+
+    const layout = calculateLayout(props, contentSize);
+
     this.state = {
       size: { width: props.width || 0, height: props.height || 0 },
-      contentSize: {
-        width: props.contentWidth || 0,
-        height: props.contentHeight || 0,
-      },
+      contentSize: layout.size,
+      layoutList: layout.layoutList,
       calculatedSizeForLoop: { width: 0, height: 0 },
     };
   }
 
+  componentDidMount() {
+    const { direction, loop } = this.props;
+    const { contentSize } = this.state;
+    const dt = direction === 'x' ? 'width' : height;
+
+    if (loop && contentSize[dt] > 0) {
+      const player = this.playerRef;
+      const activeIndex = player.getActiveIndex();
+      const pageCount = player.getPageCount();
+
+      this._alternateFramesForLoop({ activeIndex, pageCount });
+    }
+  }
+
   componentDidUpdate(prevProps, prevState) {
-    const { size, contentSize, calculatedSizeForLoop } = this.state;
+    const { size, contentSize } = this.state;
     const { loop, direction } = this.props;
 
-    if (
-      prevState.size !== size ||
-      prevState.contentSize !== contentSize ||
-      prevState.calculatedSizeForLoop !== calculatedSizeForLoop
-    ) {
+    if (prevState.size !== size || prevState.contentSize !== contentSize) {
       const dt = direction === 'x' ? 'width' : 'height';
 
-      if (loop && contentSize[dt] === calculatedSizeForLoop[dt]) {
+      if (loop && contentSize[dt] > 0) {
         const player = this.playerRef;
         const activeIndex = player.getActiveIndex();
         const pageCount = player.getPageCount();
@@ -54,6 +68,38 @@ export default class Carousel extends React.Component {
     }
 
     return activeIndex;
+  }
+
+  getVisibleRect() {
+    const { loop, direction } = this.props;
+    const { contentSize, calculatedSizeForLoop } = this.state;
+    const player = this.playerRef;
+    const activeIndex = player.getActiveIndex();
+    const pageCount = player.getPageCount();
+    const visibleRect = player.padRef.getVisibleRect();
+
+    if (!loop || pageCount === 0 || activeIndex < pageCount / 2) {
+      return visibleRect;
+    }
+
+    let visibleRectForLoop = { ...visibleRect };
+    const [width, x] = direction === x ? ['width', 'x'] : ['height', 'y'];
+
+    if (contentSize[width] !== calculatedSizeForLoop[width]) {
+      return visibleRect;
+    }
+
+    visibleRectForLoop[x] = visibleRectForLoop[x] - contentSize / 2;
+
+    return visibleRectForLoop;
+  }
+
+  setContentSize(size) {
+    const layout = calculateLayout(this.props, size);
+    // this.setState({
+    //   layoutList: layout.layoutList,
+    // });
+    // this.playerRef.padRef.setContentSize(layout.size);
   }
 
   slideTo({ index, animated = true }) {
@@ -127,11 +173,15 @@ export default class Carousel extends React.Component {
 
   render() {
     const { loop, children, onSlideChange, ...playerProps } = this.props;
-    const { contentSize, calculatedSizeForLoop } = this.state;
+    const { size, contentSize, layoutList } = this.state;
 
     return (
       <Player
         {...playerProps}
+        width={size.width}
+        height={size.height}
+        contentWidth={contentSize.width}
+        contentHeight={contentSize.height}
         onFrameChange={this._onSlideChange}
         onResize={this._onPlayerResize}
         onContentResize={this._onPlayerContentResize}
@@ -139,54 +189,54 @@ export default class Carousel extends React.Component {
         {player => {
           this.playerRef = player;
 
-          if (loop) {
-            const pad = player.padRef;
-            const { direction } = playerProps;
-            const visibleRect = pad.getVisibleRect();
-            let itemWidth, itemHeight;
-
-            const {
-              width: loopWidth,
-              height: loopHeight,
-            } = calculatedSizeForLoop;
-            const { width: contentWidth, height: contentHeight } = contentSize;
-
-            if (direction === 'x') {
-              itemWidth =
-                loopWidth === contentWidth ? contentWidth / 2 : contentWidth;
-              itemHeight = contentHeight;
-            } else {
-              itemWidth = contentWidth;
-              itemHeight =
-                loopHeight === contentHeight
-                  ? contentHeight / 2
-                  : contentHeight;
-            }
-
+          return layoutList.map(({ position, width, height, x, y }, index) => {
+            const style = {
+              position,
+              top: y,
+              left: x,
+              width,
+              height,
+            };
             return (
-              <ListContent
-                direction={direction}
-                width={contentWidth}
-                height={contentHeight}
-                itemCount={2}
-                renderItem={({ Item }) => (
-                  <Item width={itemWidth} height={itemHeight}>
-                    {typeof children === 'function' ? children(this) : children}
-                  </Item>
-                )}
-                visibleRect={visibleRect}
-                onResize={size => {
-                  console.log('loop:', size);
-                  this.setState({ calculatedSizeForLoop: size });
-                  player.padRef.setContentSize(size);
-                }}
-              />
+              <div style={style} key={index}>
+                {typeof children === 'function' ? children(this) : children}
+              </div>
             );
-          }
-
-          return typeof children === 'function' ? children(this) : children;
+          });
         }}
       </Player>
     );
   }
+}
+
+function calculateLayout(props, size) {
+  const { direction, loop } = props;
+  let layoutList = [];
+  layoutList.push({
+    position: 'absolute',
+    x: 0,
+    y: 0,
+    width: size.width,
+    height: size.height,
+  });
+
+  if (!loop) {
+    return { size, layoutList };
+  }
+
+  const [width, height, x, y] =
+    direction === 'x'
+      ? ['width', 'height', 'x', 'y']
+      : ['height', 'width', 'y', 'x'];
+
+  layoutList.push({
+    position: 'absolute',
+    [x]: size[width],
+    [y]: 0,
+    [width]: size[width],
+    [height]: size[height],
+  });
+  size[width] *= 2;
+
+  return { size, layoutList };
 }

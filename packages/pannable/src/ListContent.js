@@ -95,7 +95,6 @@ export default class ListContent extends React.Component {
       }
 
       const layout = calculateLayout(props, nextItemHashList, nextItemSizeDict);
-
       nextState.layoutList = layout.layoutList;
 
       if (nextItemHashList !== itemHashList) {
@@ -110,7 +109,6 @@ export default class ListContent extends React.Component {
       ) {
         nextState.size = layout.size;
       }
-
       return nextState;
     });
   }
@@ -218,7 +216,11 @@ export default class ListContent extends React.Component {
 
 function calculateLayout(props, itemHashList, itemSizeDict) {
   const { direction, spacing, itemCount } = props;
-  const size = { width: props.width, height: props.height };
+  const size = {
+    width: props.width,
+    height: props.height,
+  };
+
   const estimatedItemSize = {
     width: props.estimatedItemWidth,
     height: props.estimatedItemHeight,

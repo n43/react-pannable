@@ -13,16 +13,9 @@ class ListLayoutCarousel extends Component {
       direction: 'x',
       activeIndex: 0,
       slideArr: [1, 2, 3, 4, 5, 6],
+      listSize: { width: 0, height: 0 },
     };
     this.carouselRef = React.createRef();
-  }
-  componentDidMount() {
-    setTimeout(() => {
-      this.carouselRef.current.playerRef.padRef.setContentSize({
-        width: 4500,
-        height: 300,
-      });
-    }, 3000);
   }
   handleInputChange = evt => {
     const node = evt.target;
@@ -37,45 +30,15 @@ class ListLayoutCarousel extends Component {
   handleSlideNext = () => {
     this.carouselRef.current.slideNext();
   };
-  handleSlideChange = ({ activeIndex, pageCount }) => {
+  handleSlideChange = ({ activeIndex }) => {
     this.setState({ activeIndex });
   };
   handlePaginationClick = index => {
     this.carouselRef.current.slideTo({ index });
   };
-  renderContent() {
-    const { direction, slideArr } = this.state;
-    const items = [];
-
-    for (let slide = 0; slide < slideArr.length; slide++) {
-      const style = {
-        position: 'absolute',
-        top: direction === 'x' ? 0 : slide * 300,
-        left: direction === 'x' ? slide * 750 : 0,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: 750,
-        height: 300,
-        backgroundColor: slide % 2 ? '#defdff' : '#cbf1ff',
-        color: '#75d3ec',
-        fontSize: 24,
-        textAlign: 'center',
-      };
-
-      items.push(
-        <div key={slide} style={style}>
-          slide {slideArr[slide]}
-        </div>
-      );
-    }
-
-    return items;
-  }
 
   render() {
     const { direction, activeIndex, slideArr } = this.state;
-
     return (
       <div className="carousel-main">
         <div className="carousel-box">
@@ -89,34 +52,34 @@ class ListLayoutCarousel extends Component {
             onSlideChange={this.handleSlideChange}
           >
             {carousel => {
-              // return (
-              //   <ListContent
-              //     direction="x"
-              //     height={300}
-              //     estimatedItemWidth={750}
-              //     estimatedItemHeight={300}
-              //     itemCount={slideArr.length}
-              //     renderItem={({ itemIndex, Item }) => {
-              //       const style = {
-              //         display: 'flex',
-              //         alignItems: 'center',
-              //         justifyContent: 'center',
-              //         backgroundColor: itemIndex % 2 ? '#defdff' : '#cbf1ff',
-              //         color: '#75d3ec',
-              //         fontSize: 24,
-              //         textAlign: 'center',
-              //       };
-              //       return (
-              //         <Item style={style}>slide {slideArr[itemIndex]}</Item>
-              //       );
-              //     }}
-              //     visibleRect={carousel.playerRef.padRef.getVisibleRect()}
-              //     onResize={size => {
-              //       carousel.playerRef.padRef.setContentSize(size);
-              //     }}
-              //   />
-              // );
-              return this.renderContent();
+              return (
+                <ListContent
+                  direction="x"
+                  height={300}
+                  itemCount={slideArr.length}
+                  renderItem={({ itemIndex, Item }) => {
+                    const style = {
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: itemIndex % 2 ? '#defdff' : '#cbf1ff',
+                      color: '#75d3ec',
+                      fontSize: 24,
+                      textAlign: 'center',
+                    };
+                    return (
+                      <Item width={750} height={300} style={style}>
+                        slide {slideArr[itemIndex]}
+                      </Item>
+                    );
+                  }}
+                  visibleRect={carousel.getVisibleRect()}
+                  onResize={size => {
+                    console.log('onResize:', size);
+                    carousel.setContentSize(size);
+                  }}
+                />
+              );
             }}
           </Carousel>
           <SvgPrev

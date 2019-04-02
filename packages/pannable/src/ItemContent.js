@@ -53,7 +53,6 @@ export default class ItemContent extends React.Component {
       const layout = calculateLayout(props);
 
       nextState.sizeHash = layout.hash;
-
       if (!layout.size) {
         const resizeNode = this.resizeRef.current;
 
@@ -68,7 +67,6 @@ export default class ItemContent extends React.Component {
       ) {
         nextState.size = layout.size;
       }
-
       return nextState;
     });
   }
