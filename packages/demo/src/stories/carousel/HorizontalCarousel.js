@@ -80,7 +80,7 @@ class HorizontalCarousel extends Component {
             contentHeight={direction === 'x' ? 300 : 300 * 6}
             direction={direction}
             loop={true}
-            onSlideChange={this.handleSlideChange}
+            // onSlideChange={this.handleSlideChange}
           >
             <div
               style={{

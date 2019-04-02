@@ -4,7 +4,7 @@ import ListContent from '../ListContent';
 
 export default class Carousel extends React.Component {
   static defaultProps = {
-    direction: 'y',
+    direction: 'x',
     loop: true,
     onSlideChange: () => {},
   };
@@ -35,38 +35,38 @@ export default class Carousel extends React.Component {
     // }
   }
 
-  getActiveIndex() {
-    const { loop } = this.props;
-    const player = this.playerRef;
-    const activeIndex = player.getActiveIndex();
-    const pageCount = player.getPageCount();
+  // getActiveIndex() {
+  //   const { loop } = this.props;
+  //   const player = this.playerRef;
+  //   const activeIndex = player.getActiveIndex();
+  //   const pageCount = player.getPageCount();
 
-    if (loop) {
-      return this._calculateActiveSlideForLoop({ activeIndex, pageCount });
-    }
+  //   if (loop) {
+  //     return this._calculateActiveSlideForLoop({ activeIndex, pageCount });
+  //   }
 
-    return activeIndex;
-  }
+  //   return activeIndex;
+  // }
 
-  getVisibleRect() {
-    const { loop, direction } = this.props;
-    const player = this.playerRef;
-    const pad = player.padRef;
-    const activeIndex = player.getActiveIndex();
-    const pageCount = player.getPageCount();
-    const contentSize = pad.getContentSize();
-    const visibleRect = pad.getVisibleRect();
+  // getVisibleRect() {
+  //   const { loop, direction } = this.props;
+  //   const player = this.playerRef;
+  //   const pad = player.padRef;
+  //   const activeIndex = player.getActiveIndex();
+  //   const pageCount = player.getPageCount();
+  //   const contentSize = pad.getContentSize();
+  //   const visibleRect = pad.getVisibleRect();
 
-    if (!loop || pageCount === 0 || activeIndex < pageCount / 2) {
-      return visibleRect;
-    }
+  //   if (!loop || pageCount === 0 || activeIndex < pageCount / 2) {
+  //     return visibleRect;
+  //   }
 
-    let visibleRectForLoop = { ...visibleRect };
-    const [width, x] = direction === 'x' ? ['width', 'x'] : ['height', 'y'];
-    visibleRectForLoop[x] = visibleRectForLoop[x] - contentSize[width] / 2;
+  //   let visibleRectForLoop = { ...visibleRect };
+  //   const [width, x] = direction === 'x' ? ['width', 'x'] : ['height', 'y'];
+  //   visibleRectForLoop[x] = visibleRectForLoop[x] - contentSize[width] / 2;
 
-    return visibleRectForLoop;
-  }
+  //   return visibleRectForLoop;
+  // }
 
   slideTo({ index, animated = true }) {
     const player = this.playerRef;
@@ -96,18 +96,18 @@ export default class Carousel extends React.Component {
     player.forward();
   }
 
-  _onSlideChange = ({ activeIndex, pageCount }) => {
+  _onSlideChange = () => {
     const { loop, onSlideChange } = this.props;
-    let activeSlide = activeIndex;
+
     if (loop) {
-      activeSlide = this._calculateActiveSlideForLoop({
-        activeIndex,
-        pageCount,
-      });
-      this._alternateFramesForLoop({ activeIndex, pageCount });
+      // activeSlide = this._calculateActiveSlideForLoop({
+      //   activeIndex,
+      //   pageCount,
+      // });
+      this._alternateFramesForLoop();
     }
 
-    onSlideChange({ activeIndex: activeSlide, pageCount });
+    // onSlideChange({ activeIndex: activeSlide, pageCount });
   };
 
   _onLoopItemResize = contentSize => {
@@ -128,15 +128,25 @@ export default class Carousel extends React.Component {
     return activeIndex - pageCount / 2;
   }
 
-  _alternateFramesForLoop({ activeIndex, pageCount }) {
+  _alternateFramesForLoop() {
+    const { direction } = this.props;
     const player = this.playerRef;
-    const min = parseFloat(pageCount / 4);
-    const max = parseFloat((pageCount * 3) / 4);
+    const pad = player.padRef;
+    const contentSize = pad.getContentSize();
+    const contentOffset = pad.getContentOffset();
+    const [width, x, y] =
+      direction === 'x' ? ['width', 'x', 'y'] : ['height', 'y', 'x'];
 
-    if (activeIndex < min || activeIndex >= max) {
-      let m = activeIndex < min ? 1 : -1;
-      const nextFrame = activeIndex + (pageCount / 2) * m;
-      player.setFrame({ index: nextFrame, animated: false });
+    const min = parseFloat(contentSize[width] / 4);
+    const max = parseFloat((contentSize[width] * 3) / 4);
+
+    if (contentOffset[x] < min || contentOffset[x] >= max) {
+      let m = contentOffset[x] < min ? 1 : -1;
+      const offsetX = contentOffset[x] + (contentSize[width] / 2) * m;
+      player.setFrame({
+        offset: { [x]: offsetX, [y]: 0 },
+        animated: false,
+      });
     }
   }
 
@@ -145,10 +155,15 @@ export default class Carousel extends React.Component {
     const { direction } = playerProps;
 
     return (
-      <Player {...playerProps} onFrameChange={this._onSlideChange}>
+      <Player {...playerProps} onScroll={this._onSlideChange}>
         {player => {
           this.playerRef = player;
           const pad = player.padRef;
+
+          console.log('render:', player);
+          if (!pad) {
+            return null;
+          }
           const size = pad.getSize();
           const visibleRect = pad.getVisibleRect();
 
