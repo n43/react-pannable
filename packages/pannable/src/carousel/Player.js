@@ -1,11 +1,13 @@
 import React from 'react';
 import Pad from '../Pad';
+import ListContent from '../ListContent';
 
 export default class Player extends React.Component {
   static defaultProps = {
     direction: 'x',
     autoplayEnabled: true,
     autoplayInterval: 3000,
+    loop: true,
     pagingEnabled: true,
     onFrameChange: () => {},
   };
@@ -179,12 +181,35 @@ export default class Player extends React.Component {
       nextState.decelerating = decelerating;
     }
 
+    this._alternateFramesForLoop();
+
     this.setState(nextState);
 
     if (onScroll) {
       onScroll(evt);
     }
   };
+
+  _alternateFramesForLoop() {
+    const { direction } = this.props;
+    const pad = this.padRef;
+    const contentSize = pad.getContentSize();
+    const contentOffset = pad.getContentOffset();
+    const [width, x, y] =
+      direction === 'x' ? ['width', 'x', 'y'] : ['height', 'y', 'x'];
+
+    const min = parseFloat(contentSize[width] / 4);
+    const max = parseFloat((contentSize[width] * 3) / 4);
+
+    if (contentOffset[x] < min || contentOffset[x] >= max) {
+      let m = contentOffset[x] < min ? 1 : -1;
+      const offsetX = contentOffset[x] + (contentSize[width] / 2) * m;
+      this.setFrame({
+        offset: { [x]: offsetX, [y]: 0 },
+        animated: false,
+      });
+    }
+  }
 
   _onMouseEnter = () => {
     this.setState({ mouseEntered: true });
@@ -199,6 +224,7 @@ export default class Player extends React.Component {
       direction,
       autoplayEnabled,
       autoplayInterval,
+      loop,
       onFrameChange,
       children,
       ...padProps
@@ -223,6 +249,22 @@ export default class Player extends React.Component {
       >
         {pad => {
           this.padRef = pad;
+          const size = pad.getSize();
+
+          if (loop) {
+            return (
+              <ListContent
+                direction={direction}
+                width={size.width}
+                height={size.height}
+                itemCount={2}
+                renderItem={() => {
+                  return element;
+                }}
+              />
+            );
+          }
+
           return element;
         }}
       </Pad>

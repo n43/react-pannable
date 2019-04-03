@@ -160,7 +160,6 @@ export default class Carousel extends React.Component {
           this.playerRef = player;
           const pad = player.padRef;
 
-          console.log('render:', player);
           if (!pad) {
             return null;
           }
@@ -177,10 +176,8 @@ export default class Carousel extends React.Component {
                 width={size.width}
                 height={size.height}
                 itemCount={2}
-                renderItem={({ Item }) => {
-                  return (
-                    <Item onResize={this._onLoopItemResize}>{element}</Item>
-                  );
+                renderItem={() => {
+                  return { element };
                 }}
                 visibleRect={visibleRect}
               />
