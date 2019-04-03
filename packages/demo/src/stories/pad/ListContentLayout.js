@@ -72,10 +72,17 @@ export default class ListContentLayout extends React.Component {
                   } else if (itemIndex === 1) {
                     return (
                       <ListContent
-                        style={{ backgroundColor: '#cbf1ff' }}
+                        spacing={spacing}
                         itemCount={10}
-                        renderItem={() => {
-                          return <div>111</div>;
+                        renderItem={({ itemIndex: index }) => {
+                          return (
+                            <ItemContent
+                              height={20 * (index + 1)}
+                              style={{ backgroundColor: '#cbf1ff' }}
+                            >
+                              {index}
+                            </ItemContent>
+                          );
                         }}
                       />
                     );
