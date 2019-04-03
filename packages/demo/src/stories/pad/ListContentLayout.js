@@ -58,27 +58,37 @@ export default class ListContentLayout extends React.Component {
                 ref={this.listRef}
                 width={346}
                 spacing={spacing}
-                itemCount={20}
+                itemCount={3}
                 renderItem={({ itemIndex }) => {
-                  let backgroundColor = itemIndex % 2 ? '#defdff' : '#cbf1ff';
-
-                  const body = [];
-                  for (let idx = 0; idx <= itemIndex; idx++) {
-                    body.push(<div key={idx}>{idx}</div>);
+                  if (itemIndex === 0) {
+                    return (
+                      <ItemContent
+                        hash="Title"
+                        style={{ backgroundColor: '#defdff' }}
+                      >
+                        Header
+                      </ItemContent>
+                    );
+                  } else if (itemIndex === 1) {
+                    return (
+                      <ListContent
+                        style={{ backgroundColor: '#cbf1ff' }}
+                        itemCount={10}
+                        renderItem={() => {
+                          return <div>111</div>;
+                        }}
+                      />
+                    );
+                  } else if (itemIndex === 2) {
+                    return (
+                      <ItemContent
+                        hash="Title"
+                        style={{ backgroundColor: '#defdff' }}
+                      >
+                        Footer
+                      </ItemContent>
+                    );
                   }
-
-                  return (
-                    <ItemContent
-                      hash={'' + itemIndex}
-                      style={{
-                        backgroundColor,
-                        color: '#75d3ec',
-                        textAlign: 'center',
-                      }}
-                    >
-                      {body}
-                    </ItemContent>
-                  );
                 }}
               />
             </Pad>
