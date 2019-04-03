@@ -182,7 +182,7 @@ export default class Player extends React.Component {
     }
 
     if (loop) {
-      this._alternateFramesForLoop();
+      this._alternateFramesForLoop({ dragging, decelerating });
     }
 
     this.setState(nextState);
@@ -192,27 +192,27 @@ export default class Player extends React.Component {
     }
   };
 
-  _alternateFramesForLoop() {
+  _alternateFramesForLoop({ dragging, decelerating }) {
     const { direction } = this.props;
     const pad = this.padRef;
+    const size = pad.getSize();
     const contentSize = pad.getContentSize();
     const contentOffset = pad.getContentOffset();
     const [width, x, y] =
       direction === 'x' ? ['width', 'x', 'y'] : ['height', 'y', 'x'];
 
-    const min = parseFloat(contentSize[width] / 4);
-    const max = parseFloat((contentSize[width] * 3) / 4);
+    const count = Math.floor(contentSize[width] / size[width]);
+    const min = size[width] * Math.ceil(count / 4);
+    let max = size[width] * Math.floor((count * 3) / 4);
+
+    if (dragging || decelerating) {
+      max += size[width];
+    }
 
     if (Math.abs(contentOffset[x]) < min || Math.abs(contentOffset[x]) >= max) {
       let m = Math.abs(contentOffset[x]) < min ? -1 : 1;
       const offsetX = contentOffset[x] + (contentSize[width] / 2) * m;
-      console.log(
-        '_alternateFramesForLoop:',
-        min,
-        max,
-        Math.abs(contentOffset[x]),
-        offsetX
-      );
+      console.log('loop2:', min, max, contentOffset[x], offsetX);
       this.setFrame({
         offset: { [x]: offsetX, [y]: 0 },
         animated: false,
