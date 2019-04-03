@@ -215,13 +215,18 @@ function calculateLayout(props) {
 
   if (typeof sizeWidth !== 'number') {
     countColumn = itemCount;
-    sizeWidth = itemCount * itemSize[width];
 
-    if (itemCount > 1) {
-      sizeWidth += (itemCount - 1) * spacing[column];
+    if (itemSize[width] === 0) {
+      sizeWidth = 0;
+    } else {
+      sizeWidth = itemCount * itemSize[width];
+
+      if (itemCount > 1) {
+        sizeWidth += (itemCount - 1) * spacing[column];
+      }
     }
   } else {
-    if (itemSize[width] === 0 && spacing[column] === 0) {
+    if (itemSize[width] === 0) {
       countColumn = itemCount;
     } else {
       countColumn = 1;

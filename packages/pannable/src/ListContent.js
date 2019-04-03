@@ -118,7 +118,7 @@ export default class ListContent extends React.Component {
     const { direction, width, height, renderItem } = this.props;
     const { itemSizeDict } = this.state;
 
-    const { itemIndex, rect } = layoutAttrs;
+    const { itemIndex, rect, visibleRect } = layoutAttrs;
     let key = itemIndex;
     let element = renderItem(layoutAttrs);
 
@@ -162,6 +162,10 @@ export default class ListContent extends React.Component {
       if (typeof elemProps.width !== 'number' && typeof width === 'number') {
         elemProps.width = width;
       }
+    }
+
+    if (element.props.hasOwnProperty('visibleRect')) {
+      elemProps.visibleRect = visibleRect;
     }
 
     return React.cloneElement(element, elemProps);
@@ -230,10 +234,6 @@ function calculateLayout(props, itemHashList, itemSizeDict) {
   const layoutList = [];
 
   for (let itemIndex = 0; itemIndex < itemCount; itemIndex++) {
-    if (itemIndex > 0) {
-      sizeHeight += spacing;
-    }
-
     const itemHash = itemHashList[itemIndex];
     let itemSize = itemSizeDict[itemHash] || {
       [width]:
@@ -252,7 +252,13 @@ function calculateLayout(props, itemHashList, itemSizeDict) {
       },
     });
 
-    sizeHeight += itemSize[height];
+    if (itemSize[height] > 0) {
+      sizeHeight += itemSize[height];
+
+      if (itemIndex < itemCount - 1) {
+        sizeHeight += spacing;
+      }
+    }
     if (sizeWidth < itemSize[width]) {
       sizeWidth = itemSize[width];
     }

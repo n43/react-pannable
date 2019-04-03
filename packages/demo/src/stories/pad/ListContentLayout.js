@@ -58,8 +58,6 @@ export default class ListContentLayout extends React.Component {
                 ref={this.listRef}
                 width={346}
                 spacing={spacing}
-                estimatedItemWidth={100}
-                estimatedItemHeight={100}
                 itemCount={20}
                 renderItem={({ itemIndex }) => {
                   let backgroundColor = itemIndex % 2 ? '#defdff' : '#cbf1ff';
