@@ -1,7 +1,5 @@
 import React, { Component } from 'react';
 import { Player } from 'react-pannable';
-import TextField from '../../ui/field/TextField';
-import RadioField from '../../ui/field/RadioField';
 import './Carousel.css';
 
 class Autoplayer extends Component {
@@ -72,11 +70,13 @@ class Autoplayer extends Component {
           ref={this.playerRef}
           width={750}
           height={300}
-          contentWidth={direction === 'x' ? 750 * 5 : 750}
-          contentHeight={direction === 'x' ? 300 : 300 * 5}
-          direction={direction}
+          contentWidth={750 * 5}
+          contentHeight={300}
+          direction="x"
         >
-          {this.renderContent()}
+          <div style={{ width: 750 * 5, height: 300 }}>
+            {this.renderContent()}
+          </div>
         </Player>
         <div className="carousel-optbar">
           <div className="carsousel-status">

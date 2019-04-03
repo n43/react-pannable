@@ -171,7 +171,7 @@ export default class Player extends React.Component {
 
   _onPadScroll = evt => {
     const { dragging, decelerating } = evt;
-    const { onScroll } = this.props;
+    const { loop, onScroll } = this.props;
     let nextState = {};
 
     if (this.state.dragging !== dragging) {
@@ -181,7 +181,9 @@ export default class Player extends React.Component {
       nextState.decelerating = decelerating;
     }
 
-    this._alternateFramesForLoop();
+    if (loop) {
+      this._alternateFramesForLoop();
+    }
 
     this.setState(nextState);
 
@@ -201,9 +203,16 @@ export default class Player extends React.Component {
     const min = parseFloat(contentSize[width] / 4);
     const max = parseFloat((contentSize[width] * 3) / 4);
 
-    if (contentOffset[x] < min || contentOffset[x] >= max) {
-      let m = contentOffset[x] < min ? 1 : -1;
+    if (Math.abs(contentOffset[x]) < min || Math.abs(contentOffset[x]) >= max) {
+      let m = Math.abs(contentOffset[x]) < min ? -1 : 1;
       const offsetX = contentOffset[x] + (contentSize[width] / 2) * m;
+      console.log(
+        '_alternateFramesForLoop:',
+        min,
+        max,
+        Math.abs(contentOffset[x]),
+        offsetX
+      );
       this.setFrame({
         offset: { [x]: offsetX, [y]: 0 },
         animated: false,
@@ -237,7 +246,11 @@ export default class Player extends React.Component {
       bounceConfig.alwaysBounceY = true;
     }
 
-    const element = typeof children === 'function' ? children(this) : children;
+    let element = children;
+
+    if (typeof element === 'function') {
+      element = element(this);
+    }
 
     return (
       <Pad
@@ -258,8 +271,9 @@ export default class Player extends React.Component {
                 width={size.width}
                 height={size.height}
                 itemCount={2}
-                renderItem={() => {
-                  return element;
+                renderItem={() => element}
+                onResize={size => {
+                  console.log('player listcontent:', size);
                 }}
               />
             );
