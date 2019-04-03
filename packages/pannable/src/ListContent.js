@@ -85,14 +85,19 @@ export default class ListContent extends React.Component {
 
       if (changedItem) {
         const { itemIndex, itemHash, itemSize } = changedItem;
+        const hashItemSize = nextItemSizeDict[itemHash];
 
-        if (nextItemHashList[itemIndex] === itemHash) {
-          return null;
+        if (nextItemHashList[itemIndex] !== itemHash) {
+          nextItemHashList = [...nextItemHashList];
+          nextItemHashList[itemIndex] = itemHash;
         }
-
-        nextItemHashList = [...nextItemHashList];
-        nextItemHashList[itemIndex] = itemHash;
-        nextItemSizeDict = { ...nextItemSizeDict, [itemHash]: itemSize };
+        if (
+          !hashItemSize ||
+          hashItemSize.width !== itemSize.width ||
+          hashItemSize.height !== itemSize.height
+        ) {
+          nextItemSizeDict = { ...nextItemSizeDict, [itemHash]: itemSize };
+        }
       }
 
       const layout = calculateLayout(props, nextItemHashList, nextItemSizeDict);
@@ -110,6 +115,7 @@ export default class ListContent extends React.Component {
       ) {
         nextState.size = layout.size;
       }
+
       return nextState;
     });
   }

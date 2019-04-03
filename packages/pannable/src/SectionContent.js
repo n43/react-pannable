@@ -5,8 +5,8 @@ import React from 'react';
 export default class SectionContent extends React.Component {
   static defaultProps = {
     direction: 'y',
-    width: 0,
-    height: 0,
+    width: null,
+    height: null,
     renderHeader: () => null,
     renderBody: () => null,
     renderFooter: () => null,
@@ -18,16 +18,20 @@ export default class SectionContent extends React.Component {
   constructor(props) {
     super(props);
 
+    const itemHashList = [];
     const itemSizeDict = {};
-    const layout = calculateLayout(props, itemSizeDict);
+    const layout = calculateLayout(props, itemHashList, itemSizeDict);
 
     this.state = {
       size: layout.size,
-      layoutDict: layout.layoutDict,
+      layoutList: layout.layoutList,
+      itemHashList,
       itemSizeDict,
     };
+  }
 
-    props.onResize(layout.size);
+  componentDidMount() {
+    this.props.onResize(this.state.size);
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -50,11 +54,60 @@ export default class SectionContent extends React.Component {
     return this.state.size;
   }
 
-  getItemRect({ name }) {
-    const { layoutDict } = this.state;
-    const attrs = layoutDict[name];
+  getItemRect({ itemName }) {
+    const { layoutList } = this.state;
+    const itemIndex = this._getItemIndexByName(itemName);
+    const attrs = layoutList[itemIndex];
 
     return (attrs && attrs.rect) || null;
+  }
+
+  _getItemIndexByName(itemName) {
+    return ['header', 'body', 'footer'].indexOf(itemName);
+  }
+
+  _calculateLayout(changedItem) {
+    this.setState((state, props) => {
+      const { size, itemHashList, itemSizeDict } = state;
+      let nextItemHashList = itemHashList;
+      let nextItemSizeDict = itemSizeDict;
+      const nextState = {};
+
+      if (changedItem) {
+        const { itemIndex, itemHash, itemSize } = changedItem;
+        const hashItemSize = nextItemSizeDict[itemHash];
+
+        if (nextItemHashList[itemIndex] !== itemHash) {
+          nextItemHashList = [...nextItemHashList];
+          nextItemHashList[itemIndex] = itemHash;
+        }
+        if (
+          !hashItemSize ||
+          hashItemSize.width !== itemSize.width ||
+          hashItemSize.height !== itemSize.height
+        ) {
+          nextItemSizeDict = { ...nextItemSizeDict, [itemHash]: itemSize };
+        }
+      }
+
+      const layout = calculateLayout(props, nextItemHashList, nextItemSizeDict);
+      nextState.layoutList = layout.layoutList;
+
+      if (nextItemHashList !== itemHashList) {
+        nextState.itemHashList = nextItemHashList;
+      }
+      if (nextItemSizeDict !== itemSizeDict) {
+        nextState.itemSizeDict = nextItemSizeDict;
+      }
+      if (
+        layout.size.width !== size.width ||
+        layout.size.height !== size.height
+      ) {
+        nextState.size = layout.size;
+      }
+
+      return nextState;
+    });
   }
 
   render() {
@@ -75,4 +128,4 @@ export default class SectionContent extends React.Component {
   }
 }
 
-function calculateLayout(props) {}
+function calculateLayout(props, itemHashList, itemSizeDict) {}
