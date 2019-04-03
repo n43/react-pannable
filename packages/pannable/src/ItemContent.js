@@ -7,6 +7,7 @@ export default class ItemContent extends React.Component {
     height: null,
     hash: '',
     onResize: () => {},
+    connectWithPad: true,
   };
 
   constructor(props) {
@@ -75,7 +76,14 @@ export default class ItemContent extends React.Component {
   }
 
   render() {
-    const { width, height, hash, onResize, ...props } = this.props;
+    const {
+      width,
+      height,
+      hash,
+      onResize,
+      connectWithPad,
+      ...props
+    } = this.props;
     const { size } = this.state;
 
     let element = props.children;
@@ -83,27 +91,19 @@ export default class ItemContent extends React.Component {
     if (typeof element === 'function') {
       element = element(this);
     }
-    if (React.isValidElement(element) && element.props.onResize) {
-      element = React.cloneElement(element, {
-        onResize: size => {
-          this.setState({ size });
-          element.props.onResize(size);
-        },
-      });
-    } else {
-      element = (
-        <div
-          ref={this.resizeRef}
-          style={{
-            position: 'absolute',
-            width: typeof width === 'number' ? width : 'auto',
-            height: typeof height === 'number' ? height : 'auto',
-          }}
-        >
-          {element}
-        </div>
-      );
-    }
+
+    element = (
+      <div
+        ref={this.resizeRef}
+        style={{
+          position: 'absolute',
+          width: typeof width === 'number' ? width : 'auto',
+          height: typeof height === 'number' ? height : 'auto',
+        }}
+      >
+        {element}
+      </div>
+    );
 
     props.children = element;
     props.style = {

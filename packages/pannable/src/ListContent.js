@@ -14,6 +14,7 @@ export default class ListContent extends React.Component {
     renderItem: () => null,
     visibleRect: { x: 0, y: 0, width: 0, height: 0 },
     onResize: () => {},
+    connectWithPad: true,
   };
 
   constructor(props) {
@@ -117,60 +118,53 @@ export default class ListContent extends React.Component {
     const { direction, width, height, renderItem } = this.props;
     const { itemSizeDict } = this.state;
 
-    const { itemIndex, rect, Item } = layoutAttrs;
+    const { itemIndex, rect } = layoutAttrs;
     let key = itemIndex;
     let element = renderItem(layoutAttrs);
 
-    if (React.isValidElement(element)) {
-      if (element.key) {
-        key = element.key;
-      }
-      if (element.type !== Item) {
-        element = <Item>{element}</Item>;
-      }
-    } else {
-      element = <Item>{element}</Item>;
+    if (React.isValidElement(element) && element.key) {
+      key = element.key;
+    }
+    if (!React.isValidElement(element) || !element.props.connectWithPad) {
+      element = <ItemContent>{element}</ItemContent>;
     }
 
-    const { onResize, ...props } = element.props;
-
-    props.key = key;
-    if (props.hash === '') {
-      props.hash = key;
-    }
-
-    const size = itemSizeDict[props.hash];
-
-    if (size) {
-      props.width = size.width;
-      props.height = size.height;
-    }
-    if (direction === 'x') {
-      if (typeof props.height !== 'number' && height) {
-        props.height = height;
-      }
-    } else {
-      if (typeof props.width !== 'number' && width) {
-        props.width = width;
-      }
-    }
-
-    props.onResize = itemSize => {
-      this._calculateLayout({ itemIndex, itemHash: props.hash, itemSize });
-
-      onResize(itemSize);
-    };
-
-    props.style = {
+    const onResize = element.props.onResize;
+    const itemHash = element.props.hash || key;
+    const itemStyle = {
       position: 'absolute',
       left: rect.x,
       top: rect.y,
       width: rect.width,
       height: rect.height,
-      ...props.style,
+      ...element.props.style,
+    };
+    const elemProps = {
+      key,
+      style: itemStyle,
+      onResize: itemSize => {
+        this._calculateLayout({ itemIndex, itemHash, itemSize });
+        onResize(itemSize);
+      },
     };
 
-    return React.createElement(Item, props);
+    const size = itemSizeDict[itemHash];
+
+    if (size) {
+      elemProps.width = size.width;
+      elemProps.height = size.height;
+    }
+    if (direction === 'x') {
+      if (typeof elemProps.height !== 'number' && typeof height === 'number') {
+        elemProps.height = height;
+      }
+    } else {
+      if (typeof elemProps.width !== 'number' && typeof width === 'number') {
+        elemProps.width = width;
+      }
+    }
+
+    return React.cloneElement(element, elemProps);
   }
 
   render() {
@@ -185,6 +179,7 @@ export default class ListContent extends React.Component {
       renderItem,
       visibleRect,
       onResize,
+      connectWithPad,
       ...props
     } = this.props;
     const { size, layoutList } = this.state;
@@ -197,7 +192,6 @@ export default class ListContent extends React.Component {
         ...attrs,
         itemIndex,
         visibleRect: getItemVisibleRect(attrs.rect, visibleRect),
-        Item: ItemContent,
       };
 
       if (needsRender(layoutAttrs.rect, visibleRect)) {

@@ -12,6 +12,7 @@ export default class SectionContent extends React.Component {
     renderFooter: () => null,
     visibleRect: { x: 0, y: 0, width: 0, height: 0 },
     onResize: () => {},
+    connectWithPad: true,
   };
 
   constructor(props) {
@@ -66,6 +67,7 @@ export default class SectionContent extends React.Component {
     //   renderFooter,
     //   visibleRect,
     //   onResize,
+    //   connectWithPad,
     //   ...props
     // } = this.props;
 

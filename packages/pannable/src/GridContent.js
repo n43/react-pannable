@@ -14,6 +14,7 @@ export default class GridContent extends React.Component {
     renderItem: () => null,
     visibleRect: { x: 0, y: 0, width: 0, height: 0 },
     onResize: () => {},
+    connectWithPad: true,
   };
 
   constructor(props) {
@@ -149,6 +150,7 @@ export default class GridContent extends React.Component {
       renderItem,
       visibleRect,
       onResize,
+      connectWithPad,
       ...props
     } = this.props;
     const { size, layoutList } = this.state;

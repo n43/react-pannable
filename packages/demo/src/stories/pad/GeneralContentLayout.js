@@ -99,18 +99,13 @@ class GeneralContentLayout extends Component {
                 height={552}
                 alwaysBounceX={false}
               >
-                {pad => (
-                  <GeneralContent
-                    width={contentFixedWidth ? +contentFixedWidth || 0 : null}
-                    height={
-                      contentFixedHeight ? +contentFixedHeight || 0 : null
-                    }
-                    onResize={size => pad.setContentSize(size)}
-                  >
-                    {this.renderArticle()}
-                    {this.renderImages()}
-                  </GeneralContent>
-                )}
+                <GeneralContent
+                  width={contentFixedWidth ? +contentFixedWidth || 0 : null}
+                  height={contentFixedHeight ? +contentFixedHeight || 0 : null}
+                >
+                  {this.renderArticle()}
+                  {this.renderImages()}
+                </GeneralContent>
               </Pad>
             </div>
           </div>
