@@ -79,14 +79,9 @@ class AutoResizingPad extends Component {
                         alwaysBounceX={false}
                         style={{ backgroundColor: '#f5f5f5' }}
                       >
-                        {pad => (
-                          <GeneralContent
-                            width={width}
-                            onResize={size => pad.setContentSize(size)}
-                          >
-                            {this.renderContent()}
-                          </GeneralContent>
-                        )}
+                        <GeneralContent width={width}>
+                          {this.renderContent()}
+                        </GeneralContent>
                       </Pad>
                     )}
                   </AutoResizing>

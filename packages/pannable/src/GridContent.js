@@ -14,6 +14,7 @@ export default class GridContent extends React.Component {
     renderItem: () => null,
     visibleRect: { x: 0, y: 0, width: 0, height: 0 },
     onResize: () => {},
+    connectWithPad: true,
   };
 
   constructor(props) {
@@ -149,6 +150,7 @@ export default class GridContent extends React.Component {
       renderItem,
       visibleRect,
       onResize,
+      connectWithPad,
       ...props
     } = this.props;
     const { size, layoutList } = this.state;
@@ -213,13 +215,18 @@ function calculateLayout(props) {
 
   if (typeof sizeWidth !== 'number') {
     countColumn = itemCount;
-    sizeWidth = itemCount * itemSize[width];
 
-    if (itemCount > 1) {
-      sizeWidth += (itemCount - 1) * spacing[column];
+    if (itemSize[width] === 0) {
+      sizeWidth = 0;
+    } else {
+      sizeWidth = itemCount * itemSize[width];
+
+      if (itemCount > 1) {
+        sizeWidth += (itemCount - 1) * spacing[column];
+      }
     }
   } else {
-    if (itemSize[width] === 0 && spacing[column] === 0) {
+    if (itemSize[width] === 0) {
       countColumn = itemCount;
     } else {
       countColumn = 1;

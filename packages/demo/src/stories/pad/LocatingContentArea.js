@@ -76,20 +76,18 @@ class LocatingContentArea extends Component {
               contentWidth={1300}
               contentHeight={973}
             >
-              <React.Fragment>
-                <img src={map} width={1300} height={973} />
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: '422px',
-                    left: '854px',
-                    width: '120px',
-                    height: '120px',
-                    borderRadius: '60px',
-                    backgroundColor: 'rgba(245,177,177,0.5)',
-                  }}
-                />
-              </React.Fragment>
+              <img src={map} width={1300} height={973} />
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '422px',
+                  left: '854px',
+                  width: '120px',
+                  height: '120px',
+                  borderRadius: '60px',
+                  backgroundColor: 'rgba(245,177,177,0.5)',
+                }}
+              />
             </Pad>
           </div>
         </div>

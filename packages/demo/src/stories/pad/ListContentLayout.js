@@ -1,7 +1,6 @@
 import React from 'react';
-import { Pad, ListContent } from 'react-pannable';
+import { Pad, ListContent, ItemContent } from 'react-pannable';
 import TextField from '../../ui/field/TextField';
-import RadioField from '../../ui/field/RadioField';
 import SvgPhone from './SvgPhone';
 import './Pad.css';
 
@@ -55,39 +54,33 @@ export default class ListContentLayout extends React.Component {
               height={552}
               alwaysBounceX={false}
             >
-              {pad => (
-                <ListContent
-                  ref={this.listRef}
-                  width={346}
-                  spacing={spacing}
-                  estimatedItemWidth={100}
-                  estimatedItemHeight={100}
-                  itemCount={20}
-                  renderItem={({ itemIndex, Item }) => {
-                    let backgroundColor = itemIndex % 2 ? '#defdff' : '#cbf1ff';
+              <ListContent
+                ref={this.listRef}
+                width={346}
+                spacing={spacing}
+                itemCount={20}
+                renderItem={({ itemIndex }) => {
+                  let backgroundColor = itemIndex % 2 ? '#defdff' : '#cbf1ff';
 
-                    const body = [];
-                    for (let idx = 0; idx <= itemIndex; idx++) {
-                      body.push(<div key={idx}>{idx}</div>);
-                    }
+                  const body = [];
+                  for (let idx = 0; idx <= itemIndex; idx++) {
+                    body.push(<div key={idx}>{idx}</div>);
+                  }
 
-                    return (
-                      <Item
-                        hash={'' + itemIndex}
-                        style={{
-                          backgroundColor,
-                          color: '#75d3ec',
-                          textAlign: 'center',
-                        }}
-                      >
-                        {body}
-                      </Item>
-                    );
-                  }}
-                  visibleRect={pad.getVisibleRect()}
-                  onResize={size => pad.setContentSize(size)}
-                />
-              )}
+                  return (
+                    <ItemContent
+                      hash={'' + itemIndex}
+                      style={{
+                        backgroundColor,
+                        color: '#75d3ec',
+                        textAlign: 'center',
+                      }}
+                    >
+                      {body}
+                    </ItemContent>
+                  );
+                }}
+              />
             </Pad>
           </div>
         </div>

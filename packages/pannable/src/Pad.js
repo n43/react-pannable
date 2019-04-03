@@ -517,6 +517,22 @@ export default class Pad extends React.Component {
       element = element(this);
     }
 
+    if (React.isValidElement(element) && element.props.connectWithPad) {
+      const onResize = element.props.onResize;
+      const elemProps = {
+        onResize: size => {
+          this._setStateWithScroll({ contentSize: size });
+          onResize(size);
+        },
+      };
+
+      if (element.props.hasOwnProperty('visibleRect')) {
+        elemProps.visibleRect = this.getVisibleRect();
+      }
+
+      element = React.cloneElement(element, elemProps);
+    }
+
     contentProps.children = element;
     contentProps.style = StyleSheet.create({
       position: 'relative',

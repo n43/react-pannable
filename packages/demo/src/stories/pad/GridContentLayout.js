@@ -65,38 +65,33 @@ export default class GridContentLayout extends React.Component {
                 height={552}
                 alwaysBounceX={false}
               >
-                {pad => (
-                  <GridContent
-                    ref={this.gridRef}
-                    width={346}
-                    itemWidth={itemWidth}
-                    itemHeight={itemHeight}
-                    itemCount={100}
-                    renderItem={({ itemIndex, rowIndex, columnIndex }) => {
-                      let backgroundColor =
-                        itemIndex % 2 ? '#defdff' : '#cbf1ff';
+                <GridContent
+                  ref={this.gridRef}
+                  width={346}
+                  itemWidth={itemWidth}
+                  itemHeight={itemHeight}
+                  itemCount={100}
+                  renderItem={({ itemIndex, rowIndex, columnIndex }) => {
+                    let backgroundColor = itemIndex % 2 ? '#defdff' : '#cbf1ff';
 
-                      return (
-                        <div
-                          style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            backgroundColor,
-                            color: '#75d3ec',
-                            whiteSpace: 'pre-line',
-                            textAlign: 'center',
-                          }}
-                        >
-                          index:{itemIndex + '\n'}
-                          {'r:' + rowIndex + separator + 'c:' + columnIndex}
-                        </div>
-                      );
-                    }}
-                    visibleRect={pad.getVisibleRect()}
-                    onResize={size => pad.setContentSize(size)}
-                  />
-                )}
+                    return (
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          backgroundColor,
+                          color: '#75d3ec',
+                          whiteSpace: 'pre-line',
+                          textAlign: 'center',
+                        }}
+                      >
+                        index:{itemIndex + '\n'}
+                        {'r:' + rowIndex + separator + 'c:' + columnIndex}
+                      </div>
+                    );
+                  }}
+                />
               </Pad>
             </div>
           </div>
