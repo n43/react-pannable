@@ -234,6 +234,7 @@ export function createDeceleration(
     duration,
     startTime: new Date().getTime(),
     endOffset,
+    rate,
   };
 }
 
