@@ -72,7 +72,11 @@ export default class ItemContent extends React.Component {
         }
       }
 
-      if (nextSize.width !== size.width || nextSize.height !== size.height) {
+      if (
+        !size ||
+        nextSize.width !== size.width ||
+        nextSize.height !== size.height
+      ) {
         nextState.size = nextSize;
       }
 
@@ -110,12 +114,14 @@ export default class ItemContent extends React.Component {
         },
         onResize: nextSize => {
           if (
+            !size ||
             nextSize.width !== size.width ||
             nextSize.height !== size.height
           ) {
             this.setState({ size: nextSize });
           }
           onResize(nextSize);
+          console.log('Item onresize:', nextSize);
         },
       };
 

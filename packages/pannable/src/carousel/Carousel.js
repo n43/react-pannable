@@ -3,6 +3,7 @@ import Player from './Player';
 
 export default class Carousel extends React.Component {
   static defaultProps = {
+    ...Player.defaultProps,
     renderIndicator: () => null,
     onSlideChange: () => {},
   };
@@ -103,16 +104,22 @@ export default class Carousel extends React.Component {
       ...playerProps
     } = this.props;
 
+    let element = children;
+    if (typeof element === 'function') {
+      element = element(this);
+    }
+
     return (
       <Player {...playerProps} onScroll={this._onSlideChange}>
         {player => {
           this.playerRef = player;
 
-          const element =
-            typeof children === 'function' ? children(this) : children;
+          const wrapperStyle = {
+            position: 'relative',
+          };
 
           return (
-            <div>
+            <div style={wrapperStyle}>
               {element}
               {renderIndicator()}
             </div>
