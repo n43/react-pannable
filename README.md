@@ -92,7 +92,11 @@ type PadEvent = {
 | directionalLockEnabled |     boolean      |    false     | Determines whether scrolling is disabled in a particular direction.                                 |
 | alwaysBounceX          |     boolean      |     true     | Determines whether bouncing always occurs when horizontal scrolling reaches the end of the content. |
 | alwaysBounceY          |     boolean      |     true     | Determines whether bouncing always occurs when vertical scrolling reaches the end of the content.   |
-| onScroll               |     function     |   () => {}   | Callback invoked when the content view scrolls.:`({evt: PadEvent}) => void`                         |
+| onScroll               |     function     |   () => {}   | Callback invoked when the content view scrolls.:`(evt: PadEvent) => void`                           |
+| onDragStart            |     function     |   () => {}   | Callback invoked when start dragging the content.:`() => void`                                      |
+| onDragEnd              |     function     |   () => {}   | Callback invoked when end dragging the content.:`() => void`                                        |
+| onDecelerationStart    |     function     |   () => {}   | Callback invoked when the content start decelerating.:`() => void`                                  |
+| onDecelerationEnd      |     function     |   () => {}   | Callback invoked when the content end decelerating.:`() => void`                                    |
 | onResize               |     function     |   () => {}   | Callback invoked when the bounding view resize.:`(size: Size) => void`                              |
 | onContentResize        |     function     |   () => {}   | Callback invoked when the content view resize.:`(size: Size) => void`                               |
 
