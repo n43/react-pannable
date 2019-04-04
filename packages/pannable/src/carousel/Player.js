@@ -8,7 +8,7 @@ export default class Player extends React.Component {
     autoplayEnabled: true,
     autoplayInterval: 3000,
     loop: true,
-    pagingEnabled: true,
+    pagingEnabled: false,
     onFrameChange: () => {},
   };
 
@@ -73,39 +73,34 @@ export default class Player extends React.Component {
     const { direction } = this.props;
     const pad = this.padRef;
     const contentSize = pad.getContentSize();
-    const contentOffset = pad.getContentOffset();
 
     const [width, height, x, y] =
       direction === 'x'
         ? ['width', 'height', 'x', 'y']
         : ['height', 'width', 'y', 'x'];
 
-    let nextContentOffset = {
-      [x]: contentOffset[x] + offset[x],
-      [y]: contentOffset[y] + offset[y],
-    };
-
     if (
-      nextContentOffset[x] > 0 ||
-      nextContentOffset[y] > 0 ||
-      Math.abs(nextContentOffset[x]) >= contentSize[width] ||
-      Math.abs(nextContentOffset[y]) >= contentSize[height]
+      offset[x] > 0 ||
+      offset[y] > 0 ||
+      Math.abs(offset[x]) >= contentSize[width] ||
+      Math.abs(offset[y]) >= contentSize[height]
     ) {
       return;
     }
 
-    pad.scrollTo({ offset: nextContentOffset, animated });
+    pad.scrollTo({ offset, animated });
   }
 
   rewind() {
     const { direction } = this.props;
     const pad = this.padRef;
     const size = pad.getSize();
+    const contentOffset = pad.getContentOffset();
     const [width, x, y] =
       direction === 'x' ? ['width', 'x', 'y'] : ['height', 'y', 'x'];
 
     this.setFrame({
-      offset: { [x]: size[width], [y]: 0 },
+      offset: { [x]: contentOffset[x] + size[width], [y]: 0 },
     });
   }
 
@@ -113,11 +108,12 @@ export default class Player extends React.Component {
     const { direction } = this.props;
     const pad = this.padRef;
     const size = pad.getSize();
+    const contentOffset = pad.getContentOffset();
     const [width, x, y] =
       direction === 'x' ? ['width', 'x', 'y'] : ['height', 'y', 'x'];
 
     this.setFrame({
-      offset: { [x]: -size[width], [y]: 0 },
+      offset: { [x]: contentOffset[x] - size[width], [y]: 0 },
     });
   }
 
@@ -182,7 +178,7 @@ export default class Player extends React.Component {
     }
 
     if (loop) {
-      this._alternateFramesForLoop({ dragging, decelerating });
+      this._alternateFramesForLoop();
     }
 
     this.setState(nextState);
@@ -192,27 +188,25 @@ export default class Player extends React.Component {
     }
   };
 
-  _alternateFramesForLoop({ dragging, decelerating }) {
+  _alternateFramesForLoop() {
     const { direction } = this.props;
     const pad = this.padRef;
-    const size = pad.getSize();
     const contentSize = pad.getContentSize();
     const contentOffset = pad.getContentOffset();
     const [width, x, y] =
       direction === 'x' ? ['width', 'x', 'y'] : ['height', 'y', 'x'];
 
-    const count = Math.floor(contentSize[width] / size[width]);
-    const min = size[width] * Math.ceil(count / 4);
-    let max = size[width] * Math.floor((count * 3) / 4);
+    const min = -contentSize[width] * 0.75;
+    const max = -contentSize[width] * 0.25;
+    let offsetX = contentOffset[x];
 
-    if (dragging || decelerating) {
-      max += size[width];
+    if (offsetX > max) {
+      offsetX -= 0.5 * contentSize[width];
+    } else if (offsetX <= min) {
+      offsetX += 0.5 * contentSize[width];
     }
 
-    if (Math.abs(contentOffset[x]) < min || Math.abs(contentOffset[x]) >= max) {
-      let m = Math.abs(contentOffset[x]) < min ? -1 : 1;
-      const offsetX = contentOffset[x] + (contentSize[width] / 2) * m;
-      console.log('loop2:', min, max, contentOffset[x], offsetX);
+    if (contentOffset[x] !== offsetX) {
       this.setFrame({
         offset: { [x]: offsetX, [y]: 0 },
         animated: false,
