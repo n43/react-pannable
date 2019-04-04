@@ -74,7 +74,6 @@ class ListLayoutCarousel extends Component {
                       </Item>
                     );
                   }}
-                  visibleRect={carousel.getVisibleRect()}
                 />
               );
             }}
