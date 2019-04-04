@@ -32,6 +32,10 @@ export default class ListContent extends React.Component {
     };
   }
 
+  getSize() {
+    return this.state.size;
+  }
+
   componentDidMount() {
     this.props.onResize(this.state.size);
   }
@@ -125,18 +129,18 @@ export default class ListContent extends React.Component {
     const { itemSizeDict } = this.state;
 
     const { itemIndex, rect, visibleRect } = layoutAttrs;
-    let key = itemIndex;
     let element = renderItem(layoutAttrs);
 
-    if (React.isValidElement(element) && element.key) {
-      key = element.key;
-    }
-    if (!React.isValidElement(element) || !element.props.connectWithPad) {
+    if (!React.isValidElement(element)) {
       element = <ItemContent>{element}</ItemContent>;
     }
+    if (!element.props.connectWithPad) {
+      element = <ItemContent key={element.key}>{element}</ItemContent>;
+    }
 
-    const onResize = element.props.onResize;
+    const key = element.key || itemIndex;
     const itemHash = element.props.hash || key;
+    const onResize = element.props.onResize;
     const itemStyle = {
       position: 'absolute',
       left: rect.x,
@@ -147,6 +151,7 @@ export default class ListContent extends React.Component {
     };
     const elemProps = {
       key,
+      ref: element.ref,
       style: itemStyle,
       onResize: itemSize => {
         this._calculateLayout({ itemIndex, itemHash, itemSize });

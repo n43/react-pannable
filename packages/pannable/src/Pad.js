@@ -552,6 +552,8 @@ export default class Pad extends React.Component {
     if (React.isValidElement(element) && element.props.connectWithPad) {
       const onResize = element.props.onResize;
       const elemProps = {
+        key: element.key,
+        ref: element.ref,
         onResize: size => {
           this._setStateWithScroll({ contentSize: size });
           onResize(size);

@@ -113,19 +113,15 @@ export default class GridContent extends React.Component {
     const { renderItem } = this.props;
 
     const { itemIndex, rect } = layoutAttrs;
-    let key = itemIndex;
     let element = renderItem(layoutAttrs);
 
-    if (React.isValidElement(element)) {
-      if (element.key) {
-        key = element.key;
-      }
-    } else {
+    if (!React.isValidElement(element)) {
       element = <div>{element}</div>;
     }
 
     return React.cloneElement(element, {
-      key,
+      key: element.key || itemIndex,
+      ref: element.ref,
       style: {
         position: 'absolute',
         left: rect.x,

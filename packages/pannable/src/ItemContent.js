@@ -50,6 +50,10 @@ export default class ItemContent extends React.Component {
     }
   }
 
+  getSize() {
+    return this.state.size;
+  }
+
   _calculateLayout() {
     this.setState((state, props) => {
       const { size } = state;
@@ -67,7 +71,7 @@ export default class ItemContent extends React.Component {
         }
       }
 
-      if (nextSize !== size) {
+      if (nextSize.width !== size.width || nextSize.height !== size.height) {
         nextState.size = nextSize;
       }
 
@@ -90,6 +94,36 @@ export default class ItemContent extends React.Component {
 
     if (typeof element === 'function') {
       element = element(this);
+    }
+
+    if (React.isValidElement(element) && element.props.connectWithPad) {
+      const onResize = element.props.onResize;
+      const elemProps = {
+        key: element.key,
+        ref: element.ref,
+        style: {
+          ...element.props.style,
+          ...props.style,
+        },
+        onResize: nextSize => {
+          if (
+            nextSize.width !== size.width ||
+            nextSize.height !== size.height
+          ) {
+            this.setState({ size: nextSize });
+          }
+          onResize(nextSize);
+        },
+      };
+
+      if (typeof width === 'number') {
+        elemProps.width = width;
+      }
+      if (typeof height === 'number') {
+        elemProps.height = height;
+      }
+
+      return React.cloneElement(element, elemProps);
     }
 
     element = (
