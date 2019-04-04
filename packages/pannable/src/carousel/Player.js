@@ -100,7 +100,7 @@ export default class Player extends React.Component {
       direction === 'x' ? ['width', 'x', 'y'] : ['height', 'y', 'x'];
 
     this.setFrame({
-      offset: { [x]: contentOffset[x] + size[width], [y]: 0 },
+      offset: { [x]: contentOffset[x] + size[width], [y]: contentOffset[y] },
     });
   }
 
@@ -113,7 +113,7 @@ export default class Player extends React.Component {
       direction === 'x' ? ['width', 'x', 'y'] : ['height', 'y', 'x'];
 
     this.setFrame({
-      offset: { [x]: contentOffset[x] - size[width], [y]: 0 },
+      offset: { [x]: contentOffset[x] - size[width], [y]: contentOffset[y] },
     });
   }
 
@@ -208,7 +208,7 @@ export default class Player extends React.Component {
 
     if (contentOffset[x] !== offsetX) {
       this.setFrame({
-        offset: { [x]: offsetX, [y]: 0 },
+        offset: { [x]: offsetX, [y]: contentOffset[y] },
         animated: false,
       });
     }
