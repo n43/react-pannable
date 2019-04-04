@@ -24,6 +24,10 @@ export default class GeneralContent extends React.Component {
     this.resizeRef = React.createRef();
   }
 
+  getSize() {
+    return this.state.size;
+  }
+
   componentDidMount() {
     const { size } = this.state;
 

@@ -194,7 +194,6 @@ type LayoutAttrs = {
   itemIndex: number,
   rect: Rect,
   visibleRect: Rect,
-  Item: ItemContent,
 };
 ```
 
