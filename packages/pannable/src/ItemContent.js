@@ -118,6 +118,7 @@ export default class ItemContent extends React.Component {
             this.setState({ size: nextSize });
           }
           onResize(nextSize);
+          console.log('Item onresize:', nextSize);
         },
       };
 

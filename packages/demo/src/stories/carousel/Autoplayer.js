@@ -99,6 +99,9 @@ class Autoplayer extends Component {
                 </ItemContent>
               );
             }}
+            onResize={size => {
+              console.log('list resize:', size);
+            }}
           />
         </Player>
         <div className="carousel-optbar">
