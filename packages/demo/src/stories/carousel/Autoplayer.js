@@ -9,7 +9,7 @@ class Autoplayer extends Component {
     this.state = {
       direction: 'x',
       statusText: 'start',
-      slideArr: [1, 2, 3, 4, 5],
+      slideArr: [1, 2],
     };
     this.playerRef = React.createRef();
   }
@@ -101,10 +101,9 @@ class Autoplayer extends Component {
                 </ItemContent>
               );
             }}
-            onResize={size => {
-              console.log('list resize:', size);
-            }}
+          
           /> */}
+          />
         </Player>
         <div className="carousel-optbar">
           <div className="carsousel-status">

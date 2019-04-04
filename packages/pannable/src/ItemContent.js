@@ -103,7 +103,7 @@ export default class ItemContent extends React.Component {
     }
 
     if (React.isValidElement(element) && element.props.connectWithPad) {
-      const onResize = element.props.onResize;
+      const onElemResize = element.props.onResize;
       const elemProps = {
         key: element.key,
         ref: element.ref,
@@ -120,8 +120,7 @@ export default class ItemContent extends React.Component {
           ) {
             this.setState({ size: nextSize });
           }
-          onResize(nextSize);
-          console.log('Item onresize:', nextSize);
+          onElemResize(nextSize);
         },
       };
 

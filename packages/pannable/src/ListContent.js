@@ -32,10 +32,6 @@ export default class ListContent extends React.Component {
     };
   }
 
-  getSize() {
-    return this.state.size;
-  }
-
   componentDidMount() {
     this.props.onResize(this.state.size);
   }

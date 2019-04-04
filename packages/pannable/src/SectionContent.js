@@ -30,10 +30,6 @@ export default class SectionContent extends React.Component {
     };
   }
 
-  getSize() {
-    return this.state.size;
-  }
-
   componentDidMount() {
     this.props.onResize(this.state.size);
   }
