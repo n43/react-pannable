@@ -9,7 +9,7 @@ class Autoplayer extends Component {
     this.state = {
       direction: 'x',
       statusText: 'start',
-      slideArr: [1, 2, 3, 4, 5],
+      slideArr: [1, 2],
     };
     this.playerRef = React.createRef();
   }
@@ -98,9 +98,6 @@ class Autoplayer extends Component {
                   <div style={style}>slide {slideArr[itemIndex]}</div>
                 </ItemContent>
               );
-            }}
-            onResize={size => {
-              console.log('list resize:', size);
             }}
           />
         </Player>

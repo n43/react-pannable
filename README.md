@@ -137,12 +137,13 @@ type Size = { width: number, height: number };
 
 #### Prop Types
 
-| Property       |   Type   | DefaultValue | Description                                                                        |
-| :------------- | :------: | :----------: | :--------------------------------------------------------------------------------- |
-| width          |  number  |     null     | The width of the content. If not specified, it shrinks the width of the content.   |
-| height         |  number  |     null     | The height of the content. If not specified, it shrinks the height of the content. |
-| onResize       | function |   () => {}   | Callback invoked when the content resize.:`(size: Size) => void`                   |
-| connectWithPad | boolean  |     true     | Automatic synchronize the content size and visible rectangle with Pad              |
+| Property       |   Type   |            DefaultValue             | Description                                                                        |
+| :------------- | :------: | :---------------------------------: | :--------------------------------------------------------------------------------- |
+| width          |  number  |                null                 | The width of the content. If not specified, it shrinks the width of the content.   |
+| height         |  number  |                null                 | The height of the content. If not specified, it shrinks the height of the content. |
+| visibleRect    |   Rect   | { x: 0, y: 0, width: 0, height: 0 } | The area of the visible content.                                                   |
+| onResize       | function |              () => {}               | Callback invoked when the content resize.:`(size: Size) => void`                   |
+| connectWithPad | boolean  |                true                 | Automatic synchronize the content size and visible rectangle with Pad              |
 
 ### GridContent
 
@@ -229,13 +230,14 @@ type Size = { width: number, height: number };
 
 #### Prop Types
 
-| Property       |   Type   | DefaultValue | Description                                                                       |
-| :------------- | :------: | :----------: | :-------------------------------------------------------------------------------- |
-| width          |  number  |     null     | The width of the content. If not specified, it shrinks the width of the content.  |
-| height         |  number  |     null     | The width of the content. If not specified, it shrinks the width of the content.  |
-| hash           |  string  |      ''      | The hash of the content. if this property changes, the content size recalculates. |
-| onResize       | function |   () => {}   | Callback invoked when the content resize.:`(size: Size) => void`                  |
-| connectWithPad | boolean  |     true     | Automatic synchronize the content size and visible rectangle with Pad             |
+| Property       |   Type   |            DefaultValue             | Description                                                                       |
+| :------------- | :------: | :---------------------------------: | :-------------------------------------------------------------------------------- |
+| width          |  number  |                null                 | The width of the content. If not specified, it shrinks the width of the content.  |
+| height         |  number  |                null                 | The width of the content. If not specified, it shrinks the width of the content.  |
+| hash           |  string  |                 ''                  | The hash of the content. if this property changes, the content size recalculates. |
+| visibleRect    |   Rect   | { x: 0, y: 0, width: 0, height: 0 } | The area of the visible content.                                                  |
+| onResize       | function |              () => {}               | Callback invoked when the content resize.:`(size: Size) => void`                  |
+| connectWithPad | boolean  |                true                 | Automatic synchronize the content size and visible rectangle with Pad             |
 
 ## License
 

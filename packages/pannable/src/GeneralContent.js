@@ -6,6 +6,7 @@ export default class GeneralContent extends React.Component {
   static defaultProps = {
     width: null,
     height: null,
+    visibleRect: { x: 0, y: 0, width: 0, height: 0 },
     onResize: () => {},
     connectWithPad: true,
   };
@@ -97,7 +98,14 @@ export default class GeneralContent extends React.Component {
   }
 
   render() {
-    const { width, height, onResize, connectWithPad, ...props } = this.props;
+    const {
+      width,
+      height,
+      visibleRect,
+      onResize,
+      connectWithPad,
+      ...props
+    } = this.props;
     const { size } = this.state;
 
     let element = props.children;

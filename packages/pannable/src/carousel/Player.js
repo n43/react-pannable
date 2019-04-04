@@ -222,12 +222,14 @@ export default class Player extends React.Component {
     }
 
     if (loop) {
-      const itemElement = <ItemContent hash="Item">{element}</ItemContent>;
+      const itemElement = element;
       element = (
         <ListContent
           direction={direction}
           itemCount={2}
-          renderItem={() => itemElement}
+          renderItem={({ itemIndex }) => (
+            <ItemContent hash={itemIndex}>{itemElement}</ItemContent>
+          )}
         />
       );
     }
