@@ -31,6 +31,10 @@ export default class Pad extends React.Component {
     alwaysBounceX: true,
     alwaysBounceY: true,
     onScroll: () => {},
+    onDragStart: () => {},
+    onDragEnd: () => {},
+    onDecelerationStart: () => {},
+    onDecelerationEnd: () => {},
     onResize: () => {},
     onContentResize: () => {},
   };
@@ -151,33 +155,37 @@ export default class Pad extends React.Component {
       contentHeight,
       pagingEnabled,
       onScroll,
+      onDragStart,
+      onDragEnd,
+      onDecelerationStart,
+      onDecelerationEnd,
       onResize,
       onContentResize,
     } = this.props;
     const { contentOffset, size, contentSize, drag, deceleration } = this.state;
 
-    if (prevProps.width !== width || prevProps.height !== height) {
+    if (width !== prevProps.width || height !== prevProps.height) {
       const size = { width, height };
 
       this._setStateWithScroll({ size });
     }
 
     if (
-      prevProps.contentWidth !== contentWidth ||
-      prevProps.contentHeight !== contentHeight
+      contentWidth !== prevProps.contentWidth ||
+      contentHeight !== prevProps.contentHeight
     ) {
       const contentSize = { width: contentWidth, height: contentHeight };
 
       this._setStateWithScroll({ contentSize });
     }
 
-    if (prevProps.pagingEnabled !== pagingEnabled) {
+    if (pagingEnabled !== prevProps.pagingEnabled) {
       if (pagingEnabled) {
         this._setStateWithScroll(null);
       }
     }
 
-    if (prevState.contentOffset !== contentOffset) {
+    if (contentOffset !== prevState.contentOffset) {
       if (deceleration) {
         if (this._decelerationTimer) {
           cancelAnimationFrame(this._decelerationTimer);
@@ -198,12 +206,25 @@ export default class Pad extends React.Component {
       });
     }
 
-    if (prevState.size !== size) {
+    if (size !== prevState.size) {
       onResize(size);
     }
-
-    if (prevState.contentSize !== contentSize) {
+    if (contentSize !== prevState.contentSize) {
       onContentResize(contentSize);
+    }
+    if (drag !== prevState.drag) {
+      if (!prevState.drag) {
+        onDragStart();
+      } else if (!drag) {
+        onDragEnd();
+      }
+    }
+    if (deceleration !== prevState.deceleration) {
+      if (!prevState.deceleration) {
+        onDecelerationStart();
+      } else if (!deceleration) {
+        onDecelerationEnd();
+      }
     }
   }
 
@@ -511,6 +532,10 @@ export default class Pad extends React.Component {
       alwaysBounceX,
       alwaysBounceY,
       onScroll,
+      onDragStart,
+      onDragEnd,
+      onDecelerationStart,
+      onDecelerationEnd,
       onResize,
       onContentResize,
       ...props
