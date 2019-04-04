@@ -6,6 +6,7 @@ export default class ItemContent extends React.Component {
     width: null,
     height: null,
     hash: '',
+    visibleRect: { x: 0, y: 0, width: 0, height: 0 },
     onResize: () => {},
     connectWithPad: true,
   };
@@ -84,6 +85,7 @@ export default class ItemContent extends React.Component {
       width,
       height,
       hash,
+      visibleRect,
       onResize,
       connectWithPad,
       ...props
@@ -101,6 +103,7 @@ export default class ItemContent extends React.Component {
       const elemProps = {
         key: element.key,
         ref: element.ref,
+        visibleRect: { ...visibleRect },
         style: {
           ...element.props.style,
           ...props.style,
