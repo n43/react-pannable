@@ -289,22 +289,14 @@ export default class Pad extends React.Component {
           };
         }
         if (deceleration) {
-          const decelerationRate = pagingEnabled
-            ? DECELERATION_RATE_STRONG
-            : DECELERATION_RATE_WEAK;
-          const decelerationEndOffset = getDecelerationEndOffset(
-            offset,
-            contentVelocity,
-            size,
-            pagingEnabled,
-            decelerationRate
-          );
-
           nextState.deceleration = createDeceleration(
             offset,
             contentVelocity,
-            decelerationEndOffset,
-            decelerationRate
+            {
+              x: deceleration.endOffset.x + offset.x - contentOffset.x,
+              y: deceleration.endOffset.y + offset.y - contentOffset.y,
+            },
+            deceleration.rate
           );
         }
       } else {
