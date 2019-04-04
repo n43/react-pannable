@@ -3,6 +3,7 @@ import Player from './Player';
 
 export default class Carousel extends React.Component {
   static defaultProps = {
+    ...Player.defaultProps,
     renderIndicator: () => null,
     onSlideChange: () => {},
   };
