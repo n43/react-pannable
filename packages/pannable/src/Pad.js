@@ -278,7 +278,6 @@ export default class Pad extends React.Component {
 
       if (drag || !animated) {
         nextState.contentOffset = offset;
-        nextState.contentVelocity = { x: 0, y: 0 };
 
         if (drag) {
           nextState.drag = {
@@ -290,7 +289,23 @@ export default class Pad extends React.Component {
           };
         }
         if (deceleration) {
-          nextState.deceleration = null;
+          const decelerationRate = pagingEnabled
+            ? DECELERATION_RATE_STRONG
+            : DECELERATION_RATE_WEAK;
+          const decelerationEndOffset = getDecelerationEndOffset(
+            offset,
+            contentVelocity,
+            size,
+            pagingEnabled,
+            decelerationRate
+          );
+
+          nextState.deceleration = createDeceleration(
+            offset,
+            contentVelocity,
+            decelerationEndOffset,
+            decelerationRate
+          );
         }
       } else {
         const decelerationRate = DECELERATION_RATE_STRONG;
