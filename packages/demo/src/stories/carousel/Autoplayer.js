@@ -70,15 +70,17 @@ class Autoplayer extends Component {
           ref={this.playerRef}
           width={750}
           height={300}
+          contentWidth={750 * 5}
+          contentHeight={300}
           direction="x"
           loop={true}
           scrollsBackOnEdge={false}
           autoplayEnabled={false}
         >
-          {/* <div style={{ width: 750 * 5, height: 300 }}>
-            {{this.renderContent()}}
-          </div>  */}
-          <ListContent
+          <div style={{ width: 750 * 5, height: 300 }}>
+            {this.renderContent()}
+          </div>
+          {/* <ListContent
             direction="x"
             height={300}
             itemCount={slideArr.length}
@@ -102,7 +104,7 @@ class Autoplayer extends Component {
             onResize={size => {
               console.log('list resize:', size);
             }}
-          />
+          /> */}
         </Player>
         <div className="carousel-optbar">
           <div className="carsousel-status">

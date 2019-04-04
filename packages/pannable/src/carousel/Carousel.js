@@ -4,9 +4,16 @@ import Player from './Player';
 export default class Carousel extends React.Component {
   static defaultProps = {
     ...Player.defaultProps,
+    showsIndicator: false,
     renderIndicator: () => null,
     onSlideChange: () => {},
   };
+
+  constructor(props) {
+    super(props);
+
+    this.playerRef = React.createRef();
+  }
 
   componentDidMount() {}
 
@@ -97,10 +104,9 @@ export default class Carousel extends React.Component {
 
   render() {
     const {
-      loop,
-      children,
-      onSlideChange,
+      showsIndicator,
       renderIndicator,
+      onSlideChange,
       ...playerProps
     } = this.props;
 
@@ -109,23 +115,24 @@ export default class Carousel extends React.Component {
       element = element(this);
     }
 
+    if (showsIndicator) {
+      const wrapperStyle = {
+        position: 'relative',
+      };
+      element = (
+        <div style={wrapperStyle}>
+          {element}
+          {renderIndicator()}
+        </div>
+      );
+    }
+
     return (
-      <Player {...playerProps} onScroll={this._onSlideChange}>
-        {player => {
-          this.playerRef = player;
-
-          const wrapperStyle = {
-            position: 'relative',
-          };
-
-          return (
-            <div style={wrapperStyle}>
-              {element}
-              {renderIndicator()}
-            </div>
-          );
-        }}
-      </Player>
+      <Player
+        {...playerProps}
+        onScroll={this._onSlideChange}
+        ref={this.playerRef}
+      />
     );
   }
 }
