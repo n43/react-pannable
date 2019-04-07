@@ -11,7 +11,6 @@ export default class Carousel extends React.Component {
 
   constructor(props) {
     super(props);
-
     this.playerRef = React.createRef();
   }
 
@@ -93,6 +92,9 @@ export default class Carousel extends React.Component {
 
     // onSlideChange({ activeIndex: activeSlide, pageCount });
   };
+  _onPlayerScroll = evt => {
+    const { contentOffset } = evt;
+  };
 
   _calculateActiveSlideForLoop({ activeIndex, pageCount }) {
     if (activeIndex < pageCount / 2) {
@@ -102,6 +104,32 @@ export default class Carousel extends React.Component {
     return activeIndex - pageCount / 2;
   }
 
+  _calculateIndicatorInfo() {
+    const player = this.playerRef.current;
+    let count = 0;
+    let active = 0;
+
+    if (!player) {
+      return { count, active };
+    }
+
+    const pad = player.padRef.current;
+    const size = pad.getSize();
+    const contentSize = pad.getContentSize();
+    const contentOffset = pad.getContentOffset();
+
+    const { direction, loop } = this.props;
+    const [width, x] = direction === 'x' ? ['width', 'x'] : ['height', 'y'];
+
+    count = Math.floor(contentSize[width] / size[width]);
+    active = Math.abs(Math.floor(contentOffset[x] / size[width]));
+
+    if (loop) {
+      count = count / 2;
+    }
+
+    return { count, active };
+  }
   render() {
     const {
       showsIndicator,
@@ -110,7 +138,7 @@ export default class Carousel extends React.Component {
       ...playerProps
     } = this.props;
 
-    let element = children;
+    let element = playerProps.children;
     if (typeof element === 'function') {
       element = element(this);
     }
@@ -119,18 +147,20 @@ export default class Carousel extends React.Component {
       const wrapperStyle = {
         position: 'relative',
       };
+      const indicatorInfo = this._calculateIndicatorInfo();
       element = (
         <div style={wrapperStyle}>
           {element}
-          {renderIndicator()}
+          {renderIndicator(indicatorInfo)}
         </div>
       );
     }
+    playerProps.children = element;
 
     return (
       <Player
         {...playerProps}
-        onScroll={this._onSlideChange}
+        onScroll={this._onPlayerScroll}
         ref={this.playerRef}
       />
     );
