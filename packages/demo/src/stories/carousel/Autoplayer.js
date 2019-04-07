@@ -9,7 +9,7 @@ class Autoplayer extends Component {
     this.state = {
       direction: 'x',
       statusText: 'start',
-      slideArr: [1, 2],
+      slideArr: [1, 2, 3, 4],
     };
     this.playerRef = React.createRef();
   }
@@ -77,10 +77,10 @@ class Autoplayer extends Component {
           scrollsBackOnEdge={false}
           autoplayEnabled={false}
         >
-          <div style={{ width: 750 * 5, height: 300 }}>
+          {/* <div style={{ width: 750 * 5, height: 300 }}>
             {this.renderContent()}
-          </div>
-          {/* <ListContent
+          </div> */}
+          <ListContent
             direction="x"
             height={300}
             itemCount={slideArr.length}
@@ -96,13 +96,11 @@ class Autoplayer extends Component {
                 textAlign: 'center',
               };
               return (
-                <ItemContent width={750} height={300}>
+                <ItemContent hash={`Item${itemIndex}`} width={750} height={300}>
                   <div style={style}>slide {slideArr[itemIndex]}</div>
                 </ItemContent>
               );
             }}
-          
-          /> */}
           />
         </Player>
         <div className="carousel-optbar">
