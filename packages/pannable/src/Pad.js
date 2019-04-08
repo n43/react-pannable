@@ -287,6 +287,10 @@ export default class Pad extends React.Component {
         offset = offset(state, props);
       }
 
+      if (!offset) {
+        return null;
+      }
+
       const {
         contentOffset,
         contentVelocity,
