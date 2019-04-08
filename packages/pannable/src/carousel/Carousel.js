@@ -109,31 +109,26 @@ export default class Carousel extends React.Component {
     return activeIndex - pageCount / 2;
   }
 
-  _calculateIndicatorInfo() {
+  _setStateWithScroll() {
     const player = this.playerRef.current;
-    let count = 0;
-    let active = 0;
-
-    if (!player) {
-      return { count, active };
-    }
-
     const pad = player.padRef.current;
     const size = pad.getSize();
     const contentSize = pad.getContentSize();
     const contentOffset = pad.getContentOffset();
 
-    const { direction, loop } = this.props;
-    const [width, x] = direction === 'x' ? ['width', 'x'] : ['height', 'y'];
+    this.setState((state, props) => {
+      let nextState = {};
+      const pageCount = Math.floor(contentSize[width] / size[width]);
+      const activeIndex = Math.abs(Math.floor(contentOffset[x] / size[width]));
+      const { direction, loop } = props;
+      const [width, x] = direction === 'x' ? ['width', 'x'] : ['height', 'y'];
 
-    count = Math.floor(contentSize[width] / size[width]);
-    active = Math.abs(Math.floor(contentOffset[x] / size[width]));
+      if (loop) {
+        pageCount = pageCount / 2;
+      }
 
-    if (loop) {
-      count = count / 2;
-    }
-
-    return { count, active };
+      return nextState;
+    });
   }
   render() {
     const {
@@ -142,6 +137,7 @@ export default class Carousel extends React.Component {
       onSlideChange,
       ...playerProps
     } = this.props;
+    const { pageCount, activeIndex } = this.state;
 
     let element = playerProps.children;
     if (typeof element === 'function') {
@@ -152,11 +148,11 @@ export default class Carousel extends React.Component {
       const wrapperStyle = {
         position: 'relative',
       };
-      const indicatorInfo = this._calculateIndicatorInfo();
+
       element = (
         <div style={wrapperStyle}>
           {element}
-          {renderIndicator(indicatorInfo)}
+          {renderIndicator({ pageCount, activeIndex })}
         </div>
       );
     }
