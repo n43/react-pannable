@@ -25,10 +25,6 @@ export default class GeneralContent extends React.Component {
     this.resizeRef = React.createRef();
   }
 
-  getSize() {
-    return this.state.size;
-  }
-
   componentDidMount() {
     const { size } = this.state;
 
@@ -37,6 +33,8 @@ export default class GeneralContent extends React.Component {
     } else {
       this._calculateLayout();
     }
+
+    this._attachResizeNode();
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -52,6 +50,25 @@ export default class GeneralContent extends React.Component {
   }
 
   componentWillUnmount() {
+    this._detachResizeNode();
+  }
+
+  getSize() {
+    return this.state.size;
+  }
+
+  _attachResizeNode() {
+    const resizeNode = this.resizeRef.current;
+
+    if (resizeNode) {
+      this._resizeNode = resizeNode;
+      resizeDetector.listenTo(resizeNode, () => {
+        this._calculateLayout();
+      });
+    }
+  }
+
+  _detachResizeNode() {
     if (this._resizeNode) {
       resizeDetector.uninstall(this._resizeNode);
       this._resizeNode = undefined;
@@ -59,22 +76,6 @@ export default class GeneralContent extends React.Component {
   }
 
   _calculateLayout() {
-    const resizeNode = this.resizeRef.current;
-
-    if (resizeNode) {
-      if (!this._resizeNode) {
-        this._resizeNode = resizeNode;
-        resizeDetector.listenTo(resizeNode, () => this._calculateLayout());
-
-        return;
-      }
-    } else {
-      if (this._resizeNode) {
-        resizeDetector.uninstall(this._resizeNode);
-        this._resizeNode = undefined;
-      }
-    }
-
     this.setState((state, props) => {
       const { size } = state;
       const { width, height } = props;
@@ -89,7 +90,11 @@ export default class GeneralContent extends React.Component {
         }
       }
 
-      if (nextSize !== size) {
+      if (
+        !size ||
+        nextSize.width !== size.width ||
+        nextSize.height !== size.height
+      ) {
         nextState.size = nextSize;
       }
 

@@ -30,7 +30,7 @@ export default class ItemContent extends React.Component {
     if (size) {
       this.props.onResize(size);
     } else {
-      this._calculateLayout();
+      this.calculateLayout();
     }
   }
 
@@ -39,7 +39,7 @@ export default class ItemContent extends React.Component {
     const { size } = this.state;
 
     if (prevProps.width !== width || prevProps.height !== height) {
-      this._calculateLayout();
+      this.calculateLayout();
     }
     if (prevState.size !== size) {
       onResize(size);
@@ -50,7 +50,7 @@ export default class ItemContent extends React.Component {
     return this.state.size;
   }
 
-  _calculateLayout() {
+  calculateLayout() {
     this.setState((state, props) => {
       const { size } = state;
       const { width, height } = props;
@@ -96,18 +96,20 @@ export default class ItemContent extends React.Component {
       element = element(this);
     }
 
-    element = (
-      <div
-        ref={this.resizeRef}
-        style={{
-          position: 'absolute',
-          width: typeof width === 'number' ? width : 'auto',
-          height: typeof height === 'number' ? height : 'auto',
-        }}
-      >
-        {element}
-      </div>
-    );
+    if (!(typeof width === 'number' && typeof height === 'number')) {
+      element = (
+        <div
+          ref={this.resizeRef}
+          style={{
+            position: 'absolute',
+            width: typeof width === 'number' ? width : 'auto',
+            height: typeof height === 'number' ? height : 'auto',
+          }}
+        >
+          {element}
+        </div>
+      );
+    }
 
     props.children = element;
     props.style = {
