@@ -35,6 +35,9 @@ export default class ListContent extends React.Component {
   }
 
   componentDidMount() {
+    if (this.props.itemCount === 4) {
+      console.log('List did mount');
+    }
     this.props.onResize(this.state.size);
   }
 
@@ -88,6 +91,11 @@ export default class ListContent extends React.Component {
         this._itemHashList,
         this._itemSizeDict
       );
+
+      if (this.props.itemCount === 2) {
+        console.log('list', layout.size, layout.layoutList);
+      }
+
       nextState.layoutList = layout.layoutList;
 
       if (
@@ -137,8 +145,17 @@ export default class ListContent extends React.Component {
       ref: element.ref,
       style: itemStyle,
       onResize: size => {
-        this._itemSizeDict[itemHash] = size;
-        this._calculateLayout();
+        const prevSize = this._itemSizeDict[itemHash];
+
+        if (
+          !prevSize ||
+          size.width !== prevSize.width ||
+          size.height !== prevSize.height
+        ) {
+          this._itemSizeDict[itemHash] = size;
+          this._calculateLayout();
+        }
+
         onResize(size);
       },
     };

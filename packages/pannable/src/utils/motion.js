@@ -47,20 +47,21 @@ export function getAdjustedContentOffset(offset, size, cSize, paging, name) {
   if (name) {
     const [x, width] = name === 'y' ? ['y', 'height'] : ['x', 'width'];
 
-    const minOffsetX = Math.min(size[width] - cSize[width], 0);
+    const sizeWidth = size[width];
+    let minOffsetX = Math.min(sizeWidth - cSize[width], 0);
     let offsetX = offset[x];
+
+    if (paging && sizeWidth > 0) {
+      minOffsetX = sizeWidth * Math.ceil(minOffsetX / sizeWidth);
+    }
 
     if (0 < offsetX) {
       offsetX = 0;
     } else if (offsetX < minOffsetX) {
       offsetX = minOffsetX;
-
-      if (paging && size[width] > 0) {
-        offsetX = size[width] * Math.ceil(offsetX / size[width]);
-      }
     } else {
-      if (paging && size[width] > 0) {
-        offsetX = size[width] * Math.round(offsetX / size[width]);
+      if (paging && sizeWidth > 0) {
+        offsetX = sizeWidth * Math.round(offsetX / sizeWidth);
       }
     }
 

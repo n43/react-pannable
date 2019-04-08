@@ -18,15 +18,23 @@ export default class Player extends React.Component {
   constructor(props) {
     super(props);
 
-    this.state = {
-      mouseEntered: false,
-    };
+    this.state = { mouseEntered: false };
     this.padRef = React.createRef();
   }
 
   componentDidMount() {
-    if (this.props.autoplayEnabled) {
-      this._start();
+    this._tryStartPlaying();
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    const { mouseEntered } = this.state;
+
+    if (mouseEntered !== prevState.mouseEntered) {
+      if (mouseEntered) {
+        this._stop();
+      } else {
+        this._tryStartPlaying();
+      }
     }
   }
 
@@ -34,58 +42,61 @@ export default class Player extends React.Component {
     this._stop();
   }
 
-  scrollTo({ offset, animated = true }) {
+  go(delta) {
     const { direction, scrollsBackOnEdge } = this.props;
     const pad = this.padRef.current;
-    const size = pad.getSize();
-    const contentSize = pad.getContentSize();
 
-    const [width, height, x, y] =
-      direction === 'x'
-        ? ['width', 'height', 'x', 'y']
-        : ['height', 'width', 'y', 'x'];
+    pad.scrollTo({
+      offset: (state, props) => {
+        const { contentOffset, size, contentSize } = state;
+        const { pagingEnabled } = props;
 
-    if (offset[x] > 0 || offset[y] > 0) {
-      return;
-    }
+        const [width, x, y] =
+          direction === 'y' ? ['height', 'y', 'x'] : ['width', 'x', 'y'];
 
-    if (
-      contentSize[width] - Math.abs(offset[x]) < size[width] ||
-      contentSize[height] - Math.abs(offset[y]) < size[height]
-    ) {
-      if (!scrollsBackOnEdge) {
-        return;
-      }
-      offset = { x: 0, y: 0 };
-    }
+        const sizeWidth = size[width];
+        let minOffsetX = Math.min(sizeWidth - contentSize[width], 0);
+        let offsetX = contentOffset[x] - delta * sizeWidth;
 
-    pad.scrollTo({ offset, animated });
+        if (pagingEnabled && sizeWidth > 0) {
+          minOffsetX = size[width] * Math.ceil(minOffsetX / size[width]);
+        }
+
+        if (offsetX > 0) {
+          offsetX = scrollsBackOnEdge ? minOffsetX : 0;
+        } else if (offsetX < minOffsetX) {
+          offsetX = scrollsBackOnEdge ? 0 : minOffsetX;
+        }
+
+        return { [x]: offsetX, [y]: contentOffset[y] };
+      },
+      animated: true,
+    });
   }
 
   rewind() {
-    const { direction } = this.props;
-    const pad = this.padRef.current;
-    const size = pad.getSize();
-    const contentOffset = pad.getContentOffset();
-    const [width, x, y] =
-      direction === 'x' ? ['width', 'x', 'y'] : ['height', 'y', 'x'];
-
-    this.scrollTo({
-      offset: { [x]: contentOffset[x] + size[width], [y]: contentOffset[y] },
-    });
+    this.go(-1);
   }
 
   forward() {
-    const { direction } = this.props;
-    const pad = this.padRef.current;
-    const size = pad.getSize();
-    const contentOffset = pad.getContentOffset();
-    const [width, x, y] =
-      direction === 'x' ? ['width', 'x', 'y'] : ['height', 'y', 'x'];
+    this.go(1);
+  }
 
-    this.scrollTo({
-      offset: { [x]: contentOffset[x] - size[width], [y]: contentOffset[y] },
-    });
+  _tryStartPlaying() {
+    if (!this.props.autoplayEnabled) {
+      return;
+    }
+    if (this.state.mouseEntered) {
+      return;
+    }
+
+    const pad = this.padRef.current;
+
+    if (!pad || pad.isDragging() || pad.isDecelerating()) {
+      return;
+    }
+
+    this._start();
   }
 
   _start() {
@@ -113,14 +124,7 @@ export default class Player extends React.Component {
   };
 
   _onPadDragEnd = () => {
-    const { autoplayEnabled } = this.props;
-    const { mouseEntered } = this.state;
-    const pad = this.padRef.current;
-    const isDecelerating = pad.isDecelerating();
-
-    if (autoplayEnabled && !isDecelerating && !mouseEntered) {
-      this._start();
-    }
+    this._tryStartPlaying();
   };
 
   _onPadDecelerationStart = () => {
@@ -128,67 +132,56 @@ export default class Player extends React.Component {
   };
 
   _onPadDecelerationEnd = () => {
-    const { autoplayEnabled } = this.props;
-    const { mouseEntered } = this.state;
-    const pad = this.padRef.current;
-    const isDragging = pad.isDragging();
-    if (autoplayEnabled && !isDragging && !mouseEntered) {
-      this._start();
-    }
+    this._tryStartPlaying();
   };
 
   _onPadScroll = evt => {
     const { loop, onScroll } = this.props;
 
     if (loop) {
-      this._alternateFramesForLoop();
+      this._alternateFramesForLoop(evt);
     }
+
     onScroll(evt);
   };
 
   _alternateFramesForLoop() {
     const { direction } = this.props;
     const pad = this.padRef.current;
-    const contentSize = pad.getContentSize();
-    const contentOffset = pad.getContentOffset();
-    const [width, x, y] =
-      direction === 'x' ? ['width', 'x', 'y'] : ['height', 'y', 'x'];
 
-    const offsetRange = 0.5 * contentSize[width];
-    const minOffsetX = -contentSize[width] * 0.75;
-    const maxOffsetX = minOffsetX + offsetRange;
-    let offsetX = contentOffset[x];
+    pad.scrollTo({
+      offset: state => {
+        const { contentOffset, contentSize } = state;
+        const [width, x, y] =
+          direction === 'y' ? ['height', 'y', 'x'] : ['width', 'x', 'y'];
 
-    if (offsetX <= minOffsetX) {
-      offsetX += offsetRange;
-    } else if (maxOffsetX < offsetX) {
-      offsetX -= offsetRange;
-    }
+        const offsetRange = 0.5 * contentSize[width];
+        const minOffsetX = -contentSize[width] * 0.75;
+        const maxOffsetX = minOffsetX + offsetRange;
+        let offsetX = contentOffset[x];
 
-    if (offsetX !== contentOffset[x]) {
-      this.scrollTo({
-        offset: { [x]: offsetX, [y]: contentOffset[y] },
-        animated: false,
-      });
-    }
+        if (offsetX <= minOffsetX) {
+          offsetX += offsetRange;
+        } else if (maxOffsetX < offsetX) {
+          offsetX -= offsetRange;
+        }
+
+        if (offsetX === contentOffset[x]) {
+          return null;
+        }
+
+        return { [x]: offsetX, [y]: contentOffset[y] };
+      },
+      animated: false,
+    });
   }
 
   _onMouseEnter = () => {
     this.setState({ mouseEntered: true });
-    this._stop();
   };
 
   _onMouseLeave = () => {
-    const { autoplayEnabled } = this.props;
-    const pad = this.padRef.current;
-    const isDragging = pad.isDragging();
-    const isDecelerating = pad.isDecelerating();
-
     this.setState({ mouseEntered: false });
-
-    if (autoplayEnabled && !isDragging && !isDecelerating) {
-      this._start();
-    }
   };
 
   render() {
