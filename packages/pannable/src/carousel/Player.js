@@ -27,11 +27,19 @@ export default class Player extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    const { autoplayEnabled, autoplayInterval } = this.props;
     const { mouseEntered } = this.state;
 
+    if (
+      autoplayEnabled !== prevProps.autoplayEnabled ||
+      autoplayInterval !== prevProps.autoplayInterval
+    ) {
+      this._stopPlaying();
+      this._tryStartPlaying();
+    }
     if (mouseEntered !== prevState.mouseEntered) {
       if (mouseEntered) {
-        this._stop();
+        this._stopPlaying();
       } else {
         this._tryStartPlaying();
       }
@@ -39,7 +47,7 @@ export default class Player extends React.Component {
   }
 
   componentWillUnmount() {
-    this._stop();
+    this._stopPlaying();
   }
 
   go(delta) {
@@ -96,10 +104,10 @@ export default class Player extends React.Component {
       return;
     }
 
-    this._start();
+    this._startPlaying();
   }
 
-  _start() {
+  _startPlaying() {
     const { autoplayInterval } = this.props;
 
     if (this._autoplayTimer) {
@@ -112,7 +120,7 @@ export default class Player extends React.Component {
     }, autoplayInterval);
   }
 
-  _stop() {
+  _stopPlaying() {
     if (this._autoplayTimer) {
       clearTimeout(this._autoplayTimer);
       this._autoplayTimer = undefined;
@@ -120,7 +128,7 @@ export default class Player extends React.Component {
   }
 
   _onPadDragStart = () => {
-    this._stop();
+    this._stopPlaying();
   };
 
   _onPadDragEnd = () => {
@@ -128,7 +136,7 @@ export default class Player extends React.Component {
   };
 
   _onPadDecelerationStart = () => {
-    this._stop();
+    this._stopPlaying();
   };
 
   _onPadDecelerationEnd = () => {
@@ -210,19 +218,17 @@ export default class Player extends React.Component {
     padProps.onMouseLeave = this._onMouseLeave;
 
     let element = padProps.children;
-    if (typeof element === 'function' && 1) {
+    if (typeof element === 'function') {
       element = element(this);
     }
 
     if (loop) {
-      const itemElement = element;
+      const itemElement = <ItemContent forceRender>{element}</ItemContent>;
       element = (
         <ListContent
           direction={direction}
           itemCount={2}
-          renderItem={({ itemIndex }) => (
-            <ItemContent hash={itemIndex}>{itemElement}</ItemContent>
-          )}
+          renderItem={() => itemElement}
         />
       );
     }

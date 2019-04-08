@@ -94,7 +94,7 @@ class Autoplayer extends Component {
                 textAlign: 'center',
               };
               return (
-                <ItemContent hash={`Item${itemIndex}`} width={750} height={300}>
+                <ItemContent width={750} height={300}>
                   <div style={style}>slide {slideArr[itemIndex]}</div>
                 </ItemContent>
               );
