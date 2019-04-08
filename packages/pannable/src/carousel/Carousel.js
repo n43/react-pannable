@@ -13,6 +13,11 @@ export default class Carousel extends React.Component {
     super(props);
 
     this.playerRef = React.createRef();
+
+    this.state = {
+      pageCount: 0,
+      activeIndex: 0,
+    };
   }
 
   componentDidMount() {}
