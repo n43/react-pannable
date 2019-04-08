@@ -9,7 +9,6 @@ class VerticalCarousel extends Component {
 
     this.state = {
       direction: 'y',
-      activeIndex: 0,
       slideArr: [1, 2, 3, 4, 5, 6],
     };
     this.carouselRef = React.createRef();
@@ -27,11 +26,8 @@ class VerticalCarousel extends Component {
   handleSlideNext = () => {
     this.carouselRef.current.slideNext();
   };
-  handleSlideChange = ({ activeIndex }) => {
-    this.setState({ activeIndex });
-  };
   handlePaginationClick = index => {
-    this.carouselRef.current.slideTo({ index });
+    this.carouselRef.current.slideTo(index);
   };
 
   renderContent() {
@@ -65,7 +61,7 @@ class VerticalCarousel extends Component {
   }
 
   render() {
-    const { direction, activeIndex, slideArr } = this.state;
+    const { direction } = this.state;
 
     return (
       <div className="carousel-main">
@@ -78,7 +74,23 @@ class VerticalCarousel extends Component {
             contentHeight={direction === 'x' ? 300 : 300 * 6}
             direction={direction}
             loop={true}
-            onSlideChange={this.handleSlideChange}
+            renderIndicator={({ pageCount, activeIndex }) => {
+              let indicators = [];
+              for (let index = 0; index < pageCount; index++) {
+                indicators.push(
+                  <div
+                    key={index}
+                    className={
+                      activeIndex === index
+                        ? 'pagination-active'
+                        : 'pagination-item'
+                    }
+                    onClick={() => this.handlePaginationClick(index)}
+                  />
+                );
+              }
+              return <div className="vcarousel-pagination">{indicators}</div>;
+            }}
           >
             <div
               style={{
@@ -90,21 +102,6 @@ class VerticalCarousel extends Component {
               {this.renderContent()}
             </div>
           </Carousel>
-          <div className="vcarousel-pagination">
-            {slideArr.map((item, index) => {
-              return (
-                <div
-                  key={item}
-                  className={
-                    activeIndex === index
-                      ? 'pagination-active'
-                      : 'pagination-item'
-                  }
-                  onClick={() => this.handlePaginationClick(index)}
-                />
-              );
-            })}
-          </div>
         </div>
       </div>
     );

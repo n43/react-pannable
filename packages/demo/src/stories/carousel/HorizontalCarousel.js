@@ -29,11 +29,8 @@ class HorizontalCarousel extends Component {
   handleSlideNext = () => {
     this.carouselRef.current.slideNext();
   };
-  handleSlideChange = ({ activeIndex }) => {
-    this.setState({ activeIndex });
-  };
   handlePaginationClick = index => {
-    this.carouselRef.current.slideTo({ index });
+    this.carouselRef.current.slideTo(index);
   };
 
   renderContent() {
@@ -67,7 +64,7 @@ class HorizontalCarousel extends Component {
   }
 
   render() {
-    const { direction, activeIndex, slideArr } = this.state;
+    const { direction } = this.state;
 
     return (
       <div className="carousel-main">
@@ -80,8 +77,23 @@ class HorizontalCarousel extends Component {
             contentHeight={direction === 'x' ? 300 : 300 * 6}
             direction={direction}
             loop={true}
-            // onSlideChange={this.handleSlideChange}
-            showsIndicator={true}
+            renderIndicator={({ pageCount, activeIndex }) => {
+              let indicators = [];
+              for (let index = 0; index < pageCount; index++) {
+                indicators.push(
+                  <div
+                    key={index}
+                    className={
+                      activeIndex === index
+                        ? 'pagination-active'
+                        : 'pagination-item'
+                    }
+                    onClick={() => this.handlePaginationClick(index)}
+                  />
+                );
+              }
+              return <div className="hcarousel-pagination">{indicators}</div>;
+            }}
           >
             <div
               style={{
@@ -101,21 +113,6 @@ class HorizontalCarousel extends Component {
             className="carousel-box-next"
             onClick={this.handleSlideNext}
           />
-          <div className="hcarousel-pagination">
-            {slideArr.map((item, index) => {
-              return (
-                <div
-                  key={item}
-                  className={
-                    activeIndex === index
-                      ? 'pagination-active'
-                      : 'pagination-item'
-                  }
-                  onClick={() => this.handlePaginationClick(index)}
-                />
-              );
-            })}
-          </div>
         </div>
       </div>
     );
