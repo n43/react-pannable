@@ -91,10 +91,6 @@ export default class ListContent extends React.Component {
         this._itemSizeDict
       );
 
-      if (this.props.itemCount === 2) {
-        console.log('list', layout.size, layout.layoutList);
-      }
-
       nextState.layoutList = layout.layoutList;
 
       if (
@@ -115,7 +111,7 @@ export default class ListContent extends React.Component {
     let element = renderItem(layoutAttrs);
     let forceRender;
     let hash;
-    let key = itemIndex;
+    let key = '' + itemIndex;
     let style = {
       position: 'absolute',
       left: rect.x,
@@ -137,16 +133,19 @@ export default class ListContent extends React.Component {
 
       element = element.props.children;
     }
+
     if (!React.isValidElement(element)) {
       element = <ItemContent>{element}</ItemContent>;
     }
+
     if (!element.props.connectWithPad) {
-      element = <ItemContent key={element.key}>{element}</ItemContent>;
+      if (element.key) {
+        key = element.key;
+      }
+
+      element = <ItemContent>{element}</ItemContent>;
     }
 
-    if (element.key) {
-      key = element.key;
-    }
     if (hash === undefined) {
       hash = key;
     }
