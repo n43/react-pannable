@@ -81,6 +81,7 @@ class HorizontalCarousel extends Component {
             direction={direction}
             loop={true}
             // onSlideChange={this.handleSlideChange}
+            showsIndicator={true}
           >
             <div
               style={{

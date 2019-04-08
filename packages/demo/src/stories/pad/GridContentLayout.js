@@ -1,19 +1,19 @@
 import React from 'react';
 import { Pad, GridContent } from 'react-pannable';
 import TextField from '../../ui/field/TextField';
-import RadioField from '../../ui/field/RadioField';
 import SvgPhone from './SvgPhone';
+import SvgPoster from './SvgPoster';
 import './Pad.css';
+import './GridContentLayout.css';
 
 export default class GridContentLayout extends React.Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      itemWidth: 100,
-      itemHeight: 100,
+      itemWidth: 173,
+      itemHeight: 170,
       scrollToIndex: 0,
-      separator: '-',
     };
     this.padRef = React.createRef();
     this.gridRef = React.createRef();
@@ -30,13 +30,6 @@ export default class GridContentLayout extends React.Component {
       [node.name]: value,
     });
   };
-  handleRadioChange = evt => {
-    const node = evt.target;
-
-    this.setState({
-      [node.name]: node.value,
-    });
-  };
   handleScrollToPos = () => {
     const { scrollToIndex } = this.state;
     const rect = this.gridRef.current.getItemRect({
@@ -46,10 +39,6 @@ export default class GridContentLayout extends React.Component {
   };
   render() {
     const { itemWidth, itemHeight, separator, scrollToIndex } = this.state;
-    const separatorOptions = [
-      { title: '-', value: '-', checked: separator === '-' },
-      { title: ',', value: ',', checked: separator === ',' },
-    ];
 
     return (
       <React.Fragment>
@@ -64,6 +53,7 @@ export default class GridContentLayout extends React.Component {
                 width={346}
                 height={552}
                 alwaysBounceX={false}
+                style={{ backgroundColor: '#f5f5f5' }}
               >
                 <GridContent
                   ref={this.gridRef}
@@ -71,23 +61,18 @@ export default class GridContentLayout extends React.Component {
                   itemWidth={itemWidth}
                   itemHeight={itemHeight}
                   itemCount={100}
-                  renderItem={({ itemIndex, rowIndex, columnIndex }) => {
-                    let backgroundColor = itemIndex % 2 ? '#defdff' : '#cbf1ff';
-
+                  columnSpacing={0}
+                  renderItem={({ rowIndex, columnIndex }) => {
                     return (
-                      <div
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          backgroundColor,
-                          color: '#75d3ec',
-                          whiteSpace: 'pre-line',
-                          textAlign: 'center',
-                        }}
-                      >
-                        index:{itemIndex + '\n'}
-                        {'r:' + rowIndex + separator + 'c:' + columnIndex}
+                      <div className="grid">
+                        <div className="item">
+                          <div className="item-poster">
+                            <SvgPoster />
+                          </div>
+                          <div className="item-text">
+                            Grid {rowIndex}-{columnIndex}
+                          </div>
+                        </div>
                       </div>
                     );
                   }}
@@ -107,11 +92,6 @@ export default class GridContentLayout extends React.Component {
               defaultValue={itemHeight}
               placeholder="integer"
               onChange={this.handleInputChange}
-            />
-            <RadioField
-              name="separator"
-              options={separatorOptions}
-              onChange={this.handleRadioChange}
             />
             <TextField
               name="scrollToIndex"

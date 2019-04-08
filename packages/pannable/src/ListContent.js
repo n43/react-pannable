@@ -20,15 +20,17 @@ export default class ListContent extends React.Component {
   constructor(props) {
     super(props);
 
-    const itemHashList = [];
-    const itemSizeDict = {};
-    const layout = calculateLayout(props, itemHashList, itemSizeDict);
+    this._itemHashList = [];
+    this._itemSizeDict = {};
+    const layout = calculateLayout(
+      props,
+      this._itemHashList,
+      this._itemSizeDict
+    );
 
     this.state = {
       size: layout.size,
       layoutList: layout.layoutList,
-      itemHashList,
-      itemSizeDict,
     };
   }
 
@@ -76,39 +78,18 @@ export default class ListContent extends React.Component {
     return (attrs && attrs.rect) || null;
   }
 
-  _calculateLayout(changedItem) {
+  _calculateLayout() {
     this.setState((state, props) => {
-      const { size, itemHashList, itemSizeDict } = state;
-      let nextItemHashList = itemHashList;
-      let nextItemSizeDict = itemSizeDict;
+      const { size } = state;
       const nextState = {};
 
-      if (changedItem) {
-        const { itemIndex, itemHash, itemSize } = changedItem;
-        const hashItemSize = nextItemSizeDict[itemHash];
-
-        if (nextItemHashList[itemIndex] !== itemHash) {
-          nextItemHashList = [...nextItemHashList];
-          nextItemHashList[itemIndex] = itemHash;
-        }
-        if (
-          !hashItemSize ||
-          hashItemSize.width !== itemSize.width ||
-          hashItemSize.height !== itemSize.height
-        ) {
-          nextItemSizeDict = { ...nextItemSizeDict, [itemHash]: itemSize };
-        }
-      }
-
-      const layout = calculateLayout(props, nextItemHashList, nextItemSizeDict);
+      const layout = calculateLayout(
+        props,
+        this._itemHashList,
+        this._itemSizeDict
+      );
       nextState.layoutList = layout.layoutList;
 
-      if (nextItemHashList !== itemHashList) {
-        nextState.itemHashList = nextItemHashList;
-      }
-      if (nextItemSizeDict !== itemSizeDict) {
-        nextState.itemSizeDict = nextItemSizeDict;
-      }
       if (
         layout.size.width !== size.width ||
         layout.size.height !== size.height
@@ -121,10 +102,9 @@ export default class ListContent extends React.Component {
   }
 
   _renderItem(layoutAttrs) {
-    const { direction, width, height, renderItem } = this.props;
-    const { itemSizeDict } = this.state;
+    const { direction, width, height, visibleRect, renderItem } = this.props;
 
-    const { itemIndex, rect, visibleRect } = layoutAttrs;
+    const { itemIndex, rect } = layoutAttrs;
     let element = renderItem(layoutAttrs);
 
     if (!React.isValidElement(element)) {
@@ -136,6 +116,13 @@ export default class ListContent extends React.Component {
 
     const key = element.key || itemIndex;
     const itemHash = element.props.hash || key;
+
+    this._itemHashList[itemIndex] = itemHash;
+
+    if (!needsRender(rect, visibleRect)) {
+      return null;
+    }
+
     const onResize = element.props.onResize;
     const itemStyle = {
       position: 'absolute',
@@ -149,13 +136,14 @@ export default class ListContent extends React.Component {
       key,
       ref: element.ref,
       style: itemStyle,
-      onResize: itemSize => {
-        this._calculateLayout({ itemIndex, itemHash, itemSize });
-        onResize(itemSize);
+      onResize: size => {
+        this._itemSizeDict[itemHash] = size;
+        this._calculateLayout();
+        onResize(size);
       },
     };
 
-    const size = itemSizeDict[itemHash];
+    const size = this._itemSizeDict[itemHash];
 
     if (size) {
       elemProps.width = size.width;
@@ -172,7 +160,7 @@ export default class ListContent extends React.Component {
     }
 
     if (element.props.hasOwnProperty('visibleRect')) {
-      elemProps.visibleRect = visibleRect;
+      elemProps.visibleRect = layoutAttrs.visibleRect;
     }
 
     return React.cloneElement(element, elemProps);
@@ -205,9 +193,7 @@ export default class ListContent extends React.Component {
         visibleRect: getItemVisibleRect(attrs.rect, visibleRect),
       };
 
-      if (needsRender(layoutAttrs.rect, visibleRect)) {
-        items.push(this._renderItem(layoutAttrs));
-      }
+      items.push(this._renderItem(layoutAttrs));
     }
 
     props.children = items;

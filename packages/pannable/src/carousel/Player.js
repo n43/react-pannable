@@ -217,7 +217,7 @@ export default class Player extends React.Component {
     padProps.onMouseLeave = this._onMouseLeave;
 
     let element = padProps.children;
-    if (typeof element === 'function') {
+    if (typeof element === 'function' && 1) {
       element = element(this);
     }
 

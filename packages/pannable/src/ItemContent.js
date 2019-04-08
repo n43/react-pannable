@@ -121,6 +121,7 @@ export default class ItemContent extends React.Component {
             this.setState({ size: nextSize });
           }
           onElemResize(nextSize);
+          console.log('item', hash, nextSize, size);
         },
       };
 
