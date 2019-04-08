@@ -35,6 +35,9 @@ export default class ListContent extends React.Component {
   }
 
   componentDidMount() {
+    if (this.props.itemCount === 4) {
+      console.log('List did mount');
+    }
     this.props.onResize(this.state.size);
   }
 
@@ -88,6 +91,11 @@ export default class ListContent extends React.Component {
         this._itemHashList,
         this._itemSizeDict
       );
+
+      if (this.props.itemCount === 2) {
+        console.log('list', layout.size, layout.layoutList);
+      }
+
       nextState.layoutList = layout.layoutList;
 
       if (
@@ -110,7 +118,7 @@ export default class ListContent extends React.Component {
     if (!React.isValidElement(element)) {
       element = <ItemContent>{element}</ItemContent>;
     }
-    if (!element.props.connectWithPad) {
+    if (element.type !== ItemContent) {
       element = <ItemContent key={element.key}>{element}</ItemContent>;
     }
 
@@ -119,7 +127,7 @@ export default class ListContent extends React.Component {
 
     this._itemHashList[itemIndex] = itemHash;
 
-    if (!needsRender(rect, visibleRect)) {
+    if (!element.props.forceRender && !needsRender(rect, visibleRect)) {
       return null;
     }
 
@@ -135,10 +143,12 @@ export default class ListContent extends React.Component {
     const elemProps = {
       key,
       ref: element.ref,
+      visibleRect: layoutAttrs.visibleRect,
       style: itemStyle,
       onResize: size => {
         this._itemSizeDict[itemHash] = size;
         this._calculateLayout();
+
         onResize(size);
       },
     };
@@ -146,8 +156,12 @@ export default class ListContent extends React.Component {
     const size = this._itemSizeDict[itemHash];
 
     if (size) {
-      elemProps.width = size.width;
-      elemProps.height = size.height;
+      if (typeof elemProps.width !== 'number') {
+        elemProps.width = size.width;
+      }
+      if (typeof elemProps.height !== 'number') {
+        elemProps.height = size.height;
+      }
     }
     if (direction === 'x') {
       if (typeof elemProps.height !== 'number' && typeof height === 'number') {
@@ -157,10 +171,6 @@ export default class ListContent extends React.Component {
       if (typeof elemProps.width !== 'number' && typeof width === 'number') {
         elemProps.width = width;
       }
-    }
-
-    if (element.props.hasOwnProperty('visibleRect')) {
-      elemProps.visibleRect = layoutAttrs.visibleRect;
     }
 
     return React.cloneElement(element, elemProps);

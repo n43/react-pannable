@@ -3,9 +3,10 @@ import { getElementSize } from './utils/sizeGetter';
 
 export default class ItemContent extends React.Component {
   static defaultProps = {
+    hash: '',
+    forceRender: false,
     width: null,
     height: null,
-    hash: '',
     visibleRect: { x: 0, y: 0, width: 0, height: 0 },
     onResize: () => {},
     connectWithPad: true,
@@ -36,14 +37,10 @@ export default class ItemContent extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    const { width, height, hash, onResize } = this.props;
+    const { width, height, onResize } = this.props;
     const { size } = this.state;
 
-    if (
-      prevProps.width !== width ||
-      prevProps.height !== height ||
-      prevProps.hash !== hash
-    ) {
+    if (prevProps.width !== width || prevProps.height !== height) {
       this._calculateLayout();
     }
     if (prevState.size !== size) {
@@ -86,9 +83,10 @@ export default class ItemContent extends React.Component {
 
   render() {
     const {
+      hash,
+      forceRender,
       width,
       height,
-      hash,
       visibleRect,
       onResize,
       connectWithPad,
@@ -113,22 +111,15 @@ export default class ItemContent extends React.Component {
           ...props.style,
         },
         onResize: nextSize => {
-          if (
-            !size ||
-            nextSize.width !== size.width ||
-            nextSize.height !== size.height
-          ) {
-            this.setState({ size: nextSize });
-          }
+          this.setState({ size: nextSize });
           onElemResize(nextSize);
-          console.log('item', hash, nextSize, size);
         },
       };
 
-      if (typeof width === 'number') {
+      if (typeof elemProps.width !== 'number' && typeof width === 'number') {
         elemProps.width = width;
       }
-      if (typeof height === 'number') {
+      if (typeof elemProps.height !== 'number' && typeof height === 'number') {
         elemProps.height = height;
       }
 

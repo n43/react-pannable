@@ -70,12 +70,10 @@ class Autoplayer extends Component {
           ref={this.playerRef}
           width={750}
           height={300}
-          contentWidth={750 * 5}
-          contentHeight={300}
           direction="x"
           loop={true}
-          scrollsBackOnEdge={false}
-          autoplayEnabled={false}
+          scrollsBackOnEdge={true}
+          autoplayEnabled={true}
         >
           {/* <div style={{ width: 750 * 5, height: 300 }}>
             {this.renderContent()}
@@ -96,7 +94,7 @@ class Autoplayer extends Component {
                 textAlign: 'center',
               };
               return (
-                <ItemContent hash={`Item${itemIndex}`} width={750} height={300}>
+                <ItemContent width={750} height={300}>
                   <div style={style}>slide {slideArr[itemIndex]}</div>
                 </ItemContent>
               );

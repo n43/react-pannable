@@ -287,6 +287,10 @@ export default class Pad extends React.Component {
         offset = offset(state, props);
       }
 
+      if (!offset) {
+        return null;
+      }
+
       const {
         contentOffset,
         contentVelocity,
@@ -550,19 +554,16 @@ export default class Pad extends React.Component {
     }
 
     if (React.isValidElement(element) && element.props.connectWithPad) {
-      const onResize = element.props.onResize;
+      const onElemResize = element.props.onResize;
       const elemProps = {
         key: element.key,
         ref: element.ref,
+        visibleRect: this.getVisibleRect(),
         onResize: size => {
           this._setStateWithScroll({ contentSize: size });
-          onResize(size);
+          onElemResize(size);
         },
       };
-
-      if (element.props.hasOwnProperty('visibleRect')) {
-        elemProps.visibleRect = this.getVisibleRect();
-      }
 
       element = React.cloneElement(element, elemProps);
     }
