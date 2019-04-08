@@ -2,6 +2,8 @@ import React from 'react';
 import { getItemVisibleRect, needsRender } from './utils/visible';
 import ItemContent from './ItemContent';
 
+function Item() {}
+
 export default class ListContent extends React.Component {
   static defaultProps = {
     direction: 'y',
@@ -35,9 +37,6 @@ export default class ListContent extends React.Component {
   }
 
   componentDidMount() {
-    if (this.props.itemCount === 4) {
-      console.log('List did mount');
-    }
     this.props.onResize(this.state.size);
   }
 
@@ -110,50 +109,74 @@ export default class ListContent extends React.Component {
   }
 
   _renderItem(layoutAttrs) {
-    const { direction, width, height, visibleRect, renderItem } = this.props;
+    const { direction, width, height, renderItem } = this.props;
 
-    const { itemIndex, rect } = layoutAttrs;
+    const { itemIndex, rect, visibleRect, needsRender, Item } = layoutAttrs;
     let element = renderItem(layoutAttrs);
-
-    if (!React.isValidElement(element)) {
-      element = <ItemContent>{element}</ItemContent>;
-    }
-    if (element.type !== ItemContent) {
-      element = <ItemContent key={element.key}>{element}</ItemContent>;
-    }
-
-    const key = element.key || itemIndex;
-    const itemHash = element.props.hash || key;
-
-    this._itemHashList[itemIndex] = itemHash;
-
-    if (!element.props.forceRender && !needsRender(rect, visibleRect)) {
-      return null;
-    }
-
-    const onResize = element.props.onResize;
-    const itemStyle = {
+    let forceRender;
+    let hash;
+    let key = itemIndex;
+    let style = {
       position: 'absolute',
       left: rect.x,
       top: rect.y,
       width: rect.width,
       height: rect.height,
+    };
+
+    if (React.isValidElement(element) && element.type === Item) {
+      forceRender = element.props.forceRender;
+      hash = element.props.hash;
+
+      if (element.props.style) {
+        style = { ...style, ...element.props.style };
+      }
+      if (element.key) {
+        key = element.key;
+      }
+
+      element = element.props.children;
+    }
+    if (!React.isValidElement(element)) {
+      element = <ItemContent>{element}</ItemContent>;
+    }
+    if (!element.props.connectWithPad) {
+      element = <ItemContent key={element.key}>{element}</ItemContent>;
+    }
+
+    if (element.key) {
+      key = element.key;
+    }
+    if (hash === undefined) {
+      hash = key;
+    }
+
+    this._itemHashList[itemIndex] = hash;
+
+    if (!forceRender && !needsRender) {
+      return null;
+    }
+
+    style = {
+      ...style,
       ...element.props.style,
     };
+
+    const onResize = element.props.onResize;
     const elemProps = {
       key,
       ref: element.ref,
-      visibleRect: layoutAttrs.visibleRect,
-      style: itemStyle,
+      style,
+      visibleRect,
       onResize: size => {
-        this._itemSizeDict[itemHash] = size;
+        this._itemSizeDict[hash] = size;
         this._calculateLayout();
 
         onResize(size);
       },
     };
 
-    const size = this._itemSizeDict[itemHash];
+    const size = this._itemSizeDict[hash];
 
     if (size) {
       if (typeof elemProps.width !== 'number') {
@@ -201,6 +224,8 @@ export default class ListContent extends React.Component {
         ...attrs,
         itemIndex,
         visibleRect: getItemVisibleRect(attrs.rect, visibleRect),
+        needsRender: needsRender(attrs.rect, visibleRect),
+        Item,
       };
 
       items.push(this._renderItem(layoutAttrs));

@@ -3,8 +3,6 @@ import { getElementSize } from './utils/sizeGetter';
 
 export default class ItemContent extends React.Component {
   static defaultProps = {
-    hash: '',
-    forceRender: false,
     width: null,
     height: null,
     visibleRect: { x: 0, y: 0, width: 0, height: 0 },
@@ -83,8 +81,6 @@ export default class ItemContent extends React.Component {
 
   render() {
     const {
-      hash,
-      forceRender,
       width,
       height,
       visibleRect,
@@ -98,32 +94,6 @@ export default class ItemContent extends React.Component {
 
     if (typeof element === 'function') {
       element = element(this);
-    }
-
-    if (React.isValidElement(element) && element.props.connectWithPad) {
-      const onElemResize = element.props.onResize;
-      const elemProps = {
-        key: element.key,
-        ref: element.ref,
-        visibleRect: { ...visibleRect },
-        style: {
-          ...element.props.style,
-          ...props.style,
-        },
-        onResize: nextSize => {
-          this.setState({ size: nextSize });
-          onElemResize(nextSize);
-        },
-      };
-
-      if (typeof elemProps.width !== 'number' && typeof width === 'number') {
-        elemProps.width = width;
-      }
-      if (typeof elemProps.height !== 'number' && typeof height === 'number') {
-        elemProps.height = height;
-      }
-
-      return React.cloneElement(element, elemProps);
     }
 
     element = (

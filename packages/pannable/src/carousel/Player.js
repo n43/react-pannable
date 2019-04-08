@@ -1,7 +1,6 @@
 import React from 'react';
 import Pad from '../Pad';
 import ListContent from '../ListContent';
-import ItemContent from '../ItemContent';
 
 export default class Player extends React.Component {
   static defaultProps = {
@@ -223,12 +222,12 @@ export default class Player extends React.Component {
     }
 
     if (loop) {
-      const itemElement = <ItemContent forceRender>{element}</ItemContent>;
+      const itemElement = element;
       element = (
         <ListContent
           direction={direction}
           itemCount={2}
-          renderItem={() => itemElement}
+          renderItem={({ Item }) => <Item forceRender>{itemElement}</Item>}
         />
       );
     }
