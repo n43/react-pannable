@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Carousel, ListContent } from 'react-pannable';
+import { Carousel, ListContent, ItemContent } from 'react-pannable';
 import SvgPrev from './SvgPrev';
 import SvgNext from './SvgNext';
 import './Carousel.css';
@@ -11,9 +11,7 @@ class ListLayoutCarousel extends Component {
 
     this.state = {
       direction: 'x',
-      activeIndex: 0,
       slideArr: [1, 2, 3, 4, 5],
-      listSize: { width: 0, height: 0 },
     };
     this.carouselRef = React.createRef();
   }
@@ -29,9 +27,6 @@ class ListLayoutCarousel extends Component {
   };
   handleSlideNext = () => {
     this.carouselRef.current.slideNext();
-  };
-  handleSlideChange = ({ activeIndex }) => {
-    this.setState({ activeIndex });
   };
   handlePaginationClick = index => {
     this.carouselRef.current.slideTo({ index });
@@ -49,34 +44,46 @@ class ListLayoutCarousel extends Component {
             direction={direction}
             loop={true}
             autoplayEnabled={false}
-            onSlideChange={this.handleSlideChange}
-          >
-            {carousel => {
-              return (
-                <ListContent
-                  direction="x"
-                  height={300}
-                  itemCount={slideArr.length}
-                  renderItem={({ itemIndex, Item }) => {
-                    const style = {
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      height: '100%',
-                      backgroundColor: itemIndex % 2 ? '#defdff' : '#cbf1ff',
-                      color: '#75d3ec',
-                      fontSize: 24,
-                      textAlign: 'center',
-                    };
-                    return (
-                      <Item width={750} height={300}>
-                        <div style={style}>slide {slideArr[itemIndex]}</div>
-                      </Item>
-                    );
-                  }}
-                />
-              );
+            renderIndicator={({ pageCount, activeIndex }) => {
+              let indicators = [];
+              for (let index = 0; index < pageCount; index++) {
+                indicators.push(
+                  <div
+                    key={index}
+                    className={
+                      activeIndex === index
+                        ? 'pagination-active'
+                        : 'pagination-item'
+                    }
+                    onClick={() => this.handlePaginationClick(index)}
+                  />
+                );
+              }
+              return <div className="hcarousel-pagination">{indicators}</div>;
             }}
+          >
+            <ListContent
+              direction="x"
+              height={300}
+              itemCount={slideArr.length}
+              renderItem={({ itemIndex }) => {
+                const style = {
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  height: '100%',
+                  backgroundColor: itemIndex % 2 ? '#defdff' : '#cbf1ff',
+                  color: '#75d3ec',
+                  fontSize: 24,
+                  textAlign: 'center',
+                };
+                return (
+                  <ItemContent width={750} height={300}>
+                    <div style={style}>slide {slideArr[itemIndex]}</div>
+                  </ItemContent>
+                );
+              }}
+            />
           </Carousel>
           <SvgPrev
             className="carousel-box-prev"
@@ -86,21 +93,6 @@ class ListLayoutCarousel extends Component {
             className="carousel-box-next"
             onClick={this.handleSlideNext}
           />
-          <div className="hcarousel-pagination">
-            {slideArr.map((item, index) => {
-              return (
-                <div
-                  key={item}
-                  className={
-                    activeIndex === index
-                      ? 'pagination-active'
-                      : 'pagination-item'
-                  }
-                  onClick={() => this.handlePaginationClick(index)}
-                />
-              );
-            })}
-          </div>
         </div>
       </div>
     );

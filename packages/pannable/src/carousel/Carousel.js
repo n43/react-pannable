@@ -150,7 +150,6 @@ export default class Carousel extends React.Component {
       element = element(this);
     }
     playerProps.children = element;
-
     const playerElem = (
       <Player
         {...playerProps}

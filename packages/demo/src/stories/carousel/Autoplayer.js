@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Player, ItemContent, ListContent } from 'react-pannable';
+import { Player } from 'react-pannable';
 import './Carousel.css';
 
 class Autoplayer extends Component {
@@ -9,7 +9,7 @@ class Autoplayer extends Component {
     this.state = {
       direction: 'x',
       statusText: 'start',
-      slideArr: [1, 2, 3, 4],
+      slideArr: [1, 2],
     };
     this.playerRef = React.createRef();
   }
@@ -62,44 +62,22 @@ class Autoplayer extends Component {
   }
 
   render() {
-    const { direction, statusText, slideArr } = this.state;
-
     return (
       <div className="carousel-main">
         <Player
           ref={this.playerRef}
           width={750}
           height={300}
+          contentWidth={750 * 5}
+          contentHeight={300}
           direction="x"
           loop={true}
-          scrollsBackOnEdge={true}
-          autoplayEnabled={true}
+          scrollsBackOnEdge={false}
+          autoplayEnabled={false}
         >
-          {/* <div style={{ width: 750 * 5, height: 300 }}>
+          <div style={{ width: 750 * 5, height: 300 }}>
             {this.renderContent()}
-          </div> */}
-          <ListContent
-            direction="x"
-            height={300}
-            itemCount={slideArr.length}
-            renderItem={({ itemIndex }) => {
-              const style = {
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                height: '100%',
-                backgroundColor: itemIndex % 2 ? '#defdff' : '#cbf1ff',
-                color: '#75d3ec',
-                fontSize: 24,
-                textAlign: 'center',
-              };
-              return (
-                <ItemContent width={750} height={300}>
-                  <div style={style}>slide {slideArr[itemIndex]}</div>
-                </ItemContent>
-              );
-            }}
-          />
+          </div>
         </Player>
         <div className="carousel-optbar">
           <div className="carsousel-status">
