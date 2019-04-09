@@ -9,7 +9,7 @@ class Autoplayer extends Component {
     this.state = {
       direction: 'x',
       statusText: 'start',
-      slideArr: [1, 2, 3, 4],
+      slideArr: [1],
     };
     this.playerRef = React.createRef();
   }
@@ -73,7 +73,7 @@ class Autoplayer extends Component {
           direction="x"
           loop={true}
           scrollsBackOnEdge={true}
-          autoplayEnabled={true}
+          autoplayEnabled={false}
         >
           {/* <div style={{ width: 750 * 5, height: 300 }}>
             {this.renderContent()}

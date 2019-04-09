@@ -158,12 +158,12 @@ export default class Player extends React.Component {
 
     pad.scrollTo({
       offset: state => {
-        const { contentOffset, contentSize } = state;
+        const { contentOffset, size, contentSize } = state;
         const [width, x, y] =
           direction === 'y' ? ['height', 'y', 'x'] : ['width', 'x', 'y'];
 
         const offsetRange = 0.5 * contentSize[width];
-        const minOffsetX = -contentSize[width] * 0.75;
+        const minOffsetX = -1.5 * offsetRange + 0.5 * size[width];
         const maxOffsetX = minOffsetX + offsetRange;
         let offsetX = contentOffset[x];
 
