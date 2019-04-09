@@ -1,5 +1,8 @@
 import React from 'react';
 import { getItemVisibleRect, needsRender } from './utils/visible';
+import ItemContent from './ItemContent';
+
+function Item() {}
 
 export default class GridContent extends React.Component {
   static defaultProps = {
@@ -110,17 +113,32 @@ export default class GridContent extends React.Component {
   }
 
   _renderItem(layoutAttrs) {
-    const { renderItem } = this.props;
+    const { itemWidth, itemHeight, renderItem } = this.props;
 
-    const { itemIndex, rect } = layoutAttrs;
+    const { itemIndex, rect, visibleRect, needsRender, Item } = layoutAttrs;
     let element = renderItem(layoutAttrs);
+    let forceRender;
+    let key;
 
-    if (!React.isValidElement(element)) {
-      element = <div>{element}</div>;
+    if (React.isValidElement(element) && element.type === Item) {
+      forceRender = element.props.forceRender;
+      key = element.key;
+      element = element.props.children;
     }
 
-    return React.cloneElement(element, {
-      key: element.key || itemIndex,
+    if (!key) {
+      key = '' + itemIndex;
+    }
+    if (!forceRender && !needsRender) {
+      return null;
+    }
+
+    if (!React.isValidElement(element) || !element.props.connectWithPad) {
+      element = <ItemContent>{element}</ItemContent>;
+    }
+
+    const elemProps = {
+      key,
       ref: element.ref,
       style: {
         position: 'absolute',
@@ -130,7 +148,17 @@ export default class GridContent extends React.Component {
         height: rect.height,
         ...element.props.style,
       },
-    });
+      visibleRect,
+    };
+
+    if (typeof element.props.width !== 'number') {
+      elemProps.width = itemWidth;
+    }
+    if (typeof element.props.height !== 'number') {
+      elemProps.height = itemHeight;
+    }
+
+    return React.cloneElement(element, elemProps);
   }
 
   render() {
@@ -159,11 +187,11 @@ export default class GridContent extends React.Component {
         ...attrs,
         itemIndex,
         visibleRect: getItemVisibleRect(attrs.rect, visibleRect),
+        needsRender: needsRender(attrs.rect, visibleRect),
+        Item,
       };
 
-      if (needsRender(layoutAttrs.rect, visibleRect)) {
-        items.push(this._renderItem(layoutAttrs));
-      }
+      items.push(this._renderItem(layoutAttrs));
     }
 
     props.children = items;

@@ -24,6 +24,7 @@ export default class ListContent extends React.Component {
 
     this._itemHashList = [];
     this._itemSizeDict = {};
+
     const layout = calculateLayout(
       props,
       this._itemHashList,
@@ -120,10 +121,6 @@ export default class ListContent extends React.Component {
       element = element.props.children;
     }
 
-    if (!React.isValidElement(element) || !element.props.connectWithPad) {
-      element = <ItemContent>{element}</ItemContent>;
-    }
-
     if (!key) {
       key = '' + itemIndex;
     }
@@ -135,6 +132,10 @@ export default class ListContent extends React.Component {
 
     if (!forceRender && !needsRender) {
       return null;
+    }
+
+    if (!React.isValidElement(element) || !element.props.connectWithPad) {
+      element = <ItemContent>{element}</ItemContent>;
     }
 
     const onResize = element.props.onResize;
@@ -158,23 +159,30 @@ export default class ListContent extends React.Component {
       },
     };
 
-    const size = this._itemSizeDict[hash];
+    const itemSize = this._itemSizeDict[hash];
 
-    if (size) {
-      if (typeof elemProps.width !== 'number') {
-        elemProps.width = size.width;
+    if (itemSize) {
+      if (typeof element.props.width !== 'number') {
+        elemProps.width = itemSize.width;
       }
-      if (typeof elemProps.height !== 'number') {
-        elemProps.height = size.height;
-      }
-    }
-    if (direction === 'x') {
-      if (typeof elemProps.height !== 'number' && typeof height === 'number') {
-        elemProps.height = height;
+      if (typeof element.props.height !== 'number') {
+        elemProps.height = itemSize.height;
       }
     } else {
-      if (typeof elemProps.width !== 'number' && typeof width === 'number') {
-        elemProps.width = width;
+      if (direction === 'x') {
+        if (
+          typeof element.props.height !== 'number' &&
+          typeof height === 'number'
+        ) {
+          elemProps.height = height;
+        }
+      } else {
+        if (
+          typeof element.props.width !== 'number' &&
+          typeof width === 'number'
+        ) {
+          elemProps.width = width;
+        }
       }
     }
 
