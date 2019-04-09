@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Pad } from 'react-pannable';
+import { Pad, ItemContent } from 'react-pannable';
 import SvgPhone from './SvgPhone';
 import TextField from '../../ui/field/TextField';
 import CheckField from '../../ui/field/CheckField';
@@ -77,7 +77,11 @@ class BasicScroll extends Component {
       }
     }
 
-    return items;
+    return (
+      <ItemContent width={346 * 5} height={552 * 5}>
+        {items}
+      </ItemContent>
+    );
   }
 
   render() {
@@ -97,8 +101,6 @@ class BasicScroll extends Component {
               ref={this.padRef}
               width={346}
               height={552}
-              contentWidth={346 * 5}
-              contentHeight={552 * 5}
               pagingEnabled={pagingEnabled}
               scrollEnabled={scrollEnabled}
               directionalLockEnabled={directionalLockEnabled}

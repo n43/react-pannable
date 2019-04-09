@@ -85,8 +85,6 @@ type PadEvent = {
 | children               | element,function |     null     | Rendered content. Can be a render function, or a rendered element.:`(pad: Pad) => element`          |
 | width                  |      number      |      0       | The width of the bounding view.                                                                     |
 | height                 |      number      |      0       | The height of the bounding view.                                                                    |
-| contentWidth           |      number      |      0       | The suggested width of the content view.                                                            |
-| contentHeight          |      number      |      0       | The suggested height of the content view.                                                           |
 | scrollEnabled          |     boolean      |     true     | Determines whether scrolling is enabled.                                                            |
 | pagingEnabled          |     boolean      |    false     | Determines whether paging is enabled.                                                               |
 | directionalLockEnabled |     boolean      |    false     | Determines whether scrolling is disabled in a particular direction.                                 |
@@ -112,7 +110,7 @@ Scrolls a specific area of the content so that it is visible.
 
 ### AutoResizing
 
-`AutoResizing` automatically expands the size of the bounding view.
+`AutoResizing` calculates the filling size of the view automatically.
 
 ```js
 type Size = { width: number, height: number };
@@ -120,30 +118,98 @@ type Size = { width: number, height: number };
 
 #### Prop Types
 
-| Property |       Type       | DefaultValue | Description                                                                              |
-| :------- | :--------------: | :----------: | :--------------------------------------------------------------------------------------- |
-| children | element,function |     null     | The render function passing computed width and height.:`(size: Size) => element`         |
-| width    |      number      |     null     | The width of the content. If not specified, it expands the width of the bounding view.   |
-| height   |      number      |     null     | The height of the content. If not specified, it expands the height of the bounding view. |
-| onResize |     function     |   () => {}   | Callback invoked when the content resize.:`(size: Size) => void`                         |
+| Property |       Type       | DefaultValue | Description                                                                                |
+| :------- | :--------------: | :----------: | :----------------------------------------------------------------------------------------- |
+| children | element,function |     null     | The render function passing the calculated width and height.:`(size: Size) => element`     |
+| width    |      number      |     null     | The width of the content. If not specified, it calculates the filling width of the view.   |
+| height   |      number      |     null     | The height of the content. If not specified, it calculates the filling height of the view. |
+| onResize |     function     |   () => {}   | Invoked when the view resize.:`(size: Size) => void`                                       |
+
+#### Public Methods
+
+##### getSize()
+
+Returns the real size of the view.
+
+##### calculateSize()
+
+Calculate the size of the view manually.
+
+### ItemContent
+
+`ItemContent` calculates the fitting size of the content.
+
+```js
+type Size = { width: number, height: number };
+```
+
+#### Prop Types
+
+| Property            |   Type   |            DefaultValue             | Description                                                                                  |
+| :------------------ | :------: | :---------------------------------: | :------------------------------------------------------------------------------------------- |
+| shouldCalculateSize | function |             () => true              | Whether the content should recalculate size.                                                 |
+| width               |  number  |                null                 | The width of the content. If not specified, it calculates the fitting width of the content.  |
+| height              |  number  |                null                 | The width of the content. If not specified, it calculates the fitting height of the content. |
+| visibleRect         |   Rect   | { x: 0, y: 0, width: 0, height: 0 } | The area of the visible content.                                                             |
+| onResize            | function |              () => {}               | Invoked when the content resize.:`(size: Size) => void`                                      |
+| connectWithPad      | boolean  |                true                 | Automatic synchronize the content size and visible rectangle with Pad                        |
+
+#### Public Methods
+
+##### getSize()
+
+Returns the real size of the content.
+
+##### calculateSize()
+
+Calculate the size of the content manually.
 
 ### GeneralContent
 
-`GeneralContent` automatically shrinks the size of the content.
+`GeneralContent` is similar to `ItemContent`. The difference between them is that `GeneralContent` listens the content and automatically calculates the size when the content resize.
+
+### ListContent
+
+`ListContent` displays data in a single line of customizable items.
 
 ```js
 type Size = { width: number, height: number };
+type Rect = { x: number, y: number, width: number, height: number };
+type ItemProps = {
+  hash: string,
+  forceRender: boolean,
+};
+type Item = React.Element<ItemProps>;
+type LayoutAttrs = {
+  itemIndex: number,
+  rect: Rect,
+  visibleRect: Rect,
+  needsRender: boolean,
+  Item: Item,
+};
 ```
 
 #### Prop Types
 
-| Property       |   Type   |            DefaultValue             | Description                                                                        |
-| :------------- | :------: | :---------------------------------: | :--------------------------------------------------------------------------------- |
-| width          |  number  |                null                 | The width of the content. If not specified, it shrinks the width of the content.   |
-| height         |  number  |                null                 | The height of the content. If not specified, it shrinks the height of the content. |
-| visibleRect    |   Rect   | { x: 0, y: 0, width: 0, height: 0 } | The area of the visible content.                                                   |
-| onResize       | function |              () => {}               | Callback invoked when the content resize.:`(size: Size) => void`                   |
-| connectWithPad | boolean  |                true                 | Automatic synchronize the content size and visible rectangle with Pad              |
+| Property            |   Type   |            DefaultValue             | Description                                                           |
+| :------------------ | :------: | :---------------------------------: | :-------------------------------------------------------------------- |
+| direction           | 'x','y'  |                 'y'                 | The direction of the list.                                            |
+| width               |  number  |                null                 | The suggested width of the content.                                   |
+| height              |  number  |                null                 | The suggested height of the content.                                  |
+| spacing             |  number  |                  0                  | The minimum spacing to use between items in the list.                 |
+| itemCount           |  number  |                  0                  | The number of items.                                                  |
+| estimatedItemWidth  |  number  |                  0                  | The estimated width of the item.                                      |
+| estimatedItemHeight |  number  |                  0                  | The estimated height of the item.                                     |
+| renderItem          | function |             () => null              | The renderer of the item.:`(attrs: LayoutAttrs) => element`           |
+| visibleRect         |   Rect   | { x: 0, y: 0, width: 0, height: 0 } | The area of the visible content.                                      |
+| onResize            | function |              () => {}               | Callback invoked when the content resize.:`(size: Size) => void`      |
+| connectWithPad      | boolean  |                true                 | Automatic synchronize the content size and visible rectangle with Pad |
+
+#### Public Methods
+
+##### getItemRect({ itemIndex: number })
+
+Returns the area of item at the specified index.
 
 ### GridContent
 
@@ -183,69 +249,6 @@ type LayoutAttrs = {
 ##### getItemRect({ itemIndex: number, rowIndex: number, columnIndex: number })
 
 Returns the area of item at the specified indexes.
-
-### ListContent
-
-`ListContent` displays data in a single line of customizable items.
-
-```js
-type Size = { width: number, height: number };
-type Rect = { x: number, y: number, width: number, height: number };
-type ItemProps = {
-  key: string,
-  hash: string,
-  forceRender: boolean,
-  style: object,
-};
-type Item = React.Element<ItemProps>;
-type LayoutAttrs = {
-  itemIndex: number,
-  rect: Rect,
-  visibleRect: Rect,
-  needsRender: boolean,
-  Item: Item,
-};
-```
-
-#### Prop Types
-
-| Property            |   Type   |            DefaultValue             | Description                                                           |
-| :------------------ | :------: | :---------------------------------: | :-------------------------------------------------------------------- |
-| direction           | 'x','y'  |                 'y'                 | The direction of the list.                                            |
-| width               |  number  |                null                 | The suggested width of the content.                                   |
-| height              |  number  |                null                 | The suggested height of the content.                                  |
-| spacing             |  number  |                  0                  | The minimum spacing to use between items in the list.                 |
-| itemCount           |  number  |                  0                  | The number of items.                                                  |
-| estimatedItemWidth  |  number  |                  0                  | The estimated width of the item.                                      |
-| estimatedItemHeight |  number  |                  0                  | The estimated height of the item.                                     |
-| renderItem          | function |             () => null              | The renderer of the item.:`(attrs: LayoutAttrs) => element`           |
-| visibleRect         |   Rect   | { x: 0, y: 0, width: 0, height: 0 } | The area of the visible content.                                      |
-| onResize            | function |              () => {}               | Callback invoked when the content resize.:`(size: Size) => void`      |
-| connectWithPad      | boolean  |                true                 | Automatic synchronize the content size and visible rectangle with Pad |
-
-#### Public Methods
-
-##### getItemRect({ itemIndex: number })
-
-Returns the area of item at the specified index.
-
-### ItemContent
-
-`ItemContent` fits the size of the content by hash.
-
-```js
-type Size = { width: number, height: number };
-```
-
-#### Prop Types
-
-| Property       |   Type   |            DefaultValue             | Description                                                                      |
-| :------------- | :------: | :---------------------------------: | :------------------------------------------------------------------------------- |
-| width          |  number  |                null                 | The width of the content. If not specified, it shrinks the width of the content. |
-| height         |  number  |                null                 | The width of the content. If not specified, it shrinks the width of the content. |
-| visibleRect    |   Rect   | { x: 0, y: 0, width: 0, height: 0 } | The area of the visible content.                                                 |
-| onResize       | function |              () => {}               | Callback invoked when the content resize.:`(size: Size) => void`                 |
-| connectWithPad | boolean  |                true                 | Automatic synchronize the content size and visible rectangle with Pad            |
 
 ## License
 

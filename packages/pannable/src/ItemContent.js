@@ -3,6 +3,7 @@ import { getElementSize } from './utils/sizeGetter';
 
 export default class ItemContent extends React.Component {
   static defaultProps = {
+    shouldCalculateSize: () => true,
     width: null,
     height: null,
     visibleRect: { x: 0, y: 0, width: 0, height: 0 },
@@ -30,7 +31,7 @@ export default class ItemContent extends React.Component {
     if (size) {
       this.props.onResize(size);
     } else {
-      this.calculateLayout();
+      this.calculateSize();
     }
   }
 
@@ -39,7 +40,7 @@ export default class ItemContent extends React.Component {
     const { size } = this.state;
 
     if (prevProps.width !== width || prevProps.height !== height) {
-      this.calculateLayout();
+      this.calculateSize();
     }
     if (prevState.size !== size) {
       onResize(size);
@@ -50,21 +51,22 @@ export default class ItemContent extends React.Component {
     return this.state.size;
   }
 
-  calculateLayout() {
+  calculateSize() {
     this.setState((state, props) => {
       const { size } = state;
-      const { width, height } = props;
+      const { width, height, shouldCalculateSize } = props;
+
+      if (!shouldCalculateSize()) {
+        return null;
+      }
+
       let nextSize = size;
-      const nextState = {};
+      let nextState = null;
 
       if (typeof width === 'number' && typeof height === 'number') {
         nextSize = { width, height };
       } else {
-        const resizeNode = this.resizeRef.current;
-
-        if (resizeNode) {
-          nextSize = getElementSize(resizeNode);
-        }
+        nextSize = getElementSize(this.resizeRef.current);
       }
 
       if (
@@ -72,6 +74,7 @@ export default class ItemContent extends React.Component {
         nextSize.width !== size.width ||
         nextSize.height !== size.height
       ) {
+        nextState = nextState || {};
         nextState.size = nextSize;
       }
 
@@ -81,6 +84,7 @@ export default class ItemContent extends React.Component {
 
   render() {
     const {
+      shouldCalculateSize,
       width,
       height,
       visibleRect,
@@ -109,15 +113,20 @@ export default class ItemContent extends React.Component {
           {element}
         </div>
       );
+      props.style = {
+        position: 'relative',
+        ...props.style,
+      };
     }
 
+    if (size) {
+      props.style = {
+        width: size.width,
+        height: size.height,
+        ...props.style,
+      };
+    }
     props.children = element;
-    props.style = {
-      position: 'relative',
-      width: size ? size.width : 'auto',
-      height: size ? size.height : 'auto',
-      ...props.style,
-    };
 
     return <div {...props} />;
   }

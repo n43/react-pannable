@@ -69,13 +69,7 @@ class LocatingContentArea extends Component {
         <div className="pad-preview">
           <SvgPhone className="pad-preview-bg" />
           <div className="pad-preview-content">
-            <Pad
-              ref={this.padRef}
-              width={346}
-              height={552}
-              contentWidth={1300}
-              contentHeight={973}
-            >
+            <Pad ref={this.padRef} width={346} height={552}>
               <img src={map} width={1300} height={973} />
               <div
                 style={{

@@ -62,7 +62,7 @@ export default class ListContent extends React.Component {
       prevProps.estimatedItemWidth !== estimatedItemWidth ||
       prevProps.estimatedItemHeight !== estimatedItemHeight
     ) {
-      this._calculateLayout();
+      this.calculateSize();
     }
     if (prevState.size !== size) {
       onResize(size);
@@ -80,7 +80,7 @@ export default class ListContent extends React.Component {
     return (attrs && attrs.rect) || null;
   }
 
-  _calculateLayout() {
+  calculateSize() {
     this.setState((state, props) => {
       const { size } = state;
       const nextState = {};
@@ -111,41 +111,22 @@ export default class ListContent extends React.Component {
     let element = renderItem(layoutAttrs);
     let forceRender;
     let hash;
-    let key = '' + itemIndex;
-    let style = {
-      position: 'absolute',
-      left: rect.x,
-      top: rect.y,
-      width: rect.width,
-      height: rect.height,
-    };
+    let key;
 
     if (React.isValidElement(element) && element.type === Item) {
       forceRender = element.props.forceRender;
       hash = element.props.hash;
-
-      if (element.props.style) {
-        style = { ...style, ...element.props.style };
-      }
-      if (element.key) {
-        key = element.key;
-      }
-
+      key = element.key;
       element = element.props.children;
     }
 
-    if (!React.isValidElement(element)) {
+    if (!React.isValidElement(element) || !element.props.connectWithPad) {
       element = <ItemContent>{element}</ItemContent>;
     }
 
-    if (!element.props.connectWithPad) {
-      if (element.key) {
-        key = element.key;
-      }
-
-      element = <ItemContent>{element}</ItemContent>;
+    if (!key) {
+      key = '' + itemIndex;
     }
-
     if (hash === undefined) {
       hash = key;
     }
@@ -156,20 +137,22 @@ export default class ListContent extends React.Component {
       return null;
     }
 
-    style = {
-      ...style,
-      ...element.props.style,
-    };
-
     const onResize = element.props.onResize;
     const elemProps = {
       key,
       ref: element.ref,
-      style,
+      style: {
+        position: 'absolute',
+        left: rect.x,
+        top: rect.y,
+        width: rect.width,
+        height: rect.height,
+        ...element.props.style,
+      },
       visibleRect,
       onResize: size => {
         this._itemSizeDict[hash] = size;
-        this._calculateLayout();
+        this.calculateSize();
 
         onResize(size);
       },
