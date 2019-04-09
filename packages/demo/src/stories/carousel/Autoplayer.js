@@ -74,7 +74,7 @@ class Autoplayer extends Component {
           contentHeight={300}
           direction="x"
           loop={true}
-          scrollsBackOnEdge={false}
+          scrollsBackOnEdge={true}
           autoplayEnabled={false}
         >
           <div style={{ width: 750 * itemLength, height: 300 }}>

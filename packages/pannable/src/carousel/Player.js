@@ -159,12 +159,12 @@ export default class Player extends React.Component {
 
     pad.scrollTo({
       offset: state => {
-        const { contentOffset, contentSize } = state;
+        const { contentOffset, size, contentSize } = state;
         const [width, x, y] =
           direction === 'y' ? ['height', 'y', 'x'] : ['width', 'x', 'y'];
 
         const offsetRange = 0.5 * contentSize[width];
-        const minOffsetX = -contentSize[width] * 0.75;
+        const minOffsetX = -1.5 * offsetRange + 0.5 * size[width];
         const maxOffsetX = minOffsetX + offsetRange;
         let offsetX = contentOffset[x];
         if (offsetX <= minOffsetX) {
@@ -193,11 +193,11 @@ export default class Player extends React.Component {
     const contentSize = pad.getContentSize();
     const width = this.props.direction === 'y' ? 'height' : 'width';
 
-    if (contentSize[width] >= size[width] * 2) {
-      return true;
+    if (contentSize[width] < size[width]) {
+      return false;
     }
 
-    return false;
+    return true;
   }
 
   _onMouseEnter = () => {
@@ -240,11 +240,11 @@ export default class Player extends React.Component {
 
     if (loop) {
       const itemElement = element;
-      // const itemCount = this._hasEnoughSpaceForLoop() ? 1 : 2;
+      const itemCount = this._hasEnoughSpaceForLoop() ? 1 : 2;
       element = (
         <ListContent
           direction={direction}
-          itemCount={2}
+          itemCount={itemCount}
           renderItem={({ Item }) => <Item forceRender>{itemElement}</Item>}
         />
       );
