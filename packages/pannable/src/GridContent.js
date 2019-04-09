@@ -57,7 +57,7 @@ export default class GridContent extends React.Component {
       prevProps.itemWidth !== itemWidth ||
       prevProps.itemHeight !== itemHeight
     ) {
-      this._calculateLayout();
+      this.calculateSize();
     }
     if (prevState.size !== size) {
       onResize(size);
@@ -88,7 +88,7 @@ export default class GridContent extends React.Component {
     return (attrs && attrs.rect) || null;
   }
 
-  _calculateLayout() {
+  calculateSize() {
     this.setState((state, props) => {
       const { size } = state;
       const nextState = {};

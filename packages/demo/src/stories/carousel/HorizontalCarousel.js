@@ -73,8 +73,6 @@ class HorizontalCarousel extends Component {
             ref={this.carouselRef}
             width={750}
             height={300}
-            contentWidth={direction === 'x' ? 750 * 6 : 750}
-            contentHeight={direction === 'x' ? 300 : 300 * 6}
             direction={direction}
             loop={true}
             renderIndicator={({ pageCount, activeIndex }) => {

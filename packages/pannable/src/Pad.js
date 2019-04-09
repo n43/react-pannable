@@ -14,6 +14,7 @@ import {
   calculateDeceleration,
   calculateRectOffset,
 } from './utils/motion';
+import GeneralContent from './GeneralContent';
 
 const DECELERATION_RATE_STRONG = 0.04;
 const DECELERATION_RATE_WEAK = 0.004;
@@ -23,8 +24,6 @@ export default class Pad extends React.Component {
     children: null,
     width: 0,
     height: 0,
-    contentWidth: 0,
-    contentHeight: 0,
     scrollEnabled: true,
     pagingEnabled: false,
     directionalLockEnabled: false,
@@ -42,32 +41,19 @@ export default class Pad extends React.Component {
   constructor(props) {
     super(props);
 
-    const {
-      width,
-      height,
-      contentWidth,
-      contentHeight,
-      onResize,
-      onContentResize,
-    } = props;
-    const size = { width, height };
-    const contentSize = { width: contentWidth, height: contentHeight };
+    const { width, height } = props;
 
     this.state = {
       prevContentOffset: null,
       contentOffset: { x: 0, y: 0 },
       contentVelocity: { x: 0, y: 0 },
-      size,
-      contentSize,
+      size: { width, height },
+      contentSize: { width: 0, height: 0 },
       drag: null,
       deceleration: null,
     };
 
-    this.boundingRef = React.createRef();
-    this.contentRef = React.createRef();
-
-    onResize(size);
-    onContentResize(contentSize);
+    this.elemRef = React.createRef();
   }
 
   static getDerivedStateFromProps(props, state) {
@@ -81,7 +67,7 @@ export default class Pad extends React.Component {
       deceleration,
     } = state;
     const { pagingEnabled } = props;
-    const nextState = {};
+    let nextState = null;
 
     if (contentOffset !== prevContentOffset) {
       const validContentOffset =
@@ -137,22 +123,30 @@ export default class Pad extends React.Component {
         }
 
         if (nextDeceleration !== deceleration) {
+          nextState = nextState || {};
           nextState.deceleration = nextDeceleration;
         }
       }
 
+      nextState = nextState || {};
       nextState.prevContentOffset = contentOffset;
     }
 
     return nextState;
   }
 
+  componentDidMount() {
+    const { onResize, onContentResize } = this.props;
+    const { size, contentSize } = this.state;
+
+    onResize(size);
+    onContentResize(contentSize);
+  }
+
   componentDidUpdate(prevProps, prevState) {
     const {
       width,
       height,
-      contentWidth,
-      contentHeight,
       pagingEnabled,
       onScroll,
       onDragStart,
@@ -162,29 +156,23 @@ export default class Pad extends React.Component {
       onResize,
       onContentResize,
     } = this.props;
-    const { contentOffset, size, contentSize, drag, deceleration } = this.state;
+    const {
+      contentOffset,
+      contentVelocity,
+      size,
+      contentSize,
+      drag,
+      deceleration,
+    } = this.state;
 
     if (width !== prevProps.width || height !== prevProps.height) {
-      const size = { width, height };
-
-      this._setStateWithScroll({ size });
+      this._setStateWithScroll({ size: { width, height } });
     }
-
-    if (
-      contentWidth !== prevProps.contentWidth ||
-      contentHeight !== prevProps.contentHeight
-    ) {
-      const contentSize = { width: contentWidth, height: contentHeight };
-
-      this._setStateWithScroll({ contentSize });
-    }
-
     if (pagingEnabled !== prevProps.pagingEnabled) {
       if (pagingEnabled) {
         this._setStateWithScroll(null);
       }
     }
-
     if (contentOffset !== prevState.contentOffset) {
       if (deceleration) {
         if (this._decelerationTimer) {
@@ -199,13 +187,13 @@ export default class Pad extends React.Component {
 
       onScroll({
         contentOffset,
+        contentVelocity,
         size,
         contentSize,
         dragging: !!drag,
         decelerating: !!deceleration,
       });
     }
-
     if (size !== prevState.size) {
       onResize(size);
     }
@@ -238,19 +226,18 @@ export default class Pad extends React.Component {
   getSize() {
     return this.state.size;
   }
-
   getContentSize() {
     return this.state.contentSize;
   }
-
   getContentOffset() {
     return this.state.contentOffset;
   }
-
+  getContentVelocity() {
+    return this.state.contentVelocity;
+  }
   isDragging() {
     return !!this.state.drag;
   }
-
   isDecelerating() {
     return !!this.state.deceleration;
   }
@@ -528,8 +515,6 @@ export default class Pad extends React.Component {
     const {
       width,
       height,
-      contentWidth,
-      contentHeight,
       scrollEnabled,
       pagingEnabled,
       directionalLockEnabled,
@@ -546,37 +531,36 @@ export default class Pad extends React.Component {
     } = this.props;
     const { size, contentSize, contentOffset } = this.state;
 
-    const contentProps = {};
     let element = props.children;
 
     if (typeof element === 'function') {
       element = element(this);
     }
-
-    if (React.isValidElement(element) && element.props.connectWithPad) {
-      const onElemResize = element.props.onResize;
-      const elemProps = {
-        key: element.key,
-        ref: element.ref,
-        visibleRect: this.getVisibleRect(),
-        onResize: size => {
-          this._setStateWithScroll({ contentSize: size });
-          onElemResize(size);
-        },
-      };
-
-      element = React.cloneElement(element, elemProps);
+    if (!React.isValidElement(element) || !element.props.connectWithPad) {
+      element = <GeneralContent>{element}</GeneralContent>;
     }
 
-    contentProps.children = element;
-    contentProps.style = StyleSheet.create({
-      position: 'relative',
-      boxSizing: 'border-box',
-      width: contentSize.width,
-      height: contentSize.height,
-      transformTranslate: [contentOffset.x, contentOffset.y],
-    });
+    const onElemResize = element.props.onResize;
+    const elemProps = {
+      ref: element.ref,
+      style: StyleSheet.create({
+        position: 'relative',
+        boxSizing: 'border-box',
+        width: contentSize.width,
+        height: contentSize.height,
+        transformTranslate: [contentOffset.x, contentOffset.y],
+        ...element.props.style,
+      }),
+      visibleRect: this.getVisibleRect(),
+      onResize: size => {
+        this._setStateWithScroll({ contentSize: size });
+        onElemResize(size);
+      },
+    };
 
+    element = React.cloneElement(element, elemProps);
+
+    props.children = element;
     props.enabled = scrollEnabled;
     props.onStart = this._onDragStart;
     props.onMove = this._onDragMove;
@@ -591,10 +575,6 @@ export default class Pad extends React.Component {
       ...props.style,
     });
 
-    return (
-      <Pannable {...props} ref={this.boundingRef}>
-        <div {...contentProps} ref={this.contentRef} />
-      </Pannable>
-    );
+    return <Pannable {...props} ref={this.elemRef} />;
   }
 }

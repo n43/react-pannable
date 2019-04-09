@@ -43,7 +43,7 @@ export default class SectionContent extends React.Component {
       prevProps.width !== width ||
       prevProps.height !== height
     ) {
-      this._calculateLayout();
+      this.calculateSize();
     }
     if (prevState.size !== size) {
       onResize(size);
@@ -66,7 +66,7 @@ export default class SectionContent extends React.Component {
     return ['header', 'body', 'footer'].indexOf(itemName);
   }
 
-  _calculateLayout(changedItem) {
+  calculateSize(changedItem) {
     this.setState((state, props) => {
       const { size, itemHashList, itemSizeDict } = state;
       let nextItemHashList = itemHashList;
