@@ -210,6 +210,7 @@ export default class ListContent extends React.Component {
 
     for (let itemIndex = 0; itemIndex < itemCount; itemIndex++) {
       const attrs = layoutList[itemIndex];
+      console.log('list content:', itemIndex, attrs);
       const layoutAttrs = {
         ...attrs,
         itemIndex,

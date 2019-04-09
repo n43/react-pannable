@@ -12,7 +12,7 @@ class HorizontalCarousel extends Component {
     this.state = {
       direction: 'x',
       activeIndex: 0,
-      slideArr: [1],
+      slideArr: [1, 2, 3, 4, 5, 6],
     };
     this.carouselRef = React.createRef();
   }

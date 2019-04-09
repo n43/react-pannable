@@ -146,7 +146,7 @@ export default class Player extends React.Component {
   _onPadScroll = evt => {
     const { loop, onScroll } = this.props;
 
-    if (loop && this._hasEnoughSpaceForLoop()) {
+    if (loop) {
       this._alternateFramesForLoop(evt);
     }
 
@@ -180,24 +180,6 @@ export default class Player extends React.Component {
       },
       animated: false,
     });
-  }
-
-  _hasEnoughSpaceForLoop() {
-    const pad = this.padRef.current;
-
-    if (!pad) {
-      return false;
-    }
-
-    const size = pad.getSize();
-    const contentSize = pad.getContentSize();
-    const width = this.props.direction === 'y' ? 'height' : 'width';
-
-    if (contentSize[width] < size[width]) {
-      return false;
-    }
-
-    return true;
   }
 
   _onMouseEnter = () => {
@@ -240,11 +222,10 @@ export default class Player extends React.Component {
 
     if (loop) {
       const itemElement = element;
-      const itemCount = this._hasEnoughSpaceForLoop() ? 1 : 2;
       element = (
         <ListContent
           direction={direction}
-          itemCount={itemCount}
+          itemCount={2}
           renderItem={({ Item }) => <Item forceRender>{itemElement}</Item>}
         />
       );
