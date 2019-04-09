@@ -199,12 +199,12 @@ export default class Player extends React.Component {
   _onPadResize = size => {
     this._checkSizeForLoop({ size });
 
+    console.log('resize:', this.padRef.current);
     this.props.onResize(size);
   };
 
   _onPadContentResize = contentSize => {
     this._checkSizeForLoop({ contentSize });
-
     this.props.onContentResize(contentSize);
   };
 
@@ -280,16 +280,16 @@ export default class Player extends React.Component {
       element = element(this);
     }
 
-    if (loop && !featuresDisabled) {
-      const itemElement = element;
-      element = (
-        <ListContent
-          direction={direction}
-          itemCount={2}
-          renderItem={({ Item }) => <Item forceRender>{itemElement}</Item>}
-        />
-      );
-    }
+    // if (loop && !featuresDisabled) {
+    //   const itemElement = element;
+    //   element = (
+    //     <ListContent
+    //       direction={direction}
+    //       itemCount={2}
+    //       renderItem={({ Item }) => <Item forceRender>{itemElement}</Item>}
+    //     />
+    //   );
+    // }
 
     padProps.children = element;
 
