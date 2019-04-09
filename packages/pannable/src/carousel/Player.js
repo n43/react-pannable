@@ -17,7 +17,7 @@ export default class Player extends React.Component {
   constructor(props) {
     super(props);
 
-    this.state = { mouseEntered: false, featuresDisabled: true };
+    this.state = { mouseEntered: false };
     this.padRef = React.createRef();
   }
 
@@ -27,7 +27,7 @@ export default class Player extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     const { autoplayEnabled, autoplayInterval } = this.props;
-    const { mouseEntered, featuresDisabled } = this.state;
+    const { mouseEntered } = this.state;
 
     if (
       autoplayEnabled !== prevProps.autoplayEnabled ||
@@ -38,13 +38,6 @@ export default class Player extends React.Component {
     }
     if (mouseEntered !== prevState.mouseEntered) {
       if (mouseEntered) {
-        this._stopPlaying();
-      } else {
-        this._tryStartPlaying();
-      }
-    }
-    if (featuresDisabled !== prevState.featuresDisabled) {
-      if (featuresDisabled) {
         this._stopPlaying();
       } else {
         this._tryStartPlaying();
@@ -101,10 +94,6 @@ export default class Player extends React.Component {
       return;
     }
 
-    if (this.state.featuresDisabled) {
-      return;
-    }
-
     if (this.state.mouseEntered) {
       return;
     }
@@ -156,9 +145,8 @@ export default class Player extends React.Component {
 
   _onPadScroll = evt => {
     const { loop, onScroll } = this.props;
-    const { featuresDisabled } = this.state;
 
-    if (loop && !featuresDisabled) {
+    if (loop && this._hasEnoughSpaceForLoop()) {
       this._alternateFramesForLoop(evt);
     }
 
@@ -179,7 +167,6 @@ export default class Player extends React.Component {
         const minOffsetX = -contentSize[width] * 0.75;
         const maxOffsetX = minOffsetX + offsetRange;
         let offsetX = contentOffset[x];
-
         if (offsetX <= minOffsetX) {
           offsetX += offsetRange;
         } else if (maxOffsetX < offsetX) {
@@ -189,54 +176,28 @@ export default class Player extends React.Component {
         if (offsetX === contentOffset[x]) {
           return null;
         }
-
         return { [x]: offsetX, [y]: contentOffset[y] };
       },
       animated: false,
     });
   }
 
-  _onPadResize = size => {
-    this._checkSizeForLoop({ size });
-
-    console.log('resize:', this.padRef.current);
-    this.props.onResize(size);
-  };
-
-  _onPadContentResize = contentSize => {
-    this._checkSizeForLoop({ contentSize });
-    this.props.onContentResize(contentSize);
-  };
-
-  _checkSizeForLoop({ size, contentSize }) {
+  _hasEnoughSpaceForLoop() {
     const pad = this.padRef.current;
-    console.log(size, contentSize, pad);
+
     if (!pad) {
-      return;
+      return false;
     }
 
-    if (!size) {
-      size = pad.getSize();
+    const size = pad.getSize();
+    const contentSize = pad.getContentSize();
+    const width = this.props.direction === 'y' ? 'height' : 'width';
+
+    if (contentSize[width] >= size[width] * 2) {
+      return true;
     }
 
-    if (!contentSize) {
-      contentSize = pad.getContentSize();
-    }
-
-    this.setState((state, props) => {
-      const width = props.direction === 'y' ? 'height' : 'width';
-      let featuresDisabled = true;
-
-      if (contentSize[width] >= size[width] * 2) {
-        featuresDisabled = false;
-      }
-
-      if (featuresDisabled === state.featuresDisabled) {
-        return null;
-      }
-
-      return { featuresDisabled };
-    });
+    return false;
   }
 
   _onMouseEnter = () => {
@@ -257,7 +218,6 @@ export default class Player extends React.Component {
       onFrameChange,
       ...padProps
     } = this.props;
-    const { featuresDisabled } = this.state;
 
     if (direction === 'x') {
       padProps.alwaysBounceY = false;
@@ -272,24 +232,23 @@ export default class Player extends React.Component {
     padProps.onDecelerationEnd = this._onPadDecelerationEnd;
     padProps.onMouseEnter = this._onMouseEnter;
     padProps.onMouseLeave = this._onMouseLeave;
-    padProps.onResize = this._onPadResize;
-    padProps.onContentResize = this._onPadContentResize;
 
     let element = padProps.children;
     if (typeof element === 'function') {
       element = element(this);
     }
 
-    // if (loop && !featuresDisabled) {
-    //   const itemElement = element;
-    //   element = (
-    //     <ListContent
-    //       direction={direction}
-    //       itemCount={2}
-    //       renderItem={({ Item }) => <Item forceRender>{itemElement}</Item>}
-    //     />
-    //   );
-    // }
+    if (loop) {
+      const itemElement = element;
+      // const itemCount = this._hasEnoughSpaceForLoop() ? 1 : 2;
+      element = (
+        <ListContent
+          direction={direction}
+          itemCount={2}
+          renderItem={({ Item }) => <Item forceRender>{itemElement}</Item>}
+        />
+      );
+    }
 
     padProps.children = element;
 
