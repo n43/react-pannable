@@ -176,6 +176,7 @@ Calculate the size of the content manually.
 type Size = { width: number, height: number };
 type Rect = { x: number, y: number, width: number, height: number };
 type ItemProps = {
+  key: string,
   hash: string,
   forceRender: boolean,
 };
@@ -218,12 +219,18 @@ Returns the area of item at the specified index.
 ```js
 type Size = { width: number, height: number };
 type Rect = { x: number, y: number, width: number, height: number };
+type ItemProps = {
+  key: string,
+  forceRender: boolean,
+};
+type Item = React.Element<ItemProps>;
 type LayoutAttrs = {
   itemIndex: number,
   rowIndex: number,
   columnIndex: number,
   rect: Rect,
   visibleRect: Rect,
+  Item: Item,
 };
 ```
 
