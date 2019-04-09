@@ -61,7 +61,8 @@ class VerticalCarousel extends Component {
   }
 
   render() {
-    const { direction } = this.state;
+    const { direction, slideArr } = this.state;
+    const itemLength = slideArr.length;
 
     return (
       <div className="carousel-main">
@@ -70,8 +71,8 @@ class VerticalCarousel extends Component {
             ref={this.carouselRef}
             width={750}
             height={300}
-            contentWidth={direction === 'x' ? 750 * 6 : 750}
-            contentHeight={direction === 'x' ? 300 : 300 * 6}
+            contentWidth={direction === 'x' ? 750 * itemLength : 750}
+            contentHeight={direction === 'x' ? 300 : 300 * itemLength}
             direction={direction}
             loop={true}
             renderIndicator={({ pageCount, activeIndex }) => {
@@ -95,8 +96,8 @@ class VerticalCarousel extends Component {
             <div
               style={{
                 position: 'relative',
-                width: direction === 'x' ? 750 * 6 : 750,
-                height: direction === 'x' ? 300 : 300 * 6,
+                width: direction === 'x' ? 750 * itemLength : 750,
+                height: direction === 'x' ? 300 : 300 * itemLength,
               }}
             >
               {this.renderContent()}

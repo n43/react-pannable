@@ -23,10 +23,19 @@ export default class Carousel extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     const { onSlideChange } = this.props;
-    const { activeIndex } = this.state;
+    const { activeIndex, pageCount } = this.state;
 
     if (prevState.activeIndex !== activeIndex) {
       onSlideChange(activeIndex);
+    }
+    if (prevState.pageCount !== pageCount) {
+      const player = this.playerRef.current;
+      if (player) {
+        const pad = player.padRef.current;
+        const size = pad.getSize();
+        const contentOffset = pad.getContentOffset();
+        this._calculateActiveIndex({ size, contentOffset });
+      }
     }
   }
 
@@ -119,7 +128,6 @@ export default class Carousel extends React.Component {
     this.setState((state, props) => {
       const { direction } = props;
       const { pageCount } = state;
-
       const [width, x] = direction === 'x' ? ['width', 'x'] : ['height', 'y'];
       let activeIndex = Math.abs(Math.round(contentOffset[x] / size[width]));
 

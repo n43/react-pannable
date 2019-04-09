@@ -62,20 +62,22 @@ class Autoplayer extends Component {
   }
 
   render() {
+    const itemLength = this.state.slideArr.length;
+
     return (
       <div className="carousel-main">
         <Player
           ref={this.playerRef}
           width={750}
           height={300}
-          contentWidth={750 * 5}
+          contentWidth={750 * itemLength}
           contentHeight={300}
           direction="x"
           loop={true}
           scrollsBackOnEdge={false}
           autoplayEnabled={false}
         >
-          <div style={{ width: 750 * 5, height: 300 }}>
+          <div style={{ width: 750 * itemLength, height: 300 }}>
             {this.renderContent()}
           </div>
         </Player>

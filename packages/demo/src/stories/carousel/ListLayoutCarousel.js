@@ -33,7 +33,7 @@ class ListLayoutCarousel extends Component {
   };
 
   render() {
-    const { direction, activeIndex, slideArr } = this.state;
+    const { direction, slideArr } = this.state;
     return (
       <div className="carousel-main">
         <div className="carousel-box">

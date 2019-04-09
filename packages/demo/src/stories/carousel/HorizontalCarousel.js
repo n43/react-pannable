@@ -12,7 +12,7 @@ class HorizontalCarousel extends Component {
     this.state = {
       direction: 'x',
       activeIndex: 0,
-      slideArr: [1, 2, 3, 4, 5, 6],
+      slideArr: [1, 2],
     };
     this.carouselRef = React.createRef();
   }
@@ -64,7 +64,8 @@ class HorizontalCarousel extends Component {
   }
 
   render() {
-    const { direction } = this.state;
+    const { direction, slideArr } = this.state;
+    const itemLength = slideArr.length;
 
     return (
       <div className="carousel-main">
@@ -73,8 +74,8 @@ class HorizontalCarousel extends Component {
             ref={this.carouselRef}
             width={750}
             height={300}
-            contentWidth={direction === 'x' ? 750 * 6 : 750}
-            contentHeight={direction === 'x' ? 300 : 300 * 6}
+            contentWidth={direction === 'x' ? 750 * itemLength : 750}
+            contentHeight={direction === 'x' ? 300 : 300 * itemLength}
             direction={direction}
             loop={true}
             renderIndicator={({ pageCount, activeIndex }) => {
@@ -98,8 +99,8 @@ class HorizontalCarousel extends Component {
             <div
               style={{
                 position: 'relative',
-                width: direction === 'x' ? 750 * 6 : 750,
-                height: direction === 'x' ? 300 : 300 * 6,
+                width: direction === 'x' ? 750 * itemLength : 750,
+                height: direction === 'x' ? 300 : 300 * itemLength,
               }}
             >
               {this.renderContent()}
