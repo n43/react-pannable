@@ -117,12 +117,23 @@ export default class GridContent extends React.Component {
 
     const { itemIndex, rect, visibleRect, needsRender, Item } = layoutAttrs;
     let element = renderItem(layoutAttrs);
+    let itemStyle = {
+      position: 'absolute',
+      left: rect.x,
+      top: rect.y,
+      width: rect.width,
+      height: rect.height,
+    };
     let forceRender;
     let key;
 
     if (React.isValidElement(element) && element.type === Item) {
+      if (element.props.style) {
+        itemStyle = { ...itemStyle, ...element.props.style };
+      }
       forceRender = element.props.forceRender;
       key = element.key;
+
       element = element.props.children;
     }
 
@@ -136,18 +147,14 @@ export default class GridContent extends React.Component {
     if (!React.isValidElement(element) || !element.props.connectWithPad) {
       element = <ItemContent>{element}</ItemContent>;
     }
+    if (element.props.style) {
+      itemStyle = { ...itemStyle, ...element.props.style };
+    }
 
     const elemProps = {
       key,
       ref: element.ref,
-      style: {
-        position: 'absolute',
-        left: rect.x,
-        top: rect.y,
-        width: rect.width,
-        height: rect.height,
-        ...element.props.style,
-      },
+      style: itemStyle,
       visibleRect,
     };
 

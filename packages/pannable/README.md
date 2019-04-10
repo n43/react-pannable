@@ -179,6 +179,7 @@ type ItemProps = {
   key: string,
   hash: string,
   forceRender: boolean,
+  style: object,
 };
 type Item = React.Element<ItemProps>;
 type LayoutAttrs = {
@@ -222,6 +223,7 @@ type Rect = { x: number, y: number, width: number, height: number };
 type ItemProps = {
   key: string,
   forceRender: boolean,
+  style: object,
 };
 type Item = React.Element<ItemProps>;
 type LayoutAttrs = {
@@ -230,6 +232,7 @@ type LayoutAttrs = {
   columnIndex: number,
   rect: Rect,
   visibleRect: Rect,
+  needsRender: boolean,
   Item: Item,
 };
 ```
