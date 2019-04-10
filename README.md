@@ -95,7 +95,6 @@ type PadEvent = {
 | onDragEnd              |     function     |   () => {}   | Callback invoked when end dragging the content.:`() => void`                                        |
 | onDecelerationStart    |     function     |   () => {}   | Callback invoked when the content start decelerating.:`() => void`                                  |
 | onDecelerationEnd      |     function     |   () => {}   | Callback invoked when the content end decelerating.:`() => void`                                    |
-| onResize               |     function     |   () => {}   | Callback invoked when the bounding view resize.:`(size: Size) => void`                              |
 | onContentResize        |     function     |   () => {}   | Callback invoked when the content view resize.:`(size: Size) => void`                               |
 
 #### Public Methods

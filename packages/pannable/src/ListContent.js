@@ -1,5 +1,6 @@
 import React from 'react';
 import { getItemVisibleRect, needsRender } from './utils/visible';
+import { isEqualSize } from './utils/geometry';
 import ItemContent from './ItemContent';
 
 function Item() {}
@@ -22,23 +23,43 @@ export default class ListContent extends React.Component {
   constructor(props) {
     super(props);
 
-    this._itemHashList = [];
-    this._itemSizeDict = {};
-
-    const layout = calculateLayout(
-      props,
-      this._itemHashList,
-      this._itemSizeDict
-    );
-
     this.state = {
-      size: layout.size,
-      layoutList: layout.layoutList,
+      size: null,
+      layoutList: [],
+      itemHashDict: {},
+      itemSizeDict: {},
     };
   }
 
+  static getDerivedStateFromProps(props, state) {
+    const { itemCount } = props;
+    const { size, layoutList, itemHashDict, itemSizeDict } = state;
+    let nextState = null;
+
+    if (itemCount !== layoutList.length) {
+      const layout = calculateLayout(props, itemHashDict, itemSizeDict);
+
+      nextState = nextState || {};
+      nextState.layoutList = layout.layoutList;
+
+      if (!isEqualSize(layout.size, size)) {
+        nextState.size = layout.size;
+      }
+    }
+
+    return nextState;
+  }
+
   componentDidMount() {
-    this.props.onResize(this.state.size);
+    const { size } = this.state;
+
+    if (size) {
+      this.props.onResize(size);
+    } else {
+      this.calculateSize();
+    }
+
+    this._updateItemHashDict();
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -47,27 +68,29 @@ export default class ListContent extends React.Component {
       width,
       height,
       spacing,
-      itemCount,
       estimatedItemWidth,
       estimatedItemHeight,
       onResize,
     } = this.props;
-    const { size } = this.state;
+    const { size, itemHashDict, itemSizeDict } = this.state;
 
     if (
       prevProps.direction !== direction ||
       prevProps.width !== width ||
       prevProps.height !== height ||
       prevProps.spacing !== spacing ||
-      prevProps.itemCount !== itemCount ||
       prevProps.estimatedItemWidth !== estimatedItemWidth ||
-      prevProps.estimatedItemHeight !== estimatedItemHeight
+      prevProps.estimatedItemHeight !== estimatedItemHeight ||
+      prevState.itemHashDict !== itemHashDict ||
+      prevState.itemSizeDict !== itemSizeDict
     ) {
       this.calculateSize();
     }
     if (prevState.size !== size) {
       onResize(size);
     }
+
+    this._updateItemHashDict();
   }
 
   getSize() {
@@ -83,21 +106,14 @@ export default class ListContent extends React.Component {
 
   calculateSize() {
     this.setState((state, props) => {
-      const { size } = state;
+      const { size, itemHashDict, itemSizeDict } = state;
       const nextState = {};
 
-      const layout = calculateLayout(
-        props,
-        this._itemHashList,
-        this._itemSizeDict
-      );
+      const layout = calculateLayout(props, itemHashDict, itemSizeDict);
 
       nextState.layoutList = layout.layoutList;
 
-      if (
-        layout.size.width !== size.width ||
-        layout.size.height !== size.height
-      ) {
+      if (!isEqualSize(layout.size, size)) {
         nextState.size = layout.size;
       }
 
@@ -105,8 +121,20 @@ export default class ListContent extends React.Component {
     });
   }
 
+  _updateItemHashDict() {
+    if (this._itemHashDict) {
+      const itemHashDict = this._itemHashDict;
+      this._itemHashDict = null;
+
+      this.setState(state => ({
+        itemHashDict: { ...state.itemHashDict, ...itemHashDict },
+      }));
+    }
+  }
+
   _renderItem(layoutAttrs) {
     const { direction, width, height, renderItem } = this.props;
+    const { itemHashDict, itemSizeDict } = this.state;
 
     const { itemIndex, rect, visibleRect, needsRender, Item } = layoutAttrs;
     let element = renderItem(layoutAttrs);
@@ -139,7 +167,12 @@ export default class ListContent extends React.Component {
       hash = key;
     }
 
-    this._itemHashList[itemIndex] = hash;
+    if (itemHashDict[itemIndex] !== hash) {
+      if (!this._itemHashDict) {
+        this._itemHashDict = {};
+      }
+      this._itemHashDict[itemIndex] = hash;
+    }
 
     if (!forceRender && !needsRender) {
       return null;
@@ -159,14 +192,18 @@ export default class ListContent extends React.Component {
       style: itemStyle,
       visibleRect,
       onResize: size => {
-        this._itemSizeDict[hash] = size;
-        this.calculateSize();
+        this.setState(state => ({
+          itemSizeDict: {
+            ...state.itemSizeDict,
+            [hash]: size,
+          },
+        }));
 
         onResize(size);
       },
     };
 
-    const itemSize = this._itemSizeDict[hash];
+    const itemSize = itemSizeDict[hash];
 
     if (itemSize) {
       if (typeof element.props.width !== 'number') {
@@ -213,6 +250,18 @@ export default class ListContent extends React.Component {
     } = this.props;
     const { size, layoutList } = this.state;
 
+    const elemStyle = { position: 'relative' };
+
+    if (size) {
+      elemStyle.width = size.width;
+      elemStyle.height = size.height;
+    }
+
+    props.style = {
+      ...elemStyle,
+      ...props.style,
+    };
+
     const items = [];
 
     for (let itemIndex = 0; itemIndex < itemCount; itemIndex++) {
@@ -229,18 +278,12 @@ export default class ListContent extends React.Component {
     }
 
     props.children = items;
-    props.style = {
-      position: 'relative',
-      width: size.width,
-      height: size.height,
-      ...props.style,
-    };
 
     return <div {...props} />;
   }
 }
 
-function calculateLayout(props, itemHashList, itemSizeDict) {
+function calculateLayout(props, itemHashDict, itemSizeDict) {
   const { direction, spacing, itemCount } = props;
   const size = { width: props.width, height: props.height };
 
@@ -259,7 +302,7 @@ function calculateLayout(props, itemHashList, itemSizeDict) {
   const layoutList = [];
 
   for (let itemIndex = 0; itemIndex < itemCount; itemIndex++) {
-    const itemHash = itemHashList[itemIndex];
+    const itemHash = itemHashDict[itemIndex];
     let itemSize = itemSizeDict[itemHash] || {
       [width]:
         typeof size[width] === 'number'

@@ -34,7 +34,6 @@ export default class Pad extends React.Component {
     onDragEnd: () => {},
     onDecelerationStart: () => {},
     onDecelerationEnd: () => {},
-    onResize: () => {},
     onContentResize: () => {},
   };
 
@@ -135,14 +134,6 @@ export default class Pad extends React.Component {
     return nextState;
   }
 
-  componentDidMount() {
-    const { onResize, onContentResize } = this.props;
-    const { size, contentSize } = this.state;
-
-    onResize(size);
-    onContentResize(contentSize);
-  }
-
   componentDidUpdate(prevProps, prevState) {
     const {
       width,
@@ -153,7 +144,6 @@ export default class Pad extends React.Component {
       onDragEnd,
       onDecelerationStart,
       onDecelerationEnd,
-      onResize,
       onContentResize,
     } = this.props;
     const {
@@ -193,9 +183,6 @@ export default class Pad extends React.Component {
         dragging: !!drag,
         decelerating: !!deceleration,
       });
-    }
-    if (size !== prevState.size) {
-      onResize(size);
     }
     if (contentSize !== prevState.contentSize) {
       onContentResize(contentSize);
@@ -525,7 +512,6 @@ export default class Pad extends React.Component {
       onDragEnd,
       onDecelerationStart,
       onDecelerationEnd,
-      onResize,
       onContentResize,
       ...props
     } = this.props;

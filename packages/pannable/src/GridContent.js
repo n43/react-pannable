@@ -1,5 +1,6 @@
 import React from 'react';
 import { getItemVisibleRect, needsRender } from './utils/visible';
+import { isEqualSize } from './utils/geometry';
 import ItemContent from './ItemContent';
 
 function Item() {}
@@ -33,7 +34,13 @@ export default class GridContent extends React.Component {
   }
 
   componentDidMount() {
-    this.props.onResize(this.state.size);
+    const { size } = this.state;
+
+    if (size) {
+      this.props.onResize(size);
+    } else {
+      this.calculateSize();
+    }
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -101,10 +108,7 @@ export default class GridContent extends React.Component {
       nextState.count = layout.count;
       nextState.layoutList = layout.layoutList;
 
-      if (
-        layout.size.width !== size.width ||
-        layout.size.height !== size.height
-      ) {
+      if (!isEqualSize(layout.size, size)) {
         nextState.size = layout.size;
       }
 
@@ -186,6 +190,18 @@ export default class GridContent extends React.Component {
     } = this.props;
     const { size, layoutList } = this.state;
 
+    const elemStyle = { position: 'relative' };
+
+    if (size) {
+      elemStyle.width = size.width;
+      elemStyle.height = size.height;
+    }
+
+    props.style = {
+      ...elemStyle,
+      ...props.style,
+    };
+
     const items = [];
 
     for (let itemIndex = 0; itemIndex < itemCount; itemIndex++) {
@@ -202,12 +218,6 @@ export default class GridContent extends React.Component {
     }
 
     props.children = items;
-    props.style = {
-      position: 'relative',
-      width: size.width,
-      height: size.height,
-      ...props.style,
-    };
 
     return <div {...props} />;
   }
