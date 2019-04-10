@@ -11,7 +11,7 @@ class ListLayoutCarousel extends Component {
 
     this.state = {
       direction: 'x',
-      slideArr: [1],
+      slideArr: [1, 2],
     };
     this.carouselRef = React.createRef();
   }
@@ -43,6 +43,7 @@ class ListLayoutCarousel extends Component {
             height={300}
             direction={direction}
             loop={true}
+            pagingEnabled={false}
             autoplayEnabled={false}
             renderIndicator={({ pageCount, activeIndex }) => {
               let indicators = [];
