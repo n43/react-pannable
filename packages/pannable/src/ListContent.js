@@ -24,6 +24,7 @@ export default class ListContent extends React.Component {
     super(props);
 
     this.state = {
+      flexiable: { width: true, height: true },
       size: null,
       layoutList: [],
       itemHashDict: {},
