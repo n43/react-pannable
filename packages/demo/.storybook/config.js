@@ -21,6 +21,7 @@ function loadStories() {
   require('../src/stories/pad/index.stories');
   require('../src/stories/pannable/index.stories');
   require('../src/stories/carousel/index.stories');
+  require('../src/stories/useCase/index.stories');
 }
 
 configure(loadStories, module);
