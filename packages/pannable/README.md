@@ -95,7 +95,6 @@ type PadEvent = {
 | onDragEnd              |     function     |   () => {}   | Callback invoked when end dragging the content.:`() => void`                                        |
 | onDecelerationStart    |     function     |   () => {}   | Callback invoked when the content start decelerating.:`() => void`                                  |
 | onDecelerationEnd      |     function     |   () => {}   | Callback invoked when the content end decelerating.:`() => void`                                    |
-| onResize               |     function     |   () => {}   | Callback invoked when the bounding view resize.:`(size: Size) => void`                              |
 | onContentResize        |     function     |   () => {}   | Callback invoked when the content view resize.:`(size: Size) => void`                               |
 
 #### Public Methods
@@ -179,6 +178,7 @@ type ItemProps = {
   key: string,
   hash: string,
   forceRender: boolean,
+  style: object,
 };
 type Item = React.Element<ItemProps>;
 type LayoutAttrs = {
@@ -222,6 +222,7 @@ type Rect = { x: number, y: number, width: number, height: number };
 type ItemProps = {
   key: string,
   forceRender: boolean,
+  style: object,
 };
 type Item = React.Element<ItemProps>;
 type LayoutAttrs = {
@@ -230,6 +231,7 @@ type LayoutAttrs = {
   columnIndex: number,
   rect: Rect,
   visibleRect: Rect,
+  needsRender: boolean,
   Item: Item,
 };
 ```

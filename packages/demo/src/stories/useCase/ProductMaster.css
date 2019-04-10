@@ -1,0 +1,147 @@
+.main {
+  margin: 0 auto;
+  width: 320px;
+  height: 700px;
+  border: 8px solid #f5f5f5;
+}
+.pad {
+  background: #f5f5f5;
+}
+.productitem {
+  padding-bottom: 7px;
+  background-color: #ffffff;
+}
+.productitem-main {
+  display: flex;
+  padding: 14px 16px 7px;
+}
+.productitem-poster {
+  width: 70px;
+  height: 70px;
+  background-color: #fffae9;
+  border-radius: 5px;
+}
+.productitem-right {
+  position: relative;
+  flex: 1;
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: space-around;
+  padding-left: 12px;
+  width: 0;
+  height: 70px;
+}
+.productitem-title {
+  font-size: 16px;
+  font-weight: bold;
+  color: #4a4a4a;
+}
+.productitem-price {
+  font-size: 14px;
+  color: #a56021;
+}
+.productitem-cart {
+  position: absolute;
+  top: 22px;
+  right: 0;
+}
+.productitem-carttips {
+  padding: 7px 16px;
+  font-size: 12px;
+  color: #ff6d6d;
+}
+.productitem-affogato {
+  background: url('./media/affogato.svg') #fffae9 no-repeat center center / 45px
+    45px;
+}
+.productitem-cappucino {
+  background: url('./media/cappucino.svg') #fffae9 no-repeat center center /
+    45px 45px;
+}
+.productitem-coffeeshake {
+  background: url('./media/coffeeshake.svg') #fffae9 no-repeat center center /
+    45px 45px;
+}
+.productitem-frozenfrappe {
+  background: url('./media/frozenfrappe.svg') #fffae9 no-repeat center center /
+    45px 45px;
+}
+.productitem-latte {
+  background: url('./media/latte.svg') #fffae9 no-repeat center center / 45px
+    45px;
+}
+.productitem-matchalatte {
+  background: url('./media/matchalatte.svg') #fffae9 no-repeat center center /
+    45px 45px;
+}
+.productitem-cocktail {
+  background: url('./media/cocktail.svg') #fffae9 no-repeat center center / 45px
+    45px;
+}
+.productitem-icedtea {
+  background: url('./media/icedtea.svg') #fffae9 no-repeat center center / 45px
+    45px;
+}
+.productitem-water {
+  background: url('./media/water.svg') #fffae9 no-repeat center center / 45px
+    45px;
+}
+.productitem-biscuit {
+  background: url('./media/biscuit.svg') #fffae9 no-repeat center center / 45px
+    45px;
+}
+.productitem-cinnamonroll {
+  background: url('./media/cinnamonroll.svg') #fffae9 no-repeat center center /
+    45px 45px;
+}
+.productitem-chocolate {
+  background: url('./media/chocolate.svg') #fffae9 no-repeat center center /
+    45px 45px;
+}
+.productitem-croissant {
+  background: url('./media/croissant.svg') #fffae9 no-repeat center center /
+    45px 45px;
+}
+.productitem-cupcake {
+  background: url('./media/cupcake.svg') #fffae9 no-repeat center center / 45px
+    45px;
+}
+.productitem-donut {
+  background: url('./media/donut.svg') #fffae9 no-repeat center center / 45px
+    45px;
+}
+.productitem-sugar {
+  background: url('./media/sugar.svg') #fffae9 no-repeat center center / 45px
+    45px;
+}
+.productitem-coffeepack {
+  background: url('./media/coffeepack.svg') #fffae9 no-repeat center center /
+    45px 45px;
+}
+.productitem-coffeecapsules {
+  background: url('./media/coffeecapsules.svg') #fffae9 no-repeat center center /
+    45px 45px;
+}
+.productitem-spices {
+  background: url('./media/spices.svg') #fffae9 no-repeat center center / 45px
+    45px;
+}
+.productitem-tagsbar {
+  display: flex;
+  padding: 7px 16px;
+}
+.productitem-tag {
+  padding: 2px 4px;
+  border-radius: 3px;
+  background-color: #ff6d6d;
+  font-size: 12px;
+  color: #ffffff;
+}
+.productitem-tag + .productitem-tag {
+  margin-left: 5px;
+}
+.productitem-tips {
+  padding: 7px 16px;
+  font-size: 12px;
+  color: #9a9a9a;
+}

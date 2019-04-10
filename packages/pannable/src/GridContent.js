@@ -1,5 +1,6 @@
 import React from 'react';
 import { getItemVisibleRect, needsRender } from './utils/visible';
+import { isEqualSize } from './utils/geometry';
 import ItemContent from './ItemContent';
 
 function Item() {}
@@ -33,7 +34,13 @@ export default class GridContent extends React.Component {
   }
 
   componentDidMount() {
-    this.props.onResize(this.state.size);
+    const { size } = this.state;
+
+    if (size) {
+      this.props.onResize(size);
+    } else {
+      this.calculateSize();
+    }
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -101,10 +108,7 @@ export default class GridContent extends React.Component {
       nextState.count = layout.count;
       nextState.layoutList = layout.layoutList;
 
-      if (
-        layout.size.width !== size.width ||
-        layout.size.height !== size.height
-      ) {
+      if (!isEqualSize(layout.size, size)) {
         nextState.size = layout.size;
       }
 
@@ -117,12 +121,23 @@ export default class GridContent extends React.Component {
 
     const { itemIndex, rect, visibleRect, needsRender, Item } = layoutAttrs;
     let element = renderItem(layoutAttrs);
+    let itemStyle = {
+      position: 'absolute',
+      left: rect.x,
+      top: rect.y,
+      width: rect.width,
+      height: rect.height,
+    };
     let forceRender;
     let key;
 
     if (React.isValidElement(element) && element.type === Item) {
+      if (element.props.style) {
+        itemStyle = { ...itemStyle, ...element.props.style };
+      }
       forceRender = element.props.forceRender;
       key = element.key;
+
       element = element.props.children;
     }
 
@@ -136,18 +151,14 @@ export default class GridContent extends React.Component {
     if (!React.isValidElement(element) || !element.props.connectWithPad) {
       element = <ItemContent>{element}</ItemContent>;
     }
+    if (element.props.style) {
+      itemStyle = { ...itemStyle, ...element.props.style };
+    }
 
     const elemProps = {
       key,
       ref: element.ref,
-      style: {
-        position: 'absolute',
-        left: rect.x,
-        top: rect.y,
-        width: rect.width,
-        height: rect.height,
-        ...element.props.style,
-      },
+      style: itemStyle,
       visibleRect,
     };
 
@@ -179,6 +190,18 @@ export default class GridContent extends React.Component {
     } = this.props;
     const { size, layoutList } = this.state;
 
+    const elemStyle = { position: 'relative', boxSizing: 'border-box' };
+
+    if (size) {
+      elemStyle.width = size.width;
+      elemStyle.height = size.height;
+    }
+
+    props.style = {
+      ...elemStyle,
+      ...props.style,
+    };
+
     const items = [];
 
     for (let itemIndex = 0; itemIndex < itemCount; itemIndex++) {
@@ -195,13 +218,6 @@ export default class GridContent extends React.Component {
     }
 
     props.children = items;
-    props.style = {
-      position: 'relative',
-      boxSizing: 'border-box',
-      width: size.width,
-      height: size.height,
-      ...props.style,
-    };
 
     return <div {...props} />;
   }

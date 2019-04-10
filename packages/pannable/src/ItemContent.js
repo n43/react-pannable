@@ -1,5 +1,6 @@
 import React from 'react';
 import { getElementSize } from './utils/sizeGetter';
+import { isEqualSize } from './utils/geometry';
 
 export default class ItemContent extends React.Component {
   static defaultProps = {
@@ -14,14 +15,10 @@ export default class ItemContent extends React.Component {
   constructor(props) {
     super(props);
 
-    const { width, height } = props;
-    let size = null;
+    const layout = calculateLayout(props);
 
-    if (typeof width === 'number' && typeof height === 'number') {
-      size = { width, height };
-    }
+    this.state = { size: layout.size };
 
-    this.state = { size };
     this.resizeRef = React.createRef();
   }
 
@@ -54,26 +51,22 @@ export default class ItemContent extends React.Component {
   calculateSize() {
     this.setState((state, props) => {
       const { size } = state;
-      const { width, height, shouldCalculateSize } = props;
 
-      if (!shouldCalculateSize()) {
+      if (!props.shouldCalculateSize()) {
         return null;
       }
 
-      let nextSize = size;
       let nextState = null;
+      let nextSize = null;
+      const layout = calculateLayout(props);
 
-      if (typeof width === 'number' && typeof height === 'number') {
-        nextSize = { width, height };
-      } else {
+      nextSize = layout.size;
+
+      if (!nextSize) {
         nextSize = getElementSize(this.resizeRef.current);
       }
 
-      if (
-        !size ||
-        nextSize.width !== size.width ||
-        nextSize.height !== size.height
-      ) {
+      if (!isEqualSize(nextSize, size)) {
         nextState = nextState || {};
         nextState.size = nextSize;
       }
@@ -94,13 +87,25 @@ export default class ItemContent extends React.Component {
     } = this.props;
     const { size } = this.state;
 
+    const elemStyle = { position: 'relative', boxSizing: 'border-box' };
+
+    if (size) {
+      elemStyle.width = size.width;
+      elemStyle.height = size.height;
+    }
+
+    props.style = {
+      ...elemStyle,
+      ...props.style,
+    };
+
     let element = props.children;
 
     if (typeof element === 'function') {
       element = element(this);
     }
 
-    if (!(typeof width === 'number' && typeof height === 'number')) {
+    if (!size) {
       element = (
         <div
           ref={this.resizeRef}
@@ -113,22 +118,21 @@ export default class ItemContent extends React.Component {
           {element}
         </div>
       );
-      props.style = {
-        position: 'relative',
-        ...props.style,
-      };
     }
 
-    if (size) {
-      props.style = {
-        boxSizing: 'border-box',
-        width: size.width,
-        height: size.height,
-        ...props.style,
-      };
-    }
     props.children = element;
 
     return <div {...props} />;
   }
+}
+
+function calculateLayout(props) {
+  const { width, height } = props;
+  let size = null;
+
+  if (typeof width === 'number' && typeof height === 'number') {
+    size = { width, height };
+  }
+
+  return { size };
 }

@@ -11,7 +11,7 @@ class ListLayoutCarousel extends Component {
 
     this.state = {
       direction: 'x',
-      slideArr: [1, 2, 3, 4, 5],
+      slideArr: [1, 2],
     };
     this.carouselRef = React.createRef();
   }
@@ -43,6 +43,7 @@ class ListLayoutCarousel extends Component {
             height={300}
             direction={direction}
             loop={true}
+            pagingEnabled={false}
             autoplayEnabled={false}
             renderIndicator={({ pageCount, activeIndex }) => {
               let indicators = [];
@@ -78,7 +79,7 @@ class ListLayoutCarousel extends Component {
                   textAlign: 'center',
                 };
                 return (
-                  <ItemContent width={750} height={300}>
+                  <ItemContent width={300} height={300}>
                     <div style={style}>slide {slideArr[itemIndex]}</div>
                   </ItemContent>
                 );
