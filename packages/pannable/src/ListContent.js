@@ -224,6 +224,7 @@ export default class ListContent extends React.Component {
     props.children = items;
     props.style = {
       position: 'relative',
+      boxSizing: 'border-box',
       width: size.width,
       height: size.height,
       ...props.style,

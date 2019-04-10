@@ -121,6 +121,7 @@ export default class ItemContent extends React.Component {
 
     if (size) {
       props.style = {
+        boxSizing: 'border-box',
         width: size.width,
         height: size.height,
         ...props.style,
