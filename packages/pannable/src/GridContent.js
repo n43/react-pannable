@@ -117,7 +117,7 @@ export default class GridContent extends React.Component {
   }
 
   _renderItem(layoutAttrs) {
-    const { itemWidth, itemHeight, renderItem } = this.props;
+    const { renderItem } = this.props;
 
     const { itemIndex, rect, visibleRect, needsRender, Item } = layoutAttrs;
     let element = renderItem(layoutAttrs);
@@ -163,10 +163,10 @@ export default class GridContent extends React.Component {
     };
 
     if (typeof element.props.width !== 'number') {
-      elemProps.width = itemWidth;
+      elemProps.width = rect.width;
     }
     if (typeof element.props.height !== 'number') {
-      elemProps.height = itemHeight;
+      elemProps.height = rect.height;
     }
 
     return React.cloneElement(element, elemProps);

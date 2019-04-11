@@ -37,14 +37,14 @@ export default class ItemContent extends React.Component {
 
       nextState = nextState || {};
 
+      if (!isEqualSize(nextSize, size)) {
+        nextState.size = nextSize;
+      }
       if (width !== prevWidth) {
         nextState.prevWidth = width;
       }
       if (height !== prevHeight) {
         nextState.prevHeight = height;
-      }
-      if (!isEqualSize(nextSize, size)) {
-        nextState.size = nextSize;
       }
     }
 
@@ -80,7 +80,7 @@ export default class ItemContent extends React.Component {
   calculateSize() {
     const resizeNode = this.resizeRef.current;
 
-    if (resizeNode) {
+    if (!resizeNode) {
       return;
     }
 

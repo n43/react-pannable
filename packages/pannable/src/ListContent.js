@@ -24,7 +24,9 @@ export default class ListContent extends React.Component {
     super(props);
 
     this.state = {
-      flexiable: { width: true, height: true },
+      prevDirection: '',
+      prevWidth: null,
+      prevHeight: null,
       size: null,
       layoutList: [],
       itemHashDict: {},
@@ -33,11 +35,22 @@ export default class ListContent extends React.Component {
   }
 
   static getDerivedStateFromProps(props, state) {
-    const { itemCount } = props;
-    const { size, layoutList, itemHashDict, itemSizeDict } = state;
+    const { direction, width, height } = props;
+    const {
+      prevDirection,
+      prevWidth,
+      prevHeight,
+      size,
+      itemHashDict,
+      itemSizeDict,
+    } = state;
     let nextState = null;
 
-    if (itemCount !== layoutList.length) {
+    if (
+      direction !== prevDirection ||
+      width !== prevWidth ||
+      height !== prevHeight
+    ) {
       const layout = calculateLayout(props, itemHashDict, itemSizeDict);
 
       nextState = nextState || {};
@@ -45,6 +58,15 @@ export default class ListContent extends React.Component {
 
       if (!isEqualSize(layout.size, size)) {
         nextState.size = layout.size;
+      }
+      if (direction !== prevDirection) {
+        nextState.prevDirection = direction;
+      }
+      if (width !== prevWidth) {
+        nextState.prevWidth = width;
+      }
+      if (height !== prevHeight) {
+        nextState.prevHeight = height;
       }
     }
 
@@ -56,8 +78,6 @@ export default class ListContent extends React.Component {
 
     if (size) {
       this.props.onResize(size);
-    } else {
-      this.calculateSize();
     }
 
     this._updateItemHashDict();
@@ -65,10 +85,8 @@ export default class ListContent extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     const {
-      direction,
-      width,
-      height,
       spacing,
+      itemCount,
       estimatedItemWidth,
       estimatedItemHeight,
       onResize,
@@ -76,19 +94,19 @@ export default class ListContent extends React.Component {
     const { size, itemHashDict, itemSizeDict } = this.state;
 
     if (
-      prevProps.direction !== direction ||
-      prevProps.width !== width ||
-      prevProps.height !== height ||
       prevProps.spacing !== spacing ||
+      prevProps.itemCount !== itemCount ||
       prevProps.estimatedItemWidth !== estimatedItemWidth ||
       prevProps.estimatedItemHeight !== estimatedItemHeight ||
       prevState.itemHashDict !== itemHashDict ||
       prevState.itemSizeDict !== itemSizeDict
     ) {
-      this.calculateSize();
+      this._layout();
     }
     if (prevState.size !== size) {
-      onResize(size);
+      if (size) {
+        onResize(size);
+      }
     }
 
     this._updateItemHashDict();
@@ -105,7 +123,7 @@ export default class ListContent extends React.Component {
     return (attrs && attrs.rect) || null;
   }
 
-  calculateSize() {
+  _layout() {
     this.setState((state, props) => {
       const { size, itemHashDict, itemSizeDict } = state;
       const nextState = {};
@@ -194,10 +212,7 @@ export default class ListContent extends React.Component {
       visibleRect,
       onResize: size => {
         this.setState(state => ({
-          itemSizeDict: {
-            ...state.itemSizeDict,
-            [hash]: size,
-          },
+          itemSizeDict: { ...state.itemSizeDict, [hash]: size },
         }));
 
         onResize(size);
@@ -265,7 +280,7 @@ export default class ListContent extends React.Component {
 
     const items = [];
 
-    for (let itemIndex = 0; itemIndex < itemCount; itemIndex++) {
+    for (let itemIndex = 0; itemIndex < layoutList.length; itemIndex++) {
       const attrs = layoutList[itemIndex];
       const layoutAttrs = {
         ...attrs,
