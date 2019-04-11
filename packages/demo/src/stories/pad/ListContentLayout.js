@@ -59,15 +59,12 @@ export default class ListContentLayout extends React.Component {
                 width={346}
                 spacing={spacing}
                 itemCount={3}
-                renderItem={({ itemIndex }) => {
+                renderItem={({ itemIndex, Item }) => {
                   if (itemIndex === 0) {
                     return (
-                      <ItemContent
-                        hash="Title"
-                        style={{ backgroundColor: '#defdff' }}
-                      >
+                      <Item hash="Title" style={{ backgroundColor: '#defdff' }}>
                         Header
-                      </ItemContent>
+                      </Item>
                     );
                   } else if (itemIndex === 1) {
                     return (
@@ -88,12 +85,9 @@ export default class ListContentLayout extends React.Component {
                     );
                   } else if (itemIndex === 2) {
                     return (
-                      <ItemContent
-                        hash="Title"
-                        style={{ backgroundColor: '#defdff' }}
-                      >
+                      <Item hash="Title" style={{ backgroundColor: '#defdff' }}>
                         Footer
-                      </ItemContent>
+                      </Item>
                     );
                   }
                 }}
