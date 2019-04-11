@@ -78,13 +78,13 @@ export default class ItemContent extends React.Component {
   }
 
   calculateSize() {
-    const resizeNode = this.resizeRef.current;
-
-    if (!resizeNode) {
-      return;
-    }
-
     this.setState(state => {
+      const resizeNode = this.resizeRef.current;
+
+      if (!resizeNode) {
+        return null;
+      }
+
       const { size } = state;
       const nextSize = getElementSize(resizeNode);
 
