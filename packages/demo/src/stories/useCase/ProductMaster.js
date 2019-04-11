@@ -199,9 +199,10 @@ export default class ProductMaster extends React.Component {
             itemCount={list.length}
             renderItem={({ itemIndex, Item }) => {
               const { id, name, price, tags, tips, number } = list[itemIndex];
+              const hashFlag = number > 0 ? 1 : 0;
 
               return (
-                <Item hash={id + number}>
+                <Item hash={id + hashFlag}>
                   <div className="productitem">
                     <div className="productitem-main">
                       <div
