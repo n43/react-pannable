@@ -11,7 +11,7 @@ class ListLayoutCarousel extends Component {
 
     this.state = {
       direction: 'x',
-      slideArr: [1, 2],
+      slideArr: [1, 2, 3, 4],
     };
     this.carouselRef = React.createRef();
   }

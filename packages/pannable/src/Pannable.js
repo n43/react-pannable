@@ -1,5 +1,4 @@
 import React from 'react';
-import StyleSheet from './utils/StyleSheet';
 
 const MIN_DISTANCE = 0;
 
@@ -28,8 +27,10 @@ export default class Pannable extends React.Component {
   componentDidUpdate(prevProps) {
     const { enabled } = this.props;
 
-    if (prevProps.enabled !== enabled && !enabled) {
-      this._cancel();
+    if (enabled !== prevProps.enabled) {
+      if (!enabled) {
+        this._cancel();
+      }
     }
   }
 
@@ -136,12 +137,10 @@ export default class Pannable extends React.Component {
   }
 
   _onTouchStart = evt => {
-    const { enabled, onTouchStart } = this.props;
+    const { onTouchStart } = this.props;
 
     if (evt.touches && evt.touches.length === 1) {
-      if (enabled) {
-        this._track(evt.touches[0]);
-      }
+      this._track(evt.touches[0]);
     }
 
     if (onTouchStart) {
@@ -195,15 +194,13 @@ export default class Pannable extends React.Component {
     doc.removeEventListener('mouseup', this._onMouseUp, false);
   }
   _onMouseDown = evt => {
-    const { enabled, onMouseDown } = this.props;
+    const { onMouseDown } = this.props;
 
-    this._shouldPreventClick = enabled;
+    this._shouldPreventClick = true;
 
-    if (enabled) {
-      this._removeMousePanListener();
-      this._addMousePanListener();
-      this._track(evt);
-    }
+    this._removeMousePanListener();
+    this._addMousePanListener();
+    this._track(evt);
 
     if (onMouseDown) {
       onMouseDown(evt);
@@ -243,16 +240,15 @@ export default class Pannable extends React.Component {
       ...props
     } = this.props;
 
-    props.onTouchStart = this._onTouchStart;
-    props.onTouchEnd = this._onTouchEnd;
-    props.onTouchMove = this._onTouchMove;
-    props.onTouchCancel = this._onTouchCancel;
-    props.onMouseDown = this._onMouseDown;
-    props.onClick = this._onClick;
-    props.style = StyleSheet.create({
-      touchAction: enabled ? 'none' : 'auto',
-      ...props.style,
-    });
+    if (enabled) {
+      props.style = { touchAction: 'none', ...props.style };
+      props.onTouchStart = this._onTouchStart;
+      props.onTouchEnd = this._onTouchEnd;
+      props.onTouchMove = this._onTouchMove;
+      props.onTouchCancel = this._onTouchCancel;
+      props.onMouseDown = this._onMouseDown;
+      props.onClick = this._onClick;
+    }
 
     return <div {...props} ref={this.elemRef} />;
   }

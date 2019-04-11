@@ -144,14 +144,13 @@ type Size = { width: number, height: number };
 
 #### Prop Types
 
-| Property            |   Type   |            DefaultValue             | Description                                                                                  |
-| :------------------ | :------: | :---------------------------------: | :------------------------------------------------------------------------------------------- |
-| shouldCalculateSize | function |             () => true              | Whether the content should recalculate size.                                                 |
-| width               |  number  |                null                 | The width of the content. If not specified, it calculates the fitting width of the content.  |
-| height              |  number  |                null                 | The width of the content. If not specified, it calculates the fitting height of the content. |
-| visibleRect         |   Rect   | { x: 0, y: 0, width: 0, height: 0 } | The area of the visible content.                                                             |
-| onResize            | function |              () => {}               | Invoked when the content resize.:`(size: Size) => void`                                      |
-| connectWithPad      | boolean  |                true                 | Automatic synchronize the content size and visible rectangle with Pad                        |
+| Property       |   Type   |            DefaultValue             | Description                                                                                  |
+| :------------- | :------: | :---------------------------------: | :------------------------------------------------------------------------------------------- |
+| width          |  number  |                null                 | The width of the content. If not specified, it calculates the fitting width of the content.  |
+| height         |  number  |                null                 | The width of the content. If not specified, it calculates the fitting height of the content. |
+| visibleRect    |   Rect   | { x: 0, y: 0, width: 0, height: 0 } | The area of the visible content.                                                             |
+| onResize       | function |              () => {}               | Invoked when the content resize.:`(size: Size) => void`                                      |
+| connectWithPad | boolean  |                true                 | Automatic synchronize the content size and visible rectangle with Pad                        |
 
 #### Public Methods
 
