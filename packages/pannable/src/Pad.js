@@ -531,7 +531,6 @@ export default class Pad extends React.Component {
       ref: element.ref,
       style: StyleSheet.create({
         position: 'relative',
-        boxSizing: 'border-box',
         width: contentSize.width,
         height: contentSize.height,
         transformTranslate: [contentOffset.x, contentOffset.y],
@@ -555,7 +554,6 @@ export default class Pad extends React.Component {
     props.style = StyleSheet.create({
       overflow: 'hidden',
       position: 'relative',
-      boxSizing: 'border-box',
       width: size.width,
       height: size.height,
       ...props.style,

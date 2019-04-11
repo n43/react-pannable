@@ -4,7 +4,6 @@ import { isEqualSize } from './utils/geometry';
 
 export default class ItemContent extends React.Component {
   static defaultProps = {
-    shouldCalculateSize: () => true,
     width: null,
     height: null,
     visibleRect: { x: 0, y: 0, width: 0, height: 0 },
@@ -15,11 +14,41 @@ export default class ItemContent extends React.Component {
   constructor(props) {
     super(props);
 
-    const layout = calculateLayout(props);
-
-    this.state = { size: layout.size };
+    this.state = {
+      size: null,
+      prevWidth: null,
+      prevHeight: null,
+    };
 
     this.resizeRef = React.createRef();
+  }
+
+  static getDerivedStateFromProps(props, state) {
+    const { width, height } = props;
+    const { size, prevWidth, prevHeight } = state;
+    let nextState = null;
+
+    if (width !== prevWidth || height !== prevHeight) {
+      let nextSize = null;
+
+      if (typeof width === 'number' && typeof height === 'number') {
+        nextSize = { width, height };
+      }
+
+      nextState = nextState || {};
+
+      if (width !== prevWidth) {
+        nextState.prevWidth = width;
+      }
+      if (height !== prevHeight) {
+        nextState.prevHeight = height;
+      }
+      if (!isEqualSize(nextSize, size)) {
+        nextState.size = nextSize;
+      }
+    }
+
+    return nextState;
   }
 
   componentDidMount() {
@@ -33,14 +62,14 @@ export default class ItemContent extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    const { width, height, onResize } = this.props;
     const { size } = this.state;
 
-    if (prevProps.width !== width || prevProps.height !== height) {
-      this.calculateSize();
-    }
-    if (prevState.size !== size) {
-      onResize(size);
+    if (size !== prevState.size) {
+      if (size) {
+        this.props.onResize(size);
+      } else {
+        this.calculateSize();
+      }
     }
   }
 
@@ -49,35 +78,26 @@ export default class ItemContent extends React.Component {
   }
 
   calculateSize() {
-    this.setState((state, props) => {
-      const { size } = state;
+    const resizeNode = this.resizeRef.current;
 
-      if (!props.shouldCalculateSize()) {
+    if (resizeNode) {
+      return;
+    }
+
+    this.setState(state => {
+      const { size } = state;
+      const nextSize = getElementSize(resizeNode);
+
+      if (isEqualSize(nextSize, size)) {
         return null;
       }
 
-      let nextState = null;
-      let nextSize = null;
-      const layout = calculateLayout(props);
-
-      nextSize = layout.size;
-
-      if (!nextSize) {
-        nextSize = getElementSize(this.resizeRef.current);
-      }
-
-      if (!isEqualSize(nextSize, size)) {
-        nextState = nextState || {};
-        nextState.size = nextSize;
-      }
-
-      return nextState;
+      return { size: nextSize };
     });
   }
 
   render() {
     const {
-      shouldCalculateSize,
       width,
       height,
       visibleRect,
@@ -87,7 +107,7 @@ export default class ItemContent extends React.Component {
     } = this.props;
     const { size } = this.state;
 
-    const elemStyle = { position: 'relative', boxSizing: 'border-box' };
+    const elemStyle = { position: 'relative' };
 
     if (size) {
       elemStyle.width = size.width;
@@ -105,7 +125,7 @@ export default class ItemContent extends React.Component {
       element = element(this);
     }
 
-    if (!size) {
+    if (!(typeof width === 'number' && typeof height === 'number')) {
       element = (
         <div
           ref={this.resizeRef}
@@ -124,15 +144,4 @@ export default class ItemContent extends React.Component {
 
     return <div {...props} />;
   }
-}
-
-function calculateLayout(props) {
-  const { width, height } = props;
-  let size = null;
-
-  if (typeof width === 'number' && typeof height === 'number') {
-    size = { width, height };
-  }
-
-  return { size };
 }

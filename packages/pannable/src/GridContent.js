@@ -190,7 +190,7 @@ export default class GridContent extends React.Component {
     } = this.props;
     const { size, layoutList } = this.state;
 
-    const elemStyle = { position: 'relative', boxSizing: 'border-box' };
+    const elemStyle = { position: 'relative' };
 
     if (size) {
       elemStyle.width = size.width;
