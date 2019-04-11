@@ -1,7 +1,5 @@
 import React, { Component } from 'react';
 import { Pad } from 'react-pannable';
-import SvgPhone from './SvgPhone';
-import TextField from '../../ui/field/TextField';
 import RadioField from '../../ui/field/RadioField';
 import './Pad.css';
 import map from './map.jpg';
@@ -41,7 +39,7 @@ class LocatingContentArea extends Component {
     ) {
       align.y = scrollAlignY;
     }
-    console.log(align);
+
     this.padRef.current.scrollToRect({
       rect: { x: 854, y: 422, width: 120, height: 120 },
       align,
@@ -67,23 +65,25 @@ class LocatingContentArea extends Component {
     return (
       <div className="pad-main">
         <div className="pad-preview">
-          <SvgPhone className="pad-preview-bg" />
-          <div className="pad-preview-content">
-            <Pad ref={this.padRef} width={346} height={552}>
-              <img src={map} width={1300} height={973} />
-              <div
-                style={{
-                  position: 'absolute',
-                  top: '422px',
-                  left: '854px',
-                  width: '120px',
-                  height: '120px',
-                  borderRadius: '60px',
-                  backgroundColor: 'rgba(245,177,177,0.5)',
-                }}
-              />
-            </Pad>
-          </div>
+          <Pad
+            ref={this.padRef}
+            className="pad-padele"
+            width={375}
+            height={650}
+          >
+            <img src={map} width={1300} height={973} />
+            <div
+              style={{
+                position: 'absolute',
+                top: '422px',
+                left: '854px',
+                width: '120px',
+                height: '120px',
+                borderRadius: '60px',
+                backgroundColor: 'rgba(245,177,177,0.5)',
+              }}
+            />
+          </Pad>
         </div>
         <div className="pad-optbar">
           <RadioField

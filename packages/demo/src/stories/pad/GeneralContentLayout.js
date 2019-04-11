@@ -1,28 +1,20 @@
 import React, { Component } from 'react';
 import { Pad, GeneralContent } from 'react-pannable';
-import SvgPhone from './SvgPhone';
-import SvgPlus from './SvgPlus';
-import SvgMinus from './SvgMinus';
 import TextField from '../../ui/field/TextField';
+import SvgGithub from './SvgGithub';
 import './Pad.css';
-
-const images = [
-  'http://h1.ioliu.cn//bing/CumulusCaribbean_ZH-CN4884493707_1920x1080.jpg',
-  'http://h1.ioliu.cn//bing/LoisachKochelsee_ZH-CN5859866695_1920x1080.jpg',
-  'http://h1.ioliu.cn//bing/MinnewankaBoathouse_ZH-CN0548323518_1920x1080.jpg',
-  'http://h1.ioliu.cn//bing/AthabascaCave_EN-AU0628983693_1920x1080.jpg',
-  'http://h1.ioliu.cn//bing/SwissSuspension_EN-AU8560310773_1920x1080.jpg',
-  'http://h1.ioliu.cn//bing/SpainSurfer_EN-AU11271138486_640x360.jpg',
-  'http://h1.ioliu.cn//bing/AuburnBalloons_EN-AU8649124966_1920x1080.jpg',
-  'http://h1.ioliu.cn//bing/PJ_EN-AU10859560585_1920x1080.jpg',
-];
+import './GeneralContentLayout.css';
 
 class GeneralContentLayout extends Component {
   state = {
-    contentFixedWidth: '346',
-    contentFixedHeight: '',
-    imagesCount: 5,
-    imageWidth: '346',
+    messageList: [
+      'react-pannable will be better!',
+      'Coding makes me happy~ 😄',
+      'GitHub brings teams together to work through problems, move ideas forward, and learn from each other along the way.',
+      'GitHub is home to the world’s largest community of developers and their projects',
+      'Join the millions of developers already using GitHub to share their code, work together, and build amazing things.',
+    ],
+    message: '',
   };
 
   handleInputChange = evt => {
@@ -33,111 +25,93 @@ class GeneralContentLayout extends Component {
     });
   };
 
-  handleImageCountChange = type => {
-    this.setState(({ imagesCount }) => {
-      let count = imagesCount;
-      if (type === 'add' && imagesCount < 8) {
-        count += 1;
-      }
-      if (type === 'minus' && imagesCount > 1) {
-        count -= 1;
-      }
+  handleSendMessage = () => {
+    const { message } = this.state;
+
+    if (!message) {
+      alert('Please input some text');
+      return;
+    }
+
+    this.setState(state => {
+      const { messageList, message } = state;
+      const list = [...messageList];
+      list.unshift(message);
+
       return {
-        imagesCount: count,
+        messageList: list,
+        message: '',
       };
     });
   };
 
-  renderImages = () => {
-    const { imagesCount, imageWidth } = this.state;
-    const elements = [];
+  renderMessage() {
+    const { messageList } = this.state;
 
-    for (let idx = 0; idx < Math.max(0, imagesCount); idx++) {
-      const imgStyle = { display: 'block' };
-
-      imgStyle.width = +imageWidth || 0;
-
-      elements.push(
-        <img key={idx} src={images[idx % images.length]} style={imgStyle} />
+    return messageList.map((message, index) => {
+      return (
+        <div className="pad-message-item" key={index}>
+          <div className="pad-message-hd">
+            <SvgGithub />
+            <div className="pad-message-username">UserName</div>
+          </div>
+          <div className="pad-message-content">{message}</div>
+        </div>
       );
-    }
+    });
+  }
 
-    return <React.Fragment>{elements}</React.Fragment>;
-  };
-
-  renderArticle = () => {
-    const style = {
+  renderArticle() {
+    const boxStyle = {
       padding: 10,
+      backgroundColor: '#ffffff',
       lineHeight: '1.5em',
-      color: '#e47777',
+    };
+    const praStyle = {
+      paddingTop: 10,
+      paddingBottom: 10,
     };
     return (
-      <div style={style}>
-        GeneralContent is a quite useful component, when the size of content is
-        difficult to figure out, or it would change dynamically.
+      <div style={boxStyle}>
+        <div style={{ ...praStyle, color: '#e47777' }}>
+          GeneralContent is a quite useful component, when the size of content
+          is difficult to figure out, or it would change dynamically.
+        </div>
+        <div style={{ ...praStyle, color: '#4a4a4a' }}>
+          Just try to write some message to expand the content.
+        </div>
       </div>
     );
-  };
+  }
 
   render() {
-    const {
-      contentFixedWidth,
-      contentFixedHeight,
-      imagesCount,
-      imageWidth,
-    } = this.state;
+    const { message } = this.state;
 
     return (
       <React.Fragment>
         <div className="pad-main">
           <div className="pad-preview">
-            <SvgPhone className="pad-preview-bg" />
-            <div className="pad-preview-content">
-              <Pad
-                className="autoadjust-pad"
-                width={346}
-                height={552}
-                alwaysBounceX={false}
-              >
-                <GeneralContent
-                  width={contentFixedWidth ? +contentFixedWidth || 0 : null}
-                  height={contentFixedHeight ? +contentFixedHeight || 0 : null}
-                >
-                  {this.renderArticle()}
-                  {this.renderImages()}
-                </GeneralContent>
-              </Pad>
-            </div>
+            <Pad
+              className="pad-padele"
+              width={375}
+              height={650}
+              alwaysBounceX={false}
+            >
+              <GeneralContent width={375}>
+                {this.renderArticle()}
+                {this.renderMessage()}
+              </GeneralContent>
+            </Pad>
           </div>
           <div className="pad-optbar">
             <TextField
-              name="contentFixedWidth"
-              defaultValue={contentFixedWidth}
-              placeholder="integer"
+              name="message"
+              value={message}
+              placeholder="your message"
               onChange={this.handleInputChange}
             />
-            <TextField
-              name="contentFixedHeight"
-              defaultValue={contentFixedHeight}
-              placeholder="integer"
-              onChange={this.handleInputChange}
-            />
-
-            <TextField
-              name="imageWidth"
-              defaultValue={imageWidth}
-              placeholder="auto or integer"
-              onChange={this.handleInputChange}
-            />
-            <div className="pad-numberfield">
-              <div className="pad-numberfield-label">imagesCount</div>
-              <div className="pad-numberfield-main">
-                <SvgMinus
-                  onClick={() => this.handleImageCountChange('minus')}
-                />
-                <div className="pad-numberfield-text">{imagesCount}</div>
-                <SvgPlus onClick={() => this.handleImageCountChange('add')} />
-              </div>
+            <div className="pad-btn" onClick={this.handleSendMessage}>
+              insert
             </div>
           </div>
         </div>

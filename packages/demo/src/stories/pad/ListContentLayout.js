@@ -1,7 +1,6 @@
 import React from 'react';
 import { Pad, ListContent, ItemContent } from 'react-pannable';
 import TextField from '../../ui/field/TextField';
-import SvgPhone from './SvgPhone';
 import './Pad.css';
 
 export default class ListContentLayout extends React.Component {
@@ -9,7 +8,7 @@ export default class ListContentLayout extends React.Component {
     super(props);
 
     this.state = {
-      spacing: 10,
+      spacing: 8,
       scrollToIndex: 0,
     };
 
@@ -44,56 +43,68 @@ export default class ListContentLayout extends React.Component {
     return (
       <div className="pad-main">
         <div className="pad-preview">
-          <SvgPhone className="pad-preview-bg" />
-          <div className="pad-preview-content">
-            <Pad
-              ref={this.padRef}
-              className="autoadjust-pad"
-              directionalLockEnabled
-              width={346}
-              height={552}
-              alwaysBounceX={false}
-            >
-              <ListContent
-                ref={this.listRef}
-                width={346}
-                spacing={spacing}
-                itemCount={3}
-                renderItem={({ itemIndex, Item }) => {
-                  if (itemIndex === 0) {
-                    return (
-                      <Item hash="Title" style={{ backgroundColor: '#defdff' }}>
-                        Header
-                      </Item>
-                    );
-                  } else if (itemIndex === 1) {
-                    return (
-                      <ListContent
-                        spacing={spacing}
-                        itemCount={10}
-                        renderItem={({ itemIndex: index }) => {
-                          return (
-                            <ItemContent
-                              height={20 * (index + 1)}
-                              style={{ backgroundColor: '#cbf1ff' }}
-                            >
-                              {index}
-                            </ItemContent>
-                          );
-                        }}
-                      />
-                    );
-                  } else if (itemIndex === 2) {
-                    return (
-                      <Item hash="Title" style={{ backgroundColor: '#defdff' }}>
-                        Footer
-                      </Item>
-                    );
-                  }
-                }}
-              />
-            </Pad>
-          </div>
+          <Pad
+            ref={this.padRef}
+            className="pad-padele"
+            directionalLockEnabled
+            width={375}
+            height={650}
+            alwaysBounceX={false}
+          >
+            <ListContent
+              ref={this.listRef}
+              width={375}
+              spacing={spacing}
+              itemCount={3}
+              renderItem={({ itemIndex, Item }) => {
+                const fontStyle = {
+                  fontSize: '18px',
+                  color: '#75d3ec',
+                  textAlign: 'center',
+                  lineHeight: '25px',
+                };
+                const headerStyle = {
+                  padding: '5px',
+                  backgroundColor: '#cbf1ff',
+                  ...fontStyle,
+                };
+                if (itemIndex === 0) {
+                  return (
+                    <Item hash="Title">
+                      <div style={headerStyle}>Header</div>
+                    </Item>
+                  );
+                } else if (itemIndex === 1) {
+                  return (
+                    <ListContent
+                      spacing={spacing}
+                      itemCount={10}
+                      renderItem={({ itemIndex: index }) => {
+                        return (
+                          <ItemContent
+                            height={25 * (index + 1)}
+                            style={{
+                              backgroundColor: '#ffffff',
+                              ...fontStyle,
+                              lineHeight: 25 * (index + 1) + 'px',
+                            }}
+                          >
+                            {index}
+                          </ItemContent>
+                        );
+                      }}
+                    />
+                  );
+                } else if (itemIndex === 2) {
+                  return (
+                    <Item hash="Title">
+                      <div style={headerStyle}>Footer</div>
+                    </Item>
+                  );
+                }
+              }}
+            />
+          </Pad>
         </div>
         <div className="pad-optbar">
           <TextField

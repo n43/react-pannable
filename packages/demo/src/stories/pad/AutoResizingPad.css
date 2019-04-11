@@ -13,11 +13,14 @@
   text-align: center;
 }
 .autoresize-main {
+  padding-top: 8px;
   flex: 1;
   height: 0;
+  background-color: #f5f5f5;
 }
 .autoresize-content {
   padding: 10px;
+  background-color: #ffffff;
   line-height: 1.5em;
   font-family: 'sans-serif';
 }

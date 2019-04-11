@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { Pad, AutoResizing, GeneralContent } from 'react-pannable';
-import SvgPhone from './SvgPhone';
 import TextField from '../../ui/field/TextField';
 import './Pad.css';
 import './AutoResizingPad.css';
@@ -57,35 +56,31 @@ class AutoResizingPad extends Component {
       <React.Fragment>
         <div className="pad-main">
           <div className="pad-preview">
-            <SvgPhone className="pad-preview-bg" />
-            <div className="pad-preview-content">
-              <div className="autoresize-wrapper">
-                <div
-                  className="autoresize-header"
-                  style={{ height: +headerHeight || 0 }}
+            <div className="autoresize-wrapper">
+              <div
+                className="autoresize-header"
+                style={{ height: +headerHeight || 0 }}
+              >
+                Header
+              </div>
+              <div className="autoresize-main">
+                <AutoResizing
+                  width={padWidth ? +padWidth || 0 : null}
+                  height={padHeight ? +padHeight || 0 : null}
                 >
-                  Header
-                </div>
-                <div className="autoresize-main">
-                  <AutoResizing
-                    width={padWidth ? +padWidth || 0 : null}
-                    height={padHeight ? +padHeight || 0 : null}
-                  >
-                    {({ width, height }) => (
-                      <Pad
-                        className="autoadjust-pad"
-                        width={width}
-                        height={height}
-                        alwaysBounceX={false}
-                        style={{ backgroundColor: '#f5f5f5' }}
-                      >
-                        <GeneralContent width={width}>
-                          {this.renderContent()}
-                        </GeneralContent>
-                      </Pad>
-                    )}
-                  </AutoResizing>
-                </div>
+                  {({ width, height }) => (
+                    <Pad
+                      className="pad-padele"
+                      width={width}
+                      height={height}
+                      alwaysBounceX={false}
+                    >
+                      <GeneralContent width={width}>
+                        {this.renderContent()}
+                      </GeneralContent>
+                    </Pad>
+                  )}
+                </AutoResizing>
               </div>
             </div>
           </div>

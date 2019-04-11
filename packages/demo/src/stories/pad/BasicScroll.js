@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { Pad, ItemContent } from 'react-pannable';
-import SvgPhone from './SvgPhone';
 import TextField from '../../ui/field/TextField';
 import CheckField from '../../ui/field/CheckField';
 import './Pad.css';
@@ -58,14 +57,14 @@ class BasicScroll extends Component {
       for (let column = 0; column < 5; column++) {
         const style = {
           position: 'absolute',
-          top: row * 552,
-          left: column * 346,
-          width: 346,
-          height: 552,
+          top: row * 650,
+          left: column * 375,
+          width: 375,
+          height: 650,
           backgroundColor: (row + column) % 2 ? '#defdff' : '#cbf1ff',
           color: '#75d3ec',
           fontSize: 24,
-          lineHeight: '552px',
+          lineHeight: '650px',
           textAlign: 'center',
         };
 
@@ -78,7 +77,7 @@ class BasicScroll extends Component {
     }
 
     return (
-      <ItemContent width={346 * 5} height={552 * 5}>
+      <ItemContent width={375 * 5} height={650 * 5}>
         {items}
       </ItemContent>
     );
@@ -95,19 +94,17 @@ class BasicScroll extends Component {
     return (
       <div className="pad-main">
         <div className="pad-preview">
-          <SvgPhone className="pad-preview-bg" />
-          <div className="pad-preview-content">
-            <Pad
-              ref={this.padRef}
-              width={346}
-              height={552}
-              pagingEnabled={pagingEnabled}
-              scrollEnabled={scrollEnabled}
-              directionalLockEnabled={directionalLockEnabled}
-            >
-              {this.renderContent()}
-            </Pad>
-          </div>
+          <Pad
+            ref={this.padRef}
+            className="pad-padele"
+            width={375}
+            height={650}
+            pagingEnabled={pagingEnabled}
+            scrollEnabled={scrollEnabled}
+            directionalLockEnabled={directionalLockEnabled}
+          >
+            {this.renderContent()}
+          </Pad>
         </div>
         <div className="pad-optbar">
           <TextField

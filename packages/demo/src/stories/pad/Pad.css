@@ -1,21 +1,12 @@
 .pad-preview {
   position: relative;
   display: inline-block;
-  padding-top: 27px;
-  width: 400px;
+  width: 375px;
   height: 650px;
-  box-sizing: border-box;
+  border: 8px solid #f5f5f5;
 }
-.pad-preview-bg {
-  position: absolute;
-  top: 0;
-  left: 0;
-}
-.pad-preview-content {
-  position: relative;
-  margin: 0 auto;
-  width: 346px;
-  height: 552px;
+.pad-padele {
+  background-color: #f5f5f5;
 }
 .pad-optbar {
   display: inline-block;

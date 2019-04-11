@@ -1,8 +1,8 @@
 .grid {
-  padding: 10px;
+  padding: 0 5px;
   box-sizing: border-box;
 }
-.item {
+.griditem {
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -10,7 +10,7 @@
   background: #ffffff;
   overflow: hidden;
 }
-.item-poster {
+.griditem-poster {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -18,7 +18,7 @@
   height: 100px;
   background: #cbf1ff;
 }
-.item-text {
+.griditem-text {
   flex: 1;
   padding: 10px;
 }

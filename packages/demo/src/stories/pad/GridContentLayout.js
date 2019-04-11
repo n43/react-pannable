@@ -1,7 +1,6 @@
 import React from 'react';
 import { Pad, GridContent } from 'react-pannable';
 import TextField from '../../ui/field/TextField';
-import SvgPhone from './SvgPhone';
 import SvgPoster from './SvgPoster';
 import './Pad.css';
 import './GridContentLayout.css';
@@ -11,8 +10,8 @@ export default class GridContentLayout extends React.Component {
     super(props);
 
     this.state = {
-      itemWidth: 173,
-      itemHeight: 170,
+      itemWidth: 187,
+      itemHeight: 150,
       scrollToIndex: 0,
     };
     this.padRef = React.createRef();
@@ -44,41 +43,38 @@ export default class GridContentLayout extends React.Component {
       <React.Fragment>
         <div className="pad-main">
           <div className="pad-preview">
-            <SvgPhone className="pad-preview-bg" />
-            <div className="pad-preview-content">
-              <Pad
-                ref={this.padRef}
-                className="autoadjust-pad"
-                directionalLockEnabled
-                width={346}
-                height={552}
-                alwaysBounceX={false}
-                style={{ backgroundColor: '#f5f5f5' }}
-              >
-                <GridContent
-                  ref={this.gridRef}
-                  width={346}
-                  itemWidth={itemWidth}
-                  itemHeight={itemHeight}
-                  itemCount={100}
-                  columnSpacing={0}
-                  renderItem={({ rowIndex, columnIndex }) => {
-                    return (
-                      <div className="grid">
-                        <div className="item">
-                          <div className="item-poster">
-                            <SvgPoster />
-                          </div>
-                          <div className="item-text">
-                            Grid {rowIndex}-{columnIndex}
-                          </div>
+            <Pad
+              ref={this.padRef}
+              className="autoadjust-pad"
+              directionalLockEnabled
+              width={375}
+              height={650}
+              alwaysBounceX={false}
+              style={{ backgroundColor: '#f5f5f5' }}
+            >
+              <GridContent
+                ref={this.gridRef}
+                width={375}
+                itemWidth={itemWidth}
+                itemHeight={itemHeight}
+                itemCount={100}
+                columnSpacing={0}
+                renderItem={({ rowIndex, columnIndex }) => {
+                  return (
+                    <div className="grid">
+                      <div className="griditem">
+                        <div className="griditem-poster">
+                          <SvgPoster />
+                        </div>
+                        <div className="griditem-text">
+                          Grid {rowIndex}-{columnIndex}
                         </div>
                       </div>
-                    );
-                  }}
-                />
-              </Pad>
-            </div>
+                    </div>
+                  );
+                }}
+              />
+            </Pad>
           </div>
           <div className="pad-optbar">
             <TextField
