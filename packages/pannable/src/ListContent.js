@@ -23,54 +23,14 @@ export default class ListContent extends React.Component {
   constructor(props) {
     super(props);
 
-    this.state = {
-      prevDirection: '',
-      prevWidth: null,
-      prevHeight: null,
-      size: null,
-      layoutList: [],
-      itemHashDict: {},
-      itemSizeDict: {},
-    };
-  }
+    const itemHashDict = {};
+    const itemSizeDict = {};
 
-  static getDerivedStateFromProps(props, state) {
-    const { direction, width, height } = props;
-    const {
-      prevDirection,
-      prevWidth,
-      prevHeight,
-      size,
+    this.state = {
+      ...calculateLayout(props, itemHashDict, itemSizeDict),
       itemHashDict,
       itemSizeDict,
-    } = state;
-    let nextState = null;
-
-    if (
-      direction !== prevDirection ||
-      width !== prevWidth ||
-      height !== prevHeight
-    ) {
-      const layout = calculateLayout(props, itemHashDict, itemSizeDict);
-
-      nextState = nextState || {};
-      nextState.layoutList = layout.layoutList;
-
-      if (!isEqualSize(layout.size, size)) {
-        nextState.size = layout.size;
-      }
-      if (direction !== prevDirection) {
-        nextState.prevDirection = direction;
-      }
-      if (width !== prevWidth) {
-        nextState.prevWidth = width;
-      }
-      if (height !== prevHeight) {
-        nextState.prevHeight = height;
-      }
-    }
-
-    return nextState;
+    };
   }
 
   componentDidMount() {
@@ -85,6 +45,9 @@ export default class ListContent extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     const {
+      direction,
+      width,
+      height,
       spacing,
       itemCount,
       estimatedItemWidth,
@@ -94,12 +57,15 @@ export default class ListContent extends React.Component {
     const { size, itemHashDict, itemSizeDict } = this.state;
 
     if (
-      prevProps.spacing !== spacing ||
-      prevProps.itemCount !== itemCount ||
-      prevProps.estimatedItemWidth !== estimatedItemWidth ||
-      prevProps.estimatedItemHeight !== estimatedItemHeight ||
-      prevState.itemHashDict !== itemHashDict ||
-      prevState.itemSizeDict !== itemSizeDict
+      direction !== prevProps.direction ||
+      width !== prevProps.width ||
+      height !== prevProps.height ||
+      spacing !== prevProps.spacing ||
+      itemCount !== prevProps.itemCount ||
+      estimatedItemWidth !== prevProps.estimatedItemWidth ||
+      estimatedItemHeight !== prevProps.estimatedItemHeight ||
+      itemHashDict !== prevState.itemHashDict ||
+      itemSizeDict !== prevState.itemSizeDict
     ) {
       this._layout();
     }
@@ -130,6 +96,7 @@ export default class ListContent extends React.Component {
 
       const layout = calculateLayout(props, itemHashDict, itemSizeDict);
 
+      nextState.fixed = layout.fixed;
       nextState.layoutList = layout.layoutList;
 
       if (!isEqualSize(layout.size, size)) {
@@ -141,19 +108,21 @@ export default class ListContent extends React.Component {
   }
 
   _updateItemHashDict() {
-    if (this._itemHashDict) {
-      const itemHashDict = this._itemHashDict;
-      this._itemHashDict = null;
+    this.setState(state => {
+      if (!this._itemHashDict) {
+        return null;
+      }
 
-      this.setState(state => ({
-        itemHashDict: { ...state.itemHashDict, ...itemHashDict },
-      }));
-    }
+      const itemHashDict = { ...state.itemHashDict, ...this._itemHashDict };
+      this._itemHashDict = undefined;
+
+      return { itemHashDict };
+    });
   }
 
   _renderItem(layoutAttrs) {
-    const { direction, width, height, renderItem } = this.props;
-    const { itemHashDict, itemSizeDict } = this.state;
+    const { renderItem } = this.props;
+    const { fixed, itemHashDict, itemSizeDict } = this.state;
 
     const { itemIndex, rect, visibleRect, needsRender, Item } = layoutAttrs;
     let element = renderItem(layoutAttrs);
@@ -229,20 +198,17 @@ export default class ListContent extends React.Component {
         elemProps.height = itemSize.height;
       }
     } else {
-      if (direction === 'x') {
-        if (
-          typeof element.props.height !== 'number' &&
-          typeof height === 'number'
-        ) {
-          elemProps.height = height;
-        }
-      } else {
-        if (
-          typeof element.props.width !== 'number' &&
-          typeof width === 'number'
-        ) {
-          elemProps.width = width;
-        }
+      if (
+        typeof fixed.height === 'number' &&
+        typeof element.props.height !== 'number'
+      ) {
+        elemProps.height = fixed.height;
+      }
+      if (
+        typeof fixed.width === 'number' &&
+        typeof element.props.width !== 'number'
+      ) {
+        elemProps.width = fixed.width;
       }
     }
 
@@ -302,7 +268,6 @@ export default class ListContent extends React.Component {
 function calculateLayout(props, itemHashDict, itemSizeDict) {
   const { direction, spacing, itemCount } = props;
   const size = { width: props.width, height: props.height };
-
   const estimatedItemSize = {
     width: props.estimatedItemWidth,
     height: props.estimatedItemHeight,
@@ -316,14 +281,17 @@ function calculateLayout(props, itemHashDict, itemSizeDict) {
   let sizeWidth = 0;
   let sizeHeight = 0;
   const layoutList = [];
+  const fixed = {};
+
+  if (typeof size[width] === 'number') {
+    fixed[width] = size[width];
+  }
 
   for (let itemIndex = 0; itemIndex < itemCount; itemIndex++) {
     const itemHash = itemHashDict[itemIndex];
     let itemSize = itemSizeDict[itemHash] || {
       [width]:
-        typeof size[width] === 'number'
-          ? size[width]
-          : estimatedItemSize[width],
+        fixed[width] === undefined ? estimatedItemSize[width] : fixed[width],
       [height]: estimatedItemSize[height],
     };
 
@@ -350,6 +318,7 @@ function calculateLayout(props, itemHashDict, itemSizeDict) {
 
   return {
     size: { [width]: sizeWidth, [height]: sizeHeight },
+    fixed,
     layoutList,
   };
 }
