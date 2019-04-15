@@ -45,6 +45,7 @@ export default class Player extends React.Component {
 
   go(delta) {
     const { direction } = this.props;
+    const { loopCount } = this.state;
     const pad = this.padRef.current;
 
     pad.scrollTo({
@@ -55,18 +56,26 @@ export default class Player extends React.Component {
         const [width, x, y] =
           direction === 'y' ? ['height', 'y', 'x'] : ['width', 'x', 'y'];
 
-        const sizeWidth = size[width];
-        let minOffsetX = Math.min(sizeWidth - contentSize[width], 0);
-        let offsetX = contentOffset[x] - delta * sizeWidth;
+        let offsetX = contentOffset[x] - delta * size[width];
 
-        if (pagingEnabled && sizeWidth > 0) {
-          minOffsetX = sizeWidth * Math.ceil(minOffsetX / sizeWidth);
-        }
+        if (loopCount <= 1) {
+          const sizeWidth = size[width];
+          let minOffsetX = Math.min(sizeWidth - contentSize[width], 0);
 
-        if (offsetX > 0) {
-          offsetX = minOffsetX;
-        } else if (offsetX < minOffsetX) {
-          offsetX = 0;
+          if (pagingEnabled && sizeWidth > 0) {
+            minOffsetX = sizeWidth * Math.ceil(minOffsetX / sizeWidth);
+          }
+
+          if (contentOffset[x] === 0) {
+            offsetX = minOffsetX;
+          } else if (contentOffset[x] === minOffsetX) {
+            offsetX = 0;
+          }
+          if (0 < offsetX) {
+            offsetX = 0;
+          } else if (offsetX < minOffsetX) {
+            offsetX = minOffsetX;
+          }
         }
 
         return { [x]: offsetX, [y]: contentOffset[y] };
