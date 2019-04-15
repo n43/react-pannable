@@ -547,9 +547,9 @@ export default class Pad extends React.Component {
         ...element.props.style,
       }),
       visibleRect: this.getVisibleRect(),
-      onResize: size => {
-        this._setStateWithScroll({ contentSize: size });
-        onElemResize(size);
+      onResize: contentSize => {
+        this._setStateWithScroll({ contentSize });
+        onElemResize(contentSize);
       },
     };
 
@@ -561,13 +561,13 @@ export default class Pad extends React.Component {
     props.onMove = this._onDragMove;
     props.onEnd = this._onDragEnd;
     props.onCancel = this._onDragCancel;
-    props.style = StyleSheet.create({
+    props.style = {
       overflow: 'hidden',
       position: 'relative',
       width: size.width,
       height: size.height,
       ...props.style,
-    });
+    };
 
     return <Pannable {...props} ref={this.elemRef} />;
   }
