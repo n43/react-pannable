@@ -43,7 +43,6 @@ export default class Pad extends React.Component {
     const { width, height } = props;
 
     this.state = {
-      prevContentOffset: null,
       contentOffset: { x: 0, y: 0 },
       contentVelocity: { x: 0, y: 0 },
       size: { width, height },
@@ -53,85 +52,6 @@ export default class Pad extends React.Component {
     };
 
     this.elemRef = React.createRef();
-  }
-
-  static getDerivedStateFromProps(props, state) {
-    const {
-      prevContentOffset,
-      contentOffset,
-      contentVelocity,
-      size,
-      contentSize,
-      drag,
-      deceleration,
-    } = state;
-    const { pagingEnabled } = props;
-    let nextState = null;
-
-    if (contentOffset !== prevContentOffset) {
-      const validContentOffset =
-        contentOffset ===
-        getAdjustedContentOffset(contentOffset, size, contentSize, false);
-
-      if (!validContentOffset) {
-        let nextDeceleration = deceleration;
-        let decelerationRate = DECELERATION_RATE_STRONG;
-        let decelerationEndOffset;
-
-        if (nextDeceleration) {
-          const validEndOffset =
-            nextDeceleration.endOffset ===
-            getAdjustedContentOffset(
-              nextDeceleration.endOffset,
-              size,
-              contentSize,
-              false
-            );
-
-          if (!validEndOffset) {
-            decelerationEndOffset = getDecelerationEndOffset(
-              contentOffset,
-              contentVelocity,
-              size,
-              pagingEnabled,
-              decelerationRate
-            );
-            decelerationEndOffset = getAdjustedContentOffset(
-              decelerationEndOffset,
-              size,
-              contentSize,
-              pagingEnabled
-            );
-          }
-        } else if (!drag) {
-          decelerationEndOffset = getAdjustedContentOffset(
-            contentOffset,
-            size,
-            contentSize,
-            pagingEnabled
-          );
-        }
-
-        if (decelerationEndOffset) {
-          nextDeceleration = createDeceleration(
-            contentOffset,
-            contentVelocity,
-            decelerationEndOffset,
-            decelerationRate
-          );
-        }
-
-        if (nextDeceleration !== deceleration) {
-          nextState = nextState || {};
-          nextState.deceleration = nextDeceleration;
-        }
-      }
-
-      nextState = nextState || {};
-      nextState.prevContentOffset = contentOffset;
-    }
-
-    return nextState;
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -164,17 +84,6 @@ export default class Pad extends React.Component {
       }
     }
     if (contentOffset !== prevState.contentOffset) {
-      if (deceleration) {
-        if (this._decelerationTimer) {
-          cancelAnimationFrame(this._decelerationTimer);
-        }
-
-        this._decelerationTimer = requestAnimationFrame(() => {
-          this._decelerationTimer = undefined;
-          this._decelerate();
-        });
-      }
-
       onScroll({
         contentOffset,
         contentVelocity,
@@ -183,6 +92,12 @@ export default class Pad extends React.Component {
         dragging: !!drag,
         decelerating: !!deceleration,
       });
+
+      this._adjustContentOffsetIfNeeded();
+
+      if (deceleration) {
+        this._requestDecelerationTimer();
+      }
     }
     if (contentSize !== prevState.contentSize) {
       onContentResize(contentSize);
@@ -204,10 +119,7 @@ export default class Pad extends React.Component {
   }
 
   componentWillUnmount() {
-    if (this._decelerationTimer) {
-      cancelAnimationFrame(this._decelerationTimer);
-      this._decelerationTimer = undefined;
-    }
+    this._cancelDecelerationTimer();
   }
 
   getSize() {
@@ -356,6 +268,104 @@ export default class Pad extends React.Component {
         ),
       };
     });
+  }
+
+  _adjustContentOffsetIfNeeded() {
+    this.setState((state, props) => {
+      const {
+        contentOffset,
+        contentVelocity,
+        size,
+        contentSize,
+        drag,
+        deceleration,
+      } = state;
+      const { pagingEnabled } = props;
+
+      const validContentOffset =
+        contentOffset ===
+        getAdjustedContentOffset(contentOffset, size, contentSize, false);
+
+      if (validContentOffset) {
+        return null;
+      }
+
+      let decelerationRate = DECELERATION_RATE_STRONG;
+      let decelerationEndOffset;
+
+      if (deceleration) {
+        const validEndOffset =
+          deceleration.endOffset ===
+          getAdjustedContentOffset(
+            deceleration.endOffset,
+            size,
+            contentSize,
+            false
+          );
+
+        if (!validEndOffset) {
+          if (deceleration.rate !== DECELERATION_RATE_STRONG) {
+            decelerationEndOffset = getDecelerationEndOffset(
+              contentOffset,
+              contentVelocity,
+              size,
+              pagingEnabled,
+              decelerationRate
+            );
+          } else {
+            decelerationEndOffset = deceleration.endOffset;
+          }
+
+          decelerationEndOffset = getAdjustedContentOffset(
+            decelerationEndOffset,
+            size,
+            contentSize,
+            pagingEnabled
+          );
+        }
+      } else if (!drag) {
+        decelerationEndOffset = getAdjustedContentOffset(
+          contentOffset,
+          size,
+          contentSize,
+          pagingEnabled
+        );
+      }
+
+      if (!decelerationEndOffset) {
+        return null;
+      }
+
+      return {
+        contentOffset: { ...contentOffset },
+        deceleration: createDeceleration(
+          contentOffset,
+          contentVelocity,
+          decelerationEndOffset,
+          decelerationRate
+        ),
+      };
+    });
+  }
+
+  _requestDecelerationTimer() {
+    if (this._decelerationTimer) {
+      cancelAnimationFrame(this._decelerationTimer);
+    }
+
+    this._decelerationTimer = requestAnimationFrame(() => {
+      this._decelerationTimer = undefined;
+      this._decelerate();
+    });
+  }
+
+  _cancelDecelerationTimer() {
+    if (!this._decelerationTimer) {
+      return;
+    }
+
+    cancelAnimationFrame(this._decelerationTimer);
+    this._decelerationTimer = undefined;
   }
 
   _decelerate() {
