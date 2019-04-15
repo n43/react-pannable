@@ -14,12 +14,10 @@ export default class Carousel extends React.Component {
     this.state = {
       pageCount: 0,
       activeIndex: 0,
-      realIndex: 0,
     };
+
     this.playerRef = React.createRef();
   }
-
-  componentDidMount() {}
 
   componentDidUpdate(prevProps, prevState) {
     const { onSlideChange } = this.props;
@@ -40,7 +38,7 @@ export default class Carousel extends React.Component {
   }
 
   getActiveIndex() {
-    return this.activeIndex;
+    return this.state.activeIndex;
   }
 
   slideTo(index) {
