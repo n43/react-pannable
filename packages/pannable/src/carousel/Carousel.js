@@ -70,12 +70,6 @@ export default class Carousel extends React.Component {
     this.props.onScroll(evt);
   };
 
-  // _onPlayerResize = size => {
-  //   this._calculatePageCount({ size });
-
-  //   this.props.onResize(size);
-  // };
-
   _onPlayerContentResize = contentSize => {
     this._calculatePageCount({ contentSize });
 
@@ -148,7 +142,6 @@ export default class Carousel extends React.Component {
       ...playerProps
     } = this.props;
     const { pageCount, activeIndex } = this.state;
-    // playerProps.onResize = this._onPlayerResize;
     playerProps.onContentResize = this._onPlayerContentResize;
 
     let element = playerProps.children;

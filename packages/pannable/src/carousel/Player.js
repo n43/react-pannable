@@ -60,7 +60,7 @@ export default class Player extends React.Component {
         let offsetX = contentOffset[x] - delta * sizeWidth;
 
         if (pagingEnabled && sizeWidth > 0) {
-          minOffsetX = size[width] * Math.ceil(minOffsetX / size[width]);
+          minOffsetX = sizeWidth * Math.ceil(minOffsetX / sizeWidth);
         }
 
         if (offsetX > 0) {
