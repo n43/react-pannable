@@ -21,19 +21,10 @@ export default class Carousel extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     const { onSlideChange } = this.props;
-    const { activeIndex, pageCount } = this.state;
+    const { activeIndex } = this.state;
 
     if (prevState.activeIndex !== activeIndex) {
       onSlideChange(activeIndex);
-    }
-    if (prevState.pageCount !== pageCount) {
-      const player = this.playerRef.current;
-      if (player) {
-        const pad = player.padRef.current;
-        const size = pad.getSize();
-        const contentOffset = pad.getContentOffset();
-        this._calculateActiveIndex({ size, contentOffset });
-      }
     }
   }
 
@@ -65,26 +56,18 @@ export default class Carousel extends React.Component {
   }
 
   _onPlayerScroll = evt => {
-    this._calculateActiveIndex(evt);
+    this._setActiveIndex();
 
     this.props.onScroll(evt);
   };
 
   _onPlayerContentResize = contentSize => {
-    this._calculatePageCount({ contentSize });
+    this._setPageCount();
 
     this.props.onContentResize(contentSize);
   };
 
-  _calculateActiveSlideForLoop({ activeIndex, pageCount }) {
-    if (activeIndex < pageCount / 2) {
-      return activeIndex;
-    }
-
-    return activeIndex - pageCount / 2;
-  }
-
-  _calculatePageCount({ size = null, contentSize = null }) {
+  _setPageCount() {
     const player = this.playerRef.current;
 
     if (!player) {
@@ -92,12 +75,8 @@ export default class Carousel extends React.Component {
     }
 
     const pad = player.padRef.current;
-    if (!size) {
-      size = pad.getSize();
-    }
-    if (!contentSize) {
-      contentSize = pad.getContentSize();
-    }
+    const size = pad.getSize();
+    const contentSize = pad.getContentSize();
 
     this.setState((state, props) => {
       const { loop, direction } = props;
@@ -112,20 +91,27 @@ export default class Carousel extends React.Component {
         return null;
       }
 
-      return { pageCount };
+      let nextState = { pageCount };
+      const activeIndex = this._calculateActiveIndex({ pageCount });
+
+      if (activeIndex !== state.activeIndex) {
+        nextState.activeIndex = activeIndex;
+      }
+
+      return nextState;
     });
   }
 
-  _calculateActiveIndex({ size, contentOffset }) {
-    this.setState((state, props) => {
-      const { direction } = props;
-      const { pageCount } = state;
-      const [width, x] = direction === 'x' ? ['width', 'x'] : ['height', 'y'];
-      let activeIndex = Math.abs(Math.round(contentOffset[x] / size[width]));
+  _setActiveIndex() {
+    const player = this.playerRef.current;
 
-      if (activeIndex >= pageCount) {
-        activeIndex -= pageCount;
-      }
+    if (!player) {
+      return;
+    }
+
+    this.setState(state => {
+      const { pageCount } = state;
+      const activeIndex = this._calculateActiveIndex({ pageCount });
 
       if (activeIndex === state.activeIndex) {
         return null;
@@ -134,6 +120,25 @@ export default class Carousel extends React.Component {
       return { activeIndex };
     });
   }
+
+  _calculateActiveIndex({ pageCount }) {
+    const { direction } = this.props;
+    const player = this.playerRef.current;
+    const pad = player.padRef.current;
+    const size = pad.getSize();
+    const contentOffset = pad.getContentOffset();
+
+    const [width, x] = direction === 'x' ? ['width', 'x'] : ['height', 'y'];
+
+    let activeIndex = Math.max(Math.round(-contentOffset[x] / size[width]), 0);
+
+    if (activeIndex >= pageCount) {
+      activeIndex -= pageCount;
+    }
+
+    return activeIndex;
+  }
+
   render() {
     const {
       showsIndicator,
@@ -149,17 +154,7 @@ export default class Carousel extends React.Component {
       element = element(this);
     }
     playerProps.children = element;
-    const playerElem = (
-      <Player
-        {...playerProps}
-        onScroll={this._onPlayerScroll}
-        ref={this.playerRef}
-      />
-    );
-
-    if (!renderIndicator) {
-      return playerElem;
-    }
+    playerProps.onScroll = this._onPlayerScroll;
 
     const wrapperStyle = {
       position: 'relative',
@@ -167,8 +162,8 @@ export default class Carousel extends React.Component {
 
     return (
       <div style={wrapperStyle}>
-        {playerElem}
-        {renderIndicator({ pageCount, activeIndex })}
+        <Player {...playerProps} ref={this.playerRef} />
+        {renderIndicator && renderIndicator({ pageCount, activeIndex })}
       </div>
     );
   }
