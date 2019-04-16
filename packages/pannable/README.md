@@ -71,10 +71,10 @@ type Align = { x: AlignEnum, y: AlignEnum } | AlignEnum;
 type PadEvent = {
   contentOffset: Point,
   contentVelocity: Point,
-  dragging: boolean,
-  decelerating: boolean,
   size: Size,
   contentSize: Size,
+  dragging: boolean,
+  decelerating: boolean,
 };
 ```
 
@@ -91,10 +91,10 @@ type PadEvent = {
 | alwaysBounceX          |     boolean      |     true     | Determines whether bouncing always occurs when horizontal scrolling reaches the end of the content. |
 | alwaysBounceY          |     boolean      |     true     | Determines whether bouncing always occurs when vertical scrolling reaches the end of the content.   |
 | onScroll               |     function     |   () => {}   | Callback invoked when the content view scrolls.:`(evt: PadEvent) => void`                           |
-| onDragStart            |     function     |   () => {}   | Callback invoked when start dragging the content.:`() => void`                                      |
-| onDragEnd              |     function     |   () => {}   | Callback invoked when end dragging the content.:`() => void`                                        |
-| onDecelerationStart    |     function     |   () => {}   | Callback invoked when the content start decelerating.:`() => void`                                  |
-| onDecelerationEnd      |     function     |   () => {}   | Callback invoked when the content end decelerating.:`() => void`                                    |
+| onDragStart            |     function     |   () => {}   | Callback invoked when start dragging the content.:`(evt: PadEvent) => void`                         |
+| onDragEnd              |     function     |   () => {}   | Callback invoked when end dragging the content.:`(evt: PadEvent) => void`                           |
+| onDecelerationStart    |     function     |   () => {}   | Callback invoked when the content start decelerating.:`(evt: PadEvent) => void`                     |
+| onDecelerationEnd      |     function     |   () => {}   | Callback invoked when the content end decelerating.:`(evt: PadEvent) => void`                       |
 | onContentResize        |     function     |   () => {}   | Callback invoked when the content view resize.:`(size: Size) => void`                               |
 
 #### Public Methods

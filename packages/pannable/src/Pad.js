@@ -66,14 +66,7 @@ export default class Pad extends React.Component {
       onDecelerationEnd,
       onContentResize,
     } = this.props;
-    const {
-      contentOffset,
-      contentVelocity,
-      size,
-      contentSize,
-      drag,
-      deceleration,
-    } = this.state;
+    const { contentOffset, contentSize, drag, deceleration } = this.state;
 
     if (width !== prevProps.width || height !== prevProps.height) {
       this._setStateWithScroll({ size: { width, height } });
@@ -84,14 +77,7 @@ export default class Pad extends React.Component {
       }
     }
     if (contentOffset !== prevState.contentOffset) {
-      onScroll({
-        contentOffset,
-        contentVelocity,
-        size,
-        contentSize,
-        dragging: !!drag,
-        decelerating: !!deceleration,
-      });
+      onScroll(this._getPadEvent());
 
       this._adjustContentOffsetIfNeeded();
 
@@ -104,16 +90,16 @@ export default class Pad extends React.Component {
     }
     if (drag !== prevState.drag) {
       if (!prevState.drag) {
-        onDragStart();
+        onDragStart(this._getPadEvent());
       } else if (!drag) {
-        onDragEnd();
+        onDragEnd(this._getPadEvent());
       }
     }
     if (deceleration !== prevState.deceleration) {
       if (!prevState.deceleration) {
-        onDecelerationStart();
+        onDecelerationStart(this._getPadEvent());
       } else if (!deceleration) {
-        onDecelerationEnd();
+        onDecelerationEnd(this._getPadEvent());
       }
     }
   }
@@ -165,6 +151,26 @@ export default class Pad extends React.Component {
 
   scrollTo({ offset, animated }) {
     this._setContentOffset(offset, animated);
+  }
+
+  _getPadEvent() {
+    const {
+      contentOffset,
+      contentVelocity,
+      size,
+      contentSize,
+      drag,
+      deceleration,
+    } = this.state;
+
+    return {
+      contentOffset,
+      contentVelocity,
+      size,
+      contentSize,
+      dragging: !!drag,
+      decelerating: !!deceleration,
+    };
   }
 
   _setContentOffset(offset, animated) {
