@@ -1,9 +1,12 @@
 import React from 'react';
 import Player from './Player';
+import GridContent from '../GridContent';
 
 export default class Carousel extends React.Component {
   static defaultProps = {
     ...Player.defaultProps,
+    itemCount: 0,
+    renderItem: () => null,
     renderIndicator: null,
     onSlideChange: () => {},
   };
@@ -12,7 +15,6 @@ export default class Carousel extends React.Component {
     super(props);
 
     this.state = {
-      pageCount: 0,
       activeIndex: 0,
     };
 
@@ -20,11 +22,11 @@ export default class Carousel extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    const { onSlideChange } = this.props;
+    const { onSlideChange, itemCount } = this.props;
     const { activeIndex } = this.state;
 
     if (prevState.activeIndex !== activeIndex) {
-      onSlideChange(activeIndex);
+      onSlideChange({ itemCount, activeIndex });
     }
   }
 
@@ -32,15 +34,11 @@ export default class Carousel extends React.Component {
     return this.state.activeIndex;
   }
 
-  slideTo(index) {
+  slideTo({ index, animated }) {
     const player = this.playerRef.current;
-    const { pageCount, activeIndex } = this.state;
+    const { activeIndex } = this.state;
 
-    if (index > pageCount) {
-      return;
-    }
-
-    player.go(index - activeIndex);
+    player.go({ delta: index - activeIndex, animated });
   }
 
   slidePrev() {
@@ -56,115 +54,48 @@ export default class Carousel extends React.Component {
   }
 
   _onPlayerScroll = evt => {
-    this._setActiveIndex();
+    const { size, contentOffset } = evt;
+    const nextActiveIndex = this._calculateActiveIndex({ size, contentOffset });
+
+    if (nextActiveIndex !== this.state.activeIndex) {
+      this.setState({ activeIndex: nextActiveIndex });
+    }
 
     this.props.onScroll(evt);
   };
 
-  _onPlayerContentResize = contentSize => {
-    this._setPageCount();
-
-    this.props.onContentResize(contentSize);
-  };
-
-  _setPageCount() {
-    const player = this.playerRef.current;
-
-    if (!player) {
-      return;
-    }
-
-    const pad = player.padRef.current;
-    const size = pad.getSize();
-    const contentSize = pad.getContentSize();
-
-    this.setState((state, props) => {
-      const { loop, direction } = props;
-      const width = direction === 'x' ? 'width' : 'height';
-      let pageCount = Math.floor(contentSize[width] / size[width]);
-
-      if (loop) {
-        pageCount = pageCount / 2;
-      }
-
-      if (pageCount === state.pageCount) {
-        return null;
-      }
-
-      let nextState = { pageCount };
-      const activeIndex = this._calculateActiveIndex({ pageCount });
-
-      if (activeIndex !== state.activeIndex) {
-        nextState.activeIndex = activeIndex;
-      }
-
-      return nextState;
-    });
-  }
-
-  _setActiveIndex() {
-    const player = this.playerRef.current;
-
-    if (!player) {
-      return;
-    }
-
-    this.setState(state => {
-      const { pageCount } = state;
-      const activeIndex = this._calculateActiveIndex({ pageCount });
-
-      if (activeIndex === state.activeIndex) {
-        return null;
-      }
-
-      return { activeIndex };
-    });
-  }
-
-  _calculateActiveIndex({ pageCount }) {
-    const { direction } = this.props;
-    const player = this.playerRef.current;
-    const pad = player.padRef.current;
-    const size = pad.getSize();
-    const contentOffset = pad.getContentOffset();
-
+  _calculateActiveIndex({ size, contentOffset }) {
+    const { direction, itemCount } = this.props;
     const [width, x] = direction === 'x' ? ['width', 'x'] : ['height', 'y'];
-
     let activeIndex = Math.max(Math.round(-contentOffset[x] / size[width]), 0);
 
-    if (activeIndex >= pageCount) {
-      activeIndex -= pageCount;
-    }
-
-    return activeIndex;
+    return activeIndex % itemCount;
   }
 
   render() {
     const {
-      showsIndicator,
+      itemCount,
+      renderItem,
       renderIndicator,
       onSlideChange,
       ...playerProps
     } = this.props;
-    const { pageCount, activeIndex } = this.state;
-    playerProps.onContentResize = this._onPlayerContentResize;
+    const { width, height, direction } = playerProps;
 
-    let element = playerProps.children;
-    if (typeof element === 'function') {
-      element = element(this);
-    }
-    playerProps.children = element;
-    playerProps.onScroll = this._onPlayerScroll;
-
-    const wrapperStyle = {
-      position: 'relative',
+    const gridProps = {
+      width,
+      height,
+      itemWidth: width,
+      itemHeight: height,
+      direction,
+      itemCount,
+      renderItem,
     };
 
-    return (
-      <div style={wrapperStyle}>
-        <Player {...playerProps} ref={this.playerRef} />
-        {renderIndicator && renderIndicator({ pageCount, activeIndex })}
-      </div>
-    );
+    const gridElement = <GridContent ref={this.gridRef} {...gridProps} />;
+    playerProps.children = gridElement;
+    playerProps.onScroll = this._onPlayerScroll;
+
+    return <Player {...playerProps} ref={this.playerRef} />;
   }
 }

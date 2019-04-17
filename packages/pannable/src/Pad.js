@@ -142,14 +142,14 @@ export default class Pad extends React.Component {
     this._setStateWithScroll({ contentSize });
   }
 
-  scrollToRect({ rect, align = 'auto', animated }) {
+  scrollToRect({ rect, align = 'auto', animated = true }) {
     this._setContentOffset(
       state => calculateRectOffset(rect, this.getVisibleRect(state), align),
       animated
     );
   }
 
-  scrollTo({ offset, animated }) {
+  scrollTo({ offset, animated = true }) {
     this._setContentOffset(offset, animated);
   }
 

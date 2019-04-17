@@ -9,6 +9,7 @@ class VerticalCarousel extends Component {
 
     this.state = {
       direction: 'y',
+      activeIndex: 0,
       slideArr: [1, 2, 3, 4, 5, 6],
     };
     this.carouselRef = React.createRef();
@@ -27,37 +28,30 @@ class VerticalCarousel extends Component {
     this.carouselRef.current.slideNext();
   };
   handlePaginationClick = index => {
-    this.carouselRef.current.slideTo(index);
+    this.carouselRef.current.slideTo({ index });
+  };
+  handleSlideChange = ({ activeIndex }) => {
+    this.setState({ activeIndex });
   };
 
-  renderContent() {
-    const { direction, slideArr } = this.state;
-    const items = [];
+  renderIndicator() {
+    const { slideArr, activeIndex } = this.state;
 
-    for (let slide = 0; slide < slideArr.length; slide++) {
-      const style = {
-        position: 'absolute',
-        top: direction === 'x' ? 0 : slide * 300,
-        left: direction === 'x' ? slide * 750 : 0,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: 750,
-        height: 300,
-        backgroundColor: slide % 2 ? '#defdff' : '#cbf1ff',
-        color: '#75d3ec',
-        fontSize: 24,
-        textAlign: 'center',
-      };
-
-      items.push(
-        <div key={slide} style={style}>
-          slide {slideArr[slide]}
-        </div>
-      );
-    }
-
-    return items;
+    return (
+      <div className="vcarousel-pagination">
+        {slideArr.map((item, index) => {
+          return (
+            <div
+              key={index}
+              className={
+                activeIndex === index ? 'pagination-active' : 'pagination-item'
+              }
+              onClick={() => this.handlePaginationClick(index)}
+            />
+          );
+        })}
+      </div>
+    );
   }
 
   render() {
@@ -73,34 +67,29 @@ class VerticalCarousel extends Component {
             height={300}
             direction={direction}
             loop={true}
-            renderIndicator={({ pageCount, activeIndex }) => {
-              let indicators = [];
-              for (let index = 0; index < pageCount; index++) {
-                indicators.push(
-                  <div
-                    key={index}
-                    className={
-                      activeIndex === index
-                        ? 'pagination-active'
-                        : 'pagination-item'
-                    }
-                    onClick={() => this.handlePaginationClick(index)}
-                  />
-                );
-              }
-              return <div className="vcarousel-pagination">{indicators}</div>;
+            itemCount={itemLength}
+            renderItem={({ itemIndex }) => {
+              const style = {
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: '100%',
+                backgroundColor: itemIndex % 2 ? '#defdff' : '#cbf1ff',
+                color: '#75d3ec',
+                fontSize: 24,
+                textAlign: 'center',
+              };
+              const slide = slideArr[itemIndex];
+
+              return (
+                <div key={slide} style={style}>
+                  slide {slide}
+                </div>
+              );
             }}
-          >
-            <div
-              style={{
-                position: 'relative',
-                width: direction === 'x' ? 750 * itemLength : 750,
-                height: direction === 'x' ? 300 : 300 * itemLength,
-              }}
-            >
-              {this.renderContent()}
-            </div>
-          </Carousel>
+            onSlideChange={this.handleSlideChange}
+          />
+          {this.renderIndicator()}
         </div>
       </div>
     );

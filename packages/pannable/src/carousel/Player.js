@@ -43,7 +43,7 @@ export default class Player extends React.Component {
     this._stopPlaying();
   }
 
-  go(delta) {
+  go({ delta, animated }) {
     const { direction } = this.props;
     const { loopCount } = this.state;
     const pad = this.padRef.current;
@@ -80,16 +80,16 @@ export default class Player extends React.Component {
 
         return { [x]: offsetX, [y]: contentOffset[y] };
       },
-      animated: true,
+      animated,
     });
   }
 
   rewind() {
-    this.go(-1);
+    this.go({ delta: -1 });
   }
 
   forward() {
-    this.go(1);
+    this.go({ delta: 1 });
   }
 
   _startPlaying() {
@@ -121,25 +121,25 @@ export default class Player extends React.Component {
     }
   }
 
-  _onPadDragStart = () => {
+  _onPadDragStart = evt => {
     this._stopPlaying();
 
-    this.props.onDragStart();
+    this.props.onDragStart(evt);
   };
-  _onPadDragEnd = () => {
+  _onPadDragEnd = evt => {
     this._startPlaying();
 
-    this.props.onDragEnd();
+    this.props.onDragEnd(evt);
   };
-  _onPadDecelerationStart = () => {
+  _onPadDecelerationStart = evt => {
     this._stopPlaying();
 
-    this.props.onDecelerationStart();
+    this.props.onDecelerationStart(evt);
   };
-  _onPadDecelerationEnd = () => {
+  _onPadDecelerationEnd = evt => {
     this._startPlaying();
 
-    this.props.onDecelerationEnd();
+    this.props.onDecelerationEnd(evt);
   };
   _onPadMouseEnter = evt => {
     const { onMouseEnter } = this.props;
