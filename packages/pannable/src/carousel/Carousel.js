@@ -68,7 +68,6 @@ export default class Carousel extends React.Component {
     const { direction, itemCount } = this.props;
     const [width, x] = direction === 'x' ? ['width', 'x'] : ['height', 'y'];
     let activeIndex = Math.max(Math.round(-contentOffset[x] / size[width]), 0);
-    activeIndex = Math.min(activeIndex, itemCount - 1);
 
     return activeIndex % itemCount;
   }
