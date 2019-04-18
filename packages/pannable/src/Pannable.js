@@ -136,10 +136,21 @@ export default class Pannable extends React.Component {
     });
   }
 
+  _addTouchPanListener(target) {
+    target.addEventListener('touchmove', this._onTouchMove, false);
+    target.addEventListener('touchend', this._onTouchEnd, false);
+    target.addEventListener('touchcancel', this._onTouchCancel, false);
+  }
+  _removeTouchPanListener(target) {
+    target.removeEventListener('touchmove', this._onTouchMove, false);
+    target.removeEventListener('touchend', this._onTouchEnd, false);
+    target.removeEventListener('touchcancel', this._onTouchCancel, false);
+  }
   _onTouchStart = evt => {
     const { onTouchStart } = this.props;
 
     if (evt.touches && evt.touches.length === 1) {
+      this._addTouchPanListener(evt.target);
       this._track(evt.touches[0]);
     }
 
@@ -148,37 +159,17 @@ export default class Pannable extends React.Component {
     }
   };
   _onTouchMove = evt => {
-    const { onTouchMove } = this.props;
-
     if (evt.touches && evt.touches.length === 1) {
       this._move(evt.touches[0]);
     }
-
-    if (onTouchMove) {
-      onTouchMove(evt);
-    }
   };
   _onTouchEnd = evt => {
-    const { onTouchEnd } = this.props;
-
-    if (evt.changedTouches && evt.changedTouches.length === 1) {
-      this._end();
-    }
-
-    if (onTouchEnd) {
-      onTouchEnd(evt);
-    }
+    this._removeTouchPanListener(evt.target);
+    this._end();
   };
   _onTouchCancel = evt => {
-    const { onTouchCancel } = this.props;
-
-    if (evt.changedTouches && evt.changedTouches.length === 1) {
-      this._end();
-    }
-
-    if (onTouchCancel) {
-      onTouchCancel(evt);
-    }
+    this._removeTouchPanListener(evt.target);
+    this._end();
   };
 
   _addMousePanListener() {
@@ -243,9 +234,6 @@ export default class Pannable extends React.Component {
     if (enabled) {
       props.style = { touchAction: 'none', ...props.style };
       props.onTouchStart = this._onTouchStart;
-      props.onTouchEnd = this._onTouchEnd;
-      props.onTouchMove = this._onTouchMove;
-      props.onTouchCancel = this._onTouchCancel;
       props.onMouseDown = this._onMouseDown;
       props.onClick = this._onClick;
     }

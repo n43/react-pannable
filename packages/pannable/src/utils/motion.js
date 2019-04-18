@@ -16,7 +16,7 @@ export function getAdjustedContentVelocity(velocity, size, acc, name) {
     }
 
     const direction = velocity[x] < 0 ? -1 : 1;
-    const maxDist = 0.25 * size[width];
+    const maxDist = 0.5 * size[width];
     const maxVelocity =
       direction *
       Math.min(
