@@ -81,11 +81,7 @@ class VerticalCarousel extends Component {
               };
               const slide = slideArr[itemIndex];
 
-              return (
-                <div key={slide} style={style}>
-                  slide {slide}
-                </div>
-              );
+              return <div style={style}>slide {slide}</div>;
             }}
             onSlideChange={this.handleSlideChange}
           />
