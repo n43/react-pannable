@@ -56,25 +56,20 @@ export default class Player extends React.Component {
         const [width, x, y] =
           direction === 'y' ? ['height', 'y', 'x'] : ['width', 'x', 'y'];
 
-        let offsetX = contentOffset[x] - delta * size[width];
+        const sizeWidth = size[width];
+        let offsetX = contentOffset[x] - delta * sizeWidth;
 
         if (loopCount <= 1) {
-          const sizeWidth = size[width];
           let minOffsetX = Math.min(sizeWidth - contentSize[width], 0);
 
           if (pagingEnabled && sizeWidth > 0) {
             minOffsetX = sizeWidth * Math.ceil(minOffsetX / sizeWidth);
           }
 
-          if (contentOffset[x] === 0) {
-            offsetX = minOffsetX;
-          } else if (contentOffset[x] === minOffsetX) {
-            offsetX = 0;
-          }
-          if (0 < offsetX) {
-            offsetX = 0;
-          } else if (offsetX < minOffsetX) {
-            offsetX = minOffsetX;
+          if (offsetX < minOffsetX) {
+            offsetX = offsetX <= minOffsetX - sizeWidth ? 0 : minOffsetX;
+          } else if (0 < offsetX) {
+            offsetX = sizeWidth <= offsetX ? minOffsetX : 0;
           }
         }
 
