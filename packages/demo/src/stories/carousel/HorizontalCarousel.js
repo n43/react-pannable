@@ -5,6 +5,12 @@ import SvgNext from './SvgNext';
 import './Carousel.css';
 import './HorizontalCarousel.css';
 
+import photo1 from './media/photo1.jpg';
+import photo2 from './media/photo2.jpg';
+import photo3 from './media/photo3.jpg';
+import photo4 from './media/photo4.jpg';
+import photo5 from './media/photo5.jpg';
+
 class HorizontalCarousel extends Component {
   constructor(props) {
     super(props);
@@ -12,7 +18,7 @@ class HorizontalCarousel extends Component {
     this.state = {
       direction: 'x',
       activeIndex: 0,
-      slideArr: [1, 2, 3, 4, 5, 6],
+      slideArr: [photo1, photo2, photo3, photo4, photo5],
     };
     this.carouselRef = React.createRef();
   }
@@ -69,24 +75,17 @@ class HorizontalCarousel extends Component {
           <Carousel
             ref={this.carouselRef}
             width={750}
-            height={300}
+            height={400}
             direction={direction}
             loop={true}
             itemCount={itemLength}
             renderItem={({ itemIndex }) => {
               const style = {
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
                 height: '100%',
-                backgroundColor: itemIndex % 2 ? '#defdff' : '#cbf1ff',
-                color: '#75d3ec',
-                fontSize: 24,
-                textAlign: 'center',
+                backgroundImage: `url(${slideArr[itemIndex]})`,
               };
-              const slide = slideArr[itemIndex];
 
-              return <div style={style}>slide {slide}</div>;
+              return <div style={style} />;
             }}
             onSlideChange={this.handleSlideChange}
           />
