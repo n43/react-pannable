@@ -8,6 +8,7 @@
 }
 .nestedGridItem {
   display: flex;
+  align-items: center;
   padding: 10px;
   height: 100%;
   background-color: #ffffff;
@@ -15,12 +16,12 @@
   box-sizing: border-box;
 }
 .nestedGridItemR {
-  flex:1;
-  padding-left: 3px;
+  flex: 1;
+  padding-left: 10px;
 }
 .nestedGridItemName {
   font-size: 14px;
-  line-height: 22px;  
+  line-height: 22px;
 }
 .nestedGridItemBtn {
   margin-top: 10px;
@@ -30,4 +31,5 @@
   color: #75d3ec;
   text-align: center;
   border-radius: 3px;
+  cursor: pointer;
 }

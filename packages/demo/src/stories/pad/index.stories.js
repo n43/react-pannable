@@ -6,7 +6,7 @@ import AutoResizingPad from './AutoResizingPad';
 import GeneralContentLayout from './GeneralContentLayout';
 import GridContentLayout from './GridContentLayout';
 import ListContentLayout from './ListContentLayout';
-// import NestedMutipleContent from './NestedMutipleContent';
+import NestedMutipleContent from './NestedMutipleContent';
 
 storiesOf('Pad', module)
   .add('Scrollable Content', () => <BasicScroll />)
@@ -14,5 +14,5 @@ storiesOf('Pad', module)
   .add('Auto Resizing with Pad', () => <AutoResizingPad />)
   .add('Layout with General Content', () => <GeneralContentLayout />)
   .add('Layout with Grid Content', () => <GridContentLayout />)
-  .add('Layout with List Content', () => <ListContentLayout />);
-// .add('Layout with Mutiple Content', () => <NestedMutipleContent />);
+  .add('Layout with List Content', () => <ListContentLayout />)
+  .add('Layout with Mutiple Content', () => <NestedMutipleContent />);

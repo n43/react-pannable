@@ -58,7 +58,6 @@ export default class NestedMutipleContent extends React.Component {
               spacing={spacing}
               itemCount={3}
               renderItem={({ itemIndex, Item }) => {
-                const itemStyle = {};
                 if (itemIndex === 0) {
                   return (
                     <Item hash="Title">
@@ -69,14 +68,14 @@ export default class NestedMutipleContent extends React.Component {
                   return (
                     <GridContent
                       width={375}
-                      itemWidth={183}
-                      itemHeight={100}
+                      itemWidth={182}
+                      itemHeight={80}
                       itemCount={40}
-                      rowSpacing={8}
+                      rowSpacing={10}
                       renderItem={({ itemIndex }) => {
                         return (
                           <div className="nestedGridItem">
-                            <SvgGithub width={30} />
+                            <SvgGithub width={36} height={36} />
                             <div className="nestedGridItemR">
                               <div className="nestedGridItemName">
                                 UserName{itemIndex}
