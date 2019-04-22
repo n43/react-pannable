@@ -1,6 +1,6 @@
 # \<Pannable />
 
-`Pannable` component can be panned(dragged) around with one finger. You can implement the event handlers for this gesture recognizer with current translation and velocity.
+`Pannable` component can be panned(dragged) around with the touch/mouse. You can implement the event handlers for this gesture recognizer with current translation and velocity.
 
 ## Usage
 
@@ -68,15 +68,15 @@ Calls whether to recognize a pan.
 
 #### `onStart`?: (evt: [PanEvent](#panevent--translation-point-velocity-point-interval-number-target-htmlelement-)) => void
 
-Calls when the finger has moved enough to be considered a pan.
+Calls when the touch/mouse has moved enough to be considered a pan.
 
 #### `onMove`?: (evt: [PanEvent](#panevent--translation-point-velocity-point-interval-number-target-htmlelement-)) => void
 
-Calls when the finger moves.
+Calls when the touch/mouse moves.
 
 #### `onEnd`?: (evt: [PanEvent](#panevent--translation-point-velocity-point-interval-number-target-htmlelement-)) => void
 
-Calls when the finger is lifted.
+Calls when the touch/mouse is left.
 
 #### `onCancel`?: (evt: [PanEvent](#panevent--translation-point-velocity-point-interval-number-target-htmlelement-)) => void
 
