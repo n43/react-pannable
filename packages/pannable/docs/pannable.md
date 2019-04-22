@@ -5,12 +5,56 @@
 ## Usage
 
 ```js
+import React from 'react';
 import { Pannable } from 'react-pannable';
 
-<Pannable enabled />;
+class Page extends React.Component {
+  state = {
+    pos: { x: 0, y: 0 },
+    startPos: null,
+  };
+
+  _onStart = () => {
+    this.setState(({ pos }) => ({ startPos: pos }));
+  };
+  _onMove = ({ translation }) => {
+    this.setState(({ startPos }) => ({
+      pos: {
+        x: startPos.x + translation.x,
+        y: startPos.y + translation.y,
+      },
+    }));
+  };
+  _onEnd = () => {};
+  _onCancel = () => {
+    this.setState(({ startPos }) => ({ pos: startPos }));
+  };
+
+  render() {
+    const { pos } = state;
+
+    return (
+      <Pannable
+        style={{
+          position: 'absolute',
+          top: pos.y,
+          left: pos.x,
+          width: 300,
+          height: 300,
+        }}
+        onStart={this._onStart}
+        onMove={this._onMove}
+        onEnd={this._onEnd}
+        onCancel={this._onCancel}
+      />
+    );
+  }
+}
 ```
 
 ## Props
+
+... `div` props
 
 #### `enabled`?: boolean
 
