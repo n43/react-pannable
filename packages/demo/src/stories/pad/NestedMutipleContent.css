@@ -1,0 +1,33 @@
+.nestedListTitle {
+  padding: 5px;
+  background-color: #cbf1ff;
+  font-size: 18px;
+  color: #75d3ec;
+  text-align: center;
+  line-height: 25px;
+}
+.nestedGridItem {
+  display: flex;
+  padding: 10px;
+  height: 100%;
+  background-color: #ffffff;
+  border-radius: 3px;
+  box-sizing: border-box;
+}
+.nestedGridItemR {
+  flex:1;
+  padding-left: 3px;
+}
+.nestedGridItemName {
+  font-size: 14px;
+  line-height: 22px;  
+}
+.nestedGridItemBtn {
+  margin-top: 10px;
+  border: 1px solid #75d3ec;
+  font-size: 14px;
+  line-height: 23px;
+  color: #75d3ec;
+  text-align: center;
+  border-radius: 3px;
+}
