@@ -55,53 +55,22 @@ export default class ListContentLayout extends React.Component {
               ref={this.listRef}
               width={375}
               spacing={spacing}
-              itemCount={3}
-              renderItem={({ itemIndex, Item }) => {
-                const fontStyle = {
-                  fontSize: '18px',
-                  color: '#75d3ec',
-                  textAlign: 'center',
-                  lineHeight: '25px',
-                };
-                const headerStyle = {
-                  padding: '5px',
-                  backgroundColor: '#cbf1ff',
-                  ...fontStyle,
-                };
-                if (itemIndex === 0) {
-                  return (
-                    <Item hash="Title">
-                      <div style={headerStyle}>Header</div>
-                    </Item>
-                  );
-                } else if (itemIndex === 1) {
-                  return (
-                    <ListContent
-                      spacing={spacing}
-                      itemCount={10}
-                      renderItem={({ itemIndex: index }) => {
-                        return (
-                          <ItemContent
-                            height={25 * (index + 1)}
-                            style={{
-                              backgroundColor: '#ffffff',
-                              ...fontStyle,
-                              lineHeight: 25 * (index + 1) + 'px',
-                            }}
-                          >
-                            {index}
-                          </ItemContent>
-                        );
-                      }}
-                    />
-                  );
-                } else if (itemIndex === 2) {
-                  return (
-                    <Item hash="Title">
-                      <div style={headerStyle}>Footer</div>
-                    </Item>
-                  );
-                }
+              itemCount={10}
+              renderItem={({ itemIndex }) => {
+                return (
+                  <ItemContent
+                    height={25 * (itemIndex + 1)}
+                    style={{
+                      backgroundColor: '#ffffff',
+                      fontSize: '18px',
+                      color: '#4a4a4a',
+                      textAlign: 'center',
+                      lineHeight: 28 * (itemIndex + 1) + 'px',
+                    }}
+                  >
+                    {itemIndex}
+                  </ItemContent>
+                );
               }}
             />
           </Pad>

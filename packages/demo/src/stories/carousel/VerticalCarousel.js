@@ -3,6 +3,12 @@ import { Carousel } from 'react-pannable';
 import './Carousel.css';
 import './VerticalCarousel.css';
 
+import photo1 from './media/photo1.jpg';
+import photo2 from './media/photo2.jpg';
+import photo3 from './media/photo3.jpg';
+import photo4 from './media/photo4.jpg';
+import photo5 from './media/photo5.jpg';
+
 class VerticalCarousel extends Component {
   constructor(props) {
     super(props);
@@ -10,7 +16,7 @@ class VerticalCarousel extends Component {
     this.state = {
       direction: 'y',
       activeIndex: 0,
-      slideArr: [1, 2, 3, 4, 5, 6],
+      slideArr: [photo1, photo2, photo3, photo4, photo5],
     };
     this.carouselRef = React.createRef();
   }
@@ -46,6 +52,7 @@ class VerticalCarousel extends Component {
               className={
                 activeIndex === index ? 'pagination-active' : 'pagination-item'
               }
+              style={{ backgroundImage: `url(${slideArr[index]})` }}
               onClick={() => this.handlePaginationClick(index)}
             />
           );
@@ -64,24 +71,17 @@ class VerticalCarousel extends Component {
           <Carousel
             ref={this.carouselRef}
             width={750}
-            height={300}
+            height={400}
             direction={direction}
             loop={true}
             itemCount={itemLength}
             renderItem={({ itemIndex }) => {
               const style = {
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
                 height: '100%',
-                backgroundColor: itemIndex % 2 ? '#defdff' : '#cbf1ff',
-                color: '#75d3ec',
-                fontSize: 24,
-                textAlign: 'center',
+                backgroundImage: `url(${slideArr[itemIndex]})`,
               };
-              const slide = slideArr[itemIndex];
 
-              return <div style={style}>slide {slide}</div>;
+              return <div style={style} />;
             }}
             onSlideChange={this.handleSlideChange}
           />
