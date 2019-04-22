@@ -25,7 +25,9 @@ class Page extends React.Component {
       },
     }));
   };
-  _onEnd = () => {};
+  _onEnd = () => {
+    console.log('End', this.state.pos);
+  };
   _onCancel = () => {
     this.setState(({ startPos }) => ({ pos: startPos }));
   };
