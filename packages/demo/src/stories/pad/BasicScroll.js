@@ -100,8 +100,8 @@ class BasicScroll extends Component {
             width={375}
             height={650}
             pagingEnabled={pagingEnabled}
-            scrollEnabled={scrollEnabled}
             directionalLockEnabled={directionalLockEnabled}
+            enabled={scrollEnabled}
           >
             {this.renderContent()}
           </Pad>

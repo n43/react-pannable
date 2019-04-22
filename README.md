@@ -85,7 +85,6 @@ type PadEvent = {
 | children               | element,function |     null     | Rendered content. Can be a render function, or a rendered element.:`(pad: Pad) => element`          |
 | width                  |      number      |      0       | The width of the bounding view.                                                                     |
 | height                 |      number      |      0       | The height of the bounding view.                                                                    |
-| scrollEnabled          |     boolean      |     true     | Determines whether scrolling is enabled.                                                            |
 | pagingEnabled          |     boolean      |    false     | Determines whether paging is enabled.                                                               |
 | directionalLockEnabled |     boolean      |    false     | Determines whether scrolling is disabled in a particular direction.                                 |
 | alwaysBounceX          |     boolean      |     true     | Determines whether bouncing always occurs when horizontal scrolling reaches the end of the content. |

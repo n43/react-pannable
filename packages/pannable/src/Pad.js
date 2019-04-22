@@ -24,7 +24,6 @@ export default class Pad extends React.Component {
     children: null,
     width: 0,
     height: 0,
-    scrollEnabled: true,
     pagingEnabled: false,
     directionalLockEnabled: false,
     alwaysBounceX: true,
@@ -518,7 +517,6 @@ export default class Pad extends React.Component {
     const {
       width,
       height,
-      scrollEnabled,
       pagingEnabled,
       directionalLockEnabled,
       alwaysBounceX,
@@ -562,7 +560,6 @@ export default class Pad extends React.Component {
     element = React.cloneElement(element, elemProps);
 
     props.children = element;
-    props.enabled = scrollEnabled;
     props.onStart = this._onDragStart;
     props.onMove = this._onDragMove;
     props.onEnd = this._onDragEnd;
