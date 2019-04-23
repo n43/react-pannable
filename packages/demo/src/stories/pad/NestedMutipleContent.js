@@ -75,7 +75,7 @@ export default class NestedMutipleContent extends React.Component {
                       renderItem={({ itemIndex }) => {
                         return (
                           <div className="nestedGridItem">
-                            <SvgGithub width={36} height={36} />
+                            <SvgGithub width={35} height={35} />
                             <div className="nestedGridItemR">
                               <div className="nestedGridItemName">
                                 UserName{itemIndex}

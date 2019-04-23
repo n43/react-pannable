@@ -15,8 +15,7 @@ export default class ProductMaster extends React.Component {
           name: 'Affogato',
           price: '$5',
           tips: null,
-          tags: ['New'],
-          number: 0,
+          tipsFolded: true,
         },
         {
           id: 'cappucino',
@@ -24,144 +23,126 @@ export default class ProductMaster extends React.Component {
           price: '$3',
           tips:
             'Buy one get one free; Discount meal with a cup of cappucino and a piece of cupcake costs $4.5',
-          tags: ['Hot', 'Discount'],
-          number: 0,
+          tipsFolded: true,
         },
         {
           id: 'coffeeshake',
           name: 'Coffee Shake',
           price: '$3.2',
           tips: null,
-          tags: ['Hot'],
-          number: 0,
+          tipsFolded: true,
         },
         {
           id: 'frozenfrappe',
           name: 'Frozen Frappe',
           price: '$4',
           tips: 'Second half price',
-          tags: null,
-          number: 0,
+          tipsFolded: true,
         },
         {
           id: 'latte',
           name: 'Latte',
           price: '$3',
           tips: null,
-          tags: ['Hot'],
-          number: 0,
+          tipsFolded: true,
         },
         {
           id: 'matchalatte',
           name: 'Matcha Latte',
           price: '$3',
           tips: null,
-          tags: ['Hot'],
-          number: 0,
+          tipsFolded: true,
         },
         {
           id: 'cocktail',
           name: 'Cocktail',
           price: '$5.5',
           tips: null,
-          tags: null,
-          number: 0,
+          tipsFolded: true,
         },
         {
           id: 'icedtea',
           name: 'Iced Tea',
           price: '$2.8',
           tips: null,
-          tags: null,
-          number: 0,
+          tipsFolded: true,
         },
         {
           id: 'water',
           name: 'Water',
           price: '$1.5',
           tips: null,
-          tags: null,
-          number: 0,
+          tipsFolded: true,
         },
         {
           id: 'biscuit',
           name: 'Biscuit',
           price: '$2',
           tips: null,
-          tags: null,
-          number: 0,
+          tipsFolded: true,
         },
         {
           id: 'cinnamonroll',
           name: 'Cinnamon Roll',
           price: '$2.8',
           tips: null,
-          tags: null,
-          number: 0,
+          tipsFolded: true,
         },
         {
           id: 'chocolate',
           name: 'Chocolate',
           price: '$3',
           tips: null,
-          tags: null,
-          number: 0,
+          tipsFolded: true,
         },
         {
           id: 'croissant',
           name: 'Croissant',
           price: '$2.8',
           tips: null,
-          tags: null,
-          number: 0,
+          tipsFolded: true,
         },
         {
           id: 'cupcake',
           name: 'Cupcake',
           price: '$3',
           tips: null,
-          tags: null,
-          number: 0,
+          tipsFolded: true,
         },
         {
           id: 'donut',
           name: 'Donut',
           price: '$3',
           tips: null,
-          tags: null,
-          number: 0,
+          tipsFolded: true,
         },
         {
           id: 'sugar',
           name: 'Sugar',
           price: '$1',
           tips: null,
-          tags: null,
-          number: 0,
+          tipsFolded: true,
         },
         {
           id: 'coffeepack',
           name: 'Coffee Pack',
           price: '$10',
           tips: null,
-          tags: null,
-          number: 0,
+          tipsFolded: true,
         },
         {
           id: 'coffeecapsules',
           name: 'Coffee Capsules',
           price: '$2',
           tips: null,
-          tags: null,
-          number: 0,
+          tipsFolded: true,
         },
         {
           id: 'spices',
           name: 'Spices',
           price: '$2',
           tips: null,
-          tags: null,
-          number: 0,
+          tipsFolded: true,
         },
       ],
     };
@@ -170,10 +151,10 @@ export default class ProductMaster extends React.Component {
     this.listRef = React.createRef();
   }
 
-  handleAddCart = index => {
+  handleTriggerTips = index => {
     this.setState(state => {
       const list = [...state.list];
-      list[index].number += 1;
+      list[index].tipsFolded = !list[index].tipsFolded;
 
       return { list };
     });
@@ -198,11 +179,16 @@ export default class ProductMaster extends React.Component {
             spacing={10}
             itemCount={list.length}
             renderItem={({ itemIndex, Item }) => {
-              const { id, name, price, tags, tips, number } = list[itemIndex];
-              const hashFlag = number > 0 ? 1 : 0;
+              const { id, name, price, tips, tipsFolded } = list[itemIndex];
+              const tipsTriggerText =
+                tips && tipsFolded
+                  ? 'Click to show tips'
+                  : 'Click to hide tips';
+              let hash = tips ? 'Item1' : 'Item2';
+              hash = tipsFolded ? hash : tips;
 
               return (
-                <Item hash={id + hashFlag}>
+                <Item hash={hash}>
                   <div className="productitem">
                     <div className="productitem-main">
                       <div
@@ -211,28 +197,18 @@ export default class ProductMaster extends React.Component {
                       <div className="productitem-right">
                         <div className="productitem-title">{name}</div>
                         <div className="productitem-price">{price}</div>
-                        <SvgCart
-                          className="productitem-cart"
-                          onClick={() => {
-                            this.handleAddCart(itemIndex);
-                          }}
-                        />
                       </div>
                     </div>
-                    {tips && <div className="productitem-tips">{tips}</div>}
-                    {tags && (
-                      <div className="productitem-tagsbar">
-                        {tags.map((tag, index) => (
-                          <div className="productitem-tag" key={index}>
-                            {tag}
-                          </div>
-                        ))}
+                    {tips && (
+                      <div
+                        className="productitem-trigger"
+                        onClick={() => this.handleTriggerTips(itemIndex)}
+                      >
+                        {tipsTriggerText}
                       </div>
                     )}
-                    {number > 0 && (
-                      <div className="productitem-carttips">
-                        You've chosen {number}
-                      </div>
+                    {!tipsFolded && (
+                      <div className="productitem-tips">{tips}</div>
                     )}
                   </div>
                 </Item>

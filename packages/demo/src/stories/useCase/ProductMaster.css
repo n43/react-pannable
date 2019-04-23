@@ -40,16 +40,7 @@
   font-size: 14px;
   color: #a56021;
 }
-.productitem-cart {
-  position: absolute;
-  top: 22px;
-  right: 0;
-}
-.productitem-carttips {
-  padding: 7px 16px;
-  font-size: 12px;
-  color: #ff6d6d;
-}
+
 .productitem-affogato {
   background: url('./media/affogato.svg') #fffae9 no-repeat center center / 45px
     45px;
@@ -126,22 +117,19 @@
   background: url('./media/spices.svg') #fffae9 no-repeat center center / 45px
     45px;
 }
-.productitem-tagsbar {
-  display: flex;
+
+.productitem-trigger {
   padding: 7px 16px;
-}
-.productitem-tag {
-  padding: 2px 4px;
-  border-radius: 3px;
-  background-color: #ff6d6d;
   font-size: 12px;
-  color: #ffffff;
+  color: #ff7a7a;
+  cursor: pointer;
 }
-.productitem-tag + .productitem-tag {
-  margin-left: 5px;
-}
+
 .productitem-tips {
+  margin: 3px 7px;
   padding: 7px 16px;
+  background-color: #f5f5f5;
+  border-radius: 4px;
   font-size: 12px;
   color: #9a9a9a;
 }
