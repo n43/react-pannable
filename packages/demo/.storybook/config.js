@@ -12,7 +12,10 @@ addDecorator(
   })
 );
 
-addDecorator(story => <Main>{story()}</Main>);
+addDecorator(story => {
+  const { content, source } = story();
+  return <Main sourceLink={source}>{content}</Main>;
+});
 
 // const req = require.context('../src/stories', true, /\.stories\.js$/);
 
