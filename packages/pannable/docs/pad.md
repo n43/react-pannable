@@ -43,27 +43,27 @@ Determines whether bouncing always occurs when horizontal scrolling reaches the 
 
 Determines whether bouncing always occurs when vertical scrolling reaches the end of the content.
 
-#### `onScroll`?: (evt: PadEvent) => void
+#### `onScroll`?: (evt: [PadEvent](#padevent--contentoffset-point-contentvelocity-point-size-size-contentsize-size-dragging-boolean-decelerating-boolean-)) => void
 
 Calls when the content scrolls.
 
-#### `onDragStart`?: (evt: PadEvent) => void
+#### `onDragStart`?: (evt: [PadEvent](#padevent--contentoffset-point-contentvelocity-point-size-size-contentsize-size-dragging-boolean-decelerating-boolean-)) => void
 
 Calls when dragging started.
 
-#### `onDragEnd`?: (evt: PadEvent) => void
+#### `onDragEnd`?: (evt: [PadEvent](#padevent--contentoffset-point-contentvelocity-point-size-size-contentsize-size-dragging-boolean-decelerating-boolean-)) => void
 
 Calls when dragging ended.
 
-#### `onDecelerationStart`?: (evt: PadEvent) => void
+#### `onDecelerationStart`?: (evt: [PadEvent](#padevent--contentoffset-point-contentvelocity-point-size-size-contentsize-size-dragging-boolean-decelerating-boolean-)) => void
 
 Calls when decelerating started.
 
-#### `onDecelerationEnd`?: (evt: PadEvent) => void
+#### `onDecelerationEnd`?: (evt: [PadEvent](#padevent--contentoffset-point-contentvelocity-point-size-size-contentsize-size-dragging-boolean-decelerating-boolean-)) => void
 
 Calls when decelerating ended.
 
-#### `onContentResize`?: (evt: PadEvent) => void
+#### `onContentResize`?: (evt: [PadEvent](#padevent--contentoffset-point-contentvelocity-point-size-size-contentsize-size-dragging-boolean-decelerating-boolean-)) => void
 
 Calls when the content resizes.
 
