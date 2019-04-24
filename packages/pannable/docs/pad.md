@@ -45,15 +45,27 @@ Determines whether bouncing always occurs when vertical scrolling reaches the en
 
 #### `onScroll`?: (evt: PadEvent) => void
 
+Calls when the content scrolls.
+
 #### `onDragStart`?: (evt: PadEvent) => void
+
+Calls when dragging started.
 
 #### `onDragEnd`?: (evt: PadEvent) => void
 
+Calls when dragging ended.
+
 #### `onDecelerationStart`?: (evt: PadEvent) => void
+
+Calls when decelerating started.
 
 #### `onDecelerationEnd`?: (evt: PadEvent) => void
 
+Calls when decelerating ended.
+
 #### `onContentResize`?: (evt: PadEvent) => void
+
+Calls when the content resizes.
 
 ## Types
 
@@ -61,4 +73,4 @@ Determines whether bouncing always occurs when vertical scrolling reaches the en
 
 #### `Size`: { width: number, height: number }
 
-#### `PadEvent`: { contentOffset: Point, contentVelocity: Point, size: Size, contentSize: Size, dragging: boolean, decelerating: boolean }
+#### `PadEvent`: { contentOffset: [Point](#point--x-number-y-number-), contentVelocity: [Point](#point--x-number-y-number-), size: [Size](#size--width-number-height-number-), contentSize: [Size](#size--width-number-height-number-), dragging: boolean, decelerating: boolean }
