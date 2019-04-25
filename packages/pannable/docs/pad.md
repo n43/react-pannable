@@ -77,7 +77,7 @@ Calls when changes the size of the content.
 
 #### getVisibleRect()
 
-The visible content rectangle of the component.
+Returns the visible content rectangle of the component.
 
 #### setContentSize(size: [Size](#size--width-number-height-number-))
 

@@ -21,7 +21,7 @@ const DECELERATION_RATE_WEAK = 0.004;
 
 export default class Pad extends React.Component {
   static defaultProps = {
-    children: null,
+    ...Pannable.defaultProps,
     width: 0,
     height: 0,
     pagingEnabled: false,
