@@ -126,15 +126,8 @@ export default class Pad extends React.Component {
     return !!this.state.deceleration;
   }
 
-  getVisibleRect(state) {
-    const { contentOffset, size } = state || this.state;
-
-    return {
-      x: -contentOffset.x,
-      y: -contentOffset.y,
-      width: size.width,
-      height: size.height,
-    };
+  getVisibleRect() {
+    return this._getVisibleRect(this.state);
   }
 
   setContentSize(contentSize) {
@@ -143,13 +136,24 @@ export default class Pad extends React.Component {
 
   scrollToRect({ rect, align = 'auto', animated = true }) {
     this._setContentOffset(
-      state => calculateRectOffset(rect, this.getVisibleRect(state), align),
+      state => calculateRectOffset(rect, this._getVisibleRect(state), align),
       animated
     );
   }
 
   scrollTo({ offset, animated = true }) {
     this._setContentOffset(offset, animated);
+  }
+
+  _getVisibleRect(state) {
+    const { contentOffset, size } = state;
+
+    return {
+      x: -contentOffset.x,
+      y: -contentOffset.y,
+      width: size.width,
+      height: size.height,
+    };
   }
 
   _getPadEvent() {

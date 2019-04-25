@@ -67,10 +67,26 @@ Calls when decelerating ended.
 
 Calls when the content resizes.
 
+## APIs
+
+#### getVisibleRect()
+
+#### setContentSize(size: [Size](#size--width-number-height-number-))
+
+#### scrollTo({ offset: [Point](#point--x-number-y-number-), animated?: boolean })
+
+#### scrollToRect({ rect: [Rect](#rect--x-number-y-number-width-number-height-number-), align: [Align](#point--x-number-y-number-), animated?: boolean })
+
 ## Types
 
 #### `Point`: { x: number, y: number }
 
 #### `Size`: { width: number, height: number }
+
+#### `Rect`: { x: number, y: number, width: number, height: number }
+
+#### AlignEnum: 'auto' | 'center' | 'start' | 'end' | number
+
+#### Align: { x: [AlignEnum](alignenum--auto-center-start-end-number-), y: [AlignEnum](alignenum--auto-center-start-end-number-) } | [AlignEnum](alignenum--auto-center-start-end-number-)
 
 #### `PadEvent`: { contentOffset: [Point](#point--x-number-y-number-), contentVelocity: [Point](#point--x-number-y-number-), size: [Size](#size--width-number-height-number-), contentSize: [Size](#size--width-number-height-number-), dragging: boolean, decelerating: boolean }
