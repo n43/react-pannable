@@ -49,7 +49,7 @@ Determines whether bouncing always occurs when vertical scrolling reaches the en
 
 #### `onScroll`?: (evt: [PadEvent](#padevent--contentoffset-point-contentvelocity-point-size-size-contentsize-size-dragging-boolean-decelerating-boolean-)) => void
 
-Calls when the content scrolls.
+Calls when scrolls the content.
 
 #### `onDragStart`?: (evt: [PadEvent](#padevent--contentoffset-point-contentvelocity-point-size-size-contentsize-size-dragging-boolean-decelerating-boolean-)) => void
 
@@ -69,7 +69,7 @@ Calls when decelerating ended.
 
 #### `onContentResize`?: (evt: [PadEvent](#padevent--contentoffset-point-contentvelocity-point-size-size-contentsize-size-dragging-boolean-decelerating-boolean-)) => void
 
-Calls when the content resizes.
+Calls when changes the size of the content.
 
 ## APIs
 
