@@ -11,13 +11,15 @@ import { Pad } from 'react-pannable';
 class Page extends React.Component {
   render() {
     return (
-      <Pad width="300" height="400">
+      <Pad width={300} height={400}>
         <img src="beautiful.jpg" />
       </Pad>
     );
   }
 }
 ```
+
+[Try it on CodePen](https://codepen.io/cztflove/pen/KYrRgQ)
 
 ## Props
 
