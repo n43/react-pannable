@@ -19,7 +19,7 @@ class Page extends React.Component {
 }
 ```
 
-[![Try it on CodePen](https://img.shields.io/badge/CodePen-Try%20it-blue.svg?logo=CodePen)](https://codepen.io/cztflove/pen/KYrRgQ)
+[![Try it on CodePen](https://img.shields.io/badge/Example-Run%20on%20CodePen-blue.svg?logo=CodePen)](https://codepen.io/cztflove/pen/KYrRgQ)
 
 ## Props
 
