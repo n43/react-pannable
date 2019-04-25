@@ -11,17 +11,21 @@ import { AutoResizing, Pad } from 'react-pannable';
 class Page extends React.Component {
   render() {
     return (
-      <AutoResizing>
-        {size => (
-          <Pad width={size.width} height={size.height}>
-            <div>Some thing...</div>
-          </Pad>
-        )}
-      </AutoResizing>
+      <div style={{ height: 300, backgroundColor: '#f5f5f5' }}>
+        <AutoResizing>
+          {size => (
+            <Pad width={size.width} height={size.height}>
+              <div style={{ width: size.width }}>Some thing...</div>
+            </Pad>
+          )}
+        </AutoResizing>
+      </div>
     );
   }
 }
 ```
+
+[![Try it on CodePen](https://img.shields.io/badge/CodePen-Run-blue.svg?logo=CodePen)](https://codepen.io/cztflove/pen/MRzPXw)
 
 ## Props
 
