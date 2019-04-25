@@ -36,12 +36,12 @@ export default class GeneralContent extends React.Component {
   }
 
   _checkResizeNode() {
-    const resizeNode = this.elemRef.current.resizeRef.current;
+    const { width, height, resizeRef } = this.props;
 
-    if (resizeNode) {
-      this._attachResizeNode(resizeNode);
-    } else {
+    if (typeof width === 'number' && typeof height === 'number') {
       this._detachResizeNode();
+    } else {
+      this._attachResizeNode(resizeRef.current);
     }
   }
 

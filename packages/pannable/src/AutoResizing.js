@@ -13,15 +13,41 @@ export default class AutoResizing extends React.Component {
   constructor(props) {
     super(props);
 
-    const { width, height } = props;
-    let size = null;
+    this.state = {
+      size: null,
+      prevWidth: null,
+      prevHeight: null,
+    };
 
-    if (typeof width === 'number' && typeof height === 'number') {
-      size = { width, height };
+    this.resizeRef = React.createRef();
+  }
+
+  static getDerivedStateFromProps(props, state) {
+    const { width, height } = props;
+    const { size, prevWidth, prevHeight } = state;
+    let nextState = null;
+
+    if (width !== prevWidth || height !== prevHeight) {
+      let nextSize = null;
+
+      if (typeof width === 'number' && typeof height === 'number') {
+        nextSize = { width, height };
+      }
+
+      nextState = nextState || {};
+
+      if (!isEqualSize(nextSize, size)) {
+        nextState.size = nextSize;
+      }
+      if (width !== prevWidth) {
+        nextState.prevWidth = width;
+      }
+      if (height !== prevHeight) {
+        nextState.prevHeight = height;
+      }
     }
 
-    this.state = { size };
-    this.resizeRef = React.createRef();
+    return nextState;
   }
 
   componentDidMount() {
@@ -32,17 +58,23 @@ export default class AutoResizing extends React.Component {
     } else {
       this.calculateSize();
     }
+
+    this._checkResizeNode();
   }
 
   componentDidUpdate(prevProps, prevState) {
     const { width, height, onResize } = this.props;
     const { size } = this.state;
 
-    if (prevProps.width !== width || prevProps.height !== height) {
-      this.calculateSize();
+    if (width !== prevProps.width || height !== prevProps.height) {
+      this._checkResizeNode();
     }
-    if (prevState.size !== size) {
-      onResize(size);
+    if (size !== prevState.size) {
+      if (size) {
+        onResize(size);
+      } else {
+        this.calculateSize();
+      }
     }
   }
 
@@ -55,56 +87,50 @@ export default class AutoResizing extends React.Component {
   }
 
   calculateSize() {
-    this.setState((state, props) => {
+    this.setState(state => {
+      const resizeNode = this.resizeRef.current;
+
+      if (!resizeNode) {
+        return null;
+      }
+
       const { size } = state;
-      const { width, height } = props;
+      const nextSize = getElementSize(resizeNode);
 
-      let nextSize = size;
-      let nextState = null;
-
-      if (typeof width === 'number' && typeof height === 'number') {
-        this._detachResizeNode();
-
-        nextSize = { width, height };
-      } else {
-        if (this._attachResizeNode()) {
-          return null;
-        }
-
-        nextSize = getElementSize(this._resizeNode);
+      if (isEqualSize(nextSize, size)) {
+        return null;
       }
 
-      if (!isEqualSize(nextSize, size)) {
-        nextState = nextState || {};
-        nextState.size = nextSize;
-      }
-
-      return nextState;
+      return { size: nextSize };
     });
   }
 
-  _attachResizeNode() {
-    const resizeNode = this.resizeRef.current;
+  _checkResizeNode() {
+    const { width, height } = this.props;
 
-    if (!resizeNode || this._resizeNode) {
-      return false;
+    if (typeof width === 'number' && typeof height === 'number') {
+      this._detachResizeNode();
+    } else {
+      this._attachResizeNode(this.resizeRef.current);
+    }
+  }
+
+  _attachResizeNode(resizeNode) {
+    if (this._resizeNode) {
+      return;
     }
 
     this._resizeNode = resizeNode;
     resizeDetector.listenTo(resizeNode, () => this.calculateSize());
-
-    return true;
   }
 
   _detachResizeNode() {
     if (!this._resizeNode) {
-      return false;
+      return;
     }
 
     resizeDetector.uninstall(this._resizeNode);
     this._resizeNode = undefined;
-
-    return true;
   }
 
   render() {
