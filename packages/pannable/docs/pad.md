@@ -10,7 +10,11 @@ import { Pad } from 'react-pannable';
 
 class Page extends React.Component {
   render() {
-    return <Pad />;
+    return (
+      <Pad width="300" height="400">
+        <img src="beautiful.jpg" />
+      </Pad>
+    );
   }
 }
 ```
@@ -71,11 +75,19 @@ Calls when the content resizes.
 
 #### getVisibleRect()
 
+The visible content rectangle of the component.
+
 #### setContentSize(size: [Size](#size--width-number-height-number-))
+
+Sets the size of the content.
 
 #### scrollTo({ offset: [Point](#point--x-number-y-number-), animated?: boolean })
 
-#### scrollToRect({ rect: [Rect](#rect--x-number-y-number-width-number-height-number-), align: [Align](#point--x-number-y-number-), animated?: boolean })
+Scrolls the content to the specified offset.
+
+#### scrollToRect({ rect: [Rect](#rect--x-number-y-number-width-number-height-number-), align: [Align](#align--x-alignenum-y-alignenum---alignenum), animated?: boolean })
+
+Scrolls the content until the specified rectangle is visible.
 
 ## Types
 
@@ -87,6 +99,6 @@ Calls when the content resizes.
 
 #### AlignEnum: 'auto' | 'center' | 'start' | 'end' | number
 
-#### Align: { x: [AlignEnum](alignenum--auto-center-start-end-number-), y: [AlignEnum](alignenum--auto-center-start-end-number-) } | [AlignEnum](alignenum--auto-center-start-end-number-)
+#### Align: { x: [AlignEnum](#alignenum-auto--center--start--end--number), y: [AlignEnum](#alignenum-auto--center--start--end--number) } | [AlignEnum](#alignenum-auto--center--start--end--number)
 
 #### `PadEvent`: { contentOffset: [Point](#point--x-number-y-number-), contentVelocity: [Point](#point--x-number-y-number-), size: [Size](#size--width-number-height-number-), contentSize: [Size](#size--width-number-height-number-), dragging: boolean, decelerating: boolean }
