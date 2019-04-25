@@ -1,12 +1,11 @@
 .main-wrapper {
   margin: 0 auto;
-  padding: 20px 0;
+  padding: 10px 0;
   width: 750px;
 }
 .main-source {
-  position: absolute;
-  top: 10px;
-  left: 10px;
+  display: inline-block;
+  margin: 10px;
   padding: 8px 10px;
   border: 1px solid #e7e7e7;
   background-color: #f3f3f3;
