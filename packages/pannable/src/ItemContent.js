@@ -4,7 +4,6 @@ import { isEqualSize } from './utils/geometry';
 
 export default class ItemContent extends React.Component {
   static defaultProps = {
-    resizeRef: React.createRef(),
     width: null,
     height: null,
     visibleRect: { x: 0, y: 0, width: 0, height: 0 },
@@ -20,6 +19,8 @@ export default class ItemContent extends React.Component {
       prevWidth: null,
       prevHeight: null,
     };
+
+    this.resizeRef = React.createRef();
   }
 
   static getDerivedStateFromProps(props, state) {
@@ -77,9 +78,8 @@ export default class ItemContent extends React.Component {
   }
 
   calculateSize() {
-    this.setState((state, props) => {
-      const { resizeRef } = props;
-      const resizeNode = resizeRef.current;
+    this.setState(state => {
+      const resizeNode = this.resizeRef.current;
 
       if (!resizeNode) {
         return null;
@@ -100,7 +100,6 @@ export default class ItemContent extends React.Component {
     const {
       width,
       height,
-      resizeRef,
       visibleRect,
       onResize,
       connectWithPad,
@@ -129,7 +128,7 @@ export default class ItemContent extends React.Component {
     if (!(typeof width === 'number' && typeof height === 'number')) {
       element = (
         <div
-          ref={resizeRef}
+          ref={this.resizeRef}
           style={{
             position: 'absolute',
             width: typeof width === 'number' ? width : 'auto',

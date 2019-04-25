@@ -1,5 +1,7 @@
 # \<AutoResizing />
 
+`AutoResizing` calculates the size of the component automatically when its parent node's size changes.
+
 ## Usage
 
 ```js

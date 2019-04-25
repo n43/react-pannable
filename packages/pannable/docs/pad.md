@@ -21,7 +21,7 @@ class Page extends React.Component {
 
 ## Props
 
-... [`Pannable`](pannable.md) props
+... [Pannable](pannable.md) props
 
 #### `width`: number
 
