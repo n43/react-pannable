@@ -33,7 +33,7 @@ class Page extends React.Component {
   };
 
   render() {
-    const { pos } = state;
+    const { pos } = this.state;
 
     return (
       <Pannable
@@ -53,6 +53,8 @@ class Page extends React.Component {
   }
 }
 ```
+
+[Try it on CodePen](https://codepen.io/cztflove/pen/rbQpMQ)
 
 ## Props
 
