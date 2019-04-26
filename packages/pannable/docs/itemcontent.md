@@ -1,6 +1,6 @@
 # \<ItemContent />
 
-# Usage
+## Usage
 
 ```js
 import React from 'react';
@@ -47,8 +47,8 @@ Calls when changes the size of the component.
 
 Calculates the size of the component manually.
 
-## Types
+## Interfaces
 
-#### `Size`: { width: number, height: number }
+#### `Size` { width: number, height: number }
 
-#### `Rect`: { x: number, y: number, width: number, height: number }
+#### `Rect` { x: number, y: number, width: number, height: number }

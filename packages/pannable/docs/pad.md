@@ -91,16 +91,16 @@ Scrolls the content to the specified offset.
 
 Scrolls the content until the specified rectangle is visible.
 
-## Types
+## Interfaces
 
-#### `Point`: { x: number, y: number }
+#### `Point` { x: number, y: number }
 
-#### `Size`: { width: number, height: number }
+#### `Size` { width: number, height: number }
 
-#### `Rect`: { x: number, y: number, width: number, height: number }
+#### `Rect` { x: number, y: number, width: number, height: number }
 
-#### AlignEnum: 'auto' | 'center' | 'start' | 'end' | number
+#### `AlignEnum` 'auto' | 'center' | 'start' | 'end' | number
 
-#### Align: { x: [AlignEnum](#alignenum-auto--center--start--end--number), y: [AlignEnum](#alignenum-auto--center--start--end--number) } | [AlignEnum](#alignenum-auto--center--start--end--number)
+#### `Align` { x: [AlignEnum](#alignenum-auto--center--start--end--number), y: [AlignEnum](#alignenum-auto--center--start--end--number) } | [AlignEnum](#alignenum-auto--center--start--end--number)
 
-#### `PadEvent`: { contentOffset: [Point](#point--x-number-y-number-), contentVelocity: [Point](#point--x-number-y-number-), size: [Size](#size--width-number-height-number-), contentSize: [Size](#size--width-number-height-number-), dragging: boolean, decelerating: boolean }
+#### `PadEvent` { contentOffset: [Point](#point--x-number-y-number-), contentVelocity: [Point](#point--x-number-y-number-), size: [Size](#size--width-number-height-number-), contentSize: [Size](#size--width-number-height-number-), dragging: boolean, decelerating: boolean }
