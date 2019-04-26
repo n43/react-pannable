@@ -25,6 +25,7 @@ export default class ListContent extends React.Component {
 
     this._itemHashList = [];
     this._itemSizeDict = {};
+    this._invalidLayout = false;
 
     this.state = calculateLayout(props, this._itemHashList, this._itemSizeDict);
   }
@@ -34,6 +35,10 @@ export default class ListContent extends React.Component {
 
     if (size) {
       this.props.onResize(size);
+    }
+
+    if (this._invalidLayout) {
+      this._layout();
     }
   }
 
@@ -59,12 +64,16 @@ export default class ListContent extends React.Component {
       estimatedItemWidth !== prevProps.estimatedItemWidth ||
       estimatedItemHeight !== prevProps.estimatedItemHeight
     ) {
-      this._layout();
+      this._invalidLayout = true;
     }
     if (prevState.size !== size) {
       if (size) {
         onResize(size);
       }
+    }
+
+    if (this._invalidLayout) {
+      this._layout();
     }
   }
 
@@ -80,6 +89,8 @@ export default class ListContent extends React.Component {
   }
 
   _layout() {
+    this._invalidLayout = false;
+
     this.setState((state, props) => {
       const { size } = state;
       const nextState = {};
@@ -136,7 +147,10 @@ export default class ListContent extends React.Component {
       hash = key;
     }
 
-    this._itemHashList[itemIndex] = hash;
+    if (hash !== this._itemHashList[itemIndex]) {
+      this._invalidLayout = true;
+      this._itemHashList[itemIndex] = hash;
+    }
 
     if (!forceRender && !needsRender) {
       return null;
