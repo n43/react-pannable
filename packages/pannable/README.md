@@ -19,17 +19,18 @@ npm install --save react-pannable
 
 Some `Pannable` demos
 
-- [Draggable Notes](https://n43.github.io/react-pannable/?selectedKind=Pannable&selectedStory=Note&full=0&addons=0&stories=1&panelRight=0)
-- [Adjustable Sticker](https://n43.github.io/react-pannable/?selectedKind=Pannable&selectedStory=Sticker&full=0&addons=0&stories=1&panelRight=0)
+- [Draggable Notes](https://n43.github.io/react-pannable/?path=/story/pannable--note)
+- [Adjustable Sticker](https://n43.github.io/react-pannable/?path=/story/pannable--sticker)
 
 Some `Pad` demos
 
-- [Scrollable Content](https://n43.github.io/react-pannable/?selectedKind=Pad&selectedStory=Scrollable%20Content&full=0&addons=0&stories=1&panelRight=0)
-- [Locating Specified Content](https://n43.github.io/react-pannable/?selectedKind=Pad&selectedStory=Locating%20Specified%20Content&full=0&addons=0&stories=1&panelRight=0)
-- [Auto Resizing with Pad](https://n43.github.io/react-pannable/?selectedKind=Pad&selectedStory=Auto%20Resizing%20with%20Pad&full=0&addons=0&stories=1&panelRight=0)
-- [Layout with General Content](https://n43.github.io/react-pannable/?selectedKind=Pad&selectedStory=Layout%20with%20General%20Content&full=0&addons=0&stories=1&panelRight=0)
-- [Layout with Grid Content](https://n43.github.io/react-pannable/?selectedKind=Pad&selectedStory=Layout%20with%20Grid%20Content&full=0&addons=0&stories=1&panelRight=0)
-- [Layout with List Content](https://n43.github.io/react-pannable/?selectedKind=Pad&selectedStory=Layout%20with%20List%20Content&full=0&addons=0&stories=1&panelRight=0)
+- [Scrollable Content](https://n43.github.io/react-pannable/?path=/story/pad--scrollable-content)
+- [Locating Specified Content](https://n43.github.io/react-pannable/?path=/story/pad--locating-specified-content)
+- [Auto Resizing with Pad](https://n43.github.io/react-pannable/?path=/story/pad--auto-resizing-with-pad)
+- [Layout with General Content](https://n43.github.io/react-pannable/?path=/story/pad--layout-with-general-content)
+- [Layout with Grid Content](https://n43.github.io/react-pannable/?path=/story/pad--layout-with-grid-content)
+- [Layout with List Content](https://n43.github.io/react-pannable/?path=/story/pad--layout-with-list-content)
+- [Layout with Nested Content](https://n43.github.io/react-pannable/?path=/story/pad--layout-with-nested-content)
 
 ## API Reference
 

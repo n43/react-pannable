@@ -3,7 +3,7 @@ import './field.css';
 
 class TextField extends Component {
   render() {
-    const { name, readOnly } = this.props;
+    const { name, value, readOnly } = this.props;
 
     return (
       <div className="textfield-item">

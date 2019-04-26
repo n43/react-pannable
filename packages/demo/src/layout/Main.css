@@ -7,13 +7,13 @@
   display: inline-block;
   margin: 10px;
   padding: 8px 10px;
-  border: 1px solid #e7e7e7;
-  background-color: #f3f3f3;
+  border: 1px solid #ebeef1;
+  background-color: #f6f9fc;
   font-size: 14px;
   color: #4a4a4a;
   font-weight: bold;
   text-decoration: none;
 }
 .main-source:hover {
-  background-color: #ececec;
+  background-color: rgba(0, 0, 0, 0.05);
 }
