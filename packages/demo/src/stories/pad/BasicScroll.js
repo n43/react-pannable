@@ -91,6 +91,7 @@ class BasicScroll extends Component {
       scrollToX,
       scrollToY,
     } = this.state;
+
     return (
       <div className="pad-main">
         <div className="pad-preview">

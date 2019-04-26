@@ -36,7 +36,7 @@ storiesOf('Pad', module)
     content: <ListContentLayout />,
     source: basicSourceLink + 'ListContentLayout.js',
   }))
-  .add('Layout with Mutiple Content', () => ({
+  .add('Layout with Nested Content', () => ({
     content: <NestedMutipleContent />,
     source: basicSourceLink + 'NestedMutipleContent.js',
   }));
