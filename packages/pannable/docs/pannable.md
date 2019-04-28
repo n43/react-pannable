@@ -84,8 +84,6 @@ Calls when the touch/mouse is left.
 
 Calls when a system event cancels the recognizing pan.
 
-## Interfaces
+## Types
 
-#### `Point` { x: number, y: number }
-
-#### `PanEvent` { translation: [Point](#point--x-number-y-number-), velocity: [Point](#point--x-number-y-number-), interval: number, target: HTMLElement }
+#### `PanEvent` { translation: [Point](types.md#point--x-number-y-number-), velocity: [Point](types.md#point--x-number-y-number-), interval: number, target: HTMLElement }

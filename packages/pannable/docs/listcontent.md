@@ -4,11 +4,9 @@
 
 ## Props
 
+... [BaseContentProps](types.md#basecontentprops)
+
 #### `direction`?: 'x' | 'y'
-
-#### `width`?: number
-
-#### `height`?: number
 
 #### `spacing`?: number
 
@@ -20,26 +18,10 @@
 
 #### `renderItem`: (attrs: LayoutAttrs) => ReactNode
 
-#### `visibleRect`?: [Rect](#rect--x-number-y-number-width-number-height-number-)
-
-The visible rectangle of the content.
-
-#### `connectWithPad`?: boolean
-
-Determines whether connect with the [Pad](pad.md) component automatically.
-
-#### `onResize`?: (size: [Size](#size--width-number-height-number-)) => void
-
-Calls when changes the size of the component.
-
 ## APIs
 
-## Interfaces
-
-#### `Size` { width: number, height: number }
-
-#### `Rect` { x: number, y: number, width: number, height: number }
+## Types
 
 #### `ItemProps` { key: string, hash: string, forceRender: boolean, style: CSSProperties }
 
-#### LayoutAttrs { itemIndex: number, rect: Rect, visibleRect: Rect, needsRender: boolean, Item: Component<ItemProps> };
+#### LayoutAttrs { itemIndex: number, rect: [Rect](types.md#rect--x-number-y-number-width-number-height-number-), visibleRect: [Rect](types.md#rect--x-number-y-number-width-number-height-number-), needsRender: boolean, Item: Component<ItemProps, any> };
