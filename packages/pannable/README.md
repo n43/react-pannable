@@ -13,6 +13,17 @@ Install `react-pannable` using npm.
 npm install --save react-pannable
 ```
 
+## API Reference
+
+#### [`<Pannable />`](docs/pannable.md) - Can be panned(dragged) around with the touch/mouse
+
+#### [`<Pad />`](docs/pad.md) - Handles scrolling of content
+
+- [`<ItemContent />`](docs/itemcontent.md)
+- [`<GeneralContent />`](docs/generalcontent.md)
+- [`<ListContent />`](docs/listcontent.md)
+- [`<GridContent />`](docs/gridcontent.md)
+
 ## Examples
 
 [All the examples!](https://n43.github.io/react-pannable/)
@@ -31,17 +42,6 @@ Some `Pad` demos
 - [Layout with Grid Content](https://n43.github.io/react-pannable/?path=/story/pad--layout-with-grid-content)
 - [Layout with List Content](https://n43.github.io/react-pannable/?path=/story/pad--layout-with-list-content)
 - [Layout with Nested Content](https://n43.github.io/react-pannable/?path=/story/pad--layout-with-nested-content)
-
-## API Reference
-
-### [`<Pannable />`](docs/pannable.md) - Can be panned(dragged) around with the touch/mouse
-
-### [`<Pad />`](docs/pad.md) - Handles scrolling of content
-
-- [`<ItemContent />`](docs/itemcontent.md)
-- [`<GeneralContent />`](docs/generalcontent.md)
-- [`<ListContent />`](docs/listcontent.md)
-- [`<GridContent />`](docs/gridcontent.md)
 
 ## License
 
