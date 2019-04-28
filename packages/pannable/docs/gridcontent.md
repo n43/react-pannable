@@ -8,17 +8,31 @@
 
 #### `direction`?: 'x' | 'y'
 
+The layout direction of the content. The default value is `y`.
+
 #### `rowSpacing`?: number
+
+The minimum spacing to use between rows.
 
 #### `columnSpacing`?: number
 
+The minimum spacing to use between columns.
+
 #### `itemCount`: number
+
+The number of items.
 
 #### `itemWidth`: number
 
+The width of items.
+
 #### `itemHeight`: number
 
+The height of items.s
+
 #### `renderItem`: (attrs: LayoutAttrs) => ReactNode
+
+Returns a element by the layout attributes.
 
 ## APIs
 

@@ -12,6 +12,8 @@
 
 ## BaseContentProps
 
+... `div` props
+
 #### `width`?: number
 
 The width of the component. If not specified, it shrinks to fit the space available.

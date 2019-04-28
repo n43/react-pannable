@@ -8,15 +8,27 @@
 
 #### `direction`?: 'x' | 'y'
 
+The layout direction of the content. The default value is `y`.
+
 #### `spacing`?: number
+
+The minimum spacing to use between items.
 
 #### `itemCount`: number
 
+The number of items.
+
 #### `estimatedItemWidth`?: number
+
+The estimated width of items.
 
 #### `estimatedItemHeight`?: number
 
+The estimated height of items.
+
 #### `renderItem`: (attrs: LayoutAttrs) => ReactNode
+
+Returns a element by the layout attributes.
 
 ## APIs
 
