@@ -1,6 +1,13 @@
 # \<Pad />
 
-`Pad` component handles scrolling of content. it tracks the movements of the touch/mouse and adjusts the origin accordingly. by default, it bounces back when scrolling exceeds the bounds of the content.
+`Pad` component handles scrolling of content. its origin is adjustable over the content. it tracks the movements of the touch/mouse and adjusts the origin accordingly. by default, it bounces back when scrolling exceeds the bounds of the content.
+
+`Pad` component must know the size of the content so it knows when to stop scrolling.
+
+- [`<ItemContent />`](itemcontent.md)
+- [`<GeneralContent />`](generalcontent.md)
+- [`<ListContent />`](listcontent.md)
+- [`<GridContent />`](gridcontent.md)
 
 ## Usage
 

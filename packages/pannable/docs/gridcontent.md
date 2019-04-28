@@ -28,7 +28,7 @@ The width of items.
 
 #### `itemHeight`: number
 
-The height of items.s
+The height of items.
 
 #### `renderItem`: (attrs: LayoutAttrs) => ReactNode
 
