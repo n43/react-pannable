@@ -1220,15 +1220,6 @@
   resolved "https://registry.yarnpkg.com/@sindresorhus/is/-/is-0.7.0.tgz#9a06f4f137ee84d7df0460c1fdb1135ffa6c50fd"
   integrity sha512-ONhaKPIufzzrlNbqtWFFd+jlnemX6lJAgq9ZeiZtS7I1PIf/la7CW4m83rTXRnVnsMbW2k56pGYu7AUFJD9Pow==
 
-"@storybook/addon-options@^5.0.10":
-  version "5.0.10"
-  resolved "https://registry.yarnpkg.com/@storybook/addon-options/-/addon-options-5.0.10.tgz#79cbb359213b3a8c2bd4c79e5854aa0b26b6df4f"
-  integrity sha512-zML2JOh6Xx3xjZPrh6kj6BSutHLJihWWBIOrM1W9Yw49sL3XOv8/9lKQS4HWdCMuVDhq12Jss4ca1RcnRvaK6g==
-  dependencies:
-    "@storybook/addons" "5.0.10"
-    core-js "^2.6.5"
-    util-deprecate "^1.0.2"
-
 "@storybook/addons@5.0.10":
   version "5.0.10"
   resolved "https://registry.yarnpkg.com/@storybook/addons/-/addons-5.0.10.tgz#8911e6e7797185327f0117035a4bc451a57e62d7"
