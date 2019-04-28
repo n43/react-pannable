@@ -19,10 +19,10 @@ npm install --save react-pannable
 
 #### [`<Pad />`](docs/pad.md) - Handles scrolling of content
 
-- [`<ItemContent />`](docs/itemcontent.md)
-- [`<GeneralContent />`](docs/generalcontent.md)
-- [`<ListContent />`](docs/listcontent.md)
-- [`<GridContent />`](docs/gridcontent.md)
+- [`<ItemContent />`](docs/itemcontent.md) -
+- [`<GeneralContent />`](docs/generalcontent.md) -
+- [`<ListContent />`](docs/listcontent.md) -
+- [`<GridContent />`](docs/gridcontent.md) -
 
 ## Examples
 

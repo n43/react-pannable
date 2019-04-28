@@ -38,7 +38,7 @@ The visible rectangle of the content.
 
 #### `connectWithPad`?: boolean
 
-Determines whether connect with the [Pad](pad.md) component automatically.
+Determines whether connect with the [`Pad`](pad.md) component automatically.
 
 #### `onResize`?: (size: [Size](#size--width-number-height-number-)) => void
 
