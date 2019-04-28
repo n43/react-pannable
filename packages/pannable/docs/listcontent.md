@@ -1,5 +1,7 @@
 # \<ListContent />
 
+`ListContent` component displays data in a single column/row.
+
 ## Usage
 
 ## Props
