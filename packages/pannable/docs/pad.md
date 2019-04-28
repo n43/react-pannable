@@ -1,6 +1,13 @@
 # \<Pad />
 
-`Pad` component handles scrolling of content. it tracks the movements of the touch/mouse and adjusts the origin accordingly. by default, it bounces back when scrolling exceeds the bounds of the content.
+`Pad` component handles scrolling of content. its origin is adjustable over the content. it tracks the movements of the touch/mouse and adjusts the origin accordingly. by default, it bounces back when scrolling exceeds the bounds of the content.
+
+`Pad` component must know the size of the content so it knows when to stop scrolling.
+
+- [`<ItemContent />`](itemcontent.md)
+- [`<GeneralContent />`](generalcontent.md)
+- [`<ListContent />`](listcontent.md)
+- [`<GridContent />`](gridcontent.md)
 
 ## Usage
 
@@ -79,28 +86,18 @@ Calls when changes the size of the content.
 
 Returns the visible content rectangle of the component.
 
-#### setContentSize(size: [Size](#size--width-number-height-number-))
+#### setContentSize(size: [Size](types.md#size--width-number-height-number-))
 
 Sets the size of the content.
 
-#### scrollTo({ offset: [Point](#point--x-number-y-number-), animated?: boolean })
+#### scrollTo({ offset: [Point](types.md#point--x-number-y-number-), animated?: boolean })
 
 Scrolls the content to the specified offset.
 
-#### scrollToRect({ rect: [Rect](#rect--x-number-y-number-width-number-height-number-), align: [Align](#align--x-alignenum-y-alignenum---alignenum), animated?: boolean })
+#### scrollToRect({ rect: [Rect](types.md#rect--x-number-y-number-width-number-height-number-), align: [Align2D](types.md#align2d--x-align-y-align---align), animated?: boolean })
 
 Scrolls the content until the specified rectangle is visible.
 
 ## Types
 
-#### `Point`: { x: number, y: number }
-
-#### `Size`: { width: number, height: number }
-
-#### `Rect`: { x: number, y: number, width: number, height: number }
-
-#### AlignEnum: 'auto' | 'center' | 'start' | 'end' | number
-
-#### Align: { x: [AlignEnum](#alignenum-auto--center--start--end--number), y: [AlignEnum](#alignenum-auto--center--start--end--number) } | [AlignEnum](#alignenum-auto--center--start--end--number)
-
-#### `PadEvent`: { contentOffset: [Point](#point--x-number-y-number-), contentVelocity: [Point](#point--x-number-y-number-), size: [Size](#size--width-number-height-number-), contentSize: [Size](#size--width-number-height-number-), dragging: boolean, decelerating: boolean }
+#### `PadEvent` { contentOffset: [Point](types.md#point--x-number-y-number-), contentVelocity: [Point](types.md#point--x-number-y-number-), size: [Size](types.md#size--width-number-height-number-), contentSize: [Size](types.md#size--width-number-height-number-), dragging: boolean, decelerating: boolean }

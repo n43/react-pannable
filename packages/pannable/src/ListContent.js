@@ -1,4 +1,5 @@
 import React from 'react';
+import BaseContent from './BaseContent';
 import { getItemVisibleRect, needsRender } from './utils/visible';
 import { isEqualSize } from './utils/geometry';
 import ItemContent from './ItemContent';
@@ -7,17 +8,13 @@ function Item() {}
 
 export default class ListContent extends React.Component {
   static defaultProps = {
+    ...BaseContent.defaultProps,
     direction: 'y',
-    width: null,
-    height: null,
     spacing: 0,
     itemCount: 0,
     estimatedItemWidth: 0,
     estimatedItemHeight: 0,
     renderItem: () => null,
-    visibleRect: { x: 0, y: 0, width: 0, height: 0 },
-    onResize: () => {},
-    connectWithPad: true,
   };
 
   constructor(props) {
