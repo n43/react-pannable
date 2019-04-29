@@ -15,7 +15,7 @@ npm install --save react-pannable
 
 ## API Reference
 
-#### [`<Pannable />`](docs/pannable.md) - Can be panned(dragged) around with the touch/mouse
+#### [`<Pannable />`](/packages/pannable/docs/pannable.md) - Can be panned(dragged) around with the touch/mouse
 
 #### [`<Pad />`](docs/pad.md) - Handles scrolling of content
 
@@ -45,4 +45,4 @@ Some `Pad` demos
 
 ## License
 
-[MIT License](../../LICENSE)
+[MIT License](/LICENSE)
