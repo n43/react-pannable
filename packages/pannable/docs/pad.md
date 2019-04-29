@@ -50,11 +50,11 @@ Determines whether scrolling is disabled in a particular direction.
 
 #### `alwaysBounceX`?: boolean
 
-Determines whether bouncing always occurs when horizontal scrolling reaches the end of the content.
+Determines whether bouncing always occurs when horizontal scrolling reaches the end of the content. The default value is `true`.
 
 #### `alwaysBounceY`?: boolean
 
-Determines whether bouncing always occurs when vertical scrolling reaches the end of the content.
+Determines whether bouncing always occurs when vertical scrolling reaches the end of the content. The default value is `true`.
 
 #### `onScroll`?: (evt: [PadEvent](#padevent--contentoffset-point-contentvelocity-point-size-size-contentsize-size-dragging-boolean-decelerating-boolean-)) => void
 
