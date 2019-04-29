@@ -10,11 +10,11 @@
     "react-pannable": "^0.10.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.2.0",
-    "@storybook/react": "^5.0.10",
-    "@storybook/storybook-deployer": "^2.8.1",
-    "babel-loader": "^8.0.5",
-    "webpack": "^4.29.5"
+    "@babel/core": "7.4.4",
+    "@storybook/react": "5.0.11",
+    "@storybook/storybook-deployer": "2.8.1",
+    "babel-loader": "8.0.5",
+    "webpack": "4.30.0"
   },
   "scripts": {
     "start": "start-storybook -p 9001 -c .storybook",
