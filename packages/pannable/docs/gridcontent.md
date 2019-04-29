@@ -1,12 +1,37 @@
 # \<GridContent />
 
-`GridContent` component displays data in grid layout.
+`GridContent` component displays data in grid layout. It provides the items that display the actual content.
 
 ## Usage
 
+```js
+import React from 'react';
+import { Pad, GridContent } from 'react-pannable';
+
+class Page extends React.Component {
+  render() {
+    return (
+      <Pad width={300} height={400} alwaysBounceX={false}>
+        <GridContent
+          width={300}
+          itemWidth={80}
+          itemHeight={80}
+          itemCount={100}
+          renderItem={({ Item }) => (
+            <Item hash="img">
+              <img src="beauty.jpg" width="80" height="80" />
+            </Item>
+          )}
+        />
+      </Pad>
+    );
+  }
+}
+```
+
 ## Props
 
-... [BaseContentProps](types.md#basecontentprops)
+... [`ItemContent`](itemcontent.md#props) props
 
 #### `direction`?: 'x' | 'y'
 

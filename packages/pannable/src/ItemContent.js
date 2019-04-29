@@ -1,10 +1,15 @@
 import React from 'react';
-import BaseContent from './BaseContent';
 import { getElementSize } from './utils/sizeGetter';
 import { isEqualSize } from './utils/geometry';
 
 export default class ItemContent extends React.Component {
-  static defaultProps = { ...BaseContent.defaultProps };
+  static defaultProps = {
+    width: null,
+    height: null,
+    visibleRect: { x: 0, y: 0, width: 0, height: 0 },
+    onResize: () => {},
+    connectWithPad: true,
+  };
 
   constructor(props) {
     super(props);

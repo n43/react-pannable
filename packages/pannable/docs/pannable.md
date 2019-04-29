@@ -62,7 +62,7 @@ class Page extends React.Component {
 
 #### `enabled`?: boolean
 
-Determines whether the pan gesture recognizer is enabled. If set to `false` while the pan gesture recognizer is currently recognizing, it transitions to a cancelled state.
+Determines whether the pan gesture recognizer is enabled. The default value is `true`. If set to `false` while the pan gesture recognizer is currently recognizing, it transitions to a cancelled state.
 
 #### `shouldStart`?: (evt: [PanEvent](#panevent--translation-point-velocity-point-interval-number-target-htmlelement-)) => boolean
 

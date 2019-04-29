@@ -2,7 +2,7 @@
 
 `Pad` component handles scrolling of content. its origin is adjustable over the content. it tracks the movements of the touch/mouse and adjusts the origin accordingly. by default, it bounces back when scrolling exceeds the bounds of the content.
 
-`Pad` component must know the size of the content so it knows when to stop scrolling.
+`Pad` component must know the size of the content so it knows when to stop scrolling. You should specify the content by defining one of the following components. These components can be nested to achieve some complex layouts.
 
 - [`<ItemContent />`](itemcontent.md) - Displays data with the size best fits the specified size
 - [`<GeneralContent />`](generalcontent.md) - Similar to `ItemContent` and automatically resizes when the data change
@@ -13,13 +13,15 @@
 
 ```js
 import React from 'react';
-import { Pad } from 'react-pannable';
+import { Pad, GeneralContent } from 'react-pannable';
 
 class Page extends React.Component {
   render() {
     return (
       <Pad width={500} height={350}>
-        <img src="beautiful.jpg" />
+        <GeneralContent width={1000}>
+          <img src="beautiful.jpg" width="1000" />
+        </GeneralContent>
       </Pad>
     );
   }
@@ -30,7 +32,7 @@ class Page extends React.Component {
 
 ## Props
 
-... [`Pannable`](pannable.md) props
+... [`Pannable`](pannable.md#props) props
 
 #### `width`: number
 
@@ -50,11 +52,11 @@ Determines whether scrolling is disabled in a particular direction.
 
 #### `alwaysBounceX`?: boolean
 
-Determines whether bouncing always occurs when horizontal scrolling reaches the end of the content.
+Determines whether bouncing always occurs when horizontal scrolling reaches the end of the content. The default value is `true`.
 
 #### `alwaysBounceY`?: boolean
 
-Determines whether bouncing always occurs when vertical scrolling reaches the end of the content.
+Determines whether bouncing always occurs when vertical scrolling reaches the end of the content. The default value is `true`.
 
 #### `onScroll`?: (evt: [PadEvent](#padevent--contentoffset-point-contentvelocity-point-size-size-contentsize-size-dragging-boolean-decelerating-boolean-)) => void
 
