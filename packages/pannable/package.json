@@ -21,7 +21,11 @@
   ],
   "license": "MIT",
   "homepage": "https://github.com/n43/react-pannable",
-  "repository": "https://github.com/n43/react-pannable",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/n43/react-pannable.git",
+    "directory": "packages/pannable"
+  },
   "bugs": {
     "url": "https://github.com/n43/react-pannable/issues"
   },
