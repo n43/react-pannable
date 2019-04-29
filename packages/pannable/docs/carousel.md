@@ -24,7 +24,7 @@ class Page extends React.Component {
               display: 'inline-block',
               width: 300,
               height: 400,
-              background: '#95ddff',
+              background: '#ccc',
             }}
           />
           <div
@@ -32,7 +32,7 @@ class Page extends React.Component {
               display: 'inline-block',
               width: 300,
               height: 400,
-              background: '#48b2e4',
+              background: '#ddd',
             }}
           />
           <div
@@ -40,7 +40,7 @@ class Page extends React.Component {
               display: 'inline-block',
               width: 300,
               height: 400,
-              background: '#0174ab',
+              background: '#eee',
             }}
           />
         </div>
@@ -50,7 +50,7 @@ class Page extends React.Component {
 }
 ```
 
-[![Try it on CodePen](https://img.shields.io/badge/CodePen-Run-blue.svg?logo=CodePen)](https://codepen.io/cztflove/pen/qwvNLp)
+[![Try it on CodePen](https://img.shields.io/badge/CodePen-Run-blue.svg?logo=CodePen)](https://codepen.io/cztflove/pen/MRzPXw)
 
 ## Props
 
