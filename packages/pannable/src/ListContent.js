@@ -1,14 +1,13 @@
 import React from 'react';
-import BaseContent from './BaseContent';
+import ItemContent from './ItemContent';
 import { getItemVisibleRect, needsRender } from './utils/visible';
 import { isEqualSize } from './utils/geometry';
-import ItemContent from './ItemContent';
 
 function Item() {}
 
 export default class ListContent extends React.Component {
   static defaultProps = {
-    ...BaseContent.defaultProps,
+    ...ItemContent.defaultProps,
     direction: 'y',
     spacing: 0,
     itemCount: 0,

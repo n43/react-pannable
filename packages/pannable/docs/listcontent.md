@@ -1,12 +1,31 @@
 # \<ListContent />
 
-`ListContent` component displays data in a single column/row.
+`ListContent` component displays data in a single column/row. It provides the items that display the actual content.
 
 ## Usage
 
+```js
+import React from 'react';
+import { Pad, ListContent } from 'react-pannable';
+
+class Page extends React.Component {
+  render() {
+    return (
+      <Pad width={300} height={400} alwaysBounceX={false}>
+        <ListContent
+          width={300}
+          itemCount={100}
+          renderItem={({ itemIndex }) => <div>{itemIndex}</div>}
+        />
+      </Pad>
+    );
+  }
+}
+```
+
 ## Props
 
-... [BaseContentProps](types.md#basecontentprops)
+... [`ItemContent`](itemcontent.md#props) props
 
 #### `direction`?: 'x' | 'y'
 
