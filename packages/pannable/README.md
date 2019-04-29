@@ -17,12 +17,12 @@ npm install --save react-pannable
 
 #### [`<Pannable />`](/packages/pannable/docs/pannable.md) - Can be panned(dragged) around with the touch/mouse
 
-#### [`<Pad />`](docs/pad.md) - Handles scrolling of content
+#### [`<Pad />`](/packages/pannable/docs/pad.md) - Handles scrolling of content
 
-- [`<ItemContent />`](docs/itemcontent.md) - Displays data with the size best fits the specified size
-- [`<GeneralContent />`](docs/generalcontent.md) - Similar to `ItemContent` and automatically resizes when the data change
-- [`<ListContent />`](docs/listcontent.md) - Displays data in a single column/row
-- [`<GridContent />`](docs/gridcontent.md) - Displays data in grid layout
+- [`<ItemContent />`](/packages/pannable/docs/itemcontent.md) - Displays data with the size best fits the specified size
+- [`<GeneralContent />`](/packages/pannable/docs/generalcontent.md) - Similar to `ItemContent` and automatically resizes when the data change
+- [`<ListContent />`](/packages/pannable/docs/listcontent.md) - Displays data in a single column/row
+- [`<GridContent />`](/packages/pannable/docs/gridcontent.md) - Displays data in grid layout
 
 ## Examples
 
