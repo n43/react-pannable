@@ -230,7 +230,6 @@ export default class Player extends React.Component {
       autoplayEnabled,
       autoplayInterval,
       loop,
-      scrollsBackOnEdge,
       ...padProps
     } = this.props;
     const { loopCount } = this.state;
