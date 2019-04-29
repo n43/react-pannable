@@ -1,5 +1,7 @@
 # \<GridContent />
 
+`GridContent` component displays data in grid layout.
+
 ## Usage
 
 ## Props

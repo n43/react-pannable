@@ -1,5 +1,7 @@
 # \<ItemContent />
 
+`ItemContent` component displays data with the size best fits the specified size.
+
 ## Usage
 
 ```js

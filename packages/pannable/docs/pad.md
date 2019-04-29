@@ -4,10 +4,10 @@
 
 `Pad` component must know the size of the content so it knows when to stop scrolling.
 
-- [`<ItemContent />`](itemcontent.md)
-- [`<GeneralContent />`](generalcontent.md)
-- [`<ListContent />`](listcontent.md)
-- [`<GridContent />`](gridcontent.md)
+- [`<ItemContent />`](itemcontent.md) - Displays data with the size best fits the specified size
+- [`<GeneralContent />`](generalcontent.md) - Similar to `ItemContent` and automatically resizes when the data change
+- [`<ListContent />`](listcontent.md) - Displays data in a single column/row
+- [`<GridContent />`](gridcontent.md) - Displays data in grid layout
 
 ## Usage
 
@@ -30,7 +30,7 @@ class Page extends React.Component {
 
 ## Props
 
-... [Pannable](pannable.md) props
+... [`Pannable`](pannable.md) props
 
 #### `width`: number
 

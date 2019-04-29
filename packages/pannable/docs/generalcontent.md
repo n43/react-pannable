@@ -1,5 +1,7 @@
 # \<GeneralContent />
 
+`GeneralContent` component is similar to `ItemContent` and automatically resizes when the data change.
+
 # Usage
 
 ```js
@@ -21,4 +23,4 @@ class Page extends React.Component {
 
 [![Try it on CodePen](https://img.shields.io/badge/CodePen-Run-blue.svg?logo=CodePen)](https://codepen.io/cztflove/pen/ROdKwL)
 
-Props and APIs are the same as [ItemContent](itemcontent.md)
+Props and APIs are the same as [`ItemContent`](itemcontent.md)
