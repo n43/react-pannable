@@ -45,4 +45,4 @@ Some `Pad` demos
 
 ## License
 
-[MIT License](./LICENSE)
+[MIT License](LICENSE)
