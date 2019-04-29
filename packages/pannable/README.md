@@ -15,14 +15,14 @@ npm install --save react-pannable
 
 ## API Reference
 
-#### [`<Pannable />`](https://github.com/n43/react-pannable/tree/dev/packages/pannable/docs/pannable.md) - Can be panned(dragged) around with the touch/mouse
+#### [`<Pannable />`](docs/pannable.md) - Can be panned(dragged) around with the touch/mouse
 
-#### [`<Pad />`](https://github.com/n43/react-pannable/tree/dev/packages/pannable/docs/pad.md) - Handles scrolling of content
+#### [`<Pad />`](docs/pad.md) - Handles scrolling of content
 
-- [`<ItemContent />`](https://github.com/n43/react-pannable/tree/dev/packages/pannable/docs/itemcontent.md) - Displays data with the size best fits the specified size
-- [`<GeneralContent />`](https://github.com/n43/react-pannable/tree/dev/packages/pannable/docs/generalcontent.md) - Similar to `ItemContent` and automatically resizes when the data change
-- [`<ListContent />`](https://github.com/n43/react-pannable/tree/dev/packages/pannable/docs/listcontent.md) - Displays data in a single column/row
-- [`<GridContent />`](https://github.com/n43/react-pannable/tree/dev/packages/pannable/docs/gridcontent.md) - Displays data in grid layout
+- [`<ItemContent />`](docs/itemcontent.md) - Displays data with the size best fits the specified size
+- [`<GeneralContent />`](docs/generalcontent.md) - Similar to `ItemContent` and automatically resizes when the data change
+- [`<ListContent />`](docs/listcontent.md) - Displays data in a single column/row
+- [`<GridContent />`](docs/gridcontent.md) - Displays data in grid layout
 
 ## Examples
 
@@ -45,4 +45,4 @@ Some `Pad` demos
 
 ## License
 
-[MIT License](./LICENSE)
+[MIT License](../../LICENSE)
