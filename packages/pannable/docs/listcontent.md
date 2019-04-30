@@ -49,7 +49,7 @@ The estimated width of items.
 
 The estimated height of items.
 
-#### `renderItem`: (attrs: LayoutAttrs) => ReactNode
+#### `renderItem`: (attrs: [LayoutAttrs](#layoutattrs--itemindex-number-rect-rect-visiblerect-rect-needsrender-boolean-item-componentitemprops-any-)) => ReactNode
 
 Returns a element by the layout attributes.
 
@@ -59,4 +59,4 @@ Returns a element by the layout attributes.
 
 #### `ItemProps` { key: string, hash: string, forceRender: boolean, style: CSSProperties }
 
-#### LayoutAttrs { itemIndex: number, rect: [Rect](types.md#rect--x-number-y-number-width-number-height-number-), visibleRect: [Rect](types.md#rect--x-number-y-number-width-number-height-number-), needsRender: boolean, Item: Component<ItemProps, any> };
+#### `LayoutAttrs` { itemIndex: number, rect: [Rect](types.md#rect--x-number-y-number-width-number-height-number-), visibleRect: [Rect](types.md#rect--x-number-y-number-width-number-height-number-), needsRender: boolean, Item: Component<[ItemProps](#itemprops--key-string-hash-string-forcerender-boolean-style-cssproperties-), any> };

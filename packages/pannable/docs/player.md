@@ -1,6 +1,6 @@
 # \<Player />
 
-`Player` component manages to scroll with one page automatically in a loop.
+`Player` component used to manage the playback of the paging content.
 
 ## Usage
 
@@ -54,15 +54,15 @@ class Page extends React.Component {
 
 ## Props
 
-... [Pad](pad.md) props
+... [`Pad`](pad.md) props
 
 #### `direction`?: 'x' | 'y'
 
-The scrolling direction of the player. The default value is `x`.
+The scroll direction of the player. The default value is `x`.
 
 #### `autoplayEnabled`?: boolean
 
-Determines whether player is endable to scroll automatically. The default value is `true`
+Determines whether the player should automatically playback. The default value is `true`
 
 #### `autoplayInterval`?: number
 
