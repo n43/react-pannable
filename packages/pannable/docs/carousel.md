@@ -1,6 +1,6 @@
 # \<Carousel />
 
-`Carousel` is a higher level abstraction of [`<Player />`](player.md). It implements the feature of carousel and provides useful API.
+`Carousel` is a higher level abstraction of [`Player`](player.md). It implements the feature of carousel and provides useful API.
 
 ## Usage
 
@@ -39,19 +39,19 @@ class Page extends React.Component {
 
 ## Props
 
-... [Player](player.md) props
+... [Player](player.md#props) props
 
 #### `itemCount`: number
 
 The number of items.
 
-#### `renderItem`: (attrs: [`LayoutAttrs`](player.md#LayoutAttrs)) => ReactNode
+#### `renderItem`: (attrs: [`LayoutAttrs`](gridcontent.md#LayoutAttrs)) => ReactNode
 
 Returns a element by the layout attributes.
 
 #### `onSlideChange`?: (attrs: SlideAttrs) => void
 
-Calls when the active view of the carousel changes.
+Calls when the active view of carousel changes.
 
 ## APIs
 
