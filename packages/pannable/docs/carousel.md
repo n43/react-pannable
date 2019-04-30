@@ -1,6 +1,6 @@
 # \<Carousel />
 
-`Carousel` is a higher level abstraction of [`Player`](player.md). It implements the feature of carousel and provides useful API.
+`Carousel` is a convenience wrapper around [`Player`](player.md). Apart from inheriting Player's props, it also provides some special and useful methods and events.
 
 ## Usage
 
@@ -39,7 +39,7 @@ class Page extends React.Component {
 
 ## Props
 
-... [Player](player.md#props) props
+... [`Player`](player.md#props) props
 
 #### `itemCount`: number
 

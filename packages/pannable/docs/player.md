@@ -6,7 +6,7 @@
 
 ```js
 import React from 'react';
-import { Player } from 'react-pannable';
+import { Player, GridContent } from 'react-pannable';
 
 class Page extends React.Component {
   render() {
@@ -18,32 +18,22 @@ class Page extends React.Component {
         loop={true}
         autoplayEnabled={true}
       >
-        <div style={{ width: 900, height: 400 }}>
-          <div
-            style={{
-              display: 'inline-block',
-              width: 300,
-              height: 400,
-              background: '#95ddff',
-            }}
-          />
-          <div
-            style={{
-              display: 'inline-block',
-              width: 300,
-              height: 400,
-              background: '#48b2e4',
-            }}
-          />
-          <div
-            style={{
-              display: 'inline-block',
-              width: 300,
-              height: 400,
-              background: '#0174ab',
-            }}
-          />
-        </div>
+        <GridContent
+          width={300}
+          height={400}
+          direction="x"
+          itemWidth={300}
+          itemHeight={400}
+          itemCount={3}
+          renderItem={({ itemIndex }) => {
+            const style = {
+              height: '100%',
+              backgroundColor: itemIndex % 2 ? '#defdff' : '#cbf1ff',
+            };
+
+            return <div style={style} />;
+          }}
+        />
       </Player>
     );
   }
@@ -66,23 +56,22 @@ Determines whether the player should automatically playback. The default value i
 
 #### `autoplayInterval`?: number
 
-Interval of two automatic scroll(in ms). The default value is `3000`
+Delay between transitions (in ms). The default value is `3000`
 
 #### `loop`?: boolean
 
-Determines whether continuous loop mode is enabled. The default value is `true`
+Determines whether the player should loop indefinitely. The default value is `true`
 
 ## APIs
 
 #### go({delta: number, animated?: boolean})
 
-Scrolls the content with the specified times of width or height.
-Whether `delta` is greater than 0, determines the direction of scroll.
+Seeks to the specified page that calculates by the current page and `delta` which means the number of pages to scroll by.
 
 #### rewind()
 
-Scrolls to the previous view.
+Seeks to the previous page.
 
 #### forward()
 
-Scrolls to the next view.
+Seeks to the next page.
