@@ -61,7 +61,7 @@ The height of items.
 
 #### `renderItem`: (attrs: [LayoutAttrs](#layoutattrs--itemindex-number-rowindex-number-columnindex-number-rect-rect-visiblerect-rect-needsrender-boolean-item-componentitemprops-any-)) => ReactNode
 
-Returns a element by the layout attributes.
+Returns the React element that corresponds to the specified item.
 
 ## APIs
 
