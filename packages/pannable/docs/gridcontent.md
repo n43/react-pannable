@@ -59,7 +59,7 @@ The width of items.
 
 The height of items.
 
-#### `renderItem`: (attrs: LayoutAttrs) => ReactNode
+#### `renderItem`: (attrs: [LayoutAttrs](#layoutattrs--itemindex-number-rowindex-number-columnindex-number-rect-rect-visiblerect-rect-needsrender-boolean-item-componentitemprops-any-)) => ReactNode
 
 Returns a element by the layout attributes.
 
@@ -69,4 +69,4 @@ Returns a element by the layout attributes.
 
 #### `ItemProps` { key: string, forceRender: boolean, style: CSSProperties }
 
-#### LayoutAttrs { itemIndex: number, rowIndex: number, columnIndex: number, rect: [Rect](types.md#rect--x-number-y-number-width-number-height-number-), visibleRect: [Rect](types.md#rect--x-number-y-number-width-number-height-number-), needsRender: boolean, Item: Component<ItemProps, any> };
+#### LayoutAttrs { itemIndex: number, rowIndex: number, columnIndex: number, rect: [Rect](types.md#rect--x-number-y-number-width-number-height-number-), visibleRect: [Rect](types.md#rect--x-number-y-number-width-number-height-number-), needsRender: boolean, Item: Component<[ItemProps](#itemprops--key-string-forcerender-boolean-style-cssproperties-), any> };
