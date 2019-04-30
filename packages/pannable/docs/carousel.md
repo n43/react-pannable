@@ -51,13 +51,9 @@ Returns a element by the layout attributes.
 
 #### `onSlideChange`?: (attrs: SlideAttrs) => void
 
-Calls when the active view of carousel changes.
+Calls when the active item changes.
 
 ## APIs
-
-#### getActiveIndex()
-
-Returns index of the active item of the carousel.
 
 #### slideTo({index: number, animated: boolean})
 

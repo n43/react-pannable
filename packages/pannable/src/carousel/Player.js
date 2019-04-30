@@ -10,6 +10,7 @@ export default class Player extends React.Component {
     autoplayInterval: 3000,
     loop: true,
     pagingEnabled: true,
+    directionalLockEnabled: true,
   };
 
   constructor(props) {

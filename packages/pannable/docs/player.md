@@ -66,7 +66,7 @@ Determines whether the player should loop indefinitely. The default value is `tr
 
 #### go({delta: number, animated?: boolean})
 
-Seeks to the specified page that calculates by the current page and `delta` which means the number of pages to scroll by.
+Seeks to a page, identified by its relative location to the current page.
 
 #### rewind()
 
