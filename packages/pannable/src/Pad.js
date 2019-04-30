@@ -16,8 +16,8 @@ import {
   calculateRectOffset,
 } from './utils/motion';
 
-const DECELERATION_RATE_STRONG = 0.04;
-const DECELERATION_RATE_WEAK = 0.004;
+const DECELERATION_RATE_STRONG = 0.02;
+const DECELERATION_RATE_WEAK = 0.002;
 
 export default class Pad extends React.Component {
   static defaultProps = {
