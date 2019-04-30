@@ -1,96 +1,76 @@
-# \<Player />
+# \<Carousel />
 
-`Player` component manages to scroll with one page automatically in a loop.
+`Carousel` is a higher level abstraction of [`<Player />`](player.md). It implements the feature of carousel and provides useful API.
 
 ## Usage
 
 ```js
 import React from 'react';
-import { Player } from 'react-pannable';
+import { Carousel } from 'react-pannable';
 
 class Page extends React.Component {
   render() {
     return (
-      <Player
-        width={300}
-        height={400}
+      <Carousel
+        width={500}
+        height={350}
         direction="x"
-        loop={true}
         autoplayEnabled={true}
-      >
-        <div style={{ width: 900, height: 400 }}>
-          <div
-            style={{
-              display: 'inline-block',
-              width: 300,
-              height: 400,
-              background: '#ccc',
-            }}
-          />
-          <div
-            style={{
-              display: 'inline-block',
-              width: 300,
-              height: 400,
-              background: '#ddd',
-            }}
-          />
-          <div
-            style={{
-              display: 'inline-block',
-              width: 300,
-              height: 400,
-              background: '#eee',
-            }}
-          />
-        </div>
-      </Player>
+        loop={true}
+        itemCount={5}
+        renderItem={({ itemIndex }) => {
+          const style = {
+            height: '100%',
+            backgroundColor: itemIndex % 2 ? '#defdff' : '#cbf1ff',
+          };
+
+          return <div style={style} />;
+        }}
+        onSlideChange={({ itemCount, activeIndex }) => {
+          console.log(itemCount, activeIndex);
+        }}
+      />
     );
   }
 }
 ```
 
-[![Try it on CodePen](https://img.shields.io/badge/CodePen-Run-blue.svg?logo=CodePen)](https://codepen.io/cztflove/pen/MRzPXw)
+[![Try it on CodePen](https://img.shields.io/badge/CodePen-Run-blue.svg?logo=CodePen)](https://codepen.io/cztflove/pen/JVVoma)
 
 ## Props
 
-... [Pad](pad.md) props
+... [Player](player.md) props
 
-#### `width`: number
+#### `itemCount`: number
 
-the width of the component.
+The number of items.
 
-#### `height`: number
+#### `renderItem`: (attrs: [`LayoutAttrs`](player.md#LayoutAttrs)) => ReactNode
 
-the height of the component.
+Returns a element by the layout attributes.
 
-#### `direction`?: 'x' | 'y'
+#### `onSlideChange`?: (attrs: SlideAttrs) => void
 
-The scrolling direction of the player. The default value is `x`.
-
-#### `autoplayEnabled`?: boolean
-
-Determines whether player is endable to scroll automatically. The default value is `true`
-
-#### `autoplayInterval`?: number
-
-Interval of two automatic scroll(in ms). The default value is `3000`
-
-#### `loop`?: boolean
-
-Determines whether continuous loop mode is enabled. The default value is `true`
+Calls when the active view of the carousel changes.
 
 ## APIs
 
-#### go({delta: number, animated?: boolean})
+#### getActiveIndex()
 
-Scrolls the content with the specified times of width or height.
-Whether `delta` is greater than 0, determines the direction of scroll.
+Returns index of the active view of the carousel.
 
-#### rewind()
+#### slideTo({index: number, animated: boolean})
 
-Scrolls to the previous view.
+Slides to the specified view.
 
-#### forward()
+#### slidePrev()
 
-Scrolls to the next view.
+Slides to the previous view.
+
+#### slideNext()
+
+Slides to the next view.
+
+## Types
+
+#### SlideAttrs { itemCount: number, activeIndex: number };

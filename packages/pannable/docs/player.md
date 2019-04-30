@@ -56,14 +56,6 @@ class Page extends React.Component {
 
 ... [Pad](pad.md) props
 
-#### `width`: number
-
-the width of the component.
-
-#### `height`: number
-
-the height of the component.
-
 #### `direction`?: 'x' | 'y'
 
 The scrolling direction of the player. The default value is `x`.

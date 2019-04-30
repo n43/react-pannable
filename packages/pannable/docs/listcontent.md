@@ -23,6 +23,8 @@ class Page extends React.Component {
 }
 ```
 
+[![Try it on CodePen](https://img.shields.io/badge/CodePen-Run-blue.svg?logo=CodePen)](https://codepen.io/cztflove/pen/yrrNOv)
+
 ## Props
 
 ... [`ItemContent`](itemcontent.md#props) props
