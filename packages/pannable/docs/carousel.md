@@ -57,19 +57,19 @@ Calls when the active view of carousel changes.
 
 #### getActiveIndex()
 
-Returns index of the active view of the carousel.
+Returns index of the active item of the carousel.
 
 #### slideTo({index: number, animated: boolean})
 
-Slides to the specified view.
+Slides to the specified item.
 
 #### slidePrev()
 
-Slides to the previous view.
+Slides to the previous item.
 
 #### slideNext()
 
-Slides to the next view.
+Slides to the next item.
 
 ## Types
 
