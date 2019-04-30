@@ -47,7 +47,7 @@ The number of items.
 
 #### `renderItem`: (attrs: [`LayoutAttrs`](gridcontent.md#LayoutAttrs)) => ReactNode
 
-Returns a element by the layout attributes.
+Returns the React element that corresponds to the specified item.
 
 #### `onSlideChange`?: (attrs: SlideAttrs) => void
 
