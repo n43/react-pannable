@@ -29,7 +29,7 @@ class Page extends React.Component {
 
 ## Props
 
-#### `children`: ReactNode | (size: [Size](types.md#size--width-number-height-number-)) => ReactNode
+#### `children`: ReactNode | (size: [Size](#size--width-number-height-number-)) => ReactNode
 
 You can implement the function children prop for the component with current size.
 
@@ -41,7 +41,7 @@ the width of the component. If not specified, it grows to fit the space availabl
 
 the height of the component. If not specified, it grows to fit the space available.
 
-#### `onResize`?: (size: [Size](types.md#size--width-number-height-number-)) => void
+#### `onResize`?: (size: [Size](#size--width-number-height-number-)) => void
 
 Calls when changes the size of the component.
 
@@ -50,3 +50,7 @@ Calls when changes the size of the component.
 #### calculateSize()
 
 Calculates the size of the component manually.
+
+## Types
+
+#### `Size`: { width: number, height: number }

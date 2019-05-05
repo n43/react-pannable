@@ -1,6 +1,5 @@
 import React from 'react';
 import Pannable from './Pannable';
-import GeneralContent from './GeneralContent';
 import StyleSheet from './utils/StyleSheet';
 import {
   requestAnimationFrame,
@@ -15,9 +14,10 @@ import {
   calculateDeceleration,
   calculateRectOffset,
 } from './utils/motion';
+import GeneralContent from './GeneralContent';
 
-const DECELERATION_RATE_STRONG = 0.02;
-const DECELERATION_RATE_WEAK = 0.002;
+const DECELERATION_RATE_STRONG = 0.04;
+const DECELERATION_RATE_WEAK = 0.004;
 
 export default class Pad extends React.Component {
   static defaultProps = {

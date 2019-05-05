@@ -10,7 +10,6 @@ export default class Player extends React.Component {
     autoplayInterval: 3000,
     loop: true,
     pagingEnabled: true,
-    directionalLockEnabled: true,
   };
 
   constructor(props) {
@@ -231,6 +230,7 @@ export default class Player extends React.Component {
       autoplayEnabled,
       autoplayInterval,
       loop,
+      scrollsBackOnEdge,
       ...padProps
     } = this.props;
     const { loopCount } = this.state;

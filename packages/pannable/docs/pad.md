@@ -1,27 +1,18 @@
 # \<Pad />
 
-`Pad` component handles scrolling of content. its origin is adjustable over the content. it tracks the movements of the touch/mouse and adjusts the origin accordingly. by default, it bounces back when scrolling exceeds the bounds of the content.
-
-`Pad` component must know the size of the content so it knows when to stop scrolling. You should specify the content by defining one of the following components. These components can be nested to achieve some complex layouts.
-
-- [`<ItemContent />`](itemcontent.md) - Displays data with the size best fits the specified size
-- [`<GeneralContent />`](generalcontent.md) - Similar to `ItemContent` and automatically resizes when the data change
-- [`<ListContent />`](listcontent.md) - Displays data in a single column/row
-- [`<GridContent />`](gridcontent.md) - Displays data in grid layout
+`Pad` component handles scrolling of content. it tracks the movements of the touch/mouse and adjusts the origin accordingly. by default, it bounces back when scrolling exceeds the bounds of the content.
 
 ## Usage
 
 ```js
 import React from 'react';
-import { Pad, GeneralContent } from 'react-pannable';
+import { Pad } from 'react-pannable';
 
 class Page extends React.Component {
   render() {
     return (
       <Pad width={500} height={350}>
-        <GeneralContent width={1000}>
-          <img src="beautiful.jpg" width="1000" />
-        </GeneralContent>
+        <img src="beautiful.jpg" />
       </Pad>
     );
   }
@@ -32,7 +23,7 @@ class Page extends React.Component {
 
 ## Props
 
-... [`Pannable`](pannable.md#props) props
+... [Pannable](pannable.md) props
 
 #### `width`: number
 
@@ -52,11 +43,11 @@ Determines whether scrolling is disabled in a particular direction.
 
 #### `alwaysBounceX`?: boolean
 
-Determines whether bouncing always occurs when horizontal scrolling reaches the end of the content. The default value is `true`.
+Determines whether bouncing always occurs when horizontal scrolling reaches the end of the content.
 
 #### `alwaysBounceY`?: boolean
 
-Determines whether bouncing always occurs when vertical scrolling reaches the end of the content. The default value is `true`.
+Determines whether bouncing always occurs when vertical scrolling reaches the end of the content.
 
 #### `onScroll`?: (evt: [PadEvent](#padevent--contentoffset-point-contentvelocity-point-size-size-contentsize-size-dragging-boolean-decelerating-boolean-)) => void
 
@@ -88,18 +79,28 @@ Calls when changes the size of the content.
 
 Returns the visible content rectangle of the component.
 
-#### setContentSize(size: [Size](types.md#size--width-number-height-number-))
+#### setContentSize(size: [Size](#size--width-number-height-number-))
 
 Sets the size of the content.
 
-#### scrollTo({ offset: [Point](types.md#point--x-number-y-number-), animated?: boolean })
+#### scrollTo({ offset: [Point](#point--x-number-y-number-), animated?: boolean })
 
 Scrolls the content to the specified offset.
 
-#### scrollToRect({ rect: [Rect](types.md#rect--x-number-y-number-width-number-height-number-), align: [Align2D](types.md#align2d--x-align-y-align---align), animated?: boolean })
+#### scrollToRect({ rect: [Rect](#rect--x-number-y-number-width-number-height-number-), align: [Align](#align--x-alignenum-y-alignenum---alignenum), animated?: boolean })
 
 Scrolls the content until the specified rectangle is visible.
 
-## Types
+## Interfaces
 
-#### `PadEvent` { contentOffset: [Point](types.md#point--x-number-y-number-), contentVelocity: [Point](types.md#point--x-number-y-number-), size: [Size](types.md#size--width-number-height-number-), contentSize: [Size](types.md#size--width-number-height-number-), dragging: boolean, decelerating: boolean }
+#### `Point` { x: number, y: number }
+
+#### `Size` { width: number, height: number }
+
+#### `Rect` { x: number, y: number, width: number, height: number }
+
+#### `AlignEnum` 'auto' | 'center' | 'start' | 'end' | number
+
+#### `Align` { x: [AlignEnum](#alignenum-auto--center--start--end--number), y: [AlignEnum](#alignenum-auto--center--start--end--number) } | [AlignEnum](#alignenum-auto--center--start--end--number)
+
+#### `PadEvent` { contentOffset: [Point](#point--x-number-y-number-), contentVelocity: [Point](#point--x-number-y-number-), size: [Size](#size--width-number-height-number-), contentSize: [Size](#size--width-number-height-number-), dragging: boolean, decelerating: boolean }

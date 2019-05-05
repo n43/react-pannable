@@ -1,5 +1,6 @@
 import React from 'react';
 import { Pad, ListContent } from 'react-pannable';
+import SvgCart from './SvgCart';
 import './ProductMaster.css';
 
 export default class ProductMaster extends React.Component {

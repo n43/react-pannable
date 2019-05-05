@@ -1,6 +1,6 @@
 import React from 'react';
-import ItemContent from './ItemContent';
 import resizeDetector from './utils/resizeDetector';
+import ItemContent from './ItemContent';
 
 export default class GeneralContent extends React.Component {
   static defaultProps = { ...ItemContent.defaultProps };
