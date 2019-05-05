@@ -47,6 +47,12 @@ Some `Pad` demos
 - [Layout with List Content](https://n43.github.io/react-pannable/?path=/story/pad--layout-with-list-content)
 - [Layout with Nested Content](https://n43.github.io/react-pannable/?path=/story/pad--layout-with-nested-content)
 
+Some `Carousel` demos
+
+- [Pad with Autoplayer](https://n43.github.io/react-pannable/?path=/story/carousel--pad-with-autoplayer)
+- [Horizontal Carousel](https://n43.github.io/react-pannable/?path=/story/carousel--horizontal-carousel)
+- [Vertical Carousel](https://n43.github.io/react-pannable/?path=/story/carousel--vertical-carousel)
+
 ## License
 
 [MIT License](/LICENSE)
