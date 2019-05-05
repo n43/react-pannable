@@ -1,6 +1,6 @@
 # \<Carousel />
 
-`Carousel` is a convenience wrapper around [`Player`](player.md). Apart from inheriting Player's props, it also provides some special and useful methods and events.
+`Carousel` is a convienent way to playback list data automatically in infinity loop.
 
 ## Usage
 
