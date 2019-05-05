@@ -7,7 +7,6 @@ export default class Carousel extends React.Component {
     ...Player.defaultProps,
     itemCount: 0,
     renderItem: () => null,
-    renderIndicator: null,
     onSlideChange: () => {},
   };
 
@@ -73,13 +72,7 @@ export default class Carousel extends React.Component {
   }
 
   render() {
-    const {
-      itemCount,
-      renderItem,
-      renderIndicator,
-      onSlideChange,
-      ...playerProps
-    } = this.props;
+    const { itemCount, renderItem, onSlideChange, ...playerProps } = this.props;
     const { width, height, direction } = playerProps;
 
     const gridProps = {
@@ -92,7 +85,7 @@ export default class Carousel extends React.Component {
       renderItem,
     };
 
-    const gridElement = <GridContent ref={this.gridRef} {...gridProps} />;
+    const gridElement = <GridContent {...gridProps} />;
     playerProps.children = gridElement;
     playerProps.onScroll = this._onPlayerScroll;
 

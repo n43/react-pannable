@@ -55,7 +55,7 @@ export default class ListContentLayout extends React.Component {
               ref={this.listRef}
               width={375}
               spacing={spacing}
-              itemCount={10}
+              itemCount={40}
               renderItem={({ itemIndex }) => {
                 return (
                   <ItemContent

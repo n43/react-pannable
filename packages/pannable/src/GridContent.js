@@ -1,24 +1,20 @@
 import React from 'react';
+import ItemContent from './ItemContent';
 import { getItemVisibleRect, needsRender } from './utils/visible';
 import { isEqualSize } from './utils/geometry';
-import ItemContent from './ItemContent';
 
 function Item() {}
 
 export default class GridContent extends React.Component {
   static defaultProps = {
+    ...ItemContent.defaultProps,
     direction: 'y',
-    width: null,
-    height: null,
     rowSpacing: 0,
     columnSpacing: 0,
     itemCount: 0,
     itemWidth: 0,
     itemHeight: 0,
     renderItem: () => null,
-    visibleRect: { x: 0, y: 0, width: 0, height: 0 },
-    onResize: () => {},
-    connectWithPad: true,
   };
 
   constructor(props) {
@@ -270,8 +266,6 @@ function calculateLayout(props) {
         countColumn += Math.floor(
           (sizeWidth - itemSize[width]) / (itemSize[width] + spacing[column])
         );
-      } else {
-        sizeWidth = itemSize[width];
       }
     }
   }

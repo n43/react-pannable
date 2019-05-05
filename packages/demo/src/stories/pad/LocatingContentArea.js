@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Pad } from 'react-pannable';
 import RadioField from '../../ui/field/RadioField';
 import './Pad.css';
-import map from './map.jpg';
+import map from './media/map.jpg';
 
 class LocatingContentArea extends Component {
   constructor(props) {

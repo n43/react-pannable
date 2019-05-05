@@ -1,47 +1,72 @@
 # \<GridContent />
 
+`GridContent` component displays data in grid layout. It provides the items that display the actual content.
+
 ## Usage
+
+```js
+import React from 'react';
+import { Pad, GridContent } from 'react-pannable';
+
+class Page extends React.Component {
+  render() {
+    return (
+      <Pad width={300} height={400} alwaysBounceX={false}>
+        <GridContent
+          width={300}
+          itemWidth={80}
+          itemHeight={80}
+          itemCount={100}
+          renderItem={({ Item }) => (
+            <Item hash="img">
+              <img src="beauty.jpg" width="80" height="80" />
+            </Item>
+          )}
+        />
+      </Pad>
+    );
+  }
+}
+```
+
+[![Try it on CodePen](https://img.shields.io/badge/CodePen-Run-blue.svg?logo=CodePen)](https://codepen.io/cztflove/pen/EJJjYe)
 
 ## Props
 
+... [`ItemContent`](itemcontent.md#props) props
+
 #### `direction`?: 'x' | 'y'
 
-#### `width`?: number
-
-#### `height`?: number
+The layout direction of the content. The default value is `y`.
 
 #### `rowSpacing`?: number
 
+The minimum spacing to use between rows.
+
 #### `columnSpacing`?: number
+
+The minimum spacing to use between columns.
 
 #### `itemCount`: number
 
+The number of items.
+
 #### `itemWidth`: number
+
+The width of items.
 
 #### `itemHeight`: number
 
-#### `renderItem`: (attrs: LayoutAttrs) => ReactNode
+The height of items.
 
-#### `visibleRect`?: [Rect](#rect--x-number-y-number-width-number-height-number-)
+#### `renderItem`: (attrs: [LayoutAttrs](#layoutattrs--itemindex-number-rowindex-number-columnindex-number-rect-rect-visiblerect-rect-needsrender-boolean-item-componentitemprops-any-)) => ReactNode
 
-The visible rectangle of the content.
-
-#### `connectWithPad`?: boolean
-
-Determines whether connect with the [Pad](pad.md) component automatically.
-
-#### `onResize`?: (size: [Size](#size--width-number-height-number-)) => void
-
-Calls when changes the size of the component.
+Returns the React element that corresponds to the specified item.
 
 ## APIs
 
-## Interfaces
-
-#### `Size` { width: number, height: number }
-
-#### `Rect` { x: number, y: number, width: number, height: number }
+## Types
 
 #### `ItemProps` { key: string, forceRender: boolean, style: CSSProperties }
 
-#### LayoutAttrs { itemIndex: number, rowIndex: number, columnIndex: number, rect: Rect, visibleRect: Rect, needsRender: boolean, Item: Component<ItemProps> };
+#### LayoutAttrs { itemIndex: number, rowIndex: number, columnIndex: number, rect: [Rect](types.md#rect--x-number-y-number-width-number-height-number-), visibleRect: [Rect](types.md#rect--x-number-y-number-width-number-height-number-), needsRender: boolean, Item: Component<[ItemProps](#itemprops--key-string-forcerender-boolean-style-cssproperties-), any> };

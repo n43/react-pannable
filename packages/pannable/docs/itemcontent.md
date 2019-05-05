@@ -1,25 +1,10 @@
 # \<ItemContent />
 
-## Usage
-
-```js
-import React from 'react';
-import { Pad, ItemContent } from 'react-pannable';
-
-class Page extends React.Component {
-  render() {
-    return (
-      <Pad width="300" height="400">
-        <ItemContent width="1000">
-          <div>Some thing of constant size.</div>
-        </ItemContent>
-      </Pad>
-    );
-  }
-}
-```
+`ItemContent` component displays data with the size best fits the specified size. In most cases, it is not used directly.
 
 ## Props
+
+... `div` props
 
 #### `width`?: number
 
@@ -29,15 +14,15 @@ The width of the component. If not specified, it shrinks to fit the space availa
 
 The height of the component. If not specified, it shrinks to fit the space available.
 
-#### `visibleRect`?: [Rect](#rect--x-number-y-number-width-number-height-number-)
+#### `visibleRect`?: [Rect](types.md#rect--x-number-y-number-width-number-height-number-)
 
 The visible rectangle of the content.
 
 #### `connectWithPad`?: boolean
 
-Determines whether connect with the [Pad](pad.md) component automatically.
+Determines whether connect with the [`Pad`](pad.md) component automatically.
 
-#### `onResize`?: (size: [Size](#size--width-number-height-number-)) => void
+#### `onResize`?: (size: [Size](types.md#size--width-number-height-number-)) => void
 
 Calls when changes the size of the component.
 
@@ -46,9 +31,3 @@ Calls when changes the size of the component.
 #### calculateSize()
 
 Calculates the size of the component manually.
-
-## Interfaces
-
-#### `Size` { width: number, height: number }
-
-#### `Rect` { x: number, y: number, width: number, height: number }
