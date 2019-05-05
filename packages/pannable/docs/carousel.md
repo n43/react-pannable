@@ -1,6 +1,6 @@
 # \<Carousel />
 
-`Carousel` is a convienent way to playback list data automatically in infinity loop.
+`Carousel` used to play a number of looping items in sequence.
 
 ## Usage
 
