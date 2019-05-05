@@ -24,6 +24,10 @@ npm install --save react-pannable
 - [`<ListContent />`](/packages/pannable/docs/listcontent.md) - Displays data in a single column/row
 - [`<GridContent />`](/packages/pannable/docs/gridcontent.md) - Displays data in grid layout
 
+#### [`<Carousel />`](/packages/pannable/docs/carousel.md) - Used to play a number of looping items in sequence
+
+- [`<Player />`](/packages/pannable/docs/player.md) - Used to manage the playback of the paging content
+
 ## Examples
 
 [All the examples!](https://n43.github.io/react-pannable/)
