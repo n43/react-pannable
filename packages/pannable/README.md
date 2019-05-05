@@ -5,7 +5,7 @@ Flexible and Customizable Layouts for Scrolling Content with [`React`](https://f
 [![npm version](https://img.shields.io/npm/v/react-pannable.svg)](https://www.npmjs.com/package/react-pannable)
 ![npm license](https://img.shields.io/npm/l/react-pannable.svg?style=flat)
 
-## Getting started
+## Getting Started
 
 Install `react-pannable` using npm.
 
