@@ -7,6 +7,7 @@ import GeneralContentLayout from './GeneralContentLayout';
 import GridContentLayout from './GridContentLayout';
 import ListContentLayout from './ListContentLayout';
 import NestedMutipleContent from './NestedMutipleContent';
+import ProductMaster from './ProductMaster';
 
 const basicSourceLink =
   'https://github.com/n43/react-pannable/blob/master/packages/demo/src/stories/pad/';
@@ -39,4 +40,8 @@ storiesOf('Pad', module)
   .add('Layout with Nested Content', () => ({
     content: <NestedMutipleContent />,
     source: basicSourceLink + 'NestedMutipleContent.js',
+  }))
+  .add('Use Case with List Content', () => ({
+    content: <ProductMaster />,
+    source: basicSourceLink + 'ProductMaster.js',
   }));

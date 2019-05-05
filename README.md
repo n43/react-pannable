@@ -15,7 +15,9 @@ npm install --save react-pannable
 
 ## API Reference
 
-#### [`<Pannable />`](/packages/pannable/docs/pannable.md) - Can be panned(dragged) around with the touch/mouse
+#### [`<Carousel />`](/packages/pannable/docs/carousel.md) - Used to play a number of looping items in sequence
+
+- [`<Player />`](/packages/pannable/docs/player.md) - Used to manage the playback of the paging content
 
 #### [`<Pad />`](/packages/pannable/docs/pad.md) - Handles scrolling of content
 
@@ -24,18 +26,17 @@ npm install --save react-pannable
 - [`<ListContent />`](/packages/pannable/docs/listcontent.md) - Displays data in a single column/row
 - [`<GridContent />`](/packages/pannable/docs/gridcontent.md) - Displays data in grid layout
 
-#### [`<Carousel />`](/packages/pannable/docs/carousel.md) - Used to play a number of looping items in sequence
-
-- [`<Player />`](/packages/pannable/docs/player.md) - Used to manage the playback of the paging content
+#### [`<Pannable />`](/packages/pannable/docs/pannable.md) - Can be panned(dragged) around with the touch/mouse
 
 ## Examples
 
 [All the examples!](https://n43.github.io/react-pannable/)
 
-Some `Pannable` demos
+Some `Carousel` demos
 
-- [Draggable Notes](https://n43.github.io/react-pannable/?path=/story/pannable--note)
-- [Adjustable Sticker](https://n43.github.io/react-pannable/?path=/story/pannable--sticker)
+- [Pad with Autoplayer](https://n43.github.io/react-pannable/?path=/story/carousel--pad-with-autoplayer)
+- [Horizontal Carousel](https://n43.github.io/react-pannable/?path=/story/carousel--horizontal-carousel)
+- [Vertical Carousel](https://n43.github.io/react-pannable/?path=/story/carousel--vertical-carousel)
 
 Some `Pad` demos
 
@@ -47,11 +48,10 @@ Some `Pad` demos
 - [Layout with List Content](https://n43.github.io/react-pannable/?path=/story/pad--layout-with-list-content)
 - [Layout with Nested Content](https://n43.github.io/react-pannable/?path=/story/pad--layout-with-nested-content)
 
-Some `Carousel` demos
+Some `Pannable` demos
 
-- [Pad with Autoplayer](https://n43.github.io/react-pannable/?path=/story/carousel--pad-with-autoplayer)
-- [Horizontal Carousel](https://n43.github.io/react-pannable/?path=/story/carousel--horizontal-carousel)
-- [Vertical Carousel](https://n43.github.io/react-pannable/?path=/story/carousel--vertical-carousel)
+- [Draggable Notes](https://n43.github.io/react-pannable/?path=/story/pannable--note)
+- [Adjustable Sticker](https://n43.github.io/react-pannable/?path=/story/pannable--sticker)
 
 ## License
 
