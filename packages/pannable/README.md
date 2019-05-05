@@ -47,6 +47,7 @@ Some `Pad` demos
 - [Layout with Grid Content](https://n43.github.io/react-pannable/?path=/story/pad--layout-with-grid-content)
 - [Layout with List Content](https://n43.github.io/react-pannable/?path=/story/pad--layout-with-list-content)
 - [Layout with Nested Content](https://n43.github.io/react-pannable/?path=/story/pad--layout-with-nested-content)
+- [Use Case with List Content](https://n43.github.io/react-pannable/?path=/story/pad--use-case-with-list-content)
 
 Some `Pannable` demos
 
