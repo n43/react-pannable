@@ -1,6 +1,6 @@
 # \<Carousel />
 
-`Carousel` used to play a number of looping items in sequence.
+`Carousel` component used to play a number of looping items in sequence.
 
 ## Usage
 

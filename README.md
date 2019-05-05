@@ -5,7 +5,7 @@ Flexible and Customizable Layouts for Scrolling Content with [`React`](https://f
 [![npm version](https://img.shields.io/npm/v/react-pannable.svg)](https://www.npmjs.com/package/react-pannable)
 ![npm license](https://img.shields.io/npm/l/react-pannable.svg?style=flat)
 
-## Getting started
+## Getting Started
 
 Install `react-pannable` using npm.
 
@@ -23,6 +23,10 @@ npm install --save react-pannable
 - [`<GeneralContent />`](/packages/pannable/docs/generalcontent.md) - Similar to `ItemContent` and automatically resizes when the data change
 - [`<ListContent />`](/packages/pannable/docs/listcontent.md) - Displays data in a single column/row
 - [`<GridContent />`](/packages/pannable/docs/gridcontent.md) - Displays data in grid layout
+
+#### [`<Carousel />`](/packages/pannable/docs/carousel.md) - Used to play a number of looping items in sequence
+
+- [`<Player />`](/packages/pannable/docs/player.md) - Used to manage the playback of the paging content
 
 ## Examples
 
@@ -42,6 +46,12 @@ Some `Pad` demos
 - [Layout with Grid Content](https://n43.github.io/react-pannable/?path=/story/pad--layout-with-grid-content)
 - [Layout with List Content](https://n43.github.io/react-pannable/?path=/story/pad--layout-with-list-content)
 - [Layout with Nested Content](https://n43.github.io/react-pannable/?path=/story/pad--layout-with-nested-content)
+
+Some `Carousel` demos
+
+- [Pad with Autoplayer](https://n43.github.io/react-pannable/?path=/story/carousel--pad-with-autoplayer)
+- [Horizontal Carousel](https://n43.github.io/react-pannable/?path=/story/carousel--horizontal-carousel)
+- [Vertical Carousel](https://n43.github.io/react-pannable/?path=/story/carousel--vertical-carousel)
 
 ## License
 
