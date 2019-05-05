@@ -85,7 +85,7 @@ export default class Carousel extends React.Component {
       renderItem,
     };
 
-    const gridElement = <GridContent ref={this.gridRef} {...gridProps} />;
+    const gridElement = <GridContent {...gridProps} />;
     playerProps.children = gridElement;
     playerProps.onScroll = this._onPlayerScroll;
 
