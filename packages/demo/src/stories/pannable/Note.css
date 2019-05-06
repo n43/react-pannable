@@ -6,6 +6,7 @@
   position: absolute;
   box-sizing: border-box;
   transition: transform 0.3s ease;
+  user-select: none;
 }
 .note-item-dragging {
   z-index: 10;

@@ -84,6 +84,8 @@ export default class Pannable extends React.Component {
           MIN_DISTANCE < dist &&
           shouldStart({ target: evt.target, translation, velocity, interval })
         ) {
+          this._shouldPreventClick = true;
+
           nextState.target = evt.target;
           nextState.startPoint = { x: evt.pageX, y: evt.pageY };
           nextState.translation = translation = { x: 0, y: 0 };
@@ -149,6 +151,8 @@ export default class Pannable extends React.Component {
   _onTouchStart = evt => {
     const { onTouchStart } = this.props;
 
+    this._touchSupported = true;
+
     if (evt.touches && evt.touches.length === 1) {
       this._addTouchPanListener(evt.target);
       this._track(evt.touches[0]);
@@ -159,6 +163,8 @@ export default class Pannable extends React.Component {
     }
   };
   _onTouchMove = evt => {
+    evt.preventDefault();
+
     if (evt.touches && evt.touches.length === 1) {
       this._move(evt.touches[0]);
     }
@@ -187,11 +193,11 @@ export default class Pannable extends React.Component {
   _onMouseDown = evt => {
     const { onMouseDown } = this.props;
 
-    this._shouldPreventClick = true;
-
-    this._removeMousePanListener();
-    this._addMousePanListener();
-    this._track(evt);
+    if (!this._touchSupported) {
+      this._removeMousePanListener();
+      this._addMousePanListener();
+      this._track(evt);
+    }
 
     if (onMouseDown) {
       onMouseDown(evt);
@@ -201,8 +207,7 @@ export default class Pannable extends React.Component {
     evt.preventDefault();
     this._move(evt);
   };
-  _onMouseUp = evt => {
-    evt.preventDefault();
+  _onMouseUp = () => {
     this._removeMousePanListener();
     this._end();
   };
@@ -211,9 +216,9 @@ export default class Pannable extends React.Component {
     const { onClick } = this.props;
 
     if (this._shouldPreventClick) {
+      this._shouldPreventClick = false;
       evt.preventDefault();
     }
-    this._shouldPreventClick = false;
 
     if (onClick) {
       onClick(evt);
