@@ -24,6 +24,15 @@ export default class Pannable extends React.Component {
 
   elemRef = React.createRef();
 
+  componentDidMount() {
+    const elemNode = this.elemRef.current;
+
+    elemNode.addEventListener('touchstart', this._onTouchStart, false);
+    elemNode.addEventListener('touchmove', this._onTouchMove, false);
+    elemNode.addEventListener('mousedown', this._onMouseDown, false);
+    elemNode.addEventListener('click', this._onClick, false);
+  }
+
   componentDidUpdate(prevProps) {
     const { enabled } = this.props;
 
@@ -35,6 +44,12 @@ export default class Pannable extends React.Component {
   }
 
   componentWillUnmount() {
+    const elemNode = this.elemRef.current;
+
+    elemNode.removeEventListener('touchstart', this._onTouchStart, false);
+    elemNode.removeEventListener('touchmove', this._onTouchMove, false);
+    elemNode.removeEventListener('mousedown', this._onMouseDown, false);
+    elemNode.removeEventListener('click', this._onClick, false);
     this._removeMousePanListener();
   }
 
@@ -139,41 +154,38 @@ export default class Pannable extends React.Component {
   }
 
   _addTouchPanListener(target) {
-    target.addEventListener('touchmove', this._onTouchMove, false);
-    target.addEventListener('touchend', this._onTouchEnd, false);
-    target.addEventListener('touchcancel', this._onTouchCancel, false);
+    target.addEventListener('touchmove', this._onTargetTouchMove, false);
+    target.addEventListener('touchend', this._onTargetTouchEnd, false);
+    target.addEventListener('touchcancel', this._onTargetTouchCancel, false);
   }
   _removeTouchPanListener(target) {
-    target.removeEventListener('touchmove', this._onTouchMove, false);
-    target.removeEventListener('touchend', this._onTouchEnd, false);
-    target.removeEventListener('touchcancel', this._onTouchCancel, false);
+    target.removeEventListener('touchmove', this._onTargetTouchMove, false);
+    target.removeEventListener('touchend', this._onTargetTouchEnd, false);
+    target.removeEventListener('touchcancel', this._onTargetTouchCancel, false);
   }
   _onTouchStart = evt => {
-    const { onTouchStart } = this.props;
-
     this._touchSupported = true;
 
     if (evt.touches && evt.touches.length === 1) {
-      this._addTouchPanListener(evt.target);
       this._track(evt.touches[0]);
-    }
-
-    if (onTouchStart) {
-      onTouchStart(evt);
+      this._addTouchPanListener(evt.target);
     }
   };
   _onTouchMove = evt => {
+    evt.preventDefault();
+  };
+  _onTargetTouchMove = evt => {
     evt.preventDefault();
 
     if (evt.touches && evt.touches.length === 1) {
       this._move(evt.touches[0]);
     }
   };
-  _onTouchEnd = evt => {
+  _onTargetTouchEnd = evt => {
     this._removeTouchPanListener(evt.target);
     this._end();
   };
-  _onTouchCancel = evt => {
+  _onTargetTouchCancel = evt => {
     this._removeTouchPanListener(evt.target);
     this._end();
   };
@@ -181,47 +193,37 @@ export default class Pannable extends React.Component {
   _addMousePanListener() {
     const doc = document.documentElement;
 
-    doc.addEventListener('mousemove', this._onMouseMove, false);
-    doc.addEventListener('mouseup', this._onMouseUp, false);
+    doc.addEventListener('mousemove', this._onDocMouseMove, false);
+    doc.addEventListener('mouseup', this._onDocMouseUp, false);
   }
   _removeMousePanListener() {
     const doc = document.documentElement;
 
-    doc.removeEventListener('mousemove', this._onMouseMove, false);
-    doc.removeEventListener('mouseup', this._onMouseUp, false);
+    doc.removeEventListener('mousemove', this._onDocMouseMove, false);
+    doc.removeEventListener('mouseup', this._onDocMouseUp, false);
   }
   _onMouseDown = evt => {
-    const { onMouseDown } = this.props;
-
-    if (!this._touchSupported) {
-      this._removeMousePanListener();
-      this._addMousePanListener();
-      this._track(evt);
+    if (this._touchSupported) {
+      return;
     }
 
-    if (onMouseDown) {
-      onMouseDown(evt);
-    }
+    this._removeMousePanListener();
+    this._addMousePanListener();
+    this._track(evt);
   };
-  _onMouseMove = evt => {
+  _onDocMouseMove = evt => {
     evt.preventDefault();
     this._move(evt);
   };
-  _onMouseUp = () => {
+  _onDocMouseUp = () => {
     this._removeMousePanListener();
     this._end();
   };
 
   _onClick = evt => {
-    const { onClick } = this.props;
-
     if (this._shouldPreventClick) {
       this._shouldPreventClick = false;
       evt.preventDefault();
-    }
-
-    if (onClick) {
-      onClick(evt);
     }
   };
 
@@ -238,9 +240,6 @@ export default class Pannable extends React.Component {
 
     if (enabled) {
       props.style = { touchAction: 'none', ...props.style };
-      props.onTouchStart = this._onTouchStart;
-      props.onMouseDown = this._onMouseDown;
-      props.onClick = this._onClick;
     }
 
     return <div {...props} ref={this.elemRef} />;
