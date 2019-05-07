@@ -172,7 +172,9 @@ export default class Pannable extends React.Component {
     }
   };
   _onTouchMove = evt => {
-    evt.preventDefault();
+    if (this.state.target) {
+      evt.preventDefault();
+    }
   };
   _onTargetTouchMove = evt => {
     evt.preventDefault();
