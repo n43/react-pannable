@@ -2,6 +2,7 @@ import React from 'react';
 import { Pad, GridContent } from 'react-pannable';
 import TextField from '../../ui/field/TextField';
 import SvgPoster from './SvgPoster';
+import { getSize } from './sizeGetter';
 import './Pad.css';
 import './GridContentLayout.css';
 
@@ -37,7 +38,8 @@ export default class GridContentLayout extends React.Component {
     this.padRef.current.scrollToRect({ rect, animated: true });
   };
   render() {
-    const { itemWidth, itemHeight, separator, scrollToIndex } = this.state;
+    const { itemWidth, itemHeight, scrollToIndex } = this.state;
+    const { width, height } = getSize();
 
     return (
       <React.Fragment>
@@ -47,14 +49,14 @@ export default class GridContentLayout extends React.Component {
               ref={this.padRef}
               className="autoadjust-pad"
               directionalLockEnabled
-              width={375}
-              height={650}
+              width={width}
+              height={height}
               alwaysBounceX={false}
               style={{ backgroundColor: '#f5f5f5' }}
             >
               <GridContent
                 ref={this.gridRef}
-                width={375}
+                width={width}
                 itemWidth={itemWidth}
                 itemHeight={itemHeight}
                 itemCount={100}

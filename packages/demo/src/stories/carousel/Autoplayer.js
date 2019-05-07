@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import { Player } from 'react-pannable';
+import { Player, GridContent } from 'react-pannable';
+import { getSize } from './sizeGetter';
 import './Carousel.css';
 
 class Autoplayer extends Component {
@@ -31,52 +32,43 @@ class Autoplayer extends Component {
     this.setState({ statusText: 'stop' });
   };
 
-  renderContent() {
-    const { direction, slideArr } = this.state;
-    const items = [];
-
-    for (let slide = 0; slide < slideArr.length; slide++) {
-      const style = {
-        position: 'absolute',
-        top: direction === 'x' ? 0 : slide * 300,
-        left: direction === 'x' ? slide * 750 : 0,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: 750,
-        height: 300,
-        backgroundColor: slide % 2 ? '#defdff' : '#cbf1ff',
-        color: '#75d3ec',
-        fontSize: 24,
-        textAlign: 'center',
-      };
-
-      items.push(
-        <div key={slide} style={style}>
-          slide {slideArr[slide]}
-        </div>
-      );
-    }
-
-    return items;
-  }
-
   render() {
-    const itemLength = this.state.slideArr.length;
+    const { slideArr } = this.state;
+    const { width, height } = getSize();
 
     return (
       <div className="carousel-main">
         <Player
           ref={this.playerRef}
-          width={750}
-          height={300}
+          width={width}
+          height={height}
           direction="x"
           loop={false}
           autoplayEnabled={true}
+          style={{ margin: 'auto' }}
         >
-          <div style={{ width: 750 * itemLength, height: 300 }}>
-            {this.renderContent()}
-          </div>
+          <GridContent
+            width={width}
+            height={height}
+            direction="x"
+            itemWidth={width}
+            itemHeight={height}
+            itemCount={slideArr.length}
+            renderItem={({ itemIndex }) => {
+              const style = {
+                height: '100%',
+                backgroundColor: itemIndex % 2 ? '#defdff' : '#cbf1ff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#75d3ec',
+                fontSize: 24,
+                textAlign: 'center',
+              };
+
+              return <div style={style}>slide {slideArr[itemIndex]}</div>;
+            }}
+          />
         </Player>
         <div className="carousel-optbar">
           <div className="carsousel-status">

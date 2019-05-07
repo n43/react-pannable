@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Pad, GeneralContent } from 'react-pannable';
 import TextField from '../../ui/field/TextField';
 import SvgGithub from './SvgGithub';
+import { getSize } from './sizeGetter';
 import './Pad.css';
 import './GeneralContentLayout.css';
 
@@ -86,18 +87,19 @@ class GeneralContentLayout extends Component {
 
   render() {
     const { message } = this.state;
+    const { width, height } = getSize();
 
     return (
       <React.Fragment>
         <div className="pad-main">
-          <div className="pad-preview">
+          <div className="pad-preview" style={{ width, height }}>
             <Pad
               className="pad-padele"
-              width={375}
-              height={650}
+              width={width}
+              height={height}
               alwaysBounceX={false}
             >
-              <GeneralContent width={375}>
+              <GeneralContent width={width}>
                 {this.renderArticle()}
                 {this.renderMessage()}
               </GeneralContent>

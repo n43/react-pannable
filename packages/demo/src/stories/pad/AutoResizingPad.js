@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Pad, AutoResizing, GeneralContent } from 'react-pannable';
 import TextField from '../../ui/field/TextField';
+import { getSize } from './sizeGetter';
 import './Pad.css';
 import './AutoResizingPad.css';
 
@@ -51,11 +52,12 @@ class AutoResizingPad extends Component {
 
   render() {
     const { headerHeight, padWidth, padHeight } = this.state;
+    const { width, height } = getSize();
 
     return (
       <React.Fragment>
         <div className="pad-main">
-          <div className="pad-preview">
+          <div className="pad-preview" style={{ width, height }}>
             <div className="autoresize-wrapper">
               <div
                 className="autoresize-header"

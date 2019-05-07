@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Pad, ItemContent } from 'react-pannable';
 import TextField from '../../ui/field/TextField';
 import CheckField from '../../ui/field/CheckField';
+import { getSize } from './sizeGetter';
 import './Pad.css';
 
 class BasicScroll extends Component {
@@ -50,21 +51,21 @@ class BasicScroll extends Component {
       });
     }
   };
-  renderContent() {
+  renderContent({ width, height }) {
     const items = [];
 
     for (let row = 0; row < 5; row++) {
       for (let column = 0; column < 5; column++) {
         const style = {
           position: 'absolute',
-          top: row * 650,
-          left: column * 375,
-          width: 375,
-          height: 650,
+          top: row * height,
+          left: column * width,
+          width: width,
+          height: height,
           backgroundColor: (row + column) % 2 ? '#defdff' : '#cbf1ff',
           color: '#75d3ec',
           fontSize: 24,
-          lineHeight: '650px',
+          lineHeight: height + 'px',
           textAlign: 'center',
         };
 
@@ -92,19 +93,21 @@ class BasicScroll extends Component {
       scrollToY,
     } = this.state;
 
+    const { width, height } = getSize();
+
     return (
       <div className="pad-main">
-        <div className="pad-preview">
+        <div className="pad-preview" style={{ width, height }}>
           <Pad
             ref={this.padRef}
             className="pad-padele"
-            width={375}
-            height={650}
+            width={width}
+            height={height}
             pagingEnabled={pagingEnabled}
             directionalLockEnabled={directionalLockEnabled}
             enabled={scrollEnabled}
           >
-            {this.renderContent()}
+            {this.renderContent({ width, height })}
           </Pad>
         </div>
         <div className="pad-optbar">

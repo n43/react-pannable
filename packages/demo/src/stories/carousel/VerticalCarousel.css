@@ -15,7 +15,7 @@
 }
 .vcarousel-pagination .pagination-item {
   width: 122px;
-  height: 65px;
+  height: 15%;
   background-repeat: no-repeat;
   background-size: cover;
   border: 3px solid transparent;
@@ -23,7 +23,7 @@
 }
 .vcarousel-pagination .pagination-active {
   width: 122px;
-  height: 65px;
+  height: 15%;
   background-repeat: no-repeat;
   background-size: cover;
   border: 3px solid #ffffff;

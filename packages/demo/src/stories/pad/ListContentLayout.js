@@ -1,6 +1,7 @@
 import React from 'react';
 import { Pad, ListContent, ItemContent } from 'react-pannable';
 import TextField from '../../ui/field/TextField';
+import { getSize } from './sizeGetter';
 import './Pad.css';
 
 export default class ListContentLayout extends React.Component {
@@ -39,6 +40,7 @@ export default class ListContentLayout extends React.Component {
 
   render() {
     const { spacing, scrollToIndex } = this.state;
+    const { width, height } = getSize();
 
     return (
       <div className="pad-main">
@@ -47,13 +49,13 @@ export default class ListContentLayout extends React.Component {
             ref={this.padRef}
             className="pad-padele"
             directionalLockEnabled
-            width={375}
-            height={650}
+            width={width}
+            height={height}
             alwaysBounceX={false}
           >
             <ListContent
               ref={this.listRef}
-              width={375}
+              width={width}
               spacing={spacing}
               itemCount={40}
               renderItem={({ itemIndex }) => {

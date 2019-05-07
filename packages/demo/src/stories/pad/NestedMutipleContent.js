@@ -1,6 +1,7 @@
 import React from 'react';
-import { Pad, ListContent, ItemContent, GridContent } from 'react-pannable';
+import { Pad, ListContent, GridContent } from 'react-pannable';
 import SvgGithub from './SvgGithub';
+import { getSize } from './sizeGetter';
 import './Pad.css';
 import './NestedMutipleContent.css';
 
@@ -39,7 +40,8 @@ export default class NestedMutipleContent extends React.Component {
   };
 
   render() {
-    const { spacing, scrollToIndex } = this.state;
+    const { spacing } = this.state;
+    const { width, height } = getSize();
 
     return (
       <div className="pad-main">
@@ -48,13 +50,13 @@ export default class NestedMutipleContent extends React.Component {
             ref={this.padRef}
             className="pad-padele"
             directionalLockEnabled
-            width={375}
-            height={650}
+            width={width}
+            height={height}
             alwaysBounceX={false}
           >
             <ListContent
               ref={this.listRef}
-              width={375}
+              width={width}
               spacing={spacing}
               itemCount={3}
               renderItem={({ itemIndex, Item }) => {
@@ -67,8 +69,8 @@ export default class NestedMutipleContent extends React.Component {
                 } else if (itemIndex === 1) {
                   return (
                     <GridContent
-                      width={375}
-                      itemWidth={182}
+                      width={width}
+                      itemWidth={width / 2 - 5}
                       itemHeight={80}
                       itemCount={40}
                       rowSpacing={10}

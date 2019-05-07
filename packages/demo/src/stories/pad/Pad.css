@@ -1,8 +1,6 @@
 .pad-preview {
   position: relative;
   display: inline-block;
-  width: 375px;
-  height: 650px;
   border: 8px solid #f5f5f5;
 }
 .pad-padele {

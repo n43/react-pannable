@@ -23,3 +23,7 @@
 .carsousel-status {
   padding-right: 20px;
 }
+.carousel-box {
+  position: relative;
+  margin: 0 auto;
+}

@@ -4,10 +4,12 @@ import SvgNote from './SvgNote';
 import clsx from 'clsx';
 import './Note.css';
 
-const WRAPPER_WIDTH = 680;
+const winW = window.document.body.clientWidth;
+
+const WRAPPER_WIDTH = winW > 680 ? 680 : 375;
 const WRAPPER_HEIGHT = 510;
-const ITEM_WIDTH = 200;
-const ITEM_HEIGHT = 200;
+const ITEM_WIDTH = WRAPPER_WIDTH === 680 ? 200 : 150;
+const ITEM_HEIGHT = ITEM_WIDTH;
 
 export default class Note extends React.Component {
   constructor(props) {
@@ -20,7 +22,7 @@ export default class Note extends React.Component {
       dragStartPosition: null,
       items: {
         item0: { x: 20, y: 20 },
-        item1: { x: 240, y: 20 },
+        item1: { x: ITEM_WIDTH + 40, y: 20 },
       },
     };
     this.pannableRef = React.createRef();

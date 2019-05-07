@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Carousel } from 'react-pannable';
 import SvgPrev from './SvgPrev';
 import SvgNext from './SvgNext';
+import { getSize } from './sizeGetter';
 import './Carousel.css';
 import './HorizontalCarousel.css';
 
@@ -23,7 +24,7 @@ class HorizontalCarousel extends Component {
     this.carouselRef = React.createRef();
   }
   componentDidMount() {
-    this.carouselRef.current.slideTo({ index: 3, animated: false });
+    //this.carouselRef.current.slideTo({ index: 3, animated: false });
   }
   handleInputChange = evt => {
     const node = evt.target;
@@ -68,14 +69,15 @@ class HorizontalCarousel extends Component {
   render() {
     const { direction, slideArr } = this.state;
     const itemLength = slideArr.length;
+    const { width, height } = getSize();
 
     return (
       <div className="carousel-main">
-        <div className="carousel-box">
+        <div className="carousel-box" style={{ width, height }}>
           <Carousel
             ref={this.carouselRef}
-            width={750}
-            height={400}
+            width={width}
+            height={height}
             direction={direction}
             loop={true}
             itemCount={itemLength}
@@ -83,12 +85,14 @@ class HorizontalCarousel extends Component {
               const style = {
                 height: '100%',
                 backgroundImage: `url(${slideArr[itemIndex]})`,
+                backgroundSize: 'cover',
               };
 
               return <div style={style} />;
             }}
             onSlideChange={this.handleSlideChange}
           />
+
           {this.renderIndicator()}
           <SvgPrev
             className="carousel-box-prev"

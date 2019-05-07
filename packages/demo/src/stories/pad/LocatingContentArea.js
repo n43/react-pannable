@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Pad } from 'react-pannable';
 import RadioField from '../../ui/field/RadioField';
+import { getSize } from './sizeGetter';
 import './Pad.css';
 import map from './media/map.jpg';
 
@@ -62,14 +63,16 @@ class LocatingContentArea extends Component {
       { title: 'end', value: 'end', checked: scrollAlignY === 'end' },
     ];
 
+    const { width, height } = getSize();
+
     return (
       <div className="pad-main">
-        <div className="pad-preview">
+        <div className="pad-preview" style={{ width, height }}>
           <Pad
             ref={this.padRef}
             className="pad-padele"
-            width={375}
-            height={650}
+            width={width}
+            height={height}
           >
             <img src={map} width={1300} height={973} />
             <div
