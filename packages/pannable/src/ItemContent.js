@@ -1,6 +1,6 @@
 import React from 'react';
 import { getElementSize } from './utils/sizeGetter';
-import { isEqualSize } from './utils/geometry';
+import { isEqualToSize } from './utils/geometry';
 
 export default class ItemContent extends React.Component {
   static defaultProps = {
@@ -37,7 +37,7 @@ export default class ItemContent extends React.Component {
 
       nextState = nextState || {};
 
-      if (!isEqualSize(nextSize, size)) {
+      if (!isEqualToSize(nextSize, size)) {
         nextState.size = nextSize;
       }
       if (width !== prevWidth) {
@@ -88,7 +88,7 @@ export default class ItemContent extends React.Component {
       const { size } = state;
       const nextSize = getElementSize(resizeNode);
 
-      if (isEqualSize(nextSize, size)) {
+      if (isEqualToSize(nextSize, size)) {
         return null;
       }
 

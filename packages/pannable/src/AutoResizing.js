@@ -1,7 +1,7 @@
 import React from 'react';
 import { getElementSize } from './utils/sizeGetter';
 import resizeDetector from './utils/resizeDetector';
-import { isEqualSize } from './utils/geometry';
+import { isEqualToSize } from './utils/geometry';
 
 export default class AutoResizing extends React.Component {
   static defaultProps = {
@@ -36,7 +36,7 @@ export default class AutoResizing extends React.Component {
 
       nextState = nextState || {};
 
-      if (!isEqualSize(nextSize, size)) {
+      if (!isEqualToSize(nextSize, size)) {
         nextState.size = nextSize;
       }
       if (width !== prevWidth) {
@@ -97,7 +97,7 @@ export default class AutoResizing extends React.Component {
       const { size } = state;
       const nextSize = getElementSize(resizeNode);
 
-      if (isEqualSize(nextSize, size)) {
+      if (isEqualToSize(nextSize, size)) {
         return null;
       }
 
