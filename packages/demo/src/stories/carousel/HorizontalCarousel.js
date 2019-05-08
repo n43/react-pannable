@@ -81,14 +81,18 @@ class HorizontalCarousel extends Component {
             direction={direction}
             loop={true}
             itemCount={itemLength}
-            renderItem={({ itemIndex }) => {
+            renderItem={({ itemIndex, Item }) => {
               const style = {
                 height: '100%',
                 backgroundImage: `url(${slideArr[itemIndex]})`,
                 backgroundSize: 'cover',
               };
 
-              return <div style={style} />;
+              return (
+                <Item forceRender>
+                  <div style={style} />
+                </Item>
+              );
             }}
             onSlideChange={this.handleSlideChange}
           />
