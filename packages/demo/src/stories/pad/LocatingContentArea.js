@@ -12,6 +12,7 @@ class LocatingContentArea extends Component {
     this.state = {
       scrollAlignX: 'auto',
       scrollAlignY: 'auto',
+      size: getSize(),
     };
     this.padRef = React.createRef();
   }
@@ -49,7 +50,7 @@ class LocatingContentArea extends Component {
   };
 
   render() {
-    const { scrollAlignX, scrollAlignY } = this.state;
+    const { scrollAlignX, scrollAlignY, size } = this.state;
     const scrollAlignXOptions = [
       { title: 'auto', value: 'auto', checked: scrollAlignX === 'auto' },
       { title: 'start', value: 'start', checked: scrollAlignX === 'start' },
@@ -63,7 +64,7 @@ class LocatingContentArea extends Component {
       { title: 'end', value: 'end', checked: scrollAlignY === 'end' },
     ];
 
-    const { width, height } = getSize();
+    const { width, height } = size;
 
     return (
       <div className="pad-main">

@@ -12,6 +12,7 @@ export default class NestedMutipleContent extends React.Component {
     this.state = {
       spacing: 8,
       scrollToIndex: 0,
+      size: getSize(),
     };
 
     this.padRef = React.createRef();
@@ -40,8 +41,8 @@ export default class NestedMutipleContent extends React.Component {
   };
 
   render() {
-    const { spacing } = this.state;
-    const { width, height } = getSize();
+    const { spacing, size } = this.state;
+    const { width, height } = size;
 
     return (
       <div className="pad-main">

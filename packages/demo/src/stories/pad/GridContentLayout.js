@@ -14,6 +14,7 @@ export default class GridContentLayout extends React.Component {
       itemWidth: 187,
       itemHeight: 150,
       scrollToIndex: 0,
+      size: getSize(),
     };
     this.padRef = React.createRef();
     this.gridRef = React.createRef();
@@ -38,8 +39,8 @@ export default class GridContentLayout extends React.Component {
     this.padRef.current.scrollToRect({ rect, animated: true });
   };
   render() {
-    const { itemWidth, itemHeight, scrollToIndex } = this.state;
-    const { width, height } = getSize();
+    const { itemWidth, itemHeight, scrollToIndex, size } = this.state;
+    const { width, height } = size;
 
     return (
       <React.Fragment>

@@ -20,6 +20,7 @@ class HorizontalCarousel extends Component {
       direction: 'x',
       activeIndex: 0,
       slideArr: [photo1, photo2, photo3, photo4, photo5],
+      size: getSize(),
     };
     this.carouselRef = React.createRef();
   }
@@ -67,9 +68,9 @@ class HorizontalCarousel extends Component {
   }
 
   render() {
-    const { direction, slideArr } = this.state;
+    const { direction, slideArr, size } = this.state;
     const itemLength = slideArr.length;
-    const { width, height } = getSize();
+    const { width, height } = size;
 
     return (
       <div className="carousel-main">
@@ -81,14 +82,18 @@ class HorizontalCarousel extends Component {
             direction={direction}
             loop={true}
             itemCount={itemLength}
-            renderItem={({ itemIndex }) => {
+            renderItem={({ itemIndex, Item }) => {
               const style = {
                 height: '100%',
                 backgroundImage: `url(${slideArr[itemIndex]})`,
                 backgroundSize: 'cover',
               };
 
-              return <div style={style} />;
+              return (
+                <Item forceRender>
+                  <div style={style} />
+                </Item>
+              );
             }}
             onSlideChange={this.handleSlideChange}
           />

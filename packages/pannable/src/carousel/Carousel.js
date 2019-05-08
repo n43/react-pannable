@@ -63,6 +63,15 @@ export default class Carousel extends React.Component {
     this.props.onScroll(evt);
   };
 
+  _shouldStartWhenTouchmove = evt => {
+    const { direction, shouldStart } = this.props;
+    const { x, y } = evt.velocity;
+    const result =
+      direction === 'y' ? Math.abs(y) > Math.abs(x) : Math.abs(x) > Math.abs(y);
+
+    return result && shouldStart();
+  };
+
   _calculateActiveIndex({ size, contentOffset }) {
     const { direction, itemCount } = this.props;
     const [width, x] = direction === 'x' ? ['width', 'x'] : ['height', 'y'];
@@ -88,6 +97,7 @@ export default class Carousel extends React.Component {
     const gridElement = <GridContent {...gridProps} />;
     playerProps.children = gridElement;
     playerProps.onScroll = this._onPlayerScroll;
+    playerProps.shouldStart = this._shouldStartWhenTouchmove;
 
     return <Player {...playerProps} ref={this.playerRef} />;
   }
