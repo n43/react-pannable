@@ -1,4 +1,4 @@
-export function isEqualSize(s1, s2) {
+export function isEqualToSize(s1, s2) {
   if (s1 === s2) {
     return true;
   }

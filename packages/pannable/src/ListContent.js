@@ -1,7 +1,7 @@
 import React from 'react';
 import ItemContent from './ItemContent';
 import { getItemVisibleRect, needsRender } from './utils/visible';
-import { isEqualSize } from './utils/geometry';
+import { isEqualToSize } from './utils/geometry';
 
 function Item() {}
 
@@ -100,7 +100,7 @@ export default class ListContent extends React.Component {
       nextState.fixed = layout.fixed;
       nextState.layoutList = layout.layoutList;
 
-      if (!isEqualSize(layout.size, size)) {
+      if (!isEqualToSize(layout.size, size)) {
         nextState.size = layout.size;
       }
 
@@ -166,7 +166,7 @@ export default class ListContent extends React.Component {
       style: itemStyle,
       visibleRect,
       onResize: size => {
-        if (!isEqualSize(size, this._itemSizeDict[hash])) {
+        if (!isEqualToSize(size, this._itemSizeDict[hash])) {
           this._itemSizeDict[hash] = size;
           this._layout();
         }

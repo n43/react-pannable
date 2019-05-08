@@ -1,7 +1,7 @@
 import React from 'react';
 import ItemContent from './ItemContent';
 import { getItemVisibleRect, needsRender } from './utils/visible';
-import { isEqualSize } from './utils/geometry';
+import { isEqualToSize } from './utils/geometry';
 
 function Item() {}
 
@@ -98,7 +98,7 @@ export default class GridContent extends React.Component {
       nextState.count = layout.count;
       nextState.layoutList = layout.layoutList;
 
-      if (!isEqualSize(layout.size, size)) {
+      if (!isEqualToSize(layout.size, size)) {
         nextState.size = layout.size;
       }
 
