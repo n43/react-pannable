@@ -63,13 +63,14 @@ export default class Carousel extends React.Component {
     this.props.onScroll(evt);
   };
 
-  _shouldStartWhenTouchmove = ({ velocity }) => {
+  _shouldStartWhenTouchmove = ({ translation }) => {
     const { direction, shouldStart } = this.props;
-    const result =
-      direction === 'y'
-        ? Math.abs(velocity.x) < Math.abs(velocity.y)
-        : Math.abs(velocity.x) > Math.abs(velocity.y);
+    const { x, y } = translation;
 
+    const touchAngle = (Math.atan2(Math.abs(y), Math.abs(x)) * 180) / Math.PI;
+    const result = direction === 'y' ? touchAngle > 45 : touchAngle < 45;
+
+    console.log(result && shouldStart());
     return result && shouldStart();
   };
 

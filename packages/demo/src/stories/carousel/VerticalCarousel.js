@@ -18,6 +18,7 @@ class VerticalCarousel extends Component {
       direction: 'y',
       activeIndex: 0,
       slideArr: [photo1, photo2, photo3, photo4, photo5],
+      size: getSize(),
     };
     this.carouselRef = React.createRef();
   }
@@ -63,9 +64,9 @@ class VerticalCarousel extends Component {
   }
 
   render() {
-    const { direction, slideArr } = this.state;
+    const { direction, slideArr, size } = this.state;
     const itemLength = slideArr.length;
-    const { width, height } = getSize();
+    const { width, height } = size;
 
     return (
       <div className="carousel-main">

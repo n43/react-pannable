@@ -15,6 +15,7 @@ class BasicScroll extends Component {
       directionalLockEnabled: false,
       scrollToX: 0,
       scrollToY: 0,
+      size: getSize(),
     };
     this.padRef = React.createRef();
   }
@@ -91,9 +92,10 @@ class BasicScroll extends Component {
       directionalLockEnabled,
       scrollToX,
       scrollToY,
+      size,
     } = this.state;
 
-    const { width, height } = getSize();
+    const { width, height } = size;
 
     return (
       <div className="pad-main">

@@ -11,6 +11,7 @@ class Autoplayer extends Component {
       direction: 'x',
       statusText: 'start',
       slideArr: [1, 2, 3, 4, 5, 6],
+      size: getSize(),
     };
     this.playerRef = React.createRef();
   }
@@ -33,8 +34,8 @@ class Autoplayer extends Component {
   };
 
   render() {
-    const { slideArr } = this.state;
-    const { width, height } = getSize();
+    const { slideArr, size } = this.state;
+    const { width, height } = size;
 
     return (
       <div className="carousel-main">

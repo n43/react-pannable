@@ -10,6 +10,7 @@ class AutoResizingPad extends Component {
     headerHeight: '50',
     padWidth: '',
     padHeight: '',
+    size: getSize(),
   };
 
   handleInputChange = evt => {
@@ -51,8 +52,8 @@ class AutoResizingPad extends Component {
   }
 
   render() {
-    const { headerHeight, padWidth, padHeight } = this.state;
-    const { width, height } = getSize();
+    const { headerHeight, padWidth, padHeight, size } = this.state;
+    const { width, height } = size;
 
     return (
       <React.Fragment>

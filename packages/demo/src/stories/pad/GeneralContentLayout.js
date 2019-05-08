@@ -16,6 +16,7 @@ class GeneralContentLayout extends Component {
       'Join the millions of developers already using GitHub to share their code, work together, and build amazing things.',
     ],
     message: '',
+    size: getSize(),
   };
 
   handleInputChange = evt => {
@@ -86,8 +87,8 @@ class GeneralContentLayout extends Component {
   }
 
   render() {
-    const { message } = this.state;
-    const { width, height } = getSize();
+    const { message, size } = this.state;
+    const { width, height } = size;
 
     return (
       <React.Fragment>
