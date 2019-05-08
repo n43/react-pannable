@@ -65,53 +65,57 @@ export default class Pannable extends React.Component {
 
     this.setState((state, props) => {
       const { shouldStart, onStart, onMove } = props;
-      const { target, startPoint, movePoint, moveTime } = state;
+      let { target, startPoint, movePoint, moveTime } = state;
 
       if (!startPoint) {
         return null;
       }
 
-      const nextMoveTime = new Date().getTime();
-      const nextMovePoint = { x: evt.pageX, y: evt.pageY };
-      const interval = nextMoveTime - moveTime;
+      let nextMovePoint = { x: evt.pageX, y: evt.pageY };
+      let nextMoveTime = new Date().getTime();
+      let interval = nextMoveTime - moveTime;
       let translation = {
         x: nextMovePoint.x - startPoint.x,
         y: nextMovePoint.y - startPoint.y,
       };
-      const velocity = {
+      let velocity = {
         x: (nextMovePoint.x - movePoint.x) / interval,
         y: (nextMovePoint.y - movePoint.y) / interval,
       };
-      const nextState = {
-        translation,
-        velocity,
-        interval,
-        movePoint: nextMovePoint,
-        moveTime: nextMoveTime,
-      };
 
-      if (!target) {
+      movePoint = nextMovePoint;
+      moveTime = nextMoveTime;
+
+      if (target) {
+        onMove({ target, translation, velocity, interval });
+      } else {
         const dist = Math.sqrt(
           translation.x * translation.x + translation.y * translation.y
         );
 
-        if (
-          MIN_DISTANCE < dist &&
-          shouldStart({ target: evt.target, translation, velocity, interval })
-        ) {
-          this._shouldPreventClick = true;
+        if (MIN_DISTANCE < dist) {
+          target = evt.target;
 
-          nextState.target = evt.target;
-          nextState.startPoint = { x: evt.pageX, y: evt.pageY };
-          nextState.translation = translation = { x: 0, y: 0 };
+          if (shouldStart({ target, translation, velocity, interval })) {
+            this._shouldPreventClick = true;
 
-          onStart({ target: evt.target, translation, velocity, interval });
+            startPoint = { x: evt.pageX, y: evt.pageY };
+            translation = { x: 0, y: 0 };
+
+            onStart({ target, translation, velocity, interval });
+          } else {
+            target = null;
+            translation = null;
+            velocity = null;
+            interval = null;
+            startPoint = null;
+            movePoint = null;
+            moveTime = null;
+          }
         }
-      } else {
-        onMove({ target, translation, velocity, interval });
       }
 
-      return nextState;
+      return { target, translation, velocity, interval, movePoint, moveTime };
     });
   }
   _end() {
