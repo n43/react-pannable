@@ -171,17 +171,12 @@ export default class Pannable extends React.Component {
       this._addTouchPanListener(evt.target);
     }
   };
-  _onTouchMove = evt => {
+  _onTouchMove = () => {};
+  _onTargetTouchMove = evt => {
     if (this.state.target) {
       evt.preventDefault();
     }
-  };
-  _onTargetTouchMove = evt => {
-    evt.preventDefault();
-
-    if (evt.touches && evt.touches.length === 1) {
-      this._move(evt.touches[0]);
-    }
+    this._move(evt.touches[0]);
   };
   _onTargetTouchEnd = evt => {
     this._removeTouchPanListener(evt.target);
