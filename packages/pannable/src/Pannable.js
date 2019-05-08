@@ -71,8 +71,8 @@ export default class Pannable extends React.Component {
         return null;
       }
 
-      let nextMovePoint = { x: evt.pageX, y: evt.pageY };
-      let nextMoveTime = new Date().getTime();
+      const nextMovePoint = { x: evt.pageX, y: evt.pageY };
+      const nextMoveTime = new Date().getTime();
       let interval = nextMoveTime - moveTime;
       let translation = {
         x: nextMovePoint.x - startPoint.x,
