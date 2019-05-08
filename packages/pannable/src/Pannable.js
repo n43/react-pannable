@@ -115,7 +115,15 @@ export default class Pannable extends React.Component {
         }
       }
 
-      return { target, translation, velocity, interval, movePoint, moveTime };
+      return {
+        target,
+        translation,
+        velocity,
+        interval,
+        startPoint,
+        movePoint,
+        moveTime,
+      };
     });
   }
   _end() {
