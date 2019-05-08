@@ -91,9 +91,7 @@ class HorizontalCarousel extends Component {
 
               return (
                 <Item forceRender>
-                  <div style={style}>
-                    <a href="http://www.baidu.com">test</a>
-                  </div>
+                  <div style={style} />
                 </Item>
               );
             }}
