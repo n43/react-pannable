@@ -452,6 +452,7 @@ export default class Pad extends React.Component {
         x: (nextContentOffset.x - contentOffset.x) / interval,
         y: (nextContentOffset.y - contentOffset.y) / interval,
       };
+
       return { contentOffset: nextContentOffset, contentVelocity };
     });
   };
@@ -466,6 +467,7 @@ export default class Pad extends React.Component {
         size,
         DECELERATION_RATE_STRONG
       );
+
       const decelerationRate = pagingEnabled
         ? DECELERATION_RATE_STRONG
         : DECELERATION_RATE_WEAK;
