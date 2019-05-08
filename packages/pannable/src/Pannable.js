@@ -41,20 +41,27 @@ export default class Pannable extends React.Component {
   }
 
   componentDidMount() {
-    const elemNode = this.elemRef.current;
-
-    elemNode.addEventListener('touchstart', this._onTouchStart, false);
-    elemNode.addEventListener('touchmove', this._onTouchMove, false);
-    elemNode.addEventListener('mousedown', this._onMouseDown, false);
-    elemNode.addEventListener('click', this._onClick, false);
+    if (this.props.enabled) {
+      this._addElemListener();
+    }
   }
 
   componentDidUpdate(prevProps, prevState) {
     const { enabled, onStart, onMove, onEnd, onCancel } = this.props;
-    const { target, translation, velocity } = this.state;
+    const { target, translation } = this.state;
+
+    if (enabled !== prevProps.enabled) {
+      if (enabled) {
+        this._addElemListener();
+      } else {
+        this._removeElemListener();
+      }
+    }
 
     if (target !== prevState.target) {
       if (target) {
+        this._shouldPreventClick = true;
+
         onStart(this._getPannableEvent());
       } else {
         if (enabled) {
@@ -63,22 +70,34 @@ export default class Pannable extends React.Component {
           onCancel(this._getPannableEvent());
         }
       }
-    } else if (
-      translation !== prevState.translation ||
-      velocity !== prevState.velocity
-    ) {
+    } else if (translation !== prevState.translation) {
       onMove(this._getPannableEvent());
     }
   }
 
   componentWillUnmount() {
+    if (this.props.enabled) {
+      this._removeElemListener();
+    }
+    this._removeMousePanListener();
+  }
+
+  _addElemListener() {
+    const elemNode = this.elemRef.current;
+
+    elemNode.addEventListener('touchstart', this._onTouchStart, false);
+    elemNode.addEventListener('touchmove', this._onTouchMove, false);
+    elemNode.addEventListener('mousedown', this._onMouseDown, false);
+    elemNode.addEventListener('click', this._onClick, false);
+  }
+
+  _removeElemListener() {
     const elemNode = this.elemRef.current;
 
     elemNode.removeEventListener('touchstart', this._onTouchStart, false);
     elemNode.removeEventListener('touchmove', this._onTouchMove, false);
     elemNode.removeEventListener('mousedown', this._onMouseDown, false);
     elemNode.removeEventListener('click', this._onClick, false);
-    this._removeMousePanListener();
   }
 
   _getPannableEvent() {
@@ -108,12 +127,12 @@ export default class Pannable extends React.Component {
 
       const nextMovePoint = { x: evt.pageX, y: evt.pageY };
       const nextMoveTime = new Date().getTime();
-      let interval = nextMoveTime - moveTime;
-      let translation = {
+      const interval = nextMoveTime - moveTime;
+      const translation = {
         x: nextMovePoint.x - startPoint.x,
         y: nextMovePoint.y - startPoint.y,
       };
-      let velocity = {
+      const velocity = {
         x: (nextMovePoint.x - movePoint.x) / interval,
         y: (nextMovePoint.y - movePoint.y) / interval,
       };
@@ -149,8 +168,6 @@ export default class Pannable extends React.Component {
         };
       }
 
-      this._shouldPreventClick = true;
-
       return {
         target: evt.target,
         startPoint: { x: evt.pageX, y: evt.pageY },
@@ -164,14 +181,22 @@ export default class Pannable extends React.Component {
   }
 
   _end() {
-    this.setState({
-      target: null,
-      startPoint: null,
-      movePoint: null,
-      moveTime: null,
-      translation: null,
-      velocity: null,
-      interval: null,
+    this.setState(state => {
+      const { target } = state;
+
+      if (!target) {
+        return null;
+      }
+
+      return {
+        target: null,
+        startPoint: null,
+        movePoint: null,
+        moveTime: null,
+        translation: null,
+        velocity: null,
+        interval: null,
+      };
     });
   }
 
@@ -202,6 +227,7 @@ export default class Pannable extends React.Component {
     if (this.state.target) {
       evt.preventDefault();
     }
+
     this._move(evt.touches[0]);
   };
 
@@ -240,7 +266,10 @@ export default class Pannable extends React.Component {
   };
 
   _onDocMouseMove = evt => {
-    evt.preventDefault();
+    if (this.state.target) {
+      evt.preventDefault();
+    }
+
     this._move(evt);
   };
 
