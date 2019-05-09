@@ -20,7 +20,54 @@ export default class GridContent extends React.Component {
   constructor(props) {
     super(props);
 
-    this.state = calculateLayout(props);
+    this.state = {
+      layoutHash: '',
+      size: null,
+      count: null,
+      layoutList: null,
+    };
+  }
+
+  static getDerivedStateFromProps(props, state) {
+    const {
+      direction,
+      width,
+      height,
+      rowSpacing,
+      columnSpacing,
+      itemCount,
+      itemWidth,
+      itemHeight,
+    } = props;
+    const { size, layoutHash } = state;
+    let nextState = null;
+
+    const nextLayoutHash = [
+      direction,
+      width,
+      height,
+      rowSpacing,
+      columnSpacing,
+      itemCount,
+      itemWidth,
+      itemHeight,
+    ].join();
+
+    if (nextLayoutHash !== layoutHash) {
+      const layout = calculateLayout(props);
+
+      nextState = nextState || {};
+
+      nextState.layoutHash = nextLayoutHash;
+      nextState.count = layout.count;
+      nextState.layoutList = layout.layoutList;
+
+      if (!isEqualToSize(layout.size, size)) {
+        nextState.size = layout.size;
+      }
+    }
+
+    return nextState;
   }
 
   componentDidMount() {
@@ -32,34 +79,11 @@ export default class GridContent extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    const {
-      direction,
-      width,
-      height,
-      rowSpacing,
-      columnSpacing,
-      itemCount,
-      itemWidth,
-      itemHeight,
-      onResize,
-    } = this.props;
     const { size } = this.state;
 
-    if (
-      direction !== prevProps.direction ||
-      width !== prevProps.width ||
-      height !== prevProps.height ||
-      rowSpacing !== prevProps.rowSpacing ||
-      columnSpacing !== prevProps.columnSpacing ||
-      itemCount !== prevProps.itemCount ||
-      itemWidth !== prevProps.itemWidth ||
-      itemHeight !== prevProps.itemHeight
-    ) {
-      this._layout();
-    }
     if (size !== prevState.size) {
       if (size) {
-        onResize(size);
+        this.props.onResize(size);
       }
     }
   }
@@ -86,24 +110,6 @@ export default class GridContent extends React.Component {
     const attrs = layoutList[itemIndex];
 
     return (attrs && attrs.rect) || null;
-  }
-
-  _layout() {
-    this.setState((state, props) => {
-      const { size } = state;
-      const nextState = {};
-
-      const layout = calculateLayout(props);
-
-      nextState.count = layout.count;
-      nextState.layoutList = layout.layoutList;
-
-      if (!isEqualToSize(layout.size, size)) {
-        nextState.size = layout.size;
-      }
-
-      return nextState;
-    });
   }
 
   _renderItem(layoutAttrs) {

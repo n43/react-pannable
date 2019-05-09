@@ -15,9 +15,8 @@ export default class ItemContent extends React.Component {
     super(props);
 
     this.state = {
+      layoutHash: '',
       size: null,
-      prevWidth: null,
-      prevHeight: null,
     };
 
     this.resizeRef = React.createRef();
@@ -25,10 +24,12 @@ export default class ItemContent extends React.Component {
 
   static getDerivedStateFromProps(props, state) {
     const { width, height } = props;
-    const { size, prevWidth, prevHeight } = state;
+    const { size, layoutHash } = state;
     let nextState = null;
 
-    if (width !== prevWidth || height !== prevHeight) {
+    const nextLayoutHash = [width, height].join();
+
+    if (nextLayoutHash !== layoutHash) {
       let nextSize = null;
 
       if (typeof width === 'number' && typeof height === 'number') {
@@ -37,14 +38,10 @@ export default class ItemContent extends React.Component {
 
       nextState = nextState || {};
 
+      nextState.layoutHash = nextLayoutHash;
+
       if (!isEqualToSize(nextSize, size)) {
         nextState.size = nextSize;
-      }
-      if (width !== prevWidth) {
-        nextState.prevWidth = width;
-      }
-      if (height !== prevHeight) {
-        nextState.prevHeight = height;
       }
     }
 
