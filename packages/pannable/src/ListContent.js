@@ -62,7 +62,7 @@ export default class ListContent extends React.Component {
     ) {
       this._invalidLayout = true;
     }
-    if (prevState.size !== size) {
+    if (size !== prevState.size) {
       if (size) {
         onResize(size);
       }

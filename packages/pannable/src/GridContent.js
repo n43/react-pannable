@@ -46,18 +46,18 @@ export default class GridContent extends React.Component {
     const { size } = this.state;
 
     if (
-      prevProps.direction !== direction ||
-      prevProps.width !== width ||
-      prevProps.height !== height ||
-      prevProps.rowSpacing !== rowSpacing ||
-      prevProps.columnSpacing !== columnSpacing ||
-      prevProps.itemCount !== itemCount ||
-      prevProps.itemWidth !== itemWidth ||
-      prevProps.itemHeight !== itemHeight
+      direction !== prevProps.direction ||
+      width !== prevProps.width ||
+      height !== prevProps.height ||
+      rowSpacing !== prevProps.rowSpacing ||
+      columnSpacing !== prevProps.columnSpacing ||
+      itemCount !== prevProps.itemCount ||
+      itemWidth !== prevProps.itemWidth ||
+      itemHeight !== prevProps.itemHeight
     ) {
       this._layout();
     }
-    if (prevState.size !== size) {
+    if (size !== prevState.size) {
       if (size) {
         onResize(size);
       }
