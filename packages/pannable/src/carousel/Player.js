@@ -33,9 +33,10 @@ export default class Player extends React.Component {
       autoplayEnabled !== prevProps.autoplayEnabled ||
       autoplayInterval !== prevProps.autoplayInterval
     ) {
-      this._stopPlaying();
       if (autoplayEnabled) {
         this._startPlaying();
+      } else {
+        this._stopPlaying();
       }
     }
   }
@@ -50,9 +51,9 @@ export default class Player extends React.Component {
     const pad = this.padRef.current;
 
     pad.scrollTo({
-      offset: (state, props) => {
-        const { contentOffset, size, contentSize } = state;
-        const { pagingEnabled } = props;
+      offset: (padState, padProps) => {
+        const { contentOffset, size, contentSize } = padState;
+        const { pagingEnabled } = padProps;
 
         const [width, x, y] =
           direction === 'y' ? ['height', 'y', 'x'] : ['width', 'x', 'y'];
@@ -140,9 +141,7 @@ export default class Player extends React.Component {
   _onPadMouseEnter = evt => {
     const { onMouseEnter } = this.props;
 
-    this.setState({ mouseEntered: true }, () => {
-      this._stopPlaying();
-    });
+    this.setState({ mouseEntered: true }, () => this._stopPlaying());
 
     if (onMouseEnter) {
       onMouseEnter(evt);
@@ -151,9 +150,7 @@ export default class Player extends React.Component {
   _onPadMouseLeave = evt => {
     const { onMouseLeave } = this.props;
 
-    this.setState({ mouseEntered: false }, () => {
-      this._startPlaying();
-    });
+    this.setState({ mouseEntered: false }, () => this._startPlaying());
 
     if (onMouseLeave) {
       onMouseLeave(evt);
