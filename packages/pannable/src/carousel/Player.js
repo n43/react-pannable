@@ -225,6 +225,17 @@ export default class Player extends React.Component {
     this.props.onContentResize(contentSize);
   };
 
+  _shouldPanStart = ({ velocity }) => {
+    const { direction, shouldStart } = this.props;
+    const [x, y] = direction === 'y' ? ['y', 'x'] : ['x', 'y'];
+
+    if (Math.abs(velocity[x]) <= Math.abs(velocity[y])) {
+      return false;
+    }
+
+    return shouldStart();
+  };
+
   render() {
     const {
       direction,
@@ -256,6 +267,7 @@ export default class Player extends React.Component {
     );
 
     padProps.onContentResize = this._onPadContentResize;
+    padProps.shouldStart = this._shouldPanStart;
 
     if (loopCount > 1) {
       padProps.onScroll = this._onPadScroll;
