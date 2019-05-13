@@ -7,18 +7,15 @@ import './Pad.css';
 import './GridContentLayout.css';
 
 export default class GridContentLayout extends React.Component {
-  constructor(props) {
-    super(props);
+  state = {
+    itemWidth: 187,
+    itemHeight: 150,
+    scrollToIndex: 0,
+    size: getSize(),
+  };
+  padRef = React.createRef();
+  gridRef = React.createRef();
 
-    this.state = {
-      itemWidth: 187,
-      itemHeight: 150,
-      scrollToIndex: 0,
-      size: getSize(),
-    };
-    this.padRef = React.createRef();
-    this.gridRef = React.createRef();
-  }
   handleInputChange = evt => {
     const node = evt.target;
     const value = parseInt(node.value, 10);

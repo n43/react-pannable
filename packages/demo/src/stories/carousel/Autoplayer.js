@@ -4,17 +4,15 @@ import { getSize } from './sizeGetter';
 import './Carousel.css';
 
 class Autoplayer extends Component {
-  constructor(props) {
-    super(props);
+  state = {
+    direction: 'x',
+    statusText: 'start',
+    slideArr: [1, 2, 3, 4, 5, 6],
+    size: getSize(),
+  };
 
-    this.state = {
-      direction: 'x',
-      statusText: 'start',
-      slideArr: [1, 2, 3, 4, 5, 6],
-      size: getSize(),
-    };
-    this.playerRef = React.createRef();
-  }
+  playerRef = React.createRef();
+
   handleInputChange = evt => {
     const node = evt.target;
 

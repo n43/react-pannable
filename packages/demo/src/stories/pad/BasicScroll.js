@@ -6,19 +6,17 @@ import { getSize } from './sizeGetter';
 import './Pad.css';
 
 class BasicScroll extends Component {
-  constructor(props) {
-    super(props);
+  state = {
+    pagingEnabled: false,
+    scrollEnabled: true,
+    directionalLockEnabled: false,
+    scrollToX: 0,
+    scrollToY: 0,
+    size: getSize(),
+  };
 
-    this.state = {
-      pagingEnabled: false,
-      scrollEnabled: true,
-      directionalLockEnabled: false,
-      scrollToX: 0,
-      scrollToY: 0,
-      size: getSize(),
-    };
-    this.padRef = React.createRef();
-  }
+  padRef = React.createRef();
+
   handleInputChange = evt => {
     const node = evt.target;
 

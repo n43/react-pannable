@@ -5,11 +5,7 @@ import resizeDetector from './utils/resizeDetector';
 export default class GeneralContent extends React.Component {
   static defaultProps = { ...ItemContent.defaultProps };
 
-  constructor(props) {
-    super(props);
-
-    this.elemRef = React.createRef();
-  }
+  elemRef = React.createRef();
 
   componentDidMount() {
     this._checkResizeNode();

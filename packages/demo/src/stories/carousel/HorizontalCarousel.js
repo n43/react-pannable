@@ -13,17 +13,15 @@ import photo4 from './media/photo4.jpg';
 import photo5 from './media/photo5.jpg';
 
 class HorizontalCarousel extends Component {
-  constructor(props) {
-    super(props);
+  state = {
+    direction: 'x',
+    activeIndex: 0,
+    slideArr: [photo1, photo2, photo3, photo4, photo5],
+    size: getSize(),
+  };
 
-    this.state = {
-      direction: 'x',
-      activeIndex: 0,
-      slideArr: [photo1, photo2, photo3, photo4, photo5],
-      size: getSize(),
-    };
-    this.carouselRef = React.createRef();
-  }
+  carouselRef = React.createRef();
+
   componentDidMount() {
     //this.carouselRef.current.slideTo({ index: 3, animated: false });
   }

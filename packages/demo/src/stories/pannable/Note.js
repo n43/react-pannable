@@ -12,21 +12,17 @@ const ITEM_WIDTH = WRAPPER_WIDTH === 680 ? 200 : 150;
 const ITEM_HEIGHT = ITEM_WIDTH;
 
 export default class Note extends React.Component {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      enabled: true,
-      constrainted: true,
-      dragTarget: null,
-      dragStartPosition: null,
-      items: {
-        item0: { x: 20, y: 20 },
-        item1: { x: ITEM_WIDTH + 40, y: 20 },
-      },
-    };
-    this.pannableRef = React.createRef();
-  }
+  state = {
+    enabled: true,
+    constrainted: true,
+    dragTarget: null,
+    dragStartPosition: null,
+    items: {
+      item0: { x: 20, y: 20 },
+      item1: { x: ITEM_WIDTH + 40, y: 20 },
+    },
+  };
+  pannableRef = React.createRef();
 
   _onConstraintedChange = () => {
     this.setState(({ constrainted }) => ({ constrainted: !constrainted }));

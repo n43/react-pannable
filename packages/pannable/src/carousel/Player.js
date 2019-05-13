@@ -13,12 +13,8 @@ export default class Player extends React.Component {
     directionalLockEnabled: true,
   };
 
-  constructor(props) {
-    super(props);
-
-    this.state = { mouseEntered: false, loopCount: 1 };
-    this.padRef = React.createRef();
-  }
+  state = { mouseEntered: false, loopCount: 1 };
+  padRef = React.createRef();
 
   componentDidMount() {
     if (this.props.autoplayEnabled) {

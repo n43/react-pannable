@@ -10,17 +10,13 @@ export default class AutoResizing extends React.Component {
     onResize: () => {},
   };
 
-  constructor(props) {
-    super(props);
+  state = {
+    size: null,
+    prevWidth: null,
+    prevHeight: null,
+  };
 
-    this.state = {
-      size: null,
-      prevWidth: null,
-      prevHeight: null,
-    };
-
-    this.resizeRef = React.createRef();
-  }
+  resizeRef = React.createRef();
 
   static getDerivedStateFromProps(props, state) {
     const { width, height } = props;

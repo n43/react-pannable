@@ -36,28 +36,76 @@ export default class Pad extends React.Component {
     onContentResize: () => {},
   };
 
-  constructor(props) {
-    super(props);
+  state = {
+    contentOffset: { x: 0, y: 0 },
+    contentVelocity: { x: 0, y: 0 },
+    size: { width: 0, height: 0 },
+    contentSize: { width: 0, height: 0 },
+    drag: null,
+    deceleration: null,
+    constraintHash: '',
+  };
 
-    const { width, height } = props;
+  elemRef = React.createRef();
 
-    this.state = {
-      contentOffset: { x: 0, y: 0 },
-      contentVelocity: { x: 0, y: 0 },
-      size: { width, height },
-      contentSize: { width: 0, height: 0 },
-      drag: null,
-      deceleration: null,
-    };
+  static getDerivedStateFromProps(props, state) {
+    const { width, height, pagingEnabled } = props;
+    const {
+      contentOffset,
+      contentVelocity,
+      size,
+      contentSize,
+      drag,
+      deceleration,
+      constraintHash,
+    } = state;
+    let nextState = null;
+    let nextSize = size;
 
-    this.elemRef = React.createRef();
+    if (width !== size.width || height !== size.height) {
+      nextSize = { width, height };
+
+      nextState = nextState || {};
+      nextState.size = nextSize;
+    }
+
+    const nextConstraintHash = [
+      nextSize.width,
+      nextSize.height,
+      contentSize.width,
+      contentSize.height,
+      pagingEnabled,
+    ].join();
+
+    if (nextConstraintHash !== constraintHash) {
+      nextState = nextState || {};
+      nextState.constraintHash = nextConstraintHash;
+
+      if (!drag && !deceleration) {
+        const decelerationRate = DECELERATION_RATE_STRONG;
+        const decelerationEndOffset = getDecelerationEndOffset(
+          contentOffset,
+          contentVelocity,
+          nextSize,
+          pagingEnabled,
+          decelerationRate
+        );
+
+        nextState.contentOffset = { ...contentOffset };
+        nextState.deceleration = createDeceleration(
+          contentOffset,
+          contentVelocity,
+          decelerationEndOffset,
+          decelerationRate
+        );
+      }
+    }
+
+    return nextState;
   }
 
   componentDidUpdate(prevProps, prevState) {
     const {
-      width,
-      height,
-      pagingEnabled,
       onScroll,
       onDragStart,
       onDragEnd,
@@ -67,14 +115,6 @@ export default class Pad extends React.Component {
     } = this.props;
     const { contentOffset, contentSize, drag, deceleration } = this.state;
 
-    if (width !== prevProps.width || height !== prevProps.height) {
-      this._setStateWithScroll({ size: { width, height } });
-    }
-    if (pagingEnabled !== prevProps.pagingEnabled) {
-      if (pagingEnabled) {
-        this._setStateWithScroll(null);
-      }
-    }
     if (contentOffset !== prevState.contentOffset) {
       onScroll(this._getPadEvent());
 
@@ -131,7 +171,7 @@ export default class Pad extends React.Component {
   }
 
   setContentSize(contentSize) {
-    this._setStateWithScroll({ contentSize });
+    this.setState({ contentSize });
   }
 
   scrollToRect({ rect, align = 'auto', animated = true }) {
@@ -239,43 +279,6 @@ export default class Pad extends React.Component {
       }
 
       return nextState;
-    });
-  }
-
-  _setStateWithScroll(nextState) {
-    this.setState((state, props) => {
-      const {
-        contentOffset,
-        contentVelocity,
-        size,
-        drag,
-        deceleration,
-      } = state;
-      const { pagingEnabled } = props;
-
-      if (drag || deceleration) {
-        return nextState;
-      }
-
-      const decelerationRate = DECELERATION_RATE_STRONG;
-      const decelerationEndOffset = getDecelerationEndOffset(
-        contentOffset,
-        contentVelocity,
-        size,
-        pagingEnabled,
-        decelerationRate
-      );
-
-      return {
-        ...nextState,
-        contentOffset: { ...contentOffset },
-        deceleration: createDeceleration(
-          contentOffset,
-          contentVelocity,
-          decelerationEndOffset,
-          decelerationRate
-        ),
-      };
     });
   }
 
@@ -558,7 +561,7 @@ export default class Pad extends React.Component {
       }),
       visibleRect: this.getVisibleRect(),
       onResize: contentSize => {
-        this._setStateWithScroll({ contentSize });
+        this.setState({ contentSize });
         onElemResize(contentSize);
       },
     };

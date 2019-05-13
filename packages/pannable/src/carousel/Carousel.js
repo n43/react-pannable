@@ -10,15 +10,11 @@ export default class Carousel extends React.Component {
     onSlideChange: () => {},
   };
 
-  constructor(props) {
-    super(props);
+  state = {
+    activeIndex: 0,
+  };
 
-    this.state = {
-      activeIndex: 0,
-    };
-
-    this.playerRef = React.createRef();
-  }
+  playerRef = React.createRef();
 
   componentDidUpdate(prevProps, prevState) {
     const { onSlideChange, itemCount } = this.props;

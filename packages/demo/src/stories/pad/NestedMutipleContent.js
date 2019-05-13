@@ -6,18 +6,14 @@ import './Pad.css';
 import './NestedMutipleContent.css';
 
 export default class NestedMutipleContent extends React.Component {
-  constructor(props) {
-    super(props);
+  state = {
+    spacing: 8,
+    scrollToIndex: 0,
+    size: getSize(),
+  };
 
-    this.state = {
-      spacing: 8,
-      scrollToIndex: 0,
-      size: getSize(),
-    };
-
-    this.padRef = React.createRef();
-    this.listRef = React.createRef();
-  }
+  padRef = React.createRef();
+  listRef = React.createRef();
 
   handleInputChange = evt => {
     const node = evt.target;

@@ -11,16 +11,12 @@ export default class ItemContent extends React.Component {
     connectWithPad: true,
   };
 
-  constructor(props) {
-    super(props);
+  state = {
+    layoutHash: '',
+    size: null,
+  };
 
-    this.state = {
-      layoutHash: '',
-      size: null,
-    };
-
-    this.resizeRef = React.createRef();
-  }
+  resizeRef = React.createRef();
 
   static getDerivedStateFromProps(props, state) {
     const { width, height } = props;

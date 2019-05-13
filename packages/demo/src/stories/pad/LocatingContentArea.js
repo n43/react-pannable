@@ -6,16 +6,13 @@ import './Pad.css';
 import map from './media/map.jpg';
 
 class LocatingContentArea extends Component {
-  constructor(props) {
-    super(props);
+  state = {
+    scrollAlignX: 'auto',
+    scrollAlignY: 'auto',
+    size: getSize(),
+  };
+  padRef = React.createRef();
 
-    this.state = {
-      scrollAlignX: 'auto',
-      scrollAlignY: 'auto',
-      size: getSize(),
-    };
-    this.padRef = React.createRef();
-  }
   handleInputChange = evt => {
     const node = evt.target;
 

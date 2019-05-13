@@ -16,18 +16,14 @@ export default class ListContent extends React.Component {
     renderItem: () => null,
   };
 
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      layoutHash: '',
-      size: null,
-      fixed: null,
-      layoutList: null,
-      itemHashList: [],
-      itemSizeDict: {},
-    };
-  }
+  state = {
+    layoutHash: '',
+    size: null,
+    fixed: null,
+    layoutList: null,
+    itemHashList: [],
+    itemSizeDict: {},
+  };
 
   static getDerivedStateFromProps(props, state) {
     const {

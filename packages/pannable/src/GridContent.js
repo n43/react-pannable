@@ -17,16 +17,12 @@ export default class GridContent extends React.Component {
     renderItem: () => null,
   };
 
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      layoutHash: '',
-      size: null,
-      count: null,
-      layoutList: null,
-    };
-  }
+  state = {
+    layoutHash: '',
+    size: null,
+    count: null,
+    layoutList: null,
+  };
 
   static getDerivedStateFromProps(props, state) {
     const {
