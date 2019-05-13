@@ -62,7 +62,7 @@ export default class Pad extends React.Component {
     let nextState = null;
     let nextSize = size;
 
-    if (width !== size.width || height !== size.height) {
+    if (width !== nextSize.width || height !== nextSize.height) {
       nextSize = { width, height };
 
       nextState = nextState || {};
