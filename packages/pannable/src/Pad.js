@@ -488,6 +488,7 @@ export default class Pad extends React.Component {
       width: contentSize.width,
       height: contentSize.height,
       transformTranslate: [contentOffset.x, contentOffset.y],
+      willChange: 'transform',
     });
     let element = props.children;
 

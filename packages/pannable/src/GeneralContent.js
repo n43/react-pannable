@@ -1,11 +1,12 @@
 import React from 'react';
+import PadContext from './PadContext';
 import ItemContent from './ItemContent';
 import resizeDetector from './utils/resizeDetector';
 
 export default class GeneralContent extends React.Component {
   static defaultProps = { ...ItemContent.defaultProps };
 
-  static contextType = ItemContent.contextType;
+  static contextType = PadContext;
 
   elemRef = React.createRef();
 
@@ -33,27 +34,27 @@ export default class GeneralContent extends React.Component {
     }
   }
 
-  _onResize = (size, resizeRef) => {
+  _onResize = size => {
     const { width, height } = this.props;
 
     if (typeof width === 'number' && typeof height === 'number') {
       this._detachResizeNode();
     } else {
       if (!this._resizeNode) {
-        this._attachResizeNode(resizeRef.current);
+        this._attachResizeNode(this.elemRef.current.resizeRef.current);
       }
     }
 
-    this.props.onResize(size, resizeRef);
+    this.context.onContentResize(size);
   };
 
   render() {
     return (
-      <ItemContent
-        ref={this.elemRef}
-        {...this.props}
-        onResize={this._onResize}
-      />
+      <PadContext.Provider
+        value={{ ...this.context, onContentResize: this._onResize }}
+      >
+        <ItemContent ref={this.elemRef} {...this.props} />
+      </PadContext.Provider>
     );
   }
 }

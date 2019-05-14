@@ -7,7 +7,6 @@ export default class ItemContent extends React.Component {
   static defaultProps = {
     width: null,
     height: null,
-    onResize: () => {},
   };
 
   static contextType = PadContext;
@@ -62,14 +61,8 @@ export default class ItemContent extends React.Component {
 
   calculateSize() {
     this.setState(state => {
-      const resizeNode = this.resizeRef.current;
-
-      if (!resizeNode) {
-        return null;
-      }
-
       const { size } = state;
-      const nextSize = getElementSize(resizeNode);
+      const nextSize = getElementSize(this.resizeRef.current);
 
       if (isEqualToSize(nextSize, size)) {
         return null;
@@ -82,20 +75,27 @@ export default class ItemContent extends React.Component {
   _updateSize() {
     const { size } = this.state;
 
-    if (size) {
-      this.context.onContentResize(size);
-    } else {
+    if (!size) {
       this.calculateSize();
+      return;
     }
 
-    this.props.onResize(size, this.resizeRef);
+    this.context.onContentResize(size);
   }
 
   render() {
-    const { width, height, onResize, ...props } = this.props;
+    const { width, height, ...props } = this.props;
     const { size } = this.state;
 
     const elemStyle = { position: 'relative' };
+    const resizeStyle = { position: 'absolute' };
+
+    if (typeof width === 'number') {
+      resizeStyle.width = width;
+    }
+    if (typeof height === 'number') {
+      resizeStyle.height = height;
+    }
 
     if (size) {
       elemStyle.width = size.width;
@@ -113,21 +113,12 @@ export default class ItemContent extends React.Component {
       element = element(this.state);
     }
 
-    element = (
-      <div
-        ref={this.resizeRef}
-        style={{
-          position: 'absolute',
-          width: typeof width === 'number' ? width : 'auto',
-          height: typeof height === 'number' ? height : 'auto',
-        }}
-      >
-        {element}
+    return (
+      <div {...props}>
+        <div ref={this.resizeRef} style={resizeStyle}>
+          {element}
+        </div>
       </div>
     );
-
-    props.children = element;
-
-    return <div {...props} />;
   }
 }

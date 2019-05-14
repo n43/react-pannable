@@ -65,11 +65,7 @@ export default class AutoResizing extends React.Component {
   calculateSize() {
     this.setState(state => {
       const { size } = state;
-
-      if (!this._resizeNode) {
-        return null;
-      }
-      const nextSize = getElementSize(this._resizeNode);
+      const nextSize = getElementSize(this.resizeRef.current);
 
       if (isEqualToSize(nextSize, size)) {
         return null;
@@ -83,6 +79,11 @@ export default class AutoResizing extends React.Component {
     const { width, height } = this.props;
     const { size } = this.state;
 
+    if (!size) {
+      this.calculateSize();
+      return;
+    }
+
     if (typeof width === 'number' && typeof height === 'number') {
       this._detachResizeNode();
     } else {
@@ -90,11 +91,8 @@ export default class AutoResizing extends React.Component {
         this._attachResizeNode(this.resizeRef.current);
       }
     }
-    if (size) {
-      this.props.onResize(size);
-    } else {
-      this.calculateSize();
-    }
+
+    this.props.onResize(size);
   }
 
   _attachResizeNode(resizeNode) {
