@@ -1,5 +1,5 @@
 import React from 'react';
-import ItemContent from './ItemContent';
+import PadContext from './PadContext';
 import { getItemVisibleRect, needsRender } from './utils/visible';
 import { isEqualToSize } from './utils/geometry';
 
@@ -7,7 +7,8 @@ function Item() {}
 
 export default class GridContent extends React.Component {
   static defaultProps = {
-    ...ItemContent.defaultProps,
+    width: null,
+    height: null,
     direction: 'y',
     rowSpacing: 0,
     columnSpacing: 0,
@@ -16,6 +17,8 @@ export default class GridContent extends React.Component {
     itemHeight: 0,
     renderItem: () => null,
   };
+
+  static contextType = PadContext;
 
   state = {
     layoutHash: '',
@@ -70,7 +73,7 @@ export default class GridContent extends React.Component {
     const { size } = this.state;
 
     if (size) {
-      this.props.onResize(size);
+      this.context.onContentResize(size);
     }
   }
 
@@ -79,7 +82,7 @@ export default class GridContent extends React.Component {
 
     if (size !== prevState.size) {
       if (size) {
-        this.props.onResize(size);
+        this.context.onContentResize(size);
       }
     }
   }
@@ -140,28 +143,24 @@ export default class GridContent extends React.Component {
       return null;
     }
 
-    if (!React.isValidElement(element) || !element.props.connectWithPad) {
-      element = <ItemContent>{element}</ItemContent>;
-    }
-    if (element.props.style) {
-      itemStyle = { ...itemStyle, ...element.props.style };
+    if (React.isValidElement(element)) {
+      if (element.props.style) {
+        itemStyle = { ...itemStyle, ...element.props.style };
+      }
+
+      element = React.cloneElement(element, {
+        ref: element.ref,
+        style: itemStyle,
+      });
+    } else {
+      element = <div style={itemStyle}>{element}</div>;
     }
 
-    const elemProps = {
-      key,
-      ref: element.ref,
-      style: itemStyle,
-      visibleRect,
-    };
-
-    if (typeof element.props.width !== 'number') {
-      elemProps.width = rect.width;
-    }
-    if (typeof element.props.height !== 'number') {
-      elemProps.height = rect.height;
-    }
-
-    return React.cloneElement(element, elemProps);
+    return (
+      <PadContext.Provider key={key} value={{ ...this.context, visibleRect }}>
+        {element}
+      </PadContext.Provider>
+    );
   }
 
   render() {
@@ -175,11 +174,9 @@ export default class GridContent extends React.Component {
       itemWidth,
       itemHeight,
       renderItem,
-      visibleRect,
-      onResize,
-      connectWithPad,
       ...props
     } = this.props;
+    const { visibleRect } = this.context;
     const { size, layoutList } = this.state;
 
     const elemStyle = { position: 'relative' };

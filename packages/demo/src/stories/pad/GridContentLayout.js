@@ -58,7 +58,7 @@ export default class GridContentLayout extends React.Component {
                 itemWidth={itemWidth}
                 itemHeight={itemHeight}
                 itemCount={100}
-                columnSpacing={0}
+                rowSpacing={10}
                 renderItem={({ rowIndex, columnIndex }) => {
                   return (
                     <div className="grid">

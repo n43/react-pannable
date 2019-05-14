@@ -1,4 +1,5 @@
 import React from 'react';
+import PadContext from './PadContext';
 import { getElementSize } from './utils/sizeGetter';
 import { isEqualToSize } from './utils/geometry';
 
@@ -6,10 +7,9 @@ export default class ItemContent extends React.Component {
   static defaultProps = {
     width: null,
     height: null,
-    visibleRect: { x: 0, y: 0, width: 0, height: 0 },
-    onResize: () => {},
-    connectWithPad: true,
   };
+
+  static contextType = PadContext;
 
   state = {
     layoutHash: '',
@@ -48,7 +48,7 @@ export default class ItemContent extends React.Component {
     const { size } = this.state;
 
     if (size) {
-      this.props.onResize(size);
+      this.context.onContentResize(size);
     } else {
       this.calculateSize();
     }
@@ -59,7 +59,7 @@ export default class ItemContent extends React.Component {
 
     if (size !== prevState.size) {
       if (size) {
-        this.props.onResize(size);
+        this.context.onContentResize(size);
       } else {
         this.calculateSize();
       }
@@ -90,14 +90,7 @@ export default class ItemContent extends React.Component {
   }
 
   render() {
-    const {
-      width,
-      height,
-      visibleRect,
-      onResize,
-      connectWithPad,
-      ...props
-    } = this.props;
+    const { width, height, ...props } = this.props;
     const { size } = this.state;
 
     const elemStyle = { position: 'relative' };

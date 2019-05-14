@@ -5,6 +5,8 @@ import resizeDetector from './utils/resizeDetector';
 export default class GeneralContent extends React.Component {
   static defaultProps = { ...ItemContent.defaultProps };
 
+  static contextType = ItemContent.contextType;
+
   elemRef = React.createRef();
 
   componentDidMount() {

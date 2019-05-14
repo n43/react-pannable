@@ -1,5 +1,6 @@
 import React from 'react';
 import Pannable from './Pannable';
+import PadContext from './PadContext';
 import GeneralContent from './GeneralContent';
 import StyleSheet from './utils/StyleSheet';
 import {
@@ -193,14 +194,6 @@ export default class Pad extends React.Component {
   }
   isDecelerating() {
     return !!this.state.deceleration;
-  }
-
-  getVisibleRect() {
-    return this._getVisibleRect(this.state);
-  }
-
-  setContentSize(contentSize) {
-    this.setState({ contentSize });
   }
 
   scrollToRect({ rect, align = 'auto', animated = true }) {
@@ -490,35 +483,29 @@ export default class Pad extends React.Component {
     } = this.props;
     const { size, contentSize, contentOffset } = this.state;
 
+    let contentStyle = StyleSheet.create({
+      position: 'relative',
+      width: contentSize.width,
+      height: contentSize.height,
+      transformTranslate: [contentOffset.x, contentOffset.y],
+    });
     let element = props.children;
 
     if (typeof element === 'function') {
       element = element(this);
     }
-    if (!React.isValidElement(element) || !element.props.connectWithPad) {
-      element = <GeneralContent>{element}</GeneralContent>;
+    if (
+      React.isValidElement(element) &&
+      element.type.contextType === PadContext
+    ) {
+      element = React.cloneElement(element, {
+        ref: element.ref,
+        style: { ...contentStyle, ...element.props.style },
+      });
+    } else {
+      element = <GeneralContent style={contentStyle}>{element}</GeneralContent>;
     }
 
-    const onElemResize = element.props.onResize;
-    const elemProps = {
-      ref: element.ref,
-      style: StyleSheet.create({
-        position: 'relative',
-        width: contentSize.width,
-        height: contentSize.height,
-        transformTranslate: [contentOffset.x, contentOffset.y],
-        ...element.props.style,
-      }),
-      visibleRect: this.getVisibleRect(),
-      onResize: contentSize => {
-        this.setState({ contentSize });
-        onElemResize(contentSize);
-      },
-    };
-
-    element = React.cloneElement(element, elemProps);
-
-    props.children = element;
     props.onStart = this._onDragStart;
     props.onMove = this._onDragMove;
     props.onEnd = this._onDragEnd;
@@ -531,6 +518,17 @@ export default class Pad extends React.Component {
       ...props.style,
     };
 
-    return <Pannable {...props} ref={this.elemRef} />;
+    return (
+      <Pannable {...props} ref={this.elemRef}>
+        <PadContext.Provider
+          value={{
+            visibleRect: this._getVisibleRect(this.state),
+            onContentResize: contentSize => this.setState({ contentSize }),
+          }}
+        >
+          {element}
+        </PadContext.Provider>
+      </Pannable>
+    );
   }
 }

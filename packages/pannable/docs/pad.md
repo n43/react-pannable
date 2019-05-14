@@ -84,14 +84,6 @@ Calls when changes the size of the content.
 
 ## APIs
 
-#### getVisibleRect()
-
-Returns the visible content rectangle of the component.
-
-#### setContentSize(size: [Size](types.md#size--width-number-height-number-))
-
-Sets the size of the content.
-
 #### scrollTo({ offset: [Point](types.md#point--x-number-y-number-), animated?: boolean })
 
 Scrolls the content to the specified offset.

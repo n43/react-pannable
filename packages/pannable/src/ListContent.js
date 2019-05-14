@@ -1,4 +1,5 @@
 import React from 'react';
+import PadContext from './PadContext';
 import ItemContent from './ItemContent';
 import { getItemVisibleRect, needsRender } from './utils/visible';
 import { isEqualToSize } from './utils/geometry';
@@ -7,7 +8,8 @@ function Item() {}
 
 export default class ListContent extends React.Component {
   static defaultProps = {
-    ...ItemContent.defaultProps,
+    width: null,
+    height: null,
     direction: 'y',
     spacing: 0,
     itemCount: 0,
@@ -15,6 +17,8 @@ export default class ListContent extends React.Component {
     estimatedItemHeight: 0,
     renderItem: () => null,
   };
+
+  static contextType = PadContext;
 
   state = {
     layoutHash: '',
@@ -81,7 +85,7 @@ export default class ListContent extends React.Component {
     const { size, itemHashList } = this.state;
 
     if (size) {
-      this.props.onResize(size);
+      this.context.onContentResize(size);
     }
     if (this._itemHashList.join() !== itemHashList.join()) {
       this.setState({ itemHashList: this._itemHashList });
@@ -94,7 +98,7 @@ export default class ListContent extends React.Component {
 
     if (size !== prevState.size) {
       if (size) {
-        this.props.onResize(size);
+        this.context.onContentResize(size);
       }
     }
     if (this._itemHashList.join() !== itemHashList.join()) {
@@ -162,30 +166,20 @@ export default class ListContent extends React.Component {
       return null;
     }
 
-    if (!React.isValidElement(element) || !element.props.connectWithPad) {
+    if (
+      !React.isValidElement(element) ||
+      element.type.contextType !== PadContext
+    ) {
       element = <ItemContent>{element}</ItemContent>;
     }
+
     if (element.props.style) {
       itemStyle = { ...itemStyle, ...element.props.style };
     }
 
-    const onItemResize = element.props.onResize;
     const elemProps = {
-      key,
       ref: element.ref,
       style: itemStyle,
-      visibleRect,
-      onResize: size => {
-        this.setState(({ itemSizeDict }) => {
-          if (isEqualToSize(size, itemSizeDict[hash])) {
-            return null;
-          }
-
-          return { itemSizeDict: { ...itemSizeDict, [hash]: size } };
-        });
-
-        onItemResize(size);
-      },
     };
 
     if (itemSize) {
@@ -206,7 +200,28 @@ export default class ListContent extends React.Component {
       }
     }
 
-    return React.cloneElement(element, elemProps);
+    element = React.cloneElement(element, elemProps);
+
+    return (
+      <PadContext.Provider
+        key={key}
+        value={{
+          ...this.context,
+          visibleRect,
+          onContentResize: size => {
+            this.setState(({ itemSizeDict }) => {
+              if (isEqualToSize(size, itemSizeDict[hash])) {
+                return null;
+              }
+
+              return { itemSizeDict: { ...itemSizeDict, [hash]: size } };
+            });
+          },
+        }}
+      >
+        {element}
+      </PadContext.Provider>
+    );
   }
 
   render() {
@@ -219,11 +234,9 @@ export default class ListContent extends React.Component {
       estimatedItemWidth,
       estimatedItemHeight,
       renderItem,
-      visibleRect,
-      onResize,
-      connectWithPad,
       ...props
     } = this.props;
+    const { visibleRect } = this.context;
     const { size, layoutList } = this.state;
 
     const elemStyle = { position: 'relative' };

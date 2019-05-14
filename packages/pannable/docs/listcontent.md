@@ -27,7 +27,13 @@ class Page extends React.Component {
 
 ## Props
 
-... [`ItemContent`](itemcontent.md#props) props
+#### `width`?: number
+
+The width of the component. If not specified, it shrinks to fit the space available.
+
+#### `height`?: number
+
+The height of the component. If not specified, it shrinks to fit the space available.
 
 #### `direction`?: 'x' | 'y'
 
