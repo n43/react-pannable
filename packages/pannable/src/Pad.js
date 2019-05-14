@@ -492,7 +492,7 @@ export default class Pad extends React.Component {
     let element = props.children;
 
     if (typeof element === 'function') {
-      element = element(this);
+      element = element(this.state);
     }
     if (
       React.isValidElement(element) &&

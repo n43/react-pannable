@@ -7,6 +7,7 @@ export default class ItemContent extends React.Component {
   static defaultProps = {
     width: null,
     height: null,
+    onResize: () => {},
   };
 
   static contextType = PadContext;
@@ -26,15 +27,14 @@ export default class ItemContent extends React.Component {
     const nextLayoutHash = [width, height].join();
 
     if (nextLayoutHash !== layoutHash) {
+      nextState = nextState || {};
+      nextState.layoutHash = nextLayoutHash;
+
       let nextSize = null;
 
       if (typeof width === 'number' && typeof height === 'number') {
         nextSize = { width, height };
       }
-
-      nextState = nextState || {};
-
-      nextState.layoutHash = nextLayoutHash;
 
       if (!isEqualToSize(nextSize, size)) {
         nextState.size = nextSize;
@@ -45,24 +45,14 @@ export default class ItemContent extends React.Component {
   }
 
   componentDidMount() {
-    const { size } = this.state;
-
-    if (size) {
-      this.context.onContentResize(size);
-    } else {
-      this.calculateSize();
-    }
+    this._updateSize();
   }
 
   componentDidUpdate(prevProps, prevState) {
     const { size } = this.state;
 
     if (size !== prevState.size) {
-      if (size) {
-        this.context.onContentResize(size);
-      } else {
-        this.calculateSize();
-      }
+      this._updateSize();
     }
   }
 
@@ -89,8 +79,20 @@ export default class ItemContent extends React.Component {
     });
   }
 
+  _updateSize() {
+    const { size } = this.state;
+
+    if (size) {
+      this.context.onContentResize(size);
+    } else {
+      this.calculateSize();
+    }
+
+    this.props.onResize(size, this.resizeRef);
+  }
+
   render() {
-    const { width, height, ...props } = this.props;
+    const { width, height, onResize, ...props } = this.props;
     const { size } = this.state;
 
     const elemStyle = { position: 'relative' };
@@ -108,23 +110,21 @@ export default class ItemContent extends React.Component {
     let element = props.children;
 
     if (typeof element === 'function') {
-      element = element(this);
+      element = element(this.state);
     }
 
-    if (!(typeof width === 'number' && typeof height === 'number')) {
-      element = (
-        <div
-          ref={this.resizeRef}
-          style={{
-            position: 'absolute',
-            width: typeof width === 'number' ? width : 'auto',
-            height: typeof height === 'number' ? height : 'auto',
-          }}
-        >
-          {element}
-        </div>
-      );
-    }
+    element = (
+      <div
+        ref={this.resizeRef}
+        style={{
+          position: 'absolute',
+          width: typeof width === 'number' ? width : 'auto',
+          height: typeof height === 'number' ? height : 'auto',
+        }}
+      >
+        {element}
+      </div>
+    );
 
     props.children = element;
 

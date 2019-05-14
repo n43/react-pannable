@@ -9,18 +9,6 @@ export default class GeneralContent extends React.Component {
 
   elemRef = React.createRef();
 
-  componentDidMount() {
-    this._checkResizeNode();
-  }
-
-  componentDidUpdate(prevProps) {
-    const { width, height } = this.props;
-
-    if (width !== prevProps.width || height !== prevProps.height) {
-      this._checkResizeNode();
-    }
-  }
-
   componentWillUnmount() {
     this._detachResizeNode();
   }
@@ -33,35 +21,39 @@ export default class GeneralContent extends React.Component {
     return this.elemRef.current.calculateSize();
   }
 
-  _checkResizeNode() {
-    const { width, height } = this.props;
-
-    if (typeof width === 'number' && typeof height === 'number') {
-      this._detachResizeNode();
-    } else {
-      this._attachResizeNode(this.elemRef.current.resizeRef.current);
-    }
-  }
-
   _attachResizeNode(resizeNode) {
-    if (this._resizeNode) {
-      return;
-    }
-
     this._resizeNode = resizeNode;
     resizeDetector.listenTo(resizeNode, () => this.calculateSize());
   }
 
   _detachResizeNode() {
-    if (!this._resizeNode) {
-      return;
+    if (this._resizeNode) {
+      resizeDetector.uninstall(this._resizeNode);
+      this._resizeNode = undefined;
     }
-
-    resizeDetector.uninstall(this._resizeNode);
-    this._resizeNode = undefined;
   }
 
+  _onResize = (size, resizeRef) => {
+    const { width, height } = this.props;
+
+    if (typeof width === 'number' && typeof height === 'number') {
+      this._detachResizeNode();
+    } else {
+      if (!this._resizeNode) {
+        this._attachResizeNode(resizeRef.current);
+      }
+    }
+
+    this.props.onResize(size, resizeRef);
+  };
+
   render() {
-    return <ItemContent ref={this.elemRef} {...this.props} />;
+    return (
+      <ItemContent
+        ref={this.elemRef}
+        {...this.props}
+        onResize={this._onResize}
+      />
+    );
   }
 }

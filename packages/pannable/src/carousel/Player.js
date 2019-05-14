@@ -249,7 +249,7 @@ export default class Player extends React.Component {
     let element = padProps.children;
 
     if (typeof element === 'function') {
-      element = element(this);
+      element = element(this.state);
     }
 
     padProps.children = (
