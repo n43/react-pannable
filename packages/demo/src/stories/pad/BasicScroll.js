@@ -77,7 +77,7 @@ class BasicScroll extends Component {
     }
 
     return (
-      <ItemContent width={375 * 5} height={650 * 5}>
+      <ItemContent width={width * 5} height={height * 5}>
         {items}
       </ItemContent>
     );

@@ -43,7 +43,14 @@ export function getAdjustedContentVelocity(velocity, size, acc, name) {
   return adjustedVelocity;
 }
 
-export function getAdjustedContentOffset(offset, size, cSize, paging, name) {
+export function getAdjustedContentOffset(
+  offset,
+  size,
+  cSize,
+  paging,
+  edgeOnly,
+  name
+) {
   if (name) {
     const [x, width] = name === 'y' ? ['y', 'height'] : ['x', 'width'];
 
@@ -60,7 +67,7 @@ export function getAdjustedContentOffset(offset, size, cSize, paging, name) {
     } else if (offsetX < minOffsetX) {
       offsetX = minOffsetX;
     } else {
-      if (paging && sizeWidth > 0) {
+      if (!edgeOnly && paging && sizeWidth > 0) {
         offsetX = sizeWidth * Math.round(offsetX / sizeWidth);
       }
     }
@@ -69,8 +76,8 @@ export function getAdjustedContentOffset(offset, size, cSize, paging, name) {
   }
 
   const adjustedOffset = {
-    x: getAdjustedContentOffset(offset, size, cSize, paging, 'x'),
-    y: getAdjustedContentOffset(offset, size, cSize, paging, 'y'),
+    x: getAdjustedContentOffset(offset, size, cSize, paging, edgeOnly, 'x'),
+    y: getAdjustedContentOffset(offset, size, cSize, paging, edgeOnly, 'y'),
   };
 
   if (adjustedOffset.x === offset.x && adjustedOffset.y === offset.y) {
