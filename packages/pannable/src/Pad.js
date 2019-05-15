@@ -496,15 +496,17 @@ export default class Pad extends React.Component {
       element = element(this.state);
     }
     if (
-      React.isValidElement(element) &&
-      element.type.contextType === PadContext
+      !React.isValidElement(element) ||
+      element.type.contextType !== PadContext
     ) {
+      element = <GeneralContent style={contentStyle}>{element}</GeneralContent>;
+    } else {
+      contentStyle = { ...contentStyle, ...element.props.style };
+
       element = React.cloneElement(element, {
         ref: element.ref,
-        style: { ...contentStyle, ...element.props.style },
+        style: contentStyle,
       });
-    } else {
-      element = <GeneralContent style={contentStyle}>{element}</GeneralContent>;
     }
 
     props.onStart = this._onDragStart;

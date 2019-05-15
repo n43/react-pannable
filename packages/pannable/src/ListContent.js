@@ -118,11 +118,9 @@ export default class ListContent extends React.Component {
     return (attrs && attrs.rect) || null;
   }
 
-  _onItemResize(itemIndex) {
+  _onItemResize(itemHash) {
     return itemSize => {
-      this.setState(({ itemHashList, itemSizeDict }) => {
-        const itemHash = itemHashList[itemIndex];
-
+      this.setState(({ itemSizeDict }) => {
         if (isEqualToSize(itemSize, itemSizeDict[itemHash])) {
           return null;
         }
@@ -169,7 +167,7 @@ export default class ListContent extends React.Component {
       hash = key;
     }
 
-    let shouldRender = !forceRender && !needsRender;
+    let shouldRender = forceRender || needsRender;
     const itemSize = itemSizeDict[hash];
 
     if (!itemSize && this._itemHashList.indexOf(hash) !== -1) {
@@ -178,45 +176,50 @@ export default class ListContent extends React.Component {
 
     this._itemHashList[itemIndex] = hash;
 
-    if (shouldRender) {
+    if (!shouldRender) {
       return null;
+    }
+
+    const sizeProps = {};
+
+    if (itemSize) {
+      sizeProps.width = itemSize.width;
+      sizeProps.height = itemSize.height;
+    } else {
+      if (typeof fixed.width === 'number') {
+        sizeProps.width = fixed.width;
+      }
+      if (typeof fixed.height === 'number') {
+        sizeProps.height = fixed.height;
+      }
     }
 
     if (
       !React.isValidElement(element) ||
       element.type.contextType !== PadContext
     ) {
-      element = <ItemContent>{element}</ItemContent>;
-    }
-
-    if (element.props.style) {
-      itemStyle = { ...itemStyle, ...element.props.style };
-    }
-
-    const elemProps = {
-      ref: element.ref,
-      style: itemStyle,
-    };
-
-    if (itemSize) {
-      elemProps.width = itemSize.width;
-      elemProps.height = itemSize.height;
+      element = (
+        <ItemContent style={itemStyle} {...sizeProps}>
+          {element}
+        </ItemContent>
+      );
     } else {
-      if (
-        typeof fixed.height === 'number' &&
-        typeof element.props.height !== 'number'
-      ) {
-        elemProps.height = fixed.height;
+      if (element.props.style) {
+        itemStyle = { ...itemStyle, ...element.props.style };
       }
-      if (
-        typeof fixed.width === 'number' &&
-        typeof element.props.width !== 'number'
-      ) {
-        elemProps.width = fixed.width;
+      if (typeof element.props.width === 'number') {
+        sizeProps.width = element.props.width;
       }
-    }
+      if (typeof element.props.height === 'number') {
+        sizeProps.height = element.props.height;
+      }
 
-    element = React.cloneElement(element, elemProps);
+      element = React.cloneElement(element, {
+        ref: element.ref,
+        style: itemStyle,
+        ...sizeProps,
+      });
+    }
 
     return (
       <PadContext.Provider
@@ -224,7 +227,7 @@ export default class ListContent extends React.Component {
         value={{
           ...this.context,
           visibleRect,
-          onContentResize: this._onItemResize(itemIndex),
+          onContentResize: this._onItemResize(hash),
         }}
       >
         {element}
@@ -275,9 +278,7 @@ export default class ListContent extends React.Component {
       items.push(this._renderItem(layoutAttrs));
     }
 
-    props.children = items;
-
-    return <div {...props} />;
+    return <div {...props}>{items}</div>;
   }
 }
 

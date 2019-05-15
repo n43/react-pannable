@@ -64,7 +64,7 @@ export default class ListContentLayout extends React.Component {
                       fontSize: '18px',
                       color: '#4a4a4a',
                       textAlign: 'center',
-                      lineHeight: 28 * (itemIndex + 1) + 'px',
+                      lineHeight: 25 * (itemIndex + 1) + 'px',
                     }}
                   >
                     {itemIndex}

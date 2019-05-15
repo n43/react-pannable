@@ -141,11 +141,13 @@ export default class GridContent extends React.Component {
     if (!key) {
       key = '' + itemIndex;
     }
-    if (!forceRender && !needsRender) {
+    if (!(forceRender || needsRender)) {
       return null;
     }
 
-    if (React.isValidElement(element)) {
+    if (!React.isValidElement(element)) {
+      element = <div style={itemStyle}>{element}</div>;
+    } else {
       if (element.props.style) {
         itemStyle = { ...itemStyle, ...element.props.style };
       }
@@ -154,8 +156,6 @@ export default class GridContent extends React.Component {
         ref: element.ref,
         style: itemStyle,
       });
-    } else {
-      element = <div style={itemStyle}>{element}</div>;
     }
 
     return (
@@ -215,9 +215,7 @@ export default class GridContent extends React.Component {
       items.push(this._renderItem(layoutAttrs));
     }
 
-    props.children = items;
-
-    return <div {...props} />;
+    return <div {...props}>{items}</div>;
   }
 }
 
