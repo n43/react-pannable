@@ -118,6 +118,22 @@ export default class ListContent extends React.Component {
     return (attrs && attrs.rect) || null;
   }
 
+  _onItemResize(itemIndex) {
+    return itemSize => {
+      this.setState(({ itemHashList, itemSizeDict }) => {
+        const itemHash = itemHashList[itemIndex];
+
+        if (isEqualToSize(itemSize, itemSizeDict[itemHash])) {
+          return null;
+        }
+
+        return {
+          itemSizeDict: { ...itemSizeDict, [itemHash]: itemSize },
+        };
+      });
+    };
+  }
+
   _renderItem(layoutAttrs) {
     const { renderItem } = this.props;
     const { fixed, itemSizeDict } = this.state;
@@ -208,15 +224,7 @@ export default class ListContent extends React.Component {
         value={{
           ...this.context,
           visibleRect,
-          onContentResize: size => {
-            this.setState(({ itemSizeDict }) => {
-              if (isEqualToSize(size, itemSizeDict[hash])) {
-                return null;
-              }
-
-              return { itemSizeDict: { ...itemSizeDict, [hash]: size } };
-            });
-          },
+          onContentResize: this._onItemResize(itemIndex),
         }}
       >
         {element}

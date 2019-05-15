@@ -111,6 +111,8 @@ export default class GridContent extends React.Component {
     return (attrs && attrs.rect) || null;
   }
 
+  _onItemResize = () => {};
+
   _renderItem(layoutAttrs) {
     const { renderItem } = this.props;
 
@@ -157,7 +159,14 @@ export default class GridContent extends React.Component {
     }
 
     return (
-      <PadContext.Provider key={key} value={{ ...this.context, visibleRect }}>
+      <PadContext.Provider
+        key={key}
+        value={{
+          ...this.context,
+          visibleRect,
+          onContentResize: this._onItemResize,
+        }}
+      >
         {element}
       </PadContext.Provider>
     );

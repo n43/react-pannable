@@ -83,6 +83,8 @@ export default class ItemContent extends React.Component {
     this.context.onContentResize(size);
   }
 
+  _onResize = () => {};
+
   render() {
     const { width, height, ...props } = this.props;
     const { size } = this.state;
@@ -114,11 +116,15 @@ export default class ItemContent extends React.Component {
     }
 
     return (
-      <div {...props}>
-        <div ref={this.resizeRef} style={resizeStyle}>
-          {element}
+      <PadContext.Provider
+        value={{ ...this.context, onContentResize: this._onResize }}
+      >
+        <div {...props}>
+          <div ref={this.resizeRef} style={resizeStyle}>
+            {element}
+          </div>
         </div>
-      </div>
+      </PadContext.Provider>
     );
   }
 }
