@@ -109,18 +109,18 @@ export default class Pad extends React.Component {
         );
       }
     } else if (!drag) {
-      const decelerationEndOffset = getAdjustedContentOffset(
+      const adjustedContentOffset = getAdjustedContentOffset(
         contentOffset,
         nextSize,
         contentSize,
         pagingEnabled
       );
 
-      if (contentOffset !== decelerationEndOffset) {
+      if (contentOffset !== adjustedContentOffset) {
         nextDeceleration = createDeceleration(
           contentOffset,
           contentVelocity,
-          decelerationEndOffset,
+          adjustedContentOffset,
           decelerationRate
         );
       }

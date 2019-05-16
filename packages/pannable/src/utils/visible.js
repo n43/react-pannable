@@ -17,9 +17,9 @@ export function needsRender(rect, vRect, name) {
   if (name) {
     const [x, width] = name === 'y' ? ['y', 'height'] : ['x', 'width'];
 
-    const dx = rect[x] - vRect[x];
     return (
-      -0.25 * vRect[width] <= dx + rect[width] && dx <= 1.25 * vRect[width]
+      vRect[x] - 0.25 * vRect[width] <= rect[x] + rect[width] &&
+      rect[x] <= vRect[x] + 1.25 * vRect[width]
     );
   }
 

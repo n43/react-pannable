@@ -114,6 +114,41 @@ export default class Player extends React.Component {
     }
   }
 
+  _updateContentOffset(loopCount) {
+    const { direction } = this.props;
+    const pad = this.padRef.current;
+
+    pad.scrollTo({
+      offset: state => {
+        const { contentOffset, size, contentSize } = state;
+
+        const [width, x, y] =
+          direction === 'y' ? ['height', 'y', 'x'] : ['width', 'x', 'y'];
+
+        const itemSizeWidth = contentSize[width] / loopCount;
+        const bufferWidth =
+          0.5 * (contentSize[width] - itemSizeWidth - size[width]);
+        const maxOffsetX = 0 - bufferWidth;
+        const minOffsetX = size[width] - contentSize[width] + bufferWidth;
+
+        let offsetX = contentOffset[x];
+
+        if (offsetX <= minOffsetX) {
+          offsetX += itemSizeWidth;
+        } else if (maxOffsetX < offsetX) {
+          offsetX -= itemSizeWidth;
+        }
+
+        if (offsetX === contentOffset[x]) {
+          return null;
+        }
+
+        return { [x]: offsetX, [y]: contentOffset[y] };
+      },
+      animated: false,
+    });
+  }
+
   _onPadDragStart = evt => {
     this._stopPlaying();
 
@@ -154,40 +189,9 @@ export default class Player extends React.Component {
   };
 
   _onPadScroll = evt => {
-    const { direction, onScroll } = this.props;
-    const { loopCount } = this.state;
-    const pad = this.padRef.current;
+    this._updateContentOffset(this.state.loopCount);
 
-    pad.scrollTo({
-      offset: state => {
-        const { contentOffset, size, contentSize } = state;
-
-        const [width, x, y] =
-          direction === 'y' ? ['height', 'y', 'x'] : ['width', 'x', 'y'];
-
-        const itemSizeWidth = contentSize[width] / loopCount;
-        const bufferWidth =
-          0.5 * (contentSize[width] - itemSizeWidth - size[width]);
-        const maxOffsetX = 0 - bufferWidth;
-        const minOffsetX = size[width] - contentSize[width] + bufferWidth;
-
-        let offsetX = contentOffset[x];
-        if (offsetX <= minOffsetX) {
-          offsetX += itemSizeWidth;
-        } else if (maxOffsetX < offsetX) {
-          offsetX -= itemSizeWidth;
-        }
-
-        if (offsetX === contentOffset[x]) {
-          return null;
-        }
-
-        return { [x]: offsetX, [y]: contentOffset[y] };
-      },
-      animated: false,
-    });
-
-    onScroll(evt);
+    this.props.onScroll(evt);
   };
 
   _onPadContentResize = contentSize => {
@@ -210,11 +214,13 @@ export default class Player extends React.Component {
       }
 
       if (nextLoopCount === loopCount) {
+        this._updateContentOffset(nextLoopCount);
         return null;
       }
 
       return { loopCount: nextLoopCount };
     });
+
     this.props.onContentResize(contentSize);
   };
 
@@ -252,14 +258,6 @@ export default class Player extends React.Component {
       element = element(this.state);
     }
 
-    padProps.children = (
-      <ListContent
-        direction={direction}
-        itemCount={loopCount}
-        renderItem={({ Item }) => <Item forceRender>{element}</Item>}
-      />
-    );
-
     padProps.onContentResize = this._onPadContentResize;
     padProps.shouldStart = this._shouldPanStart;
 
@@ -276,6 +274,20 @@ export default class Player extends React.Component {
       padProps.onMouseLeave = this._onPadMouseLeave;
     }
 
-    return <Pad {...padProps} ref={this.padRef} />;
+    return (
+      <Pad {...padProps} ref={this.padRef}>
+        <ListContent
+          direction={direction}
+          itemCount={loopCount}
+          renderItem={({ Item }) => {
+            return (
+              <Item hash="loop" forceRender>
+                {element}
+              </Item>
+            );
+          }}
+        />
+      </Pad>
+    );
   }
 }
