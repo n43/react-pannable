@@ -1,10 +1,8 @@
 export function getItemVisibleRect(rect, vRect, name) {
   if (name) {
     const [x, width] = name === 'y' ? ['y', 'height'] : ['x', 'width'];
-    const left = Math.max(rect[x], vRect[x]);
-    const right = Math.min(rect[x] + rect[width], vRect[x] + vRect[width]);
 
-    return { [x]: left - rect[x], [width]: Math.max(0, right - left) };
+    return { [x]: vRect[x] - rect[x], [width]: vRect[width] };
   }
 
   return {

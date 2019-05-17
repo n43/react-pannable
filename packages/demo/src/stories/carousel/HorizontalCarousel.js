@@ -88,7 +88,7 @@ class HorizontalCarousel extends Component {
               };
 
               return (
-                <Item forceRender>
+                <Item>
                   <div style={style} />
                 </Item>
               );
