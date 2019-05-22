@@ -8,10 +8,6 @@ const basicSourceLink =
   'https://github.com/n43/react-pannable/blob/master/packages/demo/src/stories/carousel/';
 
 storiesOf('Carousel', module)
-  .add('Pad with Autoplayer', () => ({
-    content: <Autoplayer />,
-    source: basicSourceLink + 'Autoplayer.js',
-  }))
   .add('Horizontal Carousel', () => ({
     content: <HorizontalCarousel />,
     source: basicSourceLink + 'HorizontalCarousel.js',
@@ -19,4 +15,8 @@ storiesOf('Carousel', module)
   .add('Vertical Carousel', () => ({
     content: <VerticalCarousel />,
     source: basicSourceLink + 'VerticalCarousel.js',
+  }))
+  .add('Pad with Autoplayer', () => ({
+    content: <Autoplayer />,
+    source: basicSourceLink + 'Autoplayer.js',
   }));

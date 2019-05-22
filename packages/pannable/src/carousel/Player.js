@@ -7,7 +7,7 @@ export default class Player extends React.Component {
     ...Pad.defaultProps,
     direction: 'x',
     autoplayEnabled: true,
-    autoplayInterval: 3000,
+    autoplayInterval: 5000,
     loop: true,
     pagingEnabled: true,
     directionalLockEnabled: true,
