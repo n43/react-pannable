@@ -252,18 +252,6 @@ export default class Player extends React.Component {
     this.props.onContentResize(contentSize);
   };
 
-  _shouldPanStart = evt => {
-    const { velocity } = evt;
-    const { direction, shouldStart } = this.props;
-    const [x, y] = direction === 'y' ? ['y', 'x'] : ['x', 'y'];
-
-    if (Math.abs(velocity[x]) <= Math.abs(velocity[y])) {
-      return false;
-    }
-
-    return shouldStart(evt);
-  };
-
   render() {
     const {
       direction,
@@ -285,8 +273,6 @@ export default class Player extends React.Component {
     if (typeof element === 'function') {
       element = element(this.state);
     }
-
-    padProps.shouldStart = this._shouldPanStart;
 
     if (loop) {
       padProps.onContentResize = this._onPadContentResize;

@@ -45,11 +45,10 @@ export default class GridContentLayout extends React.Component {
           <div className="pad-preview">
             <Pad
               ref={this.padRef}
-              className="autoadjust-pad"
-              directionalLockEnabled
               width={width}
               height={height}
-              alwaysBounceX={false}
+              directionalLockEnabled
+              className="autoadjust-pad"
               style={{ backgroundColor: '#f5f5f5' }}
             >
               <GridContent

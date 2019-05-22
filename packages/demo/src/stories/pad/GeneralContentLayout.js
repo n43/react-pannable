@@ -98,7 +98,7 @@ class GeneralContentLayout extends Component {
               className="pad-padele"
               width={width}
               height={height}
-              alwaysBounceX={false}
+              directionalLockEnabled
             >
               <GeneralContent width={width}>
                 {this.renderArticle()}

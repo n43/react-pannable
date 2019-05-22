@@ -160,6 +160,13 @@ export function getDecelerationEndOffset(
   };
 }
 
+export function shouldDragStart(velocity, size, cSize) {
+  const height =
+    Math.abs(velocity.y) < Math.abs(velocity.x) ? 'width' : 'height';
+
+  return size[height] < cSize[height];
+}
+
 export function calculateDeceleration(deceleration, moveTime, name) {
   if (name) {
     const [x] = name === 'y' ? ['y'] : ['x'];

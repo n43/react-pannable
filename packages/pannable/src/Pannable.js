@@ -1,4 +1,5 @@
 import React from 'react';
+import StyleSheet from './utils/StyleSheet';
 
 const MIN_DISTANCE = 0;
 
@@ -344,10 +345,20 @@ export default class Pannable extends React.Component {
       onCancel,
       ...props
     } = this.props;
+    const { target } = this.state;
+    const elemStyle = {};
 
     if (enabled) {
-      props.style = { touchAction: 'none', ...props.style };
+      elemStyle.touchAction = 'none';
     }
+    if (target) {
+      elemStyle.userSelect = 'none';
+    }
+
+    props.style = StyleSheet.create({
+      ...elemStyle,
+      ...props.style,
+    });
 
     return <div {...props} ref={this.elemRef} />;
   }

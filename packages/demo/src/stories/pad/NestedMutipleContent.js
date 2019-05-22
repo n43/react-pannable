@@ -46,10 +46,9 @@ export default class NestedMutipleContent extends React.Component {
           <Pad
             ref={this.padRef}
             className="pad-padele"
-            directionalLockEnabled
             width={width}
             height={height}
-            alwaysBounceX={false}
+            directionalLockEnabled
           >
             <ListContent
               ref={this.listRef}

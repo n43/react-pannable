@@ -12,6 +12,7 @@ import {
   getAdjustedContentOffset,
   getAdjustedBounceOffset,
   getDecelerationEndOffset,
+  shouldDragStart,
   createDeceleration,
   calculateDeceleration,
   calculateRectOffset,
@@ -354,7 +355,24 @@ export default class Pad extends React.Component {
     });
   }
 
-  _onDragStart = ({ velocity }) => {
+  _shouldPanStart = evt => {
+    const { velocity } = evt;
+    const { directionalLockEnabled, shouldStart } = this.props;
+    const { size, contentSize } = this.state;
+
+    if (
+      directionalLockEnabled &&
+      !shouldDragStart(velocity, size, contentSize)
+    ) {
+      return false;
+    }
+
+    return shouldStart(evt);
+  };
+
+  _onPanStart = evt => {
+    const { velocity } = evt;
+
     this.setState((state, props) => {
       const { contentOffset } = state;
       const { directionalLockEnabled } = props;
@@ -379,9 +397,13 @@ export default class Pad extends React.Component {
         deceleration: null,
       };
     });
+
+    this.props.onStart(evt);
   };
 
-  _onDragMove = ({ translation, interval }) => {
+  _onPanMove = evt => {
+    const { translation, interval } = evt;
+
     this.setState((state, props) => {
       const { contentOffset, size, contentSize, drag } = state;
       const { alwaysBounceX, alwaysBounceY } = props;
@@ -402,9 +424,11 @@ export default class Pad extends React.Component {
 
       return { contentOffset: nextContentOffset, contentVelocity };
     });
+
+    this.props.onMove(evt);
   };
 
-  _onDragEnd = () => {
+  _onPanEnd = evt => {
     this.setState((state, props) => {
       const { contentOffset, contentVelocity, size } = state;
       const { pagingEnabled } = props;
@@ -438,9 +462,11 @@ export default class Pad extends React.Component {
         ),
       };
     });
+
+    this.props.onEnd(evt);
   };
 
-  _onDragCancel = () => {
+  _onPanCancel = evt => {
     this.setState((state, props) => {
       const { contentOffset, contentVelocity, size, contentSize, drag } = state;
       const { pagingEnabled } = props;
@@ -463,6 +489,8 @@ export default class Pad extends React.Component {
         ),
       };
     });
+
+    this.props.onCancel(evt);
   };
 
   render() {
@@ -509,10 +537,11 @@ export default class Pad extends React.Component {
       });
     }
 
-    props.onStart = this._onDragStart;
-    props.onMove = this._onDragMove;
-    props.onEnd = this._onDragEnd;
-    props.onCancel = this._onDragCancel;
+    props.shouldStart = this._shouldPanStart;
+    props.onStart = this._onPanStart;
+    props.onMove = this._onPanMove;
+    props.onEnd = this._onPanEnd;
+    props.onCancel = this._onPanCancel;
     props.style = {
       overflow: 'hidden',
       position: 'relative',
