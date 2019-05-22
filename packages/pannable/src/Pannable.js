@@ -355,10 +355,10 @@ export default class Pannable extends React.Component {
       elemStyle.userSelect = 'none';
     }
 
-    props.style = StyleSheet.create({
-      ...elemStyle,
+    props.style = {
+      ...StyleSheet.create(elemStyle),
       ...props.style,
-    });
+    };
 
     return <div {...props} ref={this.elemRef} />;
   }
