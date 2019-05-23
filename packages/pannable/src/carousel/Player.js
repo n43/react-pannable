@@ -76,27 +76,15 @@ export default class Player extends React.Component {
           return null;
         }
 
-        const [width, x, y] =
-          direction === 'y' ? ['height', 'y', 'x'] : ['width', 'x', 'y'];
-
-        const sizeWidth = size[width];
-        let offsetX = contentOffset[x] - delta * sizeWidth;
-
-        if (loopCount === 1) {
-          let minOffsetX = Math.min(sizeWidth - contentSize[width], 0);
-
-          if (pagingEnabled && sizeWidth > 0) {
-            minOffsetX = sizeWidth * Math.ceil(minOffsetX / sizeWidth);
-          }
-
-          if (offsetX < minOffsetX) {
-            offsetX = minOffsetX - sizeWidth < offsetX ? minOffsetX : 0;
-          } else if (0 < offsetX) {
-            offsetX = offsetX < sizeWidth ? 0 : minOffsetX;
-          }
-        }
-
-        return { [x]: offsetX, [y]: contentOffset[y] };
+        return getContentOffsetForPlayback(
+          delta,
+          contentOffset,
+          size,
+          contentSize,
+          pagingEnabled,
+          loopCount,
+          direction
+        );
       },
       animated,
     });
@@ -350,4 +338,36 @@ function getAdjustedContentOffsetForLoop(
   }
 
   return [contentOffset, 0];
+}
+
+function getContentOffsetForPlayback(
+  delta,
+  contentOffset,
+  size,
+  contentSize,
+  pagingEnabled,
+  loopCount,
+  direction
+) {
+  const [width, x, y] =
+    direction === 'y' ? ['height', 'y', 'x'] : ['width', 'x', 'y'];
+
+  const sizeWidth = size[width];
+  let offsetX = contentOffset[x] - delta * sizeWidth;
+
+  if (loopCount === 1) {
+    let minOffsetX = Math.min(sizeWidth - contentSize[width], 0);
+
+    if (pagingEnabled && sizeWidth > 0) {
+      minOffsetX = sizeWidth * Math.ceil(minOffsetX / sizeWidth);
+    }
+
+    if (offsetX < minOffsetX) {
+      offsetX = minOffsetX - sizeWidth < offsetX ? minOffsetX : 0;
+    } else if (0 < offsetX) {
+      offsetX = offsetX < sizeWidth ? 0 : minOffsetX;
+    }
+  }
+
+  return { [x]: offsetX, [y]: contentOffset[y] };
 }
