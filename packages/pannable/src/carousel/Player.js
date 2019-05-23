@@ -13,7 +13,7 @@ export default class Player extends React.Component {
     directionalLockEnabled: true,
   };
 
-  state = { mouseEntered: false, loopCount: 1, loopTimes: 0 };
+  state = { mouseEntered: false, loopCount: 1, loopOffset: 0 };
   padRef = React.createRef();
 
   static getDerivedStateFromProps(props, state) {
@@ -25,7 +25,7 @@ export default class Player extends React.Component {
       nextState = nextState || {};
 
       nextState.loopCount = 1;
-      nextState.loopTimes = 0;
+      nextState.loopOffset = 0;
     }
 
     return nextState;
@@ -82,7 +82,7 @@ export default class Player extends React.Component {
         const sizeWidth = size[width];
         let offsetX = contentOffset[x] - delta * sizeWidth;
 
-        if (loopCount <= 1) {
+        if (loopCount === 1) {
           let minOffsetX = Math.min(sizeWidth - contentSize[width], 0);
 
           if (pagingEnabled && sizeWidth > 0) {
@@ -90,9 +90,9 @@ export default class Player extends React.Component {
           }
 
           if (offsetX < minOffsetX) {
-            offsetX = offsetX <= minOffsetX - sizeWidth ? 0 : minOffsetX;
+            offsetX = minOffsetX - sizeWidth < offsetX ? minOffsetX : 0;
           } else if (0 < offsetX) {
-            offsetX = sizeWidth <= offsetX ? minOffsetX : 0;
+            offsetX = offsetX < sizeWidth ? 0 : minOffsetX;
           }
         }
 
@@ -181,7 +181,7 @@ export default class Player extends React.Component {
   _onPadScroll = evt => {
     this.setState((state, props) => {
       const { direction } = props;
-      const { loopCount, loopTimes } = state;
+      const { loopCount, loopOffset } = state;
       const pad = this.padRef.current;
       const { contentOffset, size, contentSize } = pad.state;
 
@@ -189,7 +189,7 @@ export default class Player extends React.Component {
         return null;
       }
 
-      const [adjustedContentOffset, delta] = adjustedContentOffsetForLoop(
+      const [adjustedContentOffset, delta] = getAdjustedContentOffsetForLoop(
         contentOffset,
         size,
         contentSize,
@@ -200,7 +200,7 @@ export default class Player extends React.Component {
       if (contentOffset !== adjustedContentOffset) {
         pad.scrollTo({ offset: adjustedContentOffset, animated: false });
 
-        return { loopTimes: loopTimes + delta };
+        return { loopOffset: loopOffset + delta };
       }
 
       return null;
@@ -211,7 +211,7 @@ export default class Player extends React.Component {
 
   _onPadContentResize = contentSize => {
     this.setState((state, props) => {
-      const { loopCount, loopTimes } = state;
+      const { loopCount, loopOffset } = state;
       const { direction } = props;
       const pad = this.padRef.current;
       const { contentOffset, size, contentSize } = pad.state;
@@ -228,9 +228,9 @@ export default class Player extends React.Component {
         nextState = nextState || {};
 
         nextState.loopCount = nextLoopCount;
-        nextState.loopTimes = 0;
+        nextState.loopOffset = 0;
       } else {
-        const [adjustedContentOffset, delta] = adjustedContentOffsetForLoop(
+        const [adjustedContentOffset, delta] = getAdjustedContentOffsetForLoop(
           contentOffset,
           size,
           contentSize,
@@ -242,7 +242,7 @@ export default class Player extends React.Component {
           pad.scrollTo({ offset: adjustedContentOffset, animated: false });
 
           nextState = nextState || {};
-          nextState.loopTimes = loopTimes + delta;
+          nextState.loopOffset = loopOffset + delta;
         }
       }
 
@@ -260,7 +260,7 @@ export default class Player extends React.Component {
       loop,
       ...padProps
     } = this.props;
-    const { loopCount, loopTimes } = this.state;
+    const { loopCount, loopOffset } = this.state;
 
     if (direction === 'x') {
       padProps.alwaysBounceY = false;
@@ -294,7 +294,7 @@ export default class Player extends React.Component {
           direction={direction}
           itemCount={loopCount}
           renderItem={({ Item, itemIndex }) => (
-            <Item key={itemIndex + loopTimes} hash="loop">
+            <Item key={itemIndex + loopOffset} hash="loop">
               {element}
             </Item>
           )}
@@ -317,7 +317,7 @@ function calculateLoopCount(size, contentSize, loopCount, direction) {
   return 2 + Math.floor(sizeWidth / itemWidth);
 }
 
-function adjustedContentOffsetForLoop(
+function getAdjustedContentOffsetForLoop(
   contentOffset,
   size,
   contentSize,

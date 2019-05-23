@@ -37,20 +37,24 @@ export default class Carousel extends React.Component {
   }
 
   slidePrev() {
-    const player = this.playerRef.current;
-
-    player.rewind();
+    this.playerRef.current.rewind();
   }
 
   slideNext() {
-    const player = this.playerRef.current;
-
-    player.forward();
+    this.playerRef.current.forward();
   }
 
   _onPlayerScroll = evt => {
-    const { size, contentOffset } = evt;
-    const nextActiveIndex = this._calculateActiveIndex({ size, contentOffset });
+    const { contentOffset, size, contentSize } = evt;
+    const { direction, itemCount } = this.props;
+
+    const nextActiveIndex = calculateActiveIndex(
+      contentOffset,
+      size,
+      contentSize,
+      itemCount,
+      direction
+    );
 
     if (nextActiveIndex !== this.state.activeIndex) {
       this.setState({ activeIndex: nextActiveIndex });
@@ -58,14 +62,6 @@ export default class Carousel extends React.Component {
 
     this.props.onScroll(evt);
   };
-
-  _calculateActiveIndex({ size, contentOffset }) {
-    const { direction, itemCount } = this.props;
-    const [width, x] = direction === 'y' ? ['height', 'y'] : ['width', 'x'];
-    let activeIndex = Math.max(Math.round(-contentOffset[x] / size[width]), 0);
-
-    return activeIndex % itemCount;
-  }
 
   render() {
     const { itemCount, renderItem, onSlideChange, ...playerProps } = this.props;
@@ -81,10 +77,21 @@ export default class Carousel extends React.Component {
       renderItem,
     };
 
-    const gridElement = <GridContent {...gridProps} />;
-    playerProps.children = gridElement;
     playerProps.onScroll = this._onPlayerScroll;
 
-    return <Player {...playerProps} ref={this.playerRef} />;
+    return (
+      <Player {...playerProps} ref={this.playerRef}>
+        <GridContent {...gridProps} />
+      </Player>
+    );
   }
+}
+
+function calculateActiveIndex(offset, size, cSize, itemCount, direction) {
+  const [width, x] = direction === 'y' ? ['height', 'y'] : ['width', 'x'];
+
+  const offsetX = Math.min(Math.max(-cSize[width], offset[x]), 0);
+  const index = Math.round(-offsetX / size[width]);
+
+  return index % itemCount;
 }

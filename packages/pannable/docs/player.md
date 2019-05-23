@@ -56,7 +56,7 @@ Determines whether the player should automatically playback. The default value i
 
 #### `autoplayInterval`?: number
 
-Delay between transitions (in ms). The default value is `3000`
+Delay between transitions (in ms). The default value is `5000`
 
 #### `loop`?: boolean
 
