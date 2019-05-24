@@ -1,3 +1,3 @@
-import createResizeDetector from 'element-resize-detector';
+import elementResizeDetectorMaker from 'element-resize-detector';
 
-export default createResizeDetector({ strategy: 'scroll' });
+export default elementResizeDetectorMaker({ strategy: 'scroll' });

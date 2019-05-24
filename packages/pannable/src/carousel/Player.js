@@ -323,18 +323,18 @@ function getAdjustedContentOffsetForLoop(
   const minOffsetX = -contentWidth + sizeWidth + bufferWidth;
 
   let offsetX = contentOffset[x];
+  let delta = 0;
 
   if (offsetX < minOffsetX) {
-    offsetX += contentWidth - itemSizeWidth;
+    delta = 1;
   } else if (maxOffsetX < offsetX) {
-    offsetX -= contentWidth - itemSizeWidth;
+    delta = -1;
   }
 
-  if (offsetX !== contentOffset[x]) {
-    return [
-      { [x]: offsetX, [y]: contentOffset[y] },
-      contentOffset[x] < offsetX ? 1 : -1,
-    ];
+  if (delta !== 0) {
+    offsetX += delta * (contentWidth - itemSizeWidth);
+
+    return [{ [x]: offsetX, [y]: contentOffset[y] }, delta];
   }
 
   return [contentOffset, 0];
