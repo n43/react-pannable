@@ -173,10 +173,6 @@ export default class Player extends React.Component {
       const pad = this.padRef.current;
       const { contentOffset, size, contentSize } = pad.state;
 
-      if (loopCount === 1) {
-        return null;
-      }
-
       const [adjustedContentOffset, delta] = getAdjustedContentOffsetForLoop(
         contentOffset,
         size,
@@ -222,7 +218,7 @@ export default class Player extends React.Component {
           contentOffset,
           size,
           contentSize,
-          loopCount,
+          nextLoopCount,
           direction
         );
 
@@ -312,32 +308,41 @@ function getAdjustedContentOffsetForLoop(
   loopCount,
   direction
 ) {
+  if (loopCount === 1) {
+    return [contentOffset, 0];
+  }
+
   const [width, x, y] =
     direction === 'y' ? ['height', 'y', 'x'] : ['width', 'x', 'y'];
 
   const contentWidth = contentSize[width];
-  const itemSizeWidth = contentWidth / loopCount;
   const sizeWidth = size[width];
-  const bufferWidth = 0.5 * (itemSizeWidth - sizeWidth);
-  const maxOffsetX = -bufferWidth;
-  const minOffsetX = -contentWidth + sizeWidth + bufferWidth;
+  const itemWidth = contentWidth / loopCount;
+  const bufferWidth = 0.5 * (itemWidth - sizeWidth);
 
+  let maxOffsetX = 0;
+  let minOffsetX = sizeWidth - contentWidth;
   let offsetX = contentOffset[x];
   let delta = 0;
 
+  offsetX = maxOffsetX - ((maxOffsetX - offsetX) % (maxOffsetX - minOffsetX));
+
+  maxOffsetX -= bufferWidth;
+  minOffsetX += bufferWidth;
+
   if (offsetX < minOffsetX) {
-    delta = 1;
+    delta = loopCount - 1;
   } else if (maxOffsetX < offsetX) {
-    delta = -1;
+    delta = 1 - loopCount;
   }
 
-  if (delta !== 0) {
-    offsetX += delta * (contentWidth - itemSizeWidth);
-
-    return [{ [x]: offsetX, [y]: contentOffset[y] }, delta];
+  if (delta === 0) {
+    return [contentOffset, 0];
   }
 
-  return [contentOffset, 0];
+  offsetX += itemWidth * delta;
+
+  return [{ [x]: offsetX, [y]: contentOffset[y] }, delta];
 }
 
 function getContentOffsetForPlayback(
