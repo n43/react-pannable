@@ -18,8 +18,8 @@ import {
   calculateRectOffset,
 } from './utils/motion';
 
-const DECELERATION_RATE_STRONG = 0.02;
-const DECELERATION_RATE_WEAK = 0.002;
+const DECELERATION_RATE_STRONG = 0.025;
+const DECELERATION_RATE_WEAK = 0.0025;
 
 export default class Pad extends React.Component {
   static defaultProps = {
@@ -59,35 +59,48 @@ export default class Pad extends React.Component {
       drag,
       deceleration,
     } = state;
-    let nextState = null;
+
     let nextSize = size;
+    let nextContentOffset = contentOffset;
+    let nextContentVelocity = contentVelocity;
     let nextDeceleration = deceleration;
+
     const decelerationRate = DECELERATION_RATE_STRONG;
 
     if (width !== nextSize.width || height !== nextSize.height) {
       nextSize = { width, height };
-
-      nextState = nextState || {};
-      nextState.size = nextSize;
     }
 
     if (nextDeceleration) {
-      if (
-        contentOffset !==
-        getAdjustedContentOffset(
-          contentOffset,
-          nextSize,
-          contentSize,
-          pagingEnabled,
-          true
-        )
-      ) {
-        let decelerationEndOffset = nextDeceleration.endOffset;
+      let decelerationEndOffset = nextDeceleration.endOffset;
 
+      if (
+        decelerationEndOffset !==
+          getAdjustedContentOffset(
+            decelerationEndOffset,
+            nextSize,
+            contentSize,
+            pagingEnabled,
+            true
+          ) &&
+        nextContentOffset !==
+          getAdjustedContentOffset(
+            nextContentOffset,
+            nextSize,
+            contentSize,
+            pagingEnabled,
+            true
+          )
+      ) {
         if (nextDeceleration.rate !== decelerationRate) {
+          nextContentVelocity = getAdjustedContentVelocity(
+            nextContentVelocity,
+            nextSize,
+            decelerationRate
+          );
           decelerationEndOffset = getDecelerationEndOffset(
-            contentOffset,
-            contentVelocity,
+            nextContentOffset,
+            nextContentVelocity,
             nextSize,
             pagingEnabled,
             decelerationRate
@@ -103,34 +116,58 @@ export default class Pad extends React.Component {
         );
 
         nextDeceleration = createDeceleration(
-          contentOffset,
-          contentVelocity,
+          nextContentOffset,
+          nextContentVelocity,
           decelerationEndOffset,
           decelerationRate
         );
+
+        nextContentOffset = { ...nextContentOffset };
       }
     } else if (!drag) {
       const adjustedContentOffset = getAdjustedContentOffset(
-        contentOffset,
+        nextContentOffset,
         nextSize,
         contentSize,
         pagingEnabled
       );
 
-      if (contentOffset !== adjustedContentOffset) {
-        nextDeceleration = createDeceleration(
-          contentOffset,
-          contentVelocity,
+      if (nextContentOffset !== adjustedContentOffset) {
+        const decelerationEndOffset = getDecelerationEndOffset(
           adjustedContentOffset,
+          { x: 0, y: 0 },
+          nextSize,
+          pagingEnabled,
           decelerationRate
         );
+
+        nextDeceleration = createDeceleration(
+          nextContentOffset,
+          nextContentVelocity,
+          decelerationEndOffset,
+          decelerationRate
+        );
+
+        nextContentOffset = { ...nextContentOffset };
       }
     }
 
+    let nextState = null;
+
+    if (nextSize !== size) {
+      nextState = nextState || {};
+      nextState.size = nextSize;
+    }
+    if (nextContentOffset !== contentOffset) {
+      nextState = nextState || {};
+      nextState.contentOffset = nextContentOffset;
+    }
+    if (nextContentVelocity !== contentVelocity) {
+      nextState = nextState || {};
+      nextState.contentVelocity = nextContentVelocity;
+    }
     if (nextDeceleration !== deceleration) {
       nextState = nextState || {};
-
-      nextState.contentOffset = { ...contentOffset };
       nextState.deceleration = nextDeceleration;
     }
 
@@ -253,15 +290,19 @@ export default class Pad extends React.Component {
         contentOffset,
         contentVelocity,
         size,
-        contentSize,
         drag,
         deceleration,
       } = state;
       const { pagingEnabled } = props;
+
       const nextState = {};
 
       if (drag || !animated) {
-        nextState.contentOffset = offset;
+        if (offset.x === contentOffset.x && offset.y === contentOffset.y) {
+          return null;
+        }
+
+        nextState.contentOffset = { ...offset };
 
         if (drag) {
           nextState.drag = {
@@ -284,12 +325,12 @@ export default class Pad extends React.Component {
           );
         }
       } else {
-        const decelerationRate = DECELERATION_RATE_STRONG;
-        const decelerationEndOffset = getAdjustedContentOffset(
+        const decelerationEndOffset = getDecelerationEndOffset(
           offset,
+          { x: 0, y: 0 },
           size,
-          contentSize,
-          pagingEnabled
+          pagingEnabled,
+          DECELERATION_RATE_STRONG
         );
 
         nextState.contentOffset = { ...contentOffset };
@@ -297,7 +338,7 @@ export default class Pad extends React.Component {
           contentOffset,
           contentVelocity,
           decelerationEndOffset,
-          decelerationRate
+          DECELERATION_RATE_STRONG
         );
       }
 
@@ -433,14 +474,17 @@ export default class Pad extends React.Component {
       const { contentOffset, contentVelocity, size } = state;
       const { pagingEnabled } = props;
 
-      const nextContentVelocity = getAdjustedContentVelocity(
-        contentVelocity,
-        size,
-        DECELERATION_RATE_STRONG
-      );
-      const decelerationRate = pagingEnabled
-        ? DECELERATION_RATE_STRONG
-        : DECELERATION_RATE_WEAK;
+      let decelerationRate = DECELERATION_RATE_WEAK;
+      let nextContentVelocity = contentVelocity;
+
+      if (pagingEnabled) {
+        decelerationRate = DECELERATION_RATE_STRONG;
+        nextContentVelocity = getAdjustedContentVelocity(
+          nextContentVelocity,
+          size,
+          decelerationRate
+        );
+      }
 
       const decelerationEndOffset = getDecelerationEndOffset(
         contentOffset,
@@ -468,14 +512,15 @@ export default class Pad extends React.Component {
 
   _onPanCancel = evt => {
     this.setState((state, props) => {
-      const { contentOffset, contentVelocity, size, contentSize, drag } = state;
+      const { contentOffset, contentVelocity, size, drag } = state;
       const { pagingEnabled } = props;
 
-      const decelerationEndOffset = getAdjustedContentOffset(
+      const decelerationEndOffset = getDecelerationEndOffset(
         drag.startOffset,
+        { x: 0, y: 0 },
         size,
-        contentSize,
-        pagingEnabled
+        pagingEnabled,
+        DECELERATION_RATE_STRONG
       );
 
       return {

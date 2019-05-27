@@ -140,11 +140,23 @@ export function getDecelerationEndOffset(
 
     let offsetX = offset[x];
 
-    if (acc[x]) {
-      offsetX += 0.5 * velocity[x] * (velocity[x] / acc[x]);
-    }
     if (paging && size[width] > 0) {
-      offsetX = size[width] * Math.round(offsetX / size[width]);
+      const minVelocity = 0.5;
+      let delta = offsetX / size[width];
+
+      if (minVelocity < velocity[x]) {
+        delta = Math.ceil(delta);
+      } else if (velocity[x] < -minVelocity) {
+        delta = Math.floor(delta);
+      } else {
+        delta = Math.round(delta);
+      }
+
+      offsetX = size[width] * delta;
+    } else {
+      if (acc[x]) {
+        offsetX += 0.5 * velocity[x] * (velocity[x] / acc[x]);
+      }
     }
 
     return offsetX;
