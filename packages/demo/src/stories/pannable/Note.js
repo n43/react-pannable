@@ -11,6 +11,20 @@ const WRAPPER_HEIGHT = 510;
 const ITEM_WIDTH = WRAPPER_WIDTH === 680 ? 200 : 150;
 const ITEM_HEIGHT = ITEM_WIDTH;
 
+function getItemKey(target) {
+  if (target.dataset) {
+    if (target.dataset.wrapper) {
+      return null;
+    }
+
+    if (target.dataset.draggable) {
+      return target.dataset.draggable;
+    }
+  }
+
+  return getItemKey(target.parentNode);
+}
+
 export default class Note extends React.Component {
   state = {
     enabled: true,
@@ -22,44 +36,30 @@ export default class Note extends React.Component {
       item1: { x: ITEM_WIDTH + 40, y: 20 },
     },
   };
-  pannableRef = React.createRef();
 
   _onConstraintedChange = () => {
     this.setState(({ constrainted }) => ({ constrainted: !constrainted }));
   };
 
+  _shouldStart = ({ target }) => {
+    return !!getItemKey(target);
+  };
+
   _onStart = ({ target }) => {
-    let key;
+    let key = getItemKey(target);
 
-    while (
-      !key &&
-      target &&
-      target !== this.pannableRef.current.elemRef.current
-    ) {
-      if (target.dataset && target.dataset.draggable) {
-        key = target.dataset.draggable;
-      }
-      target = target.parentNode;
-    }
+    this.setState(({ items }) => {
+      const item = items[key];
 
-    if (key) {
-      this.setState(({ items }) => {
-        const item = items[key];
-
-        return {
-          dragTarget: key,
-          dragStartPosition: { x: item.x, y: item.y },
-        };
-      });
-    }
+      return {
+        dragTarget: key,
+        dragStartPosition: { x: item.x, y: item.y },
+      };
+    });
   };
 
   _onMove = ({ translation }) => {
     this.setState(({ dragTarget, dragStartPosition, items, constrainted }) => {
-      if (!dragTarget) {
-        return null;
-      }
-
       const position = {
         x: dragStartPosition.x + translation.x,
         y: dragStartPosition.y + translation.y,
@@ -117,10 +117,11 @@ export default class Note extends React.Component {
           </label>
         </div>
         <Pannable
-          ref={this.pannableRef}
+          data-wrapper="wrapper"
           className="note-wrapper"
           style={{ width: WRAPPER_WIDTH, height: WRAPPER_HEIGHT }}
           enabled={enabled}
+          shouldStart={this._shouldStart}
           onStart={this._onStart}
           onMove={this._onMove}
           onEnd={this._onEnd}

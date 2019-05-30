@@ -37,6 +37,7 @@ export default class Sticker extends React.Component {
 
     return true;
   };
+
   _onMove = ({ translation }) => {
     this.setState(({ currentAction, startTransform }) => {
       if (currentAction === 'translate') {
