@@ -217,16 +217,6 @@ export function usePad({
   const size = { width, height };
   const { contentOffset, contentVelocity, drag, deceleration } = data;
 
-  const eventRef = useRef({
-    data,
-    onScroll,
-    onDragStart,
-    onDragEnd,
-    onDecelerationStart,
-    onDecelerationEnd,
-    onContentResize,
-  });
-
   const visibleRect = {
     x: -data.contentOffset.x,
     y: -data.contentOffset.y,
