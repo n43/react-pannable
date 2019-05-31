@@ -37,14 +37,10 @@ export default function Pannable({
   });
 
   const elemRef = useRef(null);
-  const touchSupported = useRef(false);
   const eventRef = useRef({
+    touchSupported: false,
     data,
     shouldStart,
-    onStart,
-    onMove,
-    onEnd,
-    onCancel,
   });
 
   const track = useCallback((target, point) => {
@@ -60,64 +56,96 @@ export default function Pannable({
   }, []);
 
   const move = useCallback(point => {
-    const {
-      data: { target, startPoint, movePoint, moveTime, translation },
-      shouldStart,
-    } = eventRef.current;
+    setData(prevData => {
+      const { target, startPoint, movePoint, moveTime, translation } = prevData;
+      const { shouldStart } = eventRef.current;
 
-    const nextMovePoint = point;
-    const nextMoveTime = new Date().getTime();
+      if (!target) {
+        return prevData;
+      }
 
-    const nextInterval = nextMoveTime - moveTime;
-    const nextTranslation = {
-      x: nextMovePoint.x - startPoint.x,
-      y: nextMovePoint.y - startPoint.y,
-    };
-    const nextVelocity = {
-      x: (nextMovePoint.x - movePoint.x) / nextInterval,
-      y: (nextMovePoint.y - movePoint.y) / nextInterval,
-    };
+      const nextMovePoint = point;
+      const nextMoveTime = new Date().getTime();
 
-    if (translation) {
-      setData({
+      const nextInterval = nextMoveTime - moveTime;
+      const nextTranslation = {
+        x: nextMovePoint.x - startPoint.x,
+        y: nextMovePoint.y - startPoint.y,
+      };
+      const nextVelocity = {
+        x: (nextMovePoint.x - movePoint.x) / nextInterval,
+        y: (nextMovePoint.y - movePoint.y) / nextInterval,
+      };
+
+      if (translation) {
+        return {
+          target,
+          startPoint,
+          movePoint: nextMovePoint,
+          moveTime: nextMoveTime,
+          translation: nextTranslation,
+          velocity: nextVelocity,
+          interval: nextInterval,
+        };
+      }
+
+      const dist = Math.sqrt(
+        nextTranslation.x * nextTranslation.x +
+          nextTranslation.y * nextTranslation.y
+      );
+
+      if (dist <= MIN_DISTANCE) {
+        return {
+          target,
+          startPoint,
+          movePoint: nextMovePoint,
+          moveTime: nextMoveTime,
+          translation: null,
+          velocity: null,
+          interval: null,
+        };
+      }
+
+      if (
+        !shouldStart({
+          target,
+          translation: nextTranslation,
+          velocity: nextVelocity,
+          interval: nextInterval,
+        })
+      ) {
+        return {
+          target: null,
+          startPoint: null,
+          movePoint: null,
+          moveTime: null,
+          translation: null,
+          velocity: null,
+          interval: null,
+        };
+      }
+
+      return {
         target,
-        startPoint,
+        startPoint: point,
         movePoint: nextMovePoint,
         moveTime: nextMoveTime,
-        translation: nextTranslation,
+        translation: { x: 0, y: 0 },
         velocity: nextVelocity,
         interval: nextInterval,
-      });
-      return;
-    }
+      };
+    });
+  }, []);
 
-    const dist = Math.sqrt(
-      nextTranslation.x * nextTranslation.x +
-        nextTranslation.y * nextTranslation.y
-    );
+  const end = useCallback(() => {
+    setData(prevData => {
+      const { target } = prevData;
 
-    if (dist <= MIN_DISTANCE) {
-      setData({
-        target,
-        startPoint,
-        movePoint: nextMovePoint,
-        moveTime: nextMoveTime,
-        translation: null,
-        velocity: null,
-        interval: null,
-      });
-      return;
-    }
+      if (!target) {
+        return prevData;
+      }
 
-    if (
-      !shouldStart({
-        target,
-        translation: nextTranslation,
-        velocity: nextVelocity,
-        interval: nextInterval,
-      })
-    ) {
-      setData({
+      return {
         target: null,
         startPoint: null,
         movePoint: null,
@@ -125,36 +153,13 @@ export default function Pannable({
         translation: null,
         velocity: null,
         interval: null,
-      });
-      return;
-    }
-
-    setData({
-      target,
-      startPoint: point,
-      movePoint: nextMovePoint,
-      moveTime: nextMoveTime,
-      translation: { x: 0, y: 0 },
-      velocity: nextVelocity,
-      interval: nextInterval,
-    });
-  }, []);
-
-  const end = useCallback(() => {
-    setData({
-      target: null,
-      startPoint: null,
-      movePoint: null,
-      moveTime: null,
-      translation: null,
-      velocity: null,
-      interval: null,
+      };
     });
   }, []);
 
   useEffect(() => {
     function onTouchStart(evt) {
-      touchSupported.current = true;
+      eventRef.current.touchSupported = true;
 
       if (evt.touches && evt.touches.length === 1) {
         const touchEvent = evt.touches[0];
@@ -164,15 +169,13 @@ export default function Pannable({
     }
 
     function onTouchMove(evt) {
-      const { translation } = eventRef.current.data;
-
-      if (translation) {
+      if (eventRef.current.data.translation) {
         evt.preventDefault();
       }
     }
 
     function onMouseDown(evt) {
-      if (touchSupported.current) {
+      if (eventRef.current.touchSupported) {
         return;
       }
 
@@ -180,7 +183,6 @@ export default function Pannable({
     }
 
     const elemNode = elemRef.current;
-    const { target } = eventRef.current.data;
 
     if (enabled) {
       if (!elemNode.addEventListener) {
@@ -190,10 +192,6 @@ export default function Pannable({
       elemNode.addEventListener('touchstart', onTouchStart, false);
       elemNode.addEventListener('touchmove', onTouchMove, false);
       elemNode.addEventListener('mousedown', onMouseDown, false);
-    } else {
-      if (target) {
-        end();
-      }
     }
 
     return () => {
@@ -203,55 +201,44 @@ export default function Pannable({
         elemNode.removeEventListener('mousedown', onMouseDown, false);
       }
     };
-  }, [enabled, track, end]);
+  }, [enabled, track]);
 
   useEffect(() => {
     function onTargetTouchMove(evt) {
-      const { startPoint, translation } = eventRef.current.data;
       const touchEvent = evt.touches[0];
 
-      if (translation) {
+      if (eventRef.current.data.translation) {
         evt.preventDefault();
       }
-      if (startPoint) {
-        move({ x: touchEvent.pageX, y: touchEvent.pageY });
-      }
+
+      move({ x: touchEvent.pageX, y: touchEvent.pageY });
     }
 
     function onTargetTouchEnd(evt) {
-      const { translation } = eventRef.current.data;
-
-      if (translation) {
+      if (eventRef.current.data.translation) {
         evt.preventDefault();
-
-        end();
       }
+
+      end();
     }
 
     function onRootMouseMove(evt) {
-      const { startPoint } = eventRef.current.data;
-
       evt.preventDefault();
 
-      if (startPoint) {
-        move({ x: evt.pageX, y: evt.pageY });
-      }
+      move({ x: evt.pageX, y: evt.pageY });
     }
 
     function onRootMouseUp(evt) {
-      const { translation } = eventRef.current.data;
-
       evt.preventDefault();
 
-      if (translation) {
-        end();
-      }
+      end();
     }
 
     const target = data.target;
+    const { touchSupported } = eventRef.current;
 
     if (target) {
-      if (touchSupported.current) {
+      if (touchSupported) {
         target.addEventListener('touchmove', onTargetTouchMove, false);
         target.addEventListener('touchend', onTargetTouchEnd, false);
         target.addEventListener('touchcancel', onTargetTouchEnd, false);
@@ -263,7 +250,7 @@ export default function Pannable({
 
     return () => {
       if (target) {
-        if (touchSupported.current) {
+        if (touchSupported) {
           target.removeEventListener('touchmove', onTargetTouchMove, false);
           target.removeEventListener('touchend', onTargetTouchEnd, false);
           target.removeEventListener('touchcancel', onTargetTouchEnd, false);
@@ -297,11 +284,16 @@ export default function Pannable({
           onCancel && onCancel(output);
         }
       }
+
+      if (!enabled && data.target) {
+        end();
+      }
     }
   });
 
   const prevData = eventRef.current.data;
-  eventRef.current = { data, shouldStart, onStart, onMove, onEnd, onCancel };
+  eventRef.current.data = data;
+  eventRef.current.shouldStart = shouldStart;
 
   const elemStyle = {};
 
