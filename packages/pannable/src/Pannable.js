@@ -17,13 +17,22 @@ if (typeof self !== 'undefined') {
   root = {};
 }
 
-export default function Pannable({
-  enabled = true,
-  shouldStart = () => true,
-  onStart,
-  onMove,
-  onEnd,
-  onCancel,
+const defaultProps = {
+  enabled: true,
+  shouldStart: () => true,
+  onStart: () => {},
+  onMove: () => {},
+  onEnd: () => {},
+  onCancel: () => {},
+};
+
+function Pannable({
+  enabled = defaultProps.enabled,
+  shouldStart = defaultProps.shouldStart,
+  onStart = defaultProps.onStart,
+  onMove = defaultProps.onMove,
+  onEnd = defaultProps.onEnd,
+  onCancel = defaultProps.onCancel,
   ...props
 } = {}) {
   const [data, setData] = useState({
@@ -273,15 +282,15 @@ export default function Pannable({
     if (data.translation !== prevData.translation) {
       if (data.translation) {
         if (prevData.translation) {
-          onMove && onMove(output);
+          onMove(output);
         } else {
-          onStart && onStart(output);
+          onStart(output);
         }
       } else if (prevData.translation) {
         if (enabled) {
-          onEnd && onEnd(output);
+          onEnd(output);
         } else {
-          onCancel && onCancel(output);
+          onCancel(output);
         }
       }
 
@@ -312,3 +321,7 @@ export default function Pannable({
 
   return <div {...props} ref={elemRef} />;
 }
+
+Pannable.defaultProps = defaultProps;
+
+export default Pannable;

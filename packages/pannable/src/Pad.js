@@ -47,8 +47,6 @@ export default class Pad extends React.Component {
     deceleration: null,
   };
 
-  elemRef = React.createRef();
-
   static getDerivedStateFromProps(props, state) {
     const { width, height, pagingEnabled } = props;
     const {
@@ -596,7 +594,7 @@ export default class Pad extends React.Component {
     };
 
     return (
-      <Pannable {...props} ref={this.elemRef}>
+      <Pannable {...props}>
         <PadContext.Provider
           value={{
             visibleRect: this._getVisibleRect(this.state),

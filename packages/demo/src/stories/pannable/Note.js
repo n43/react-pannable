@@ -46,9 +46,8 @@ export default class Note extends React.Component {
   };
 
   _onStart = ({ target }) => {
-    let key = getItemKey(target);
-
     this.setState(({ items }) => {
+      const key = getItemKey(target);
       const item = items[key];
 
       return {

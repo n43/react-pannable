@@ -7,6 +7,20 @@ import SvgPan from './SvgPan';
 import SvgSticker from './SvgSticker';
 import './Sticker.css';
 
+function getAction(target) {
+  if (target.dataset) {
+    if (target.dataset.wrapper) {
+      return null;
+    }
+
+    if (target.dataset.action) {
+      return target.dataset.action;
+    }
+  }
+
+  return getAction(target.parentNode);
+}
+
 export default class Sticker extends React.Component {
   state = {
     hidden: false,
@@ -20,22 +34,14 @@ export default class Sticker extends React.Component {
   };
 
   _shouldStart = ({ target }) => {
-    let action;
+    return !!getAction(target);
+  };
 
-    if (target.dataset && target.dataset.action) {
-      action = target.dataset.action;
-    }
-
-    if (!action) {
-      return false;
-    }
-
+  _onStart = ({ target }) => {
     this.setState(({ width, height, translateX, translateY, rotate }) => ({
-      currentAction: action,
+      currentAction: getAction(target),
       startTransform: { width, height, translateX, translateY, rotate },
     }));
-
-    return true;
   };
 
   _onMove = ({ translation }) => {
@@ -97,6 +103,7 @@ export default class Sticker extends React.Component {
           )}
         </div>
         <Pannable
+          data-wrapper="wrapper"
           className={currentAction ? 'sticker-box-dragging' : 'sticker-box'}
           style={{
             display: hidden ? 'none' : 'block',
@@ -105,6 +112,7 @@ export default class Sticker extends React.Component {
             ...getTransformStyle(translateX, translateY, rotate),
           }}
           shouldStart={this._shouldStart}
+          onStart={this._onStart}
           onMove={this._onMove}
           onEnd={this._onEnd}
         >
