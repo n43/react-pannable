@@ -1,9 +1,11 @@
 import React from 'react';
-import { usePannable, defaultProps } from './usePannable';
+import { usePannable, defaultPannableProps } from './usePannable';
 
-function Pannable(props) {
-  return <div {...usePannable(props)} />;
+function Pannable(pannableProps) {
+  const [props] = usePannable(pannableProps);
+
+  return <div {...props} />;
 }
-Pannable.defaultProps = defaultProps;
+Pannable.defaultProps = defaultPannableProps;
 
 export default Pannable;

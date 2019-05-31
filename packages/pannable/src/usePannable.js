@@ -17,7 +17,7 @@ if (typeof self !== 'undefined') {
   root = {};
 }
 
-export const defaultProps = {
+export const defaultPannableProps = {
   enabled: true,
   shouldStart: () => true,
   onStart: () => {},
@@ -27,12 +27,12 @@ export const defaultProps = {
 };
 
 export function usePannable({
-  enabled = defaultProps.enabled,
-  shouldStart = defaultProps.shouldStart,
-  onStart = defaultProps.onStart,
-  onMove = defaultProps.onMove,
-  onEnd = defaultProps.onEnd,
-  onCancel = defaultProps.onCancel,
+  enabled = defaultPannableProps.enabled,
+  shouldStart = defaultPannableProps.shouldStart,
+  onStart = defaultPannableProps.onStart,
+  onMove = defaultPannableProps.onMove,
+  onEnd = defaultPannableProps.onEnd,
+  onCancel = defaultPannableProps.onCancel,
   ...props
 }) {
   const [data, setData] = useState({
@@ -320,7 +320,6 @@ export function usePannable({
   };
 
   props.ref = elemRef;
-  props.pannable.data = data;
 
-  return props;
+  return [props, { data }];
 }
