@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import StyleSheet from './utils/StyleSheet';
 
 const MIN_DISTANCE = 0;
 
@@ -47,10 +46,15 @@ export function usePannable({
 
   const elemRef = useRef(null);
   const eventRef = useRef({
+    translation: data.translation,
     touchSupported: false,
-    data,
-    shouldStart,
   });
+
+  eventRef.current.shouldStart = shouldStart;
+  eventRef.current.onStart = onStart;
+  eventRef.current.onMove = onMove;
+  eventRef.current.onEnd = onEnd;
+  eventRef.current.onCancel = onCancel;
 
   const track = useCallback((target, point) => {
     setData({
@@ -178,7 +182,7 @@ export function usePannable({
     }
 
     function onTouchMove(evt) {
-      if (eventRef.current.data.translation) {
+      if (eventRef.current.translation) {
         evt.preventDefault();
       }
     }
@@ -201,22 +205,20 @@ export function usePannable({
       elemNode.addEventListener('touchstart', onTouchStart, false);
       elemNode.addEventListener('touchmove', onTouchMove, false);
       elemNode.addEventListener('mousedown', onMouseDown, false);
-    }
 
-    return () => {
-      if (enabled) {
+      return () => {
         elemNode.removeEventListener('touchstart', onTouchStart, false);
         elemNode.removeEventListener('touchmove', onTouchMove, false);
         elemNode.removeEventListener('mousedown', onMouseDown, false);
-      }
-    };
+      };
+    }
   }, [enabled, track]);
 
   useEffect(() => {
     function onTargetTouchMove(evt) {
       const touchEvent = evt.touches[0];
 
-      if (eventRef.current.data.translation) {
+      if (eventRef.current.translation) {
         evt.preventDefault();
       }
 
@@ -224,7 +226,7 @@ export function usePannable({
     }
 
     function onTargetTouchEnd(evt) {
-      if (eventRef.current.data.translation) {
+      if (eventRef.current.translation) {
         evt.preventDefault();
       }
 
@@ -251,27 +253,26 @@ export function usePannable({
         target.addEventListener('touchmove', onTargetTouchMove, false);
         target.addEventListener('touchend', onTargetTouchEnd, false);
         target.addEventListener('touchcancel', onTargetTouchEnd, false);
-      } else {
-        root.addEventListener('mousemove', onRootMouseMove, false);
-        root.addEventListener('mouseup', onRootMouseUp, false);
-      }
-    }
 
-    return () => {
-      if (target) {
-        if (touchSupported) {
+        return () => {
           target.removeEventListener('touchmove', onTargetTouchMove, false);
           target.removeEventListener('touchend', onTargetTouchEnd, false);
           target.removeEventListener('touchcancel', onTargetTouchEnd, false);
-        } else {
+        };
+      } else {
+        root.addEventListener('mousemove', onRootMouseMove, false);
+        root.addEventListener('mouseup', onRootMouseUp, false);
+
+        return () => {
           root.removeEventListener('mousemove', onRootMouseMove, false);
           root.removeEventListener('mouseup', onRootMouseUp, false);
-        }
+        };
       }
-    };
+    }
   }, [data.target, move, end]);
 
   useEffect(() => {
+    const { translation, onStart, onMove, onEnd, onCancel } = eventRef.current;
     const output = {
       target: data.target,
       translation: data.translation,
@@ -279,43 +280,38 @@ export function usePannable({
       interval: data.interval,
     };
 
-    if (data.translation !== prevData.translation) {
+    eventRef.current.translation = data.translation;
+
+    if (data.translation !== translation) {
       if (data.translation) {
-        if (prevData.translation) {
+        if (translation) {
           onMove(output);
         } else {
           onStart(output);
         }
-      } else if (prevData.translation) {
+      } else if (translation) {
         if (enabled) {
           onEnd(output);
         } else {
           onCancel(output);
         }
       }
-
-      if (!enabled && data.target) {
-        end();
-      }
     }
-  });
+  }, [data, enabled]);
 
-  const prevData = eventRef.current.data;
-  eventRef.current.data = data;
-  eventRef.current.shouldStart = shouldStart;
+  if (!enabled && data.target) {
+    end();
+  }
 
   const elemStyle = {};
 
-  if (enabled) {
-    elemStyle.touchAction = 'none';
-  }
   if (data.translation) {
-    elemStyle.userSelect = 'none';
+    elemStyle.touchAction = 'none';
     elemStyle.pointerEvents = 'none';
   }
 
   props.style = {
-    ...StyleSheet.create(elemStyle),
+    ...elemStyle,
     ...props.style,
   };
 

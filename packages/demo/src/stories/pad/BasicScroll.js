@@ -99,7 +99,6 @@ class BasicScroll extends Component {
       <div className="pad-main">
         <div className="pad-preview" style={{ width, height }}>
           <Pad
-            ref={this.padRef}
             className="pad-padele"
             width={width}
             height={height}
