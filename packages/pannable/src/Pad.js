@@ -1,10 +1,7 @@
-import React from 'react';
 import { usePad, defaultPadProps } from './usePad';
 
-function Pad(padProps) {
-  const [props] = usePad(padProps);
-
-  return <div {...props} />;
+function Pad(props) {
+  return usePad(props)[0];
 }
 Pad.defaultProps = defaultPadProps;
 

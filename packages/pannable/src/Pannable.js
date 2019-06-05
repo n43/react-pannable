@@ -1,10 +1,7 @@
-import React from 'react';
 import { usePannable, defaultPannableProps } from './usePannable';
 
 function Pannable(pannableProps) {
-  const [props] = usePannable(pannableProps);
-
-  return <div {...props} />;
+  return usePannable(pannableProps)[0];
 }
 Pannable.defaultProps = defaultPannableProps;
 

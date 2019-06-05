@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useEffect, useRef, useMemo, useReducer } from 'react';
 
 const MIN_DISTANCE = 0;
 
@@ -14,6 +14,127 @@ if (typeof self !== 'undefined') {
   root = global;
 } else {
   root = {};
+}
+
+const initialState = {
+  target: null,
+  startPoint: null,
+  movePoint: null,
+  moveTime: null,
+  translation: null,
+  velocity: null,
+  interval: null,
+};
+
+function reducer(state, action) {
+  switch (action.type) {
+    case 'render':
+      return renderReducer(state, action);
+    case 'track':
+      return trackReducer(state, action);
+    case 'move':
+      return moveReducer(state, action);
+    case 'end':
+      return endReducer(state, action);
+    default:
+      return state;
+  }
+}
+
+function renderReducer(state, action) {
+  if (!action.enabled && state.target) {
+    return initialState;
+  }
+
+  return state;
+}
+
+function trackReducer(state, action) {
+  return {
+    target: action.target,
+    startPoint: action.point,
+    movePoint: action.point,
+    moveTime: action.now,
+    translation: null,
+    velocity: null,
+    interval: null,
+  };
+}
+
+function moveReducer(state, action) {
+  const { target, startPoint, movePoint, moveTime, translation } = state;
+  const { point: nextMovePoint, now: nextMoveTime, shouldStart } = action;
+
+  if (!target) {
+    return state;
+  }
+
+  const nextInterval = nextMoveTime - moveTime;
+  const nextTranslation = {
+    x: nextMovePoint.x - startPoint.x,
+    y: nextMovePoint.y - startPoint.y,
+  };
+  const nextVelocity = {
+    x: (nextMovePoint.x - movePoint.x) / nextInterval,
+    y: (nextMovePoint.y - movePoint.y) / nextInterval,
+  };
+
+  if (translation) {
+    return {
+      target,
+      startPoint,
+      movePoint: nextMovePoint,
+      moveTime: nextMoveTime,
+      translation: nextTranslation,
+      velocity: nextVelocity,
+      interval: nextInterval,
+    };
+  }
+
+  const dist = Math.sqrt(
+    Math.pow(nextTranslation.x, 2) + Math.pow(nextTranslation.y, 2)
+  );
+
+  if (dist <= MIN_DISTANCE) {
+    return {
+      target,
+      startPoint,
+      movePoint: nextMovePoint,
+      moveTime: nextMoveTime,
+      translation: null,
+      velocity: null,
+      interval: null,
+    };
+  }
+
+  if (
+    !shouldStart({
+      target,
+      translation: nextTranslation,
+      velocity: nextVelocity,
+      interval: nextInterval,
+    })
+  ) {
+    return initialState;
+  }
+
+  return {
+    target,
+    startPoint: nextMovePoint,
+    movePoint: nextMovePoint,
+    moveTime: nextMoveTime,
+    translation: { x: 0, y: 0 },
+    velocity: nextVelocity,
+    interval: nextInterval,
+  };
+}
+
+function endReducer(state, action) {
+  if (!state.target) {
+    return state;
+  }
+
+  return initialState;
 }
 
 export const defaultPannableProps = {
@@ -34,143 +155,20 @@ export function usePannable({
   onCancel = defaultPannableProps.onCancel,
   ...props
 }) {
-  const [data, setData] = useState({
-    target: null,
-    startPoint: null,
-    movePoint: null,
-    moveTime: null,
-    translation: null,
-    velocity: null,
-    interval: null,
-  });
-
+  const [state, dispatch] = useReducer(reducer, initialState);
   const elemRef = useRef(null);
-  const eventRef = useRef({
-    translation: data.translation,
-    touchSupported: false,
-  });
+  const eventRef = useRef({ state, touchSupported: false });
 
+  const prevState = eventRef.current.state;
+
+  eventRef.current.state = state;
   eventRef.current.shouldStart = shouldStart;
-  eventRef.current.onStart = onStart;
-  eventRef.current.onMove = onMove;
-  eventRef.current.onEnd = onEnd;
-  eventRef.current.onCancel = onCancel;
-
-  const track = useCallback((target, point) => {
-    setData({
-      target,
-      startPoint: point,
-      movePoint: point,
-      moveTime: new Date().getTime(),
-      translation: null,
-      velocity: null,
-      interval: null,
-    });
-  }, []);
-
-  const move = useCallback(point => {
-    setData(prevData => {
-      const { target, startPoint, movePoint, moveTime, translation } = prevData;
-      const { shouldStart } = eventRef.current;
-
-      if (!target) {
-        return prevData;
-      }
-
-      const nextMovePoint = point;
-      const nextMoveTime = new Date().getTime();
-
-      const nextInterval = nextMoveTime - moveTime;
-      const nextTranslation = {
-        x: nextMovePoint.x - startPoint.x,
-        y: nextMovePoint.y - startPoint.y,
-      };
-      const nextVelocity = {
-        x: (nextMovePoint.x - movePoint.x) / nextInterval,
-        y: (nextMovePoint.y - movePoint.y) / nextInterval,
-      };
-
-      if (translation) {
-        return {
-          target,
-          startPoint,
-          movePoint: nextMovePoint,
-          moveTime: nextMoveTime,
-          translation: nextTranslation,
-          velocity: nextVelocity,
-          interval: nextInterval,
-        };
-      }
-
-      const dist = Math.sqrt(
-        nextTranslation.x * nextTranslation.x +
-          nextTranslation.y * nextTranslation.y
-      );
-
-      if (dist <= MIN_DISTANCE) {
-        return {
-          target,
-          startPoint,
-          movePoint: nextMovePoint,
-          moveTime: nextMoveTime,
-          translation: null,
-          velocity: null,
-          interval: null,
-        };
-      }
-
-      if (
-        !shouldStart({
-          target,
-          translation: nextTranslation,
-          velocity: nextVelocity,
-          interval: nextInterval,
-        })
-      ) {
-        return {
-          target: null,
-          startPoint: null,
-          movePoint: null,
-          moveTime: null,
-          translation: null,
-          velocity: null,
-          interval: null,
-        };
-      }
-
-      return {
-        target,
-        startPoint: point,
-        movePoint: nextMovePoint,
-        moveTime: nextMoveTime,
-        translation: { x: 0, y: 0 },
-        velocity: nextVelocity,
-        interval: nextInterval,
-      };
-    });
-  }, []);
-
-  const end = useCallback(() => {
-    setData(prevData => {
-      const { target } = prevData;
-
-      if (!target) {
-        return prevData;
-      }
-
-      return {
-        target: null,
-        startPoint: null,
-        movePoint: null,
-        moveTime: null,
-        translation: null,
-        velocity: null,
-        interval: null,
-      };
-    });
-  }, []);
 
   useEffect(() => {
+    function track(target, point) {
+      dispatch({ type: 'track', target, point, now: new Date().getTime() });
+    }
+
     function onTouchStart(evt) {
       eventRef.current.touchSupported = true;
 
@@ -182,7 +180,7 @@ export function usePannable({
     }
 
     function onTouchMove(evt) {
-      if (eventRef.current.translation) {
+      if (eventRef.current.state.translation) {
         evt.preventDefault();
       }
     }
@@ -195,9 +193,9 @@ export function usePannable({
       track(evt.target, { x: evt.pageX, y: evt.pageY });
     }
 
-    const elemNode = elemRef.current;
-
     if (enabled) {
+      const elemNode = elemRef.current;
+
       if (!elemNode.addEventListener) {
         return;
       }
@@ -212,13 +210,26 @@ export function usePannable({
         elemNode.removeEventListener('mousedown', onMouseDown, false);
       };
     }
-  }, [enabled, track]);
+  }, [enabled, dispatch]);
 
   useEffect(() => {
+    function move(point) {
+      dispatch({
+        type: 'move',
+        point,
+        now: new Date().getTime(),
+        shouldStart: eventRef.current.shouldStart,
+      });
+    }
+
+    function end() {
+      dispatch({ type: 'end' });
+    }
+
     function onTargetTouchMove(evt) {
       const touchEvent = evt.touches[0];
 
-      if (eventRef.current.translation) {
+      if (eventRef.current.state.translation) {
         evt.preventDefault();
       }
 
@@ -226,7 +237,7 @@ export function usePannable({
     }
 
     function onTargetTouchEnd(evt) {
-      if (eventRef.current.translation) {
+      if (eventRef.current.state.translation) {
         evt.preventDefault();
       }
 
@@ -245,11 +256,10 @@ export function usePannable({
       end();
     }
 
-    const target = data.target;
-    const { touchSupported } = eventRef.current;
+    const target = state.target;
 
     if (target) {
-      if (touchSupported) {
+      if (eventRef.current.touchSupported) {
         target.addEventListener('touchmove', onTargetTouchMove, false);
         target.addEventListener('touchend', onTargetTouchEnd, false);
         target.addEventListener('touchcancel', onTargetTouchEnd, false);
@@ -269,27 +279,24 @@ export function usePannable({
         };
       }
     }
-  }, [data.target, move, end]);
+  }, [state.target, dispatch]);
 
   useEffect(() => {
-    const { translation, onStart, onMove, onEnd, onCancel } = eventRef.current;
     const output = {
-      target: data.target,
-      translation: data.translation,
-      velocity: data.velocity,
-      interval: data.interval,
+      target: state.target,
+      translation: state.translation,
+      velocity: state.velocity,
+      interval: state.interval,
     };
 
-    eventRef.current.translation = data.translation;
-
-    if (data.translation !== translation) {
-      if (data.translation) {
-        if (translation) {
+    if (state.translation !== prevState.translation) {
+      if (state.translation) {
+        if (prevState.translation) {
           onMove(output);
         } else {
           onStart(output);
         }
-      } else if (translation) {
+      } else if (prevState.translation) {
         if (enabled) {
           onEnd(output);
         } else {
@@ -297,15 +304,13 @@ export function usePannable({
         }
       }
     }
-  }, [data, enabled]);
+  });
 
-  if (!enabled && data.target) {
-    end();
-  }
+  useMemo(() => dispatch({ type: 'render', enabled }), [enabled, dispatch]);
 
   const elemStyle = {};
 
-  if (data.translation) {
+  if (state.translation) {
     elemStyle.touchAction = 'none';
     elemStyle.pointerEvents = 'none';
   }
@@ -317,5 +322,5 @@ export function usePannable({
 
   props.ref = elemRef;
 
-  return [props, { data }];
+  return [<div {...props} />, { state }];
 }
