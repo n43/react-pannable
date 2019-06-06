@@ -374,7 +374,6 @@ export function usePad({
 
   const onPannableStart = useCallback(
     evt => {
-      // console.log('dispatch', 'dragStart');
       dispatch({
         type: 'dragStart',
         directionalLockEnabled,
@@ -382,12 +381,11 @@ export function usePad({
       });
       eventRef.current.onStart(evt);
     },
-    [directionalLockEnabled, dispatch]
+    [directionalLockEnabled]
   );
 
   const onPannableMove = useCallback(
     evt => {
-      // console.log('dispatch', 'dragMove');
       dispatch({
         type: 'dragMove',
         alwaysBounceX,
@@ -399,31 +397,28 @@ export function usePad({
       });
       eventRef.current.onMove(evt);
     },
-    [alwaysBounceX, alwaysBounceY, size, contentSize, dispatch]
+    [alwaysBounceX, alwaysBounceY, size, contentSize]
   );
 
   const onPannableEnd = useCallback(
     evt => {
-      // console.log('dispatch', 'dragEnd');
       dispatch({ type: 'dragEnd', pagingEnabled, size });
       eventRef.current.onEnd(evt);
     },
-    [pagingEnabled, size, dispatch]
+    [pagingEnabled, size]
   );
 
   const onPannableCancel = useCallback(
     evt => {
-      // console.log('dispatch', 'dragCancel');
       dispatch({ type: 'dragCancel', pagingEnabled, size });
       eventRef.current.onCancel(evt);
     },
-    [pagingEnabled, size, dispatch]
+    [pagingEnabled, size]
   );
 
   const decelerate = useCallback(() => {
-    // console.log('dispatch', 'decelerate');
     dispatch({ type: 'decelerate', now: new Date().getTime() });
-  }, [dispatch]);
+  }, []);
 
   useEffect(() => {
     const { state: prevState, contentSize: prevContentSize } = eventRef.current;
@@ -439,12 +434,10 @@ export function usePad({
     eventRef.current.state = state;
     eventRef.current.contentSize = contentSize;
 
-    // console.log('effect1', state === prevState);
     if (contentSize !== prevContentSize) {
       onContentResize(contentSize);
     }
     if (state.contentOffset !== prevState.contentOffset) {
-      // console.log('onScroll', state.contentOffset);
       onScroll(output);
     }
     if (state.drag !== prevState.drag) {
@@ -473,10 +466,9 @@ export function usePad({
 
   useMemo(() => {
     if (!state.drag) {
-      // console.log('dispatch', 'render');
       dispatch({ type: 'render', size, contentSize, pagingEnabled });
     }
-  }, [size, contentSize, pagingEnabled, state, dispatch]);
+  }, [size, contentSize, pagingEnabled, state]);
 
   const elemStyle = {
     overflow: 'hidden',
@@ -493,21 +485,22 @@ export function usePad({
     willChange: 'transform',
   });
 
-  pannableProps.shouldStart = shouldPannableStart;
-  pannableProps.onStart = onPannableStart;
-  pannableProps.onMove = onPannableMove;
-  pannableProps.onEnd = onPannableEnd;
-  pannableProps.onCancel = onPannableCancel;
-
   const visibleRect = {
     x: -state.contentOffset.x,
     y: -state.contentOffset.y,
     width: size.width,
     height: size.height,
   };
+
+  pannableProps.shouldStart = shouldPannableStart;
+  pannableProps.onStart = onPannableStart;
+  pannableProps.onMove = onPannableMove;
+  pannableProps.onEnd = onPannableEnd;
+  pannableProps.onCancel = onPannableCancel;
+
   const [props] = usePannable(pannableProps);
 
-  props.style = { ...elemStyle, ...props.style };
+  props.style = elemStyle;
   props.render = children => {
     if (isValidElement(children) && children.type.PadContent) {
       children = cloneElement(children, {

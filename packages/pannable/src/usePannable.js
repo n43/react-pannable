@@ -276,7 +276,7 @@ export function usePannable({
     };
 
     eventRef.current.state = state;
-    // console.log('pannable', state === prevState);
+
     if (state.translation !== prevState.translation) {
       if (state.translation) {
         if (prevState.translation) {
