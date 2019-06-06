@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { usePannable, defaultPannableProps } from './usePannable';
 
 function Pannable({
@@ -21,6 +21,10 @@ function Pannable({
 
   props.ref = pannableProps.ref;
   props.style = { ...pannableProps.style, ...props.style };
+
+  useEffect(() => {
+    console.log('pannable');
+  });
 
   return <div {...props} />;
 }
