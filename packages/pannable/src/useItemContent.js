@@ -18,37 +18,36 @@ export const defaultItemContentProps = {
 export function useItemContent({
   width = defaultItemContentProps.width,
   height = defaultItemContentProps.height,
-  ...props
 }) {
   const context = useContext(PadContext);
   const [size, setSize] = useState(null);
   const resizeRef = useRef(null);
   const eventRef = useRef({ size });
 
-  const prevSize = eventRef.current.size;
-
-  eventRef.current.size = size;
-
-  const onResize = useCallback(() => {}, []);
+  const resizeContent = useCallback(() => {}, []);
+  const getResizeNode = useCallback(() => resizeRef.current, []);
   const calculateSize = useCallback(() => {
+    console.log('calculateSize');
     const nextSize = getElementSize(resizeRef.current);
 
-    if (!isEqualToSize(nextSize, eventRef.current.size)) {
-      setSize(nextSize);
-    }
+    setSize(prevSize =>
+      isEqualToSize(nextSize, prevSize) ? prevSize : nextSize
+    );
   }, []);
 
   useEffect(() => {
+    const { size: prevSize } = eventRef.current;
+
+    eventRef.current.size = size;
+
     if (size !== prevSize) {
-      context.onContentResize(size);
+      if (size) {
+        context.onContentResize(size);
+      } else {
+        calculateSize();
+      }
     }
   });
-
-  useEffect(() => {
-    if (!size) {
-      calculateSize();
-    }
-  }, [size, calculateSize]);
 
   useMemo(() => {
     if (typeof width === 'number' && typeof height === 'number') {
@@ -70,16 +69,16 @@ export function useItemContent({
     elemStyle.height = size.height;
   }
 
-  props.style = { ...elemStyle, ...props.style };
+  const props = {};
 
-  return [
-    <div {...props}>
+  props.style = elemStyle;
+  props.render = children => (
+    <PadContext.Provider value={{ ...context, onContentResize: resizeContent }}>
       <div ref={resizeRef} style={resizeStyle}>
-        <PadContext.Provider value={{ ...context, onContentResize: onResize }}>
-          {props.children}
-        </PadContext.Provider>
+        {children}
       </div>
-    </div>,
-    { size, resizeRef, calculateSize },
-  ];
+    </PadContext.Provider>
+  );
+
+  return [props, { size, getResizeNode, calculateSize }];
 }

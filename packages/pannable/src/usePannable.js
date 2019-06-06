@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useMemo, useReducer } from 'react';
+import { useEffect, useRef, useMemo, useReducer } from 'react';
 
 const MIN_DISTANCE = 0;
 
@@ -28,25 +28,22 @@ const initialState = {
 
 function reducer(state, action) {
   switch (action.type) {
-    case 'render':
-      return renderReducer(state, action);
+    case 'disable':
+    case 'end':
+      return disableReducer(state, action);
     case 'track':
       return trackReducer(state, action);
     case 'move':
       return moveReducer(state, action);
-    case 'end':
-      return endReducer(state, action);
     default:
       return state;
   }
 }
 
-function renderReducer(state, action) {
-  if (!action.enabled && state.target) {
-    return initialState;
-  }
+function disableReducer(state, action) {
+  const { target } = state;
 
-  return state;
+  return target ? initialState : state;
 }
 
 function trackReducer(state, action) {
@@ -129,14 +126,6 @@ function moveReducer(state, action) {
   };
 }
 
-function endReducer(state, action) {
-  if (!state.target) {
-    return state;
-  }
-
-  return initialState;
-}
-
 export const defaultPannableProps = {
   enabled: true,
   shouldStart: () => true,
@@ -153,15 +142,11 @@ export function usePannable({
   onMove = defaultPannableProps.onMove,
   onEnd = defaultPannableProps.onEnd,
   onCancel = defaultPannableProps.onCancel,
-  ...props
 }) {
   const [state, dispatch] = useReducer(reducer, initialState);
   const elemRef = useRef(null);
   const eventRef = useRef({ state, touchSupported: false });
 
-  const prevState = eventRef.current.state;
-
-  eventRef.current.state = state;
   eventRef.current.shouldStart = shouldStart;
 
   useEffect(() => {
@@ -282,6 +267,7 @@ export function usePannable({
   }, [state.target, dispatch]);
 
   useEffect(() => {
+    const { state: prevState } = eventRef.current;
     const output = {
       target: state.target,
       translation: state.translation,
@@ -289,6 +275,8 @@ export function usePannable({
       interval: state.interval,
     };
 
+    eventRef.current.state = state;
+    // console.log('pannable', state === prevState);
     if (state.translation !== prevState.translation) {
       if (state.translation) {
         if (prevState.translation) {
@@ -306,7 +294,11 @@ export function usePannable({
     }
   });
 
-  useMemo(() => dispatch({ type: 'render', enabled }), [enabled, dispatch]);
+  useMemo(() => {
+    if (!enabled) {
+      dispatch({ type: 'disable' });
+    }
+  }, [enabled, dispatch]);
 
   const elemStyle = {};
 
@@ -315,12 +307,10 @@ export function usePannable({
     elemStyle.pointerEvents = 'none';
   }
 
-  props.style = {
-    ...elemStyle,
-    ...props.style,
-  };
+  const props = {};
 
+  props.style = elemStyle;
   props.ref = elemRef;
 
-  return [<div {...props} />, { state }];
+  return [props, { state }];
 }

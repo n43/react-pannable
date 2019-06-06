@@ -4,22 +4,24 @@ import resizeDetector from './utils/resizeDetector';
 
 export const defaultGeneralContentProps = defaultItemContentProps;
 
-export function useGeneralContent(props) {
-  const {
-    width = defaultGeneralContentProps.width,
-    height = defaultGeneralContentProps.height,
-  } = props;
-  const [element, itemRef] = useItemContent(props);
+export function useGeneralContent({
+  width = defaultGeneralContentProps.width,
+  height = defaultGeneralContentProps.height,
+}) {
+  const [props, { size, getResizeNode, calculateSize }] = useItemContent({
+    width,
+    height,
+  });
 
   useEffect(() => {
-    if (typeof width !== 'number' || typeof height !== 'number') {
-      const resizeNode = itemRef.resizeRef.current;
+    const resizeNode = getResizeNode();
 
-      resizeDetector.listenTo(resizeNode, () => itemRef.calculateSize());
+    if (typeof width !== 'number' || typeof height !== 'number') {
+      resizeDetector.listenTo(resizeNode, () => calculateSize());
 
       return () => resizeDetector.uninstall(resizeNode);
     }
-  }, [width, height, itemRef]);
+  }, [width, height, getResizeNode, calculateSize]);
 
-  return [element, itemRef];
+  return [props, { size, getResizeNode, calculateSize }];
 }
