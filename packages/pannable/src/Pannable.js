@@ -22,10 +22,6 @@ function Pannable({
   props.ref = pannableProps.ref;
   props.style = { ...pannableProps.style, ...props.style };
 
-  useEffect(() => {
-    console.log('pannable');
-  });
-
   return <div {...props} />;
 }
 

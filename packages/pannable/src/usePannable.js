@@ -281,7 +281,6 @@ export function usePannable({
       if (state.translation) {
         if (prevState.translation) {
           onMove(output);
-          console.log('onMove');
         } else {
           onStart(output);
         }

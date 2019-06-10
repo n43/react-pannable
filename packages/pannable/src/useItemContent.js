@@ -27,7 +27,6 @@ export function useItemContent({
   const resizeContent = useCallback(() => {}, []);
   const getResizeNode = useCallback(() => resizeRef.current, []);
   const calculateSize = useCallback(() => {
-    console.log('calculateSize');
     const nextSize = getElementSize(resizeRef.current);
 
     setSize(prevSize =>
