@@ -41,8 +41,8 @@ const initialState = {
 
 function reducer(state, action) {
   switch (action.type) {
-    case 'render':
-      return renderReducer(state, action);
+    case 'validate':
+      return validateReducer(state, action);
     case 'dragStart':
       return dragStartReducer(state, action);
     case 'dragMove':
@@ -58,7 +58,7 @@ function reducer(state, action) {
   }
 }
 
-function renderReducer(state, action) {
+function validateReducer(state, action) {
   const { contentOffset, contentVelocity, drag, deceleration } = state;
   const { size, contentSize, pagingEnabled } = action;
 
@@ -338,11 +338,6 @@ function Pad({
   onContentResize = defaultPadProps.onContentResize,
   ...pannableProps
 }) {
-  const size = useMemo(() => ({ width, height }), [width, height]);
-  const [contentSize, setContentSize] = useState({ width: 0, height: 0 });
-  const [state, dispatch] = useReducer(reducer, initialState);
-  const eventRef = useRef({ state, contentSize });
-
   const {
     shouldStart = defaultPannableProps.shouldStart,
     onStart = defaultPannableProps.onStart,
@@ -350,18 +345,22 @@ function Pad({
     onEnd = defaultPannableProps.onEnd,
     onCancel = defaultPannableProps.onCancel,
   } = pannableProps;
+  const size = useMemo(() => ({ width, height }), [width, height]);
+  const [contentSize, setContentSize] = useState({ width: 0, height: 0 });
+  const [state, dispatch] = useReducer(reducer, initialState);
+  const eventRef = useRef({ state, contentSize });
 
-  eventRef.current.shouldStart = shouldStart;
-  eventRef.current.onStart = onStart;
-  eventRef.current.onMove = onMove;
-  eventRef.current.onEnd = onEnd;
-  eventRef.current.onCancel = onCancel;
   eventRef.current.onScroll = onScroll;
   eventRef.current.onDragStart = onDragStart;
   eventRef.current.onDragEnd = onDragEnd;
   eventRef.current.onDecelerationStart = onDecelerationStart;
   eventRef.current.onDecelerationEnd = onDecelerationEnd;
   eventRef.current.onContentResize = onContentResize;
+  eventRef.current.shouldStart = shouldStart;
+  eventRef.current.onStart = onStart;
+  eventRef.current.onMove = onMove;
+  eventRef.current.onEnd = onEnd;
+  eventRef.current.onCancel = onCancel;
 
   const resizeContent = useCallback(size => setContentSize(size), []);
   const shouldPannableStart = useCallback(
@@ -424,10 +423,6 @@ function Pad({
     [pagingEnabled, size]
   );
 
-  const decelerate = useCallback(() => {
-    dispatch({ type: 'decelerate', now: new Date().getTime() });
-  }, []);
-
   useEffect(() => {
     if (!state.deceleration) {
       return;
@@ -435,7 +430,7 @@ function Pad({
 
     let timer = requestAnimationFrame(() => {
       timer = undefined;
-      decelerate();
+      dispatch({ type: 'decelerate', now: new Date().getTime() });
     });
 
     return () => {
@@ -443,7 +438,7 @@ function Pad({
         cancelAnimationFrame(timer);
       }
     };
-  }, [state, decelerate]);
+  }, [state]);
 
   useEffect(() => {
     const {
@@ -491,9 +486,11 @@ function Pad({
   });
 
   useMemo(() => {
-    if (!state.drag) {
-      dispatch({ type: 'render', size, contentSize, pagingEnabled });
+    if (state.drag) {
+      return;
     }
+
+    dispatch({ type: 'validate', size, contentSize, pagingEnabled });
   }, [size, contentSize, pagingEnabled, state]);
 
   const elemStyle = {
