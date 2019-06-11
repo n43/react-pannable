@@ -356,6 +356,12 @@ function Pad({
   eventRef.current.onMove = onMove;
   eventRef.current.onEnd = onEnd;
   eventRef.current.onCancel = onCancel;
+  eventRef.current.onScroll = onScroll;
+  eventRef.current.onDragStart = onDragStart;
+  eventRef.current.onDragEnd = onDragEnd;
+  eventRef.current.onDecelerationStart = onDecelerationStart;
+  eventRef.current.onDecelerationEnd = onDecelerationEnd;
+  eventRef.current.onContentResize = onContentResize;
 
   const resizeContent = useCallback(size => setContentSize(size), []);
   const shouldPannableStart = useCallback(
@@ -423,12 +429,66 @@ function Pad({
   }, []);
 
   useEffect(() => {
-    if (state.deceleration) {
-      const timer = requestAnimationFrame(() => decelerate());
-
-      return () => cancelAnimationFrame(timer);
+    if (!state.deceleration) {
+      return;
     }
+
+    let timer = requestAnimationFrame(() => {
+      timer = undefined;
+      decelerate();
+    });
+
+    return () => {
+      if (timer) {
+        cancelAnimationFrame(timer);
+      }
+    };
   }, [state, decelerate]);
+
+  useEffect(() => {
+    const {
+      state: prevState,
+      contentSize: prevContentSize,
+      onScroll,
+      onDragStart,
+      onDragEnd,
+      onDecelerationStart,
+      onDecelerationEnd,
+      onContentResize,
+    } = eventRef.current;
+    const output = {
+      size,
+      contentSize,
+      contentOffset: state.contentOffset,
+      contentVelocity: state.contentVelocity,
+      dragging: !!state.drag,
+      decelerating: !!state.deceleration,
+    };
+
+    eventRef.current.state = state;
+    eventRef.current.contentSize = contentSize;
+
+    if (contentSize !== prevContentSize) {
+      onContentResize(contentSize);
+    }
+    if (state.contentOffset !== prevState.contentOffset) {
+      onScroll(output);
+    }
+    if (state.drag !== prevState.drag) {
+      if (!prevState.drag) {
+        onDragStart(output);
+      } else if (!state.drag) {
+        onDragEnd(output);
+      }
+    }
+    if (state.deceleration !== prevState.deceleration) {
+      if (!prevState.deceleration) {
+        onDecelerationStart(output);
+      } else if (!state.deceleration) {
+        onDecelerationEnd(output);
+      }
+    }
+  });
 
   useMemo(() => {
     if (!state.drag) {
@@ -464,42 +524,6 @@ function Pad({
   pannableProps.onEnd = onPannableEnd;
   pannableProps.onCancel = onPannableCancel;
 
-  useEffect(() => {
-    const { state: prevState, contentSize: prevContentSize } = eventRef.current;
-    const output = {
-      size,
-      contentSize,
-      contentOffset: state.contentOffset,
-      contentVelocity: state.contentVelocity,
-      dragging: !!state.drag,
-      decelerating: !!state.deceleration,
-    };
-
-    eventRef.current.state = state;
-    eventRef.current.contentSize = contentSize;
-
-    if (contentSize !== prevContentSize) {
-      onContentResize(contentSize);
-    }
-    if (state.contentOffset !== prevState.contentOffset) {
-      onScroll(output);
-    }
-    if (state.drag !== prevState.drag) {
-      if (!prevState.drag) {
-        onDragStart(output);
-      } else if (!state.drag) {
-        onDragEnd(output);
-      }
-    }
-    if (state.deceleration !== prevState.deceleration) {
-      if (!prevState.deceleration) {
-        onDecelerationStart(output);
-      } else if (!state.deceleration) {
-        onDecelerationEnd(output);
-      }
-    }
-  });
-
   pannableProps.style = { ...elemStyle, ...pannableProps.style };
 
   let element = pannableProps.children;
@@ -514,13 +538,11 @@ function Pad({
   }
 
   return (
-    <Pannable {...pannableProps}>
-      <PadContext.Provider
-        value={{ visibleRect, onContentResize: resizeContent }}
-      >
-        {element}
-      </PadContext.Provider>
-    </Pannable>
+    <PadContext.Provider
+      value={{ visibleRect, onContentResize: resizeContent }}
+    >
+      <Pannable {...pannableProps}>{element}</Pannable>
+    </PadContext.Provider>
   );
 }
 
