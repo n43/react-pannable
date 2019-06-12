@@ -85,7 +85,7 @@ export default class ListContent extends React.Component {
     const { size, itemHashList } = this.state;
 
     if (size) {
-      this.context.onContentResize(size);
+      this.context.resizeContent(size);
     }
     if (this._itemHashList.join() !== itemHashList.join()) {
       this.setState({ itemHashList: this._itemHashList });
@@ -98,7 +98,7 @@ export default class ListContent extends React.Component {
 
     if (size !== prevState.size) {
       if (size) {
-        this.context.onContentResize(size);
+        this.context.resizeContent(size);
       }
     }
     if (this._itemHashList.join() !== itemHashList.join()) {
@@ -227,7 +227,7 @@ export default class ListContent extends React.Component {
         value={{
           ...this.context,
           visibleRect,
-          onContentResize: this._onItemResize(hash),
+          resizeContent: this._onItemResize(hash),
         }}
       >
         {element}

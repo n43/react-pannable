@@ -1,14 +1,13 @@
 import React, {
   forwardRef,
   useState,
-  useEffect,
   useCallback,
   useRef,
   useContext,
-  useMemo,
   useImperativeHandle,
 } from 'react';
 import PadContext from './PadContext';
+import useIsomorphicLayoutEffect from './utils/useIsomorphicLayoutEffect';
 import { getElementSize } from './utils/sizeGetter';
 import { isEqualToSize } from './utils/geometry';
 
@@ -30,33 +29,44 @@ const ItemContent = forwardRef(function(
   const resizeRef = useRef(null);
   const eventRef = useRef({ size });
 
+  const { width: prevWidth, height: prevHeight } = eventRef.current;
+
+  eventRef.current.width = width;
+  eventRef.current.height = height;
+
   const resizeContent = useCallback(() => {}, []);
   const getResizeNode = useCallback(() => resizeRef.current, []);
   const calculateSize = useCallback(() => {
     const nextSize = getElementSize(resizeRef.current);
 
+    if (isEqualToSize(nextSize, eventRef.current.size)) {
+      return;
+    }
+
     setSize(nextSize);
   }, []);
 
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     const { size: prevSize } = eventRef.current;
 
     eventRef.current.size = size;
 
-    if (!isEqualToSize(size, prevSize)) {
+    if (size !== prevSize) {
       if (size) {
-        context.onContentResize(size);
+        context.resizeContent(size);
       } else {
         calculateSize();
       }
     }
   });
 
-  useMemo(() => {
+  if (width !== prevWidth || height !== prevHeight) {
     if (typeof width === 'number' && typeof height === 'number') {
       setSize({ width, height });
+    } else {
+      setSize(null);
     }
-  }, [width, height]);
+  }
 
   const elemStyle = { position: 'relative' };
   const resizeStyle = { position: 'absolute' };
@@ -77,7 +87,7 @@ const ItemContent = forwardRef(function(
   useImperativeHandle(ref, () => ({ getResizeNode, calculateSize }));
 
   return (
-    <PadContext.Provider value={{ ...context, onContentResize: resizeContent }}>
+    <PadContext.Provider value={{ ...context, resizeContent }}>
       <div {...props}>
         <div ref={resizeRef} style={resizeStyle}>
           {props.children}

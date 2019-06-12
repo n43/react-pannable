@@ -1,7 +1,6 @@
-import React from 'react';
-import { useEffect, useRef, useMemo, useReducer } from 'react';
-
-const MIN_DISTANCE = 0;
+import React, { useRef, useMemo } from 'react';
+import useIsomorphicLayoutEffect from './utils/useIsomorphicLayoutEffect';
+import usePannableReducer from './usePannableReducer';
 
 /* eslint no-restricted-globals:"off" */
 
@@ -15,116 +14,6 @@ if (typeof self !== 'undefined') {
   root = global;
 } else {
   root = {};
-}
-
-const initialState = {
-  target: null,
-  startPoint: null,
-  movePoint: null,
-  moveTime: null,
-  translation: null,
-  velocity: null,
-  interval: null,
-};
-
-function reducer(state, action) {
-  switch (action.type) {
-    case 'disable':
-    case 'end':
-      return disableReducer(state, action);
-    case 'track':
-      return trackReducer(state, action);
-    case 'move':
-      return moveReducer(state, action);
-    default:
-      return state;
-  }
-}
-
-function disableReducer(state, action) {
-  const { target } = state;
-
-  return target ? initialState : state;
-}
-
-function trackReducer(state, action) {
-  return {
-    target: action.target,
-    startPoint: action.point,
-    movePoint: action.point,
-    moveTime: action.now,
-    translation: null,
-    velocity: null,
-    interval: null,
-  };
-}
-
-function moveReducer(state, action) {
-  const { target, startPoint, movePoint, moveTime, translation } = state;
-  const { point: nextMovePoint, now: nextMoveTime, shouldStart } = action;
-
-  if (!target) {
-    return state;
-  }
-
-  const nextInterval = nextMoveTime - moveTime;
-  const nextTranslation = {
-    x: nextMovePoint.x - startPoint.x,
-    y: nextMovePoint.y - startPoint.y,
-  };
-  const nextVelocity = {
-    x: (nextMovePoint.x - movePoint.x) / nextInterval,
-    y: (nextMovePoint.y - movePoint.y) / nextInterval,
-  };
-
-  if (translation) {
-    return {
-      target,
-      startPoint,
-      movePoint: nextMovePoint,
-      moveTime: nextMoveTime,
-      translation: nextTranslation,
-      velocity: nextVelocity,
-      interval: nextInterval,
-    };
-  }
-
-  const dist = Math.sqrt(
-    Math.pow(nextTranslation.x, 2) + Math.pow(nextTranslation.y, 2)
-  );
-
-  if (dist <= MIN_DISTANCE) {
-    return {
-      target,
-      startPoint,
-      movePoint: nextMovePoint,
-      moveTime: nextMoveTime,
-      translation: null,
-      velocity: null,
-      interval: null,
-    };
-  }
-
-  if (
-    !shouldStart({
-      target,
-      translation: nextTranslation,
-      velocity: nextVelocity,
-      interval: nextInterval,
-    })
-  ) {
-    return initialState;
-  }
-
-  return {
-    target,
-    startPoint: nextMovePoint,
-    movePoint: nextMovePoint,
-    moveTime: nextMoveTime,
-    translation: { x: 0, y: 0 },
-    velocity: nextVelocity,
-    interval: nextInterval,
-  };
 }
 
 const defaultPannableProps = {
@@ -145,7 +34,7 @@ function Pannable({
   onCancel = defaultPannableProps.onCancel,
   ...props
 }) {
-  const [state, dispatch] = useReducer(reducer, initialState);
+  const [state, dispatch] = usePannableReducer();
   const elemRef = useRef(null);
   const eventRef = useRef({ state, touchSupported: false });
 
@@ -155,7 +44,7 @@ function Pannable({
   eventRef.current.onEnd = onEnd;
   eventRef.current.onCancel = onCancel;
 
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     function track(target, point) {
       dispatch({ type: 'track', target, point, now: new Date().getTime() });
     }
@@ -201,9 +90,9 @@ function Pannable({
         elemNode.removeEventListener('mousedown', onMouseDown, false);
       };
     }
-  }, [enabled]);
+  }, [enabled, dispatch]);
 
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     function move(point) {
       dispatch({
         type: 'move',
@@ -272,9 +161,9 @@ function Pannable({
         root.removeEventListener('mouseup', onRootMouseUp, false);
       };
     }
-  }, [state.target]);
+  }, [state.target, dispatch]);
 
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     const {
       state: prevState,
       onStart,
@@ -309,10 +198,12 @@ function Pannable({
   });
 
   useMemo(() => {
-    if (!enabled) {
-      dispatch({ type: 'disable' });
+    if (enabled) {
+      return;
     }
-  }, [enabled]);
+
+    dispatch({ type: 'disable' });
+  }, [enabled, dispatch]);
 
   const elemStyle = {};
 

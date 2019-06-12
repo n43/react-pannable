@@ -1,17 +1,21 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useRef } from 'react';
 import ItemContent from './ItemContent';
 import resizeDetector from './utils/resizeDetector';
+import useIsomorphicLayoutEffect from './utils/useIsomorphicLayoutEffect';
 
-const defaultGeneralContentProps = ItemContent.defaultProps;
+const defaultGeneralContentProps = {
+  width: null,
+  height: null,
+};
 
-function GeneralContent({
-  width = defaultGeneralContentProps.width,
-  height = defaultGeneralContentProps.height,
-  ...props
-}) {
+function GeneralContent(props) {
+  const {
+    width = defaultGeneralContentProps.width,
+    height = defaultGeneralContentProps.height,
+  } = props;
   const elemRef = useRef(null);
 
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     if (typeof width === 'number' && typeof height === 'number') {
       return;
     }

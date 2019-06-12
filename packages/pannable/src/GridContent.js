@@ -73,7 +73,7 @@ export default class GridContent extends React.Component {
     const { size } = this.state;
 
     if (size) {
-      this.context.onContentResize(size);
+      this.context.resizeContent(size);
     }
   }
 
@@ -82,7 +82,7 @@ export default class GridContent extends React.Component {
 
     if (size !== prevState.size) {
       if (size) {
-        this.context.onContentResize(size);
+        this.context.resizeContent(size);
       }
     }
   }
@@ -164,7 +164,7 @@ export default class GridContent extends React.Component {
         value={{
           ...this.context,
           visibleRect,
-          onContentResize: this._onItemResize,
+          resizeContent: this._onItemResize,
         }}
       >
         {element}

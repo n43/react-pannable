@@ -2,311 +2,23 @@ import React, {
   isValidElement,
   cloneElement,
   useState,
-  useEffect,
   useCallback,
   useRef,
   useMemo,
-  useReducer,
 } from 'react';
+import usePadReducer from './usePadReducer';
 import Pannable from './Pannable';
 import PadContext from './PadContext';
 import GeneralContent from './GeneralContent';
+import useIsomorphicLayoutEffect from './utils/useIsomorphicLayoutEffect';
 import StyleSheet from './utils/StyleSheet';
 import {
   requestAnimationFrame,
   cancelAnimationFrame,
 } from './utils/animationFrame';
-import {
-  getAdjustedContentVelocity,
-  getAdjustedContentOffset,
-  getAdjustedBounceOffset,
-  getDecelerationEndOffset,
-  shouldDragStart,
-  createDeceleration,
-  calculateDeceleration,
-  calculateRectOffset,
-} from './utils/motion';
+import { shouldDragStart, calculateRectOffset } from './utils/motion';
 
 const defaultPannableProps = Pannable.defaultProps;
-
-const DECELERATION_RATE_STRONG = 0.025;
-const DECELERATION_RATE_WEAK = 0.0025;
-
-const initialState = {
-  contentOffset: { x: 0, y: 0 },
-  contentVelocity: { x: 0, y: 0 },
-  drag: null,
-  deceleration: null,
-};
-
-function reducer(state, action) {
-  switch (action.type) {
-    case 'validate':
-      return validateReducer(state, action);
-    case 'dragStart':
-      return dragStartReducer(state, action);
-    case 'dragMove':
-      return dragMoveReducer(state, action);
-    case 'dragEnd':
-      return dragEndReducer(state, action);
-    case 'dragCancel':
-      return dragCancelReducer(state, action);
-    case 'decelerate':
-      return decelerateReducer(state, action);
-    default:
-      return state;
-  }
-}
-
-function validateReducer(state, action) {
-  const { contentOffset, contentVelocity, drag, deceleration } = state;
-  const { size, contentSize, pagingEnabled } = action;
-
-  const decelerationRate = DECELERATION_RATE_STRONG;
-
-  if (deceleration) {
-    let decelerationEndOffset = deceleration.endOffset;
-
-    if (
-      decelerationEndOffset !==
-        getAdjustedContentOffset(
-          decelerationEndOffset,
-          size,
-          contentSize,
-          pagingEnabled,
-          true
-        ) &&
-      contentOffset !==
-        getAdjustedContentOffset(
-          contentOffset,
-          size,
-          contentSize,
-          pagingEnabled,
-          true
-        )
-    ) {
-      let nextContentVelocity = contentVelocity;
-
-      if (deceleration.rate !== decelerationRate) {
-        nextContentVelocity = getAdjustedContentVelocity(
-          nextContentVelocity,
-          size,
-          decelerationRate
-        );
-        decelerationEndOffset = getDecelerationEndOffset(
-          contentOffset,
-          nextContentVelocity,
-          size,
-          pagingEnabled,
-          decelerationRate
-        );
-      }
-
-      decelerationEndOffset = getAdjustedContentOffset(
-        decelerationEndOffset,
-        size,
-        contentSize,
-        pagingEnabled,
-        true
-      );
-
-      return {
-        contentOffset: { ...contentOffset },
-        contentVelocity: nextContentVelocity,
-        drag: null,
-        deceleration: createDeceleration(
-          contentOffset,
-          nextContentVelocity,
-          decelerationEndOffset,
-          decelerationRate
-        ),
-      };
-    }
-  } else if (!drag) {
-    const adjustedContentOffset = getAdjustedContentOffset(
-      contentOffset,
-      size,
-      contentSize,
-      pagingEnabled
-    );
-
-    if (contentOffset !== adjustedContentOffset) {
-      const decelerationEndOffset = getDecelerationEndOffset(
-        adjustedContentOffset,
-        { x: 0, y: 0 },
-        size,
-        pagingEnabled,
-        decelerationRate
-      );
-
-      return {
-        contentOffset: { ...contentOffset },
-        contentVelocity,
-        drag: null,
-        deceleration: createDeceleration(
-          contentOffset,
-          contentVelocity,
-          decelerationEndOffset,
-          decelerationRate
-        ),
-      };
-    }
-  }
-
-  return state;
-}
-
-function dragStartReducer(state, action) {
-  const { contentOffset } = state;
-  const { directionalLockEnabled, velocity } = action;
-
-  const dragDirection = { x: 1, y: 1 };
-
-  if (directionalLockEnabled) {
-    if (Math.abs(velocity.x) > Math.abs(velocity.y)) {
-      dragDirection.y = 0;
-    } else {
-      dragDirection.x = 0;
-    }
-  }
-
-  const nextContentVelocity = {
-    x: dragDirection.x * velocity.x,
-    y: dragDirection.y * velocity.y,
-  };
-
-  return {
-    contentOffset: { ...contentOffset },
-    contentVelocity: nextContentVelocity,
-    drag: { direction: dragDirection, startOffset: contentOffset },
-    deceleration: null,
-  };
-}
-
-function dragMoveReducer(state, action) {
-  const { contentOffset, drag } = state;
-  const {
-    alwaysBounceX,
-    alwaysBounceY,
-    size,
-    contentSize,
-    translation,
-    interval,
-  } = action;
-
-  const nextContentOffset = getAdjustedBounceOffset(
-    {
-      x: drag.startOffset.x + drag.direction.x * translation.x,
-      y: drag.startOffset.y + drag.direction.y * translation.y,
-    },
-    { x: alwaysBounceX, y: alwaysBounceY },
-    size,
-    contentSize
-  );
-  const nextContentVelocity = {
-    x: (nextContentOffset.x - contentOffset.x) / interval,
-    y: (nextContentOffset.y - contentOffset.y) / interval,
-  };
-
-  return {
-    contentOffset: nextContentOffset,
-    contentVelocity: nextContentVelocity,
-    drag,
-    deceleration: null,
-  };
-}
-
-function dragEndReducer(state, action) {
-  const { contentOffset, contentVelocity } = state;
-  const { pagingEnabled, size } = action;
-
-  let decelerationRate = DECELERATION_RATE_WEAK;
-  let nextContentVelocity = contentVelocity;
-
-  if (pagingEnabled) {
-    decelerationRate = DECELERATION_RATE_STRONG;
-    nextContentVelocity = getAdjustedContentVelocity(
-      nextContentVelocity,
-      size,
-      decelerationRate
-    );
-  }
-
-  const decelerationEndOffset = getDecelerationEndOffset(
-    contentOffset,
-    nextContentVelocity,
-    size,
-    pagingEnabled,
-    decelerationRate
-  );
-
-  return {
-    contentOffset: { ...contentOffset },
-    contentVelocity: nextContentVelocity,
-    drag: null,
-    deceleration: createDeceleration(
-      contentOffset,
-      nextContentVelocity,
-      decelerationEndOffset,
-      decelerationRate
-    ),
-  };
-}
-
-function dragCancelReducer(state, action) {
-  const { contentOffset, contentVelocity, drag } = state;
-  const { pagingEnabled, size } = action;
-
-  const decelerationRate = DECELERATION_RATE_STRONG;
-  const decelerationEndOffset = getDecelerationEndOffset(
-    drag.startOffset,
-    { x: 0, y: 0 },
-    size,
-    pagingEnabled,
-    decelerationRate
-  );
-
-  return {
-    contentOffset: { ...contentOffset },
-    contentVelocity,
-    drag: null,
-    deceleration: createDeceleration(
-      contentOffset,
-      contentVelocity,
-      decelerationEndOffset,
-      decelerationRate
-    ),
-  };
-}
-
-function decelerateReducer(state, action) {
-  const { deceleration } = state;
-  const { now: moveTime } = action;
-
-  if (!deceleration) {
-    return state;
-  }
-  if (deceleration.startTime + deceleration.duration <= moveTime) {
-    return {
-      contentOffset: deceleration.endOffset,
-      contentVelocity: { x: 0, y: 0 },
-      drag: null,
-      deceleration: null,
-    };
-  }
-
-  const { xOffset, yOffset, xVelocity, yVelocity } = calculateDeceleration(
-    deceleration,
-    moveTime
-  );
-
-  return {
-    contentOffset: { x: xOffset, y: yOffset },
-    contentVelocity: { x: xVelocity, y: yVelocity },
-    drag: null,
-    deceleration,
-  };
-}
 
 const defaultPadProps = {
   width: 0,
@@ -315,6 +27,8 @@ const defaultPadProps = {
   directionalLockEnabled: false,
   alwaysBounceX: true,
   alwaysBounceY: true,
+  scrollTo: null,
+  scrollToRect: null,
   onScroll: () => {},
   onDragStart: () => {},
   onDragEnd: () => {},
@@ -330,6 +44,8 @@ function Pad({
   directionalLockEnabled = defaultPadProps.directionalLockEnabled,
   alwaysBounceX = defaultPadProps.alwaysBounceX,
   alwaysBounceY = defaultPadProps.alwaysBounceY,
+  scrollTo = defaultPadProps.scrollTo,
+  scrollToRect = defaultPadProps.scrollToRect,
   onScroll = defaultPadProps.onScroll,
   onDragStart = defaultPadProps.onDragStart,
   onDragEnd = defaultPadProps.onDragEnd,
@@ -347,9 +63,20 @@ function Pad({
   } = pannableProps;
   const size = useMemo(() => ({ width, height }), [width, height]);
   const [contentSize, setContentSize] = useState({ width: 0, height: 0 });
-  const [state, dispatch] = useReducer(reducer, initialState);
-  const eventRef = useRef({ state, contentSize });
+  const [state, dispatch] = usePadReducer();
+  const eventRef = useRef({ contentSize, state });
 
+  const {
+    pagingEnabled: prevPagingEnabled,
+    scrollTo: prevScrollTo,
+    scrollToRect: prevScrollToRect,
+    size: prevSize,
+  } = eventRef.current;
+
+  eventRef.current.pagingEnabled = pagingEnabled;
+  eventRef.current.scrollTo = scrollTo;
+  eventRef.current.scrollToRect = scrollToRect;
+  eventRef.current.size = size;
   eventRef.current.onScroll = onScroll;
   eventRef.current.onDragStart = onDragStart;
   eventRef.current.onDragEnd = onDragEnd;
@@ -363,6 +90,7 @@ function Pad({
   eventRef.current.onCancel = onCancel;
 
   const resizeContent = useCallback(size => setContentSize(size), []);
+
   const shouldPannableStart = useCallback(
     evt => {
       const { velocity } = evt;
@@ -388,7 +116,7 @@ function Pad({
       });
       eventRef.current.onStart(evt);
     },
-    [directionalLockEnabled]
+    [directionalLockEnabled, dispatch]
   );
 
   const onPannableMove = useCallback(
@@ -404,7 +132,7 @@ function Pad({
       });
       eventRef.current.onMove(evt);
     },
-    [alwaysBounceX, alwaysBounceY, size, contentSize]
+    [alwaysBounceX, alwaysBounceY, size, contentSize, dispatch]
   );
 
   const onPannableEnd = useCallback(
@@ -412,7 +140,7 @@ function Pad({
       dispatch({ type: 'dragEnd', pagingEnabled, size });
       eventRef.current.onEnd(evt);
     },
-    [pagingEnabled, size]
+    [pagingEnabled, size, dispatch]
   );
 
   const onPannableCancel = useCallback(
@@ -420,27 +148,10 @@ function Pad({
       dispatch({ type: 'dragCancel', pagingEnabled, size });
       eventRef.current.onCancel(evt);
     },
-    [pagingEnabled, size]
+    [pagingEnabled, size, dispatch]
   );
 
-  useEffect(() => {
-    if (!state.deceleration) {
-      return;
-    }
-
-    let timer = requestAnimationFrame(() => {
-      timer = undefined;
-      dispatch({ type: 'decelerate', now: new Date().getTime() });
-    });
-
-    return () => {
-      if (timer) {
-        cancelAnimationFrame(timer);
-      }
-    };
-  }, [state]);
-
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     const {
       state: prevState,
       contentSize: prevContentSize,
@@ -460,14 +171,16 @@ function Pad({
       decelerating: !!state.deceleration,
     };
 
-    eventRef.current.state = state;
     eventRef.current.contentSize = contentSize;
+    eventRef.current.state = state;
 
     if (contentSize !== prevContentSize) {
       onContentResize(contentSize);
+      dispatch({ type: 'validate', size, contentSize, pagingEnabled });
     }
-    if (state.contentOffset !== prevState.contentOffset) {
+    if (state !== prevState) {
       onScroll(output);
+      dispatch({ type: 'validate', size, contentSize, pagingEnabled });
     }
     if (state.drag !== prevState.drag) {
       if (!prevState.drag) {
@@ -485,13 +198,51 @@ function Pad({
     }
   });
 
-  useMemo(() => {
-    if (state.drag) {
+  useIsomorphicLayoutEffect(() => {
+    if (!state.deceleration) {
       return;
     }
 
+    let timer = requestAnimationFrame(() => {
+      timer = undefined;
+      dispatch({ type: 'decelerate', now: new Date().getTime() });
+    });
+
+    return () => {
+      if (timer) {
+        cancelAnimationFrame(timer);
+      }
+    };
+  }, [state, dispatch]);
+
+  const visibleRect = {
+    x: -state.contentOffset.x,
+    y: -state.contentOffset.y,
+    width: size.width,
+    height: size.height,
+  };
+
+  if (scrollTo !== prevScrollTo) {
+    if (scrollTo) {
+      dispatch({ type: 'setContentOffset', ...scrollTo });
+    }
+  } else if (scrollToRect !== prevScrollToRect) {
+    if (scrollToRect) {
+      const offset = calculateRectOffset(
+        scrollToRect.rect,
+        visibleRect,
+        scrollToRect.align
+      );
+
+      dispatch({
+        type: 'setContentOffset',
+        offset,
+        animated: scrollToRect.animated,
+      });
+    }
+  } else if (pagingEnabled !== prevPagingEnabled || size !== prevSize) {
     dispatch({ type: 'validate', size, contentSize, pagingEnabled });
-  }, [size, contentSize, pagingEnabled, state]);
+  }
 
   const elemStyle = {
     overflow: 'hidden',
@@ -507,13 +258,6 @@ function Pad({
     transformTranslate: [state.contentOffset.x, state.contentOffset.y],
     willChange: 'transform',
   });
-
-  const visibleRect = {
-    x: -state.contentOffset.x,
-    y: -state.contentOffset.y,
-    width: size.width,
-    height: size.height,
-  };
 
   pannableProps.shouldStart = shouldPannableStart;
   pannableProps.onStart = onPannableStart;
@@ -535,9 +279,7 @@ function Pad({
   }
 
   return (
-    <PadContext.Provider
-      value={{ visibleRect, onContentResize: resizeContent }}
-    >
+    <PadContext.Provider value={{ visibleRect, resizeContent }}>
       <Pannable {...pannableProps}>{element}</Pannable>
     </PadContext.Provider>
   );

@@ -13,15 +13,14 @@ class BasicScroll extends Component {
     scrollToX: 0,
     scrollToY: 0,
     size: getSize(),
+    scrollTo: null,
   };
-
-  padRef = React.createRef();
 
   handleInputChange = evt => {
     const node = evt.target;
 
     this.setState({
-      [node.name]: node.value,
+      [node.name]: parseInt(node.value, 10) || 0,
     });
   };
   handlePagingEnabledChange = () => {
@@ -38,17 +37,12 @@ class BasicScroll extends Component {
   handleScrollToPos = () => {
     const { scrollToX, scrollToY } = this.state;
 
-    if (
-      scrollToX !== '' &&
-      scrollToY !== '' &&
-      !isNaN(parseInt(scrollToX)) &&
-      !isNaN(parseInt(scrollToY))
-    ) {
-      this.padRef.current.scrollTo({
-        offset: { x: parseInt(scrollToX), y: parseInt(scrollToY) },
+    this.setState({
+      scrollTo: {
+        offset: { x: scrollToX, y: scrollToY },
         animated: true,
-      });
-    }
+      },
+    });
   };
   renderContent({ width, height }) {
     const items = [];
@@ -91,6 +85,7 @@ class BasicScroll extends Component {
       scrollToX,
       scrollToY,
       size,
+      scrollTo,
     } = this.state;
 
     const { width, height } = size;
@@ -105,6 +100,7 @@ class BasicScroll extends Component {
             pagingEnabled={pagingEnabled}
             directionalLockEnabled={directionalLockEnabled}
             enabled={scrollEnabled}
+            scrollTo={scrollTo}
           >
             {this.renderContent({ width, height })}
           </Pad>
