@@ -8,6 +8,7 @@ import React, {
 } from 'react';
 import PadContext from './PadContext';
 import useIsomorphicLayoutEffect from './hooks/useIsomorphicLayoutEffect';
+import usePrevRef from './hooks/usePrevRef';
 import { getElementSize } from './utils/sizeGetter';
 import { isEqualToSize } from './utils/geometry';
 
@@ -24,22 +25,23 @@ const ItemContent = forwardRef(function(
   },
   ref
 ) {
-  const context = useContext(PadContext);
   const [size, setSize] = useState(null);
+  const prevSizeRef = usePrevRef(size);
+  const sizeRef = useRef(size);
+  const propsRef = useRef(defaultItemContentProps);
+  const context = useContext(PadContext);
   const resizeRef = useRef(null);
-  const eventRef = useRef({ size });
 
-  const { width: prevWidth, height: prevHeight } = eventRef.current;
-
-  eventRef.current.width = width;
-  eventRef.current.height = height;
+  const prevProps = propsRef.current;
+  propsRef.current = { width, height };
+  sizeRef.current = size;
 
   const resizeContent = useCallback(() => {}, []);
   const getResizeNode = useCallback(() => resizeRef.current, []);
   const calculateSize = useCallback(() => {
     const nextSize = getElementSize(resizeRef.current);
 
-    if (isEqualToSize(nextSize, eventRef.current.size)) {
+    if (isEqualToSize(nextSize, sizeRef.current)) {
       return;
     }
 
@@ -47,9 +49,7 @@ const ItemContent = forwardRef(function(
   }, []);
 
   useIsomorphicLayoutEffect(() => {
-    const { size: prevSize } = eventRef.current;
-
-    eventRef.current.size = size;
+    const prevSize = prevSizeRef.current;
 
     if (size !== prevSize) {
       if (size) {
@@ -60,7 +60,9 @@ const ItemContent = forwardRef(function(
     }
   });
 
-  if (width !== prevWidth || height !== prevHeight) {
+  useImperativeHandle(ref, () => ({ getResizeNode, calculateSize }));
+
+  if (width !== prevProps.width || height !== prevProps.height) {
     if (typeof width === 'number' && typeof height === 'number') {
       setSize({ width, height });
     } else {
@@ -83,8 +85,6 @@ const ItemContent = forwardRef(function(
   }
 
   props.style = { ...elemStyle, ...props.style };
-
-  useImperativeHandle(ref, () => ({ getResizeNode, calculateSize }));
 
   return (
     <PadContext.Provider value={{ ...context, resizeContent }}>

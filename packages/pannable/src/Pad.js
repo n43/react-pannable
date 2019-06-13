@@ -158,14 +158,6 @@ function Pad({
 
   useIsomorphicLayoutEffect(() => {
     const prevState = prevStateRef.current;
-    const {
-      onContentResize,
-      onScroll,
-      onDragStart,
-      onDragEnd,
-      onDecelerationStart,
-      onDecelerationEnd,
-    } = propsRef.current;
     const output = {
       size,
       contentSize,

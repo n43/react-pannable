@@ -1,6 +1,7 @@
-import React, { useRef, useMemo } from 'react';
-import useIsomorphicLayoutEffect from './hooks/useIsomorphicLayoutEffect';
+import React, { useRef } from 'react';
 import usePannableReducer from './usePannableReducer';
+import useIsomorphicLayoutEffect from './hooks/useIsomorphicLayoutEffect';
+import usePrevRef from './hooks/usePrevRef';
 
 /* eslint no-restricted-globals:"off" */
 
@@ -35,14 +36,15 @@ function Pannable({
   ...props
 }) {
   const [state, dispatch] = usePannableReducer();
+  const prevStateRef = usePrevRef(state);
+  const propsRef = useRef(defaultPannableProps);
   const elemRef = useRef(null);
-  const eventRef = useRef({ state, touchSupported: false });
+  const innerRef = useRef({ state, touchSupported: false });
 
-  eventRef.current.shouldStart = shouldStart;
-  eventRef.current.onStart = onStart;
-  eventRef.current.onMove = onMove;
-  eventRef.current.onEnd = onEnd;
-  eventRef.current.onCancel = onCancel;
+  const prevProps = propsRef.current;
+  propsRef.current = { enabled, shouldStart, onStart, onMove, onEnd, onCancel };
+  innerRef.current.state = state;
+  const { target, translation, velocity, interval } = state;
 
   useIsomorphicLayoutEffect(() => {
     function track(target, point) {
@@ -50,7 +52,7 @@ function Pannable({
     }
 
     function onTouchStart(evt) {
-      eventRef.current.touchSupported = true;
+      innerRef.current.touchSupported = true;
 
       if (evt.touches && evt.touches.length === 1) {
         const touchEvent = evt.touches[0];
@@ -60,13 +62,13 @@ function Pannable({
     }
 
     function onTouchMove(evt) {
-      if (eventRef.current.state.translation) {
+      if (innerRef.current.state.translation) {
         evt.preventDefault();
       }
     }
 
     function onMouseDown(evt) {
-      if (eventRef.current.touchSupported) {
+      if (innerRef.current.touchSupported) {
         return;
       }
 
@@ -98,7 +100,7 @@ function Pannable({
         type: 'move',
         point,
         now: new Date().getTime(),
-        shouldStart: eventRef.current.shouldStart,
+        shouldStart: propsRef.current.shouldStart,
       });
     }
 
@@ -109,7 +111,7 @@ function Pannable({
     function onTargetTouchMove(evt) {
       const touchEvent = evt.touches[0];
 
-      if (eventRef.current.state.translation) {
+      if (innerRef.current.state.translation) {
         evt.preventDefault();
       }
 
@@ -117,7 +119,7 @@ function Pannable({
     }
 
     function onTargetTouchEnd(evt) {
-      if (eventRef.current.state.translation) {
+      if (innerRef.current.state.translation) {
         evt.preventDefault();
       }
 
@@ -136,13 +138,11 @@ function Pannable({
       end();
     }
 
-    const target = state.target;
-
     if (!target) {
       return;
     }
 
-    if (eventRef.current.touchSupported) {
+    if (innerRef.current.touchSupported) {
       target.addEventListener('touchmove', onTargetTouchMove, false);
       target.addEventListener('touchend', onTargetTouchEnd, false);
       target.addEventListener('touchcancel', onTargetTouchEnd, false);
@@ -161,27 +161,14 @@ function Pannable({
         root.removeEventListener('mouseup', onRootMouseUp, false);
       };
     }
-  }, [state.target, dispatch]);
+  }, [target, dispatch]);
 
   useIsomorphicLayoutEffect(() => {
-    const {
-      state: prevState,
-      onStart,
-      onMove,
-      onEnd,
-      onCancel,
-    } = eventRef.current;
-    const output = {
-      target: state.target,
-      translation: state.translation,
-      velocity: state.velocity,
-      interval: state.interval,
-    };
+    const prevState = prevStateRef.current;
+    const output = { target, translation, velocity, interval };
 
-    eventRef.current.state = state;
-
-    if (state.translation !== prevState.translation) {
-      if (state.translation) {
+    if (translation !== prevState.translation) {
+      if (translation) {
         if (prevState.translation) {
           onMove(output);
         } else {
@@ -197,17 +184,15 @@ function Pannable({
     }
   });
 
-  useMemo(() => {
-    if (enabled) {
-      return;
+  if (enabled !== prevProps.enabled) {
+    if (!enabled) {
+      dispatch({ type: 'disable' });
     }
-
-    dispatch({ type: 'disable' });
-  }, [enabled, dispatch]);
+  }
 
   const elemStyle = {};
 
-  if (state.translation) {
+  if (translation) {
     elemStyle.touchAction = 'none';
     elemStyle.pointerEvents = 'none';
   }

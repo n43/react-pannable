@@ -3,10 +3,7 @@ import ItemContent from './ItemContent';
 import resizeDetector from './utils/resizeDetector';
 import useIsomorphicLayoutEffect from './hooks/useIsomorphicLayoutEffect';
 
-const defaultGeneralContentProps = {
-  width: null,
-  height: null,
-};
+const defaultGeneralContentProps = { ...ItemContent.defaultProps };
 
 function GeneralContent(props) {
   const {
