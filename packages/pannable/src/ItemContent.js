@@ -7,7 +7,7 @@ import React, {
   useImperativeHandle,
 } from 'react';
 import PadContext from './PadContext';
-import useIsomorphicLayoutEffect from './utils/useIsomorphicLayoutEffect';
+import useIsomorphicLayoutEffect from './hooks/useIsomorphicLayoutEffect';
 import { getElementSize } from './utils/sizeGetter';
 import { isEqualToSize } from './utils/geometry';
 

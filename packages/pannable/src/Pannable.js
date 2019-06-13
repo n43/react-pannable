@@ -1,5 +1,5 @@
 import React, { useRef, useMemo } from 'react';
-import useIsomorphicLayoutEffect from './utils/useIsomorphicLayoutEffect';
+import useIsomorphicLayoutEffect from './hooks/useIsomorphicLayoutEffect';
 import usePannableReducer from './usePannableReducer';
 
 /* eslint no-restricted-globals:"off" */
