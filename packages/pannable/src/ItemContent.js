@@ -27,25 +27,19 @@ const ItemContent = forwardRef(function(
 ) {
   const [size, setSize] = useState(null);
   const prevSizeRef = usePrevRef(size);
-  const sizeRef = useRef(size);
   const propsRef = useRef(defaultItemContentProps);
   const context = useContext(PadContext);
   const resizeRef = useRef(null);
 
   const prevProps = propsRef.current;
   propsRef.current = { width, height };
-  sizeRef.current = size;
 
   const resizeContent = useCallback(() => {}, []);
   const getResizeNode = useCallback(() => resizeRef.current, []);
   const calculateSize = useCallback(() => {
-    const nextSize = getElementSize(resizeRef.current);
+    const size = getElementSize(resizeRef.current);
 
-    if (isEqualToSize(nextSize, sizeRef.current)) {
-      return;
-    }
-
-    setSize(nextSize);
+    setSize(prevSize => (isEqualToSize(size, prevSize) ? prevSize : size));
   }, []);
 
   useIsomorphicLayoutEffect(() => {
