@@ -37,9 +37,11 @@ const ItemContent = forwardRef(function(
   const resizeContent = useCallback(() => {}, []);
   const getResizeNode = useCallback(() => resizeRef.current, []);
   const calculateSize = useCallback(() => {
-    const size = getElementSize(resizeRef.current);
+    const nextSize = getElementSize(resizeRef.current);
 
-    setSize(prevSize => (isEqualToSize(size, prevSize) ? prevSize : size));
+    setSize(prevSize =>
+      isEqualToSize(nextSize, prevSize) ? prevSize : nextSize
+    );
   }, []);
 
   useIsomorphicLayoutEffect(() => {
@@ -57,11 +59,14 @@ const ItemContent = forwardRef(function(
   useImperativeHandle(ref, () => ({ getResizeNode, calculateSize }));
 
   if (width !== prevProps.width || height !== prevProps.height) {
-    if (typeof width === 'number' && typeof height === 'number') {
-      setSize({ width, height });
-    } else {
-      setSize(null);
-    }
+    const nextSize =
+      typeof width === 'number' && typeof height === 'number'
+        ? { width, height }
+        : null;
+
+    setSize(prevSize =>
+      isEqualToSize(nextSize, prevSize) ? prevSize : nextSize
+    );
   }
 
   const elemStyle = { position: 'relative' };

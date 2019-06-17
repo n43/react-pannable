@@ -68,8 +68,10 @@ class AutoResizingPad extends Component {
               </div>
               <div className="autoresize-main">
                 <AutoResizing
-                  width={padWidth ? +padWidth || 0 : null}
-                  height={padHeight ? +padHeight || 0 : null}
+                  width={padWidth && !isNaN(+padWidth) ? +padWidth : padWidth}
+                  height={
+                    padHeight && !isNaN(+padHeight) ? +padHeight : padHeight
+                  }
                 >
                   {({ width, height }) => (
                     <Pad

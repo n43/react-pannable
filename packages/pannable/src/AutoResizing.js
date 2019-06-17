@@ -1,133 +1,107 @@
-import React from 'react';
-import { getElementSize } from './utils/sizeGetter';
+import React, { useState, useRef, useCallback } from 'react';
+import useIsomorphicLayoutEffect from './hooks/useIsomorphicLayoutEffect';
+import usePrevRef from './hooks/usePrevRef';
 import resizeDetector from './utils/resizeDetector';
+import { getElementSize } from './utils/sizeGetter';
 import { isEqualToSize } from './utils/geometry';
 
-export default class AutoResizing extends React.Component {
-  static defaultProps = {
-    width: null,
-    height: null,
-    onResize: () => {},
-  };
+const defaultAutoResizingProps = {
+  width: null,
+  height: null,
+  onResize: () => {},
+};
 
-  state = {
-    layoutHash: '',
-    size: null,
-  };
+function AutoResizing({
+  width = defaultAutoResizingProps.width,
+  height = defaultAutoResizingProps.height,
+  onResize = defaultAutoResizingProps.onResize,
+  ...props
+}) {
+  const [size, setSize] = useState(null);
+  const prevSizeRef = usePrevRef(size);
+  const propsRef = useRef(defaultAutoResizingProps);
+  const resizeRef = useRef(null);
 
-  resizeRef = React.createRef();
+  const prevProps = propsRef.current;
+  propsRef.current = { width, height, onResize };
 
-  static getDerivedStateFromProps(props, state) {
-    const { width, height } = props;
-    const { size, layoutHash } = state;
-    let nextState = null;
+  const calculateSize = useCallback(() => {
+    const nextSize = getElementSize(resizeRef.current);
 
-    const nextLayoutHash = [width, height].join();
+    setSize(prevSize =>
+      isEqualToSize(nextSize, prevSize) ? prevSize : nextSize
+    );
+  }, []);
 
-    if (nextLayoutHash !== layoutHash) {
-      nextState = nextState || {};
-      nextState.layoutHash = nextLayoutHash;
+  useIsomorphicLayoutEffect(() => {
+    const prevSize = prevSizeRef.current;
 
-      let nextSize = null;
-
-      if (typeof width === 'number' && typeof height === 'number') {
-        nextSize = { width, height };
-      }
-
-      if (!isEqualToSize(nextSize, size)) {
-        nextState.size = nextSize;
+    if (size !== prevSize) {
+      if (size) {
+        onResize(size);
+      } else {
+        calculateSize();
       }
     }
+  });
 
-    return nextState;
-  }
-
-  componentDidMount() {
-    this._updateSize();
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    const { size } = this.state;
-
-    if (size !== prevState.size) {
-      this._updateSize();
-    }
-  }
-
-  componentWillUnmount() {
-    this._detachResizeNode();
-  }
-
-  getSize() {
-    return this.state.size;
-  }
-
-  calculateSize() {
-    this.setState(state => {
-      const { size } = state;
-      const nextSize = getElementSize(this.resizeRef.current);
-
-      if (isEqualToSize(nextSize, size)) {
-        return null;
-      }
-
-      return { size: nextSize };
-    });
-  }
-
-  _updateSize() {
-    const { width, height } = this.props;
-    const { size } = this.state;
-
-    if (!size) {
-      this.calculateSize();
+  useIsomorphicLayoutEffect(() => {
+    if (typeof width === 'number' && typeof height === 'number') {
       return;
     }
 
-    if (typeof width === 'number' && typeof height === 'number') {
-      this._detachResizeNode();
-    } else {
-      if (!this._resizeNode) {
-        this._attachResizeNode(this.resizeRef.current);
-      }
+    const resizeNode = resizeRef.current;
+
+    resizeDetector.listenTo(resizeNode, () => calculateSize());
+
+    return () => resizeDetector.uninstall(resizeNode);
+  }, [width, height]);
+
+  if (width !== prevProps.width || height !== prevProps.height) {
+    const nextSize =
+      typeof width === 'number' && typeof height === 'number'
+        ? { width, height }
+        : null;
+
+    setSize(prevSize =>
+      isEqualToSize(nextSize, prevSize) ? prevSize : nextSize
+    );
+  }
+
+  let element = props.children;
+
+  if (size) {
+    if (typeof element === 'function') {
+      element = element(size);
     }
-
-    this.props.onResize(size);
+  } else {
+    element = null;
   }
 
-  _attachResizeNode(resizeNode) {
-    this._resizeNode = resizeNode;
-    resizeDetector.listenTo(resizeNode, () => this.calculateSize());
-  }
+  props.style = {
+    width: getStyleDimension(width),
+    height: getStyleDimension(height),
+    ...props.style,
+  };
 
-  _detachResizeNode() {
-    if (this._resizeNode) {
-      resizeDetector.uninstall(this._resizeNode);
-      this._resizeNode = undefined;
-    }
-  }
-
-  render() {
-    const { width, height, onResize, ...props } = this.props;
-    const { size } = this.state;
-
-    let element = props.children;
-
-    if (size) {
-      if (typeof element === 'function') {
-        element = element(size);
-      }
-    } else {
-      element = null;
-    }
-
-    props.children = element;
-    props.style = {
-      width: typeof width === 'number' ? width : '100%',
-      height: typeof height === 'number' ? height : '100%',
-      ...props.style,
-    };
-
-    return <div {...props} ref={this.resizeRef} />;
-  }
+  return (
+    <div {...props} ref={resizeRef}>
+      {element}
+    </div>
+  );
 }
+
+AutoResizing.defaultProps = defaultAutoResizingProps;
+
+function getStyleDimension(value) {
+  if (typeof value === 'number') {
+    return value;
+  }
+  if (typeof value === 'string' && value) {
+    return value;
+  }
+
+  return '100%';
+}
+
+export default AutoResizing;
