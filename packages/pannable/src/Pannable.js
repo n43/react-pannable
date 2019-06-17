@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useMemo } from 'react';
 import usePannableReducer from './usePannableReducer';
 import useIsomorphicLayoutEffect from './hooks/useIsomorphicLayoutEffect';
 import usePrevRef from './hooks/usePrevRef';
@@ -41,7 +41,6 @@ function Pannable({
   const elemRef = useRef(null);
   const innerRef = useRef({ state, touchSupported: false });
 
-  const prevProps = propsRef.current;
   propsRef.current = { enabled, shouldStart, onStart, onMove, onEnd, onCancel };
   innerRef.current.state = state;
   const { target, translation, velocity, interval } = state;
@@ -184,11 +183,11 @@ function Pannable({
     }
   });
 
-  if (enabled !== prevProps.enabled) {
+  useMemo(() => {
     if (!enabled) {
       dispatch({ type: 'disable' });
     }
-  }
+  }, [enabled, dispatch]);
 
   const elemStyle = {};
 

@@ -6,6 +6,7 @@ import {
   getDecelerationEndOffset,
   createDeceleration,
   calculateDeceleration,
+  calculateRectOffset,
 } from './utils/motion';
 
 const DECELERATION_RATE_STRONG = 0.025;
@@ -22,6 +23,10 @@ const initialState = {
 
 function reducer(state, action) {
   switch (action.type) {
+    case 'setSize':
+      return setSizeReducer(state, action);
+    case 'setContentSize':
+      return setContentSizeReducer(state, action);
     case 'dragStart':
       return dragStartReducer(state, action);
     case 'dragMove':
@@ -34,10 +39,8 @@ function reducer(state, action) {
       return decelerateReducer(state, action);
     case 'setContentOffset':
       return setContentOffsetReducer(state, action);
-    case 'setContentSize':
-      return setContentSizeReducer(state, action);
-    case 'setSize':
-      return setSizeReducer(state, action);
+    case 'scrollToRect':
+      return scrollToRectReducer(state, action);
     case 'validate':
     default:
       return state;
@@ -150,6 +153,14 @@ function validateReducer(state, action) {
   }
 
   return state;
+}
+
+function setContentSizeReducer(state, action) {
+  return { ...state, contentSize: action.size };
+}
+
+function setSizeReducer(state, action) {
+  return { ...state, size: action.size };
 }
 
 function dragStartReducer(state, action) {
@@ -357,14 +368,23 @@ function setContentOffsetReducer(state, action) {
   };
 }
 
-function setContentSizeReducer(state, action) {
-  return { ...state, contentSize: action.size };
-}
+function scrollToRectReducer(state, action) {
+  const { contentOffset, size } = state;
+  const { props, rect, align, animated } = action;
+  const visibleRect = {
+    x: -contentOffset.x,
+    y: -contentOffset.y,
+    width: size.width,
+    height: size.height,
+  };
+  const offset = calculateRectOffset(rect, visibleRect, align);
 
-function setSizeReducer(state, action) {
-  const { width, height } = action.props;
-
-  return { ...state, size: { width, height } };
+  return setContentOffsetReducer(state, {
+    type: 'setContentOffset',
+    props,
+    offset,
+    animated,
+  });
 }
 
 export default function() {

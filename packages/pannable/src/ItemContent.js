@@ -1,10 +1,9 @@
 import React, {
-  forwardRef,
   useState,
+  useMemo,
   useCallback,
   useRef,
   useContext,
-  useImperativeHandle,
 } from 'react';
 import PadContext from './PadContext';
 import useIsomorphicLayoutEffect from './hooks/useIsomorphicLayoutEffect';
@@ -17,37 +16,28 @@ const defaultItemContentProps = {
   height: null,
 };
 
-const ItemContent = forwardRef(function(
-  {
-    width = defaultItemContentProps.width,
-    height = defaultItemContentProps.height,
-    ...props
-  },
-  ref
-) {
+function ItemContent({
+  width = defaultItemContentProps.width,
+  height = defaultItemContentProps.height,
+  ...props
+}) {
   const [size, setSize] = useState(null);
   const prevSizeRef = usePrevRef(size);
-  const propsRef = useRef(defaultItemContentProps);
   const context = useContext(PadContext);
   const resizeRef = useRef(null);
-
-  const prevProps = propsRef.current;
-  propsRef.current = { width, height };
 
   const resizeContent = useCallback(() => {}, []);
   const getResizeNode = useCallback(() => resizeRef.current, []);
   const calculateSize = useCallback(() => {
     const nextSize = getElementSize(resizeRef.current);
 
-    setSize(prevSize =>
-      isEqualToSize(nextSize, prevSize) ? prevSize : nextSize
-    );
+    setSize(nextSize);
   }, []);
 
   useIsomorphicLayoutEffect(() => {
     const prevSize = prevSizeRef.current;
 
-    if (size !== prevSize) {
+    if (!isEqualToSize(size, prevSize)) {
       if (size) {
         context.resizeContent(size);
       } else {
@@ -56,18 +46,14 @@ const ItemContent = forwardRef(function(
     }
   });
 
-  useImperativeHandle(ref, () => ({ getResizeNode, calculateSize }));
-
-  if (width !== prevProps.width || height !== prevProps.height) {
+  useMemo(() => {
     const nextSize =
       typeof width === 'number' && typeof height === 'number'
         ? { width, height }
         : null;
 
-    setSize(prevSize =>
-      isEqualToSize(nextSize, prevSize) ? prevSize : nextSize
-    );
-  }
+    setSize(nextSize);
+  }, [width, height]);
 
   const elemStyle = { position: 'relative' };
   const resizeStyle = { position: 'absolute' };
@@ -85,16 +71,22 @@ const ItemContent = forwardRef(function(
 
   props.style = { ...elemStyle, ...props.style };
 
+  let element = props.children;
+
+  if (typeof element === 'function') {
+    element = element(size, { getResizeNode, calculateSize });
+  }
+
   return (
     <PadContext.Provider value={{ ...context, resizeContent }}>
       <div {...props}>
         <div ref={resizeRef} style={resizeStyle}>
-          {props.children}
+          {element}
         </div>
       </div>
     </PadContext.Provider>
   );
-});
+}
 
 ItemContent.defaultProps = defaultItemContentProps;
 ItemContent.PadContent = true;

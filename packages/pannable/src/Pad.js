@@ -1,8 +1,9 @@
 import React, {
   isValidElement,
   cloneElement,
-  useCallback,
   useRef,
+  useMemo,
+  useCallback,
 } from 'react';
 import usePadReducer from './usePadReducer';
 import Pannable from './Pannable';
@@ -15,7 +16,7 @@ import {
   requestAnimationFrame,
   cancelAnimationFrame,
 } from './utils/animationFrame';
-import { shouldDragStart, calculateRectOffset } from './utils/motion';
+import { shouldDragStart } from './utils/motion';
 
 const defaultPadProps = {
   width: 0,
@@ -64,7 +65,6 @@ function Pad({
   const prevStateRef = usePrevRef(state);
   const propsRef = useRef(defaultPadProps);
 
-  const prevProps = propsRef.current;
   propsRef.current = {
     width,
     height,
@@ -210,46 +210,46 @@ function Pad({
     };
   }, [state, dispatch]);
 
+  useMemo(() => {
+    dispatch({
+      type: 'setSize',
+      props: propsRef.current,
+      size: { width, height },
+    });
+  }, [width, height, dispatch]);
+
+  useMemo(() => {
+    if (scrollTo) {
+      dispatch({
+        type: 'setContentOffset',
+        props: propsRef.current,
+        ...scrollTo,
+      });
+    }
+  }, [scrollTo, dispatch]);
+
+  useMemo(() => {
+    if (scrollToRect) {
+      dispatch({
+        type: 'scrollToRect',
+        props: propsRef.current,
+        ...scrollToRect,
+      });
+    }
+  }, [scrollToRect, dispatch]);
+
+  useMemo(() => {
+    if (pagingEnabled) {
+      dispatch({ type: 'validate', props: propsRef.current });
+    }
+  }, [pagingEnabled, dispatch]);
+
   const visibleRect = {
     x: -contentOffset.x,
     y: -contentOffset.y,
     width: size.width,
     height: size.height,
   };
-
-  if (width !== prevProps.width || height !== prevProps.height) {
-    dispatch({ type: 'setSize', props: propsRef.current });
-  }
-  if (scrollTo !== prevProps.scrollTo) {
-    if (scrollTo) {
-      const { offset, animated } = scrollTo;
-
-      dispatch({
-        type: 'setContentOffset',
-        props: propsRef.current,
-        offset,
-        animated,
-      });
-    }
-  }
-  if (scrollToRect !== prevProps.scrollToRect) {
-    if (scrollToRect) {
-      const { rect, align, animated } = scrollToRect;
-      const offset = calculateRectOffset(rect, visibleRect, align);
-
-      dispatch({
-        type: 'setContentOffset',
-        props: propsRef.current,
-        offset,
-        animated,
-      });
-    }
-  }
-  if (pagingEnabled !== prevProps.pagingEnabled) {
-    if (pagingEnabled) {
-      dispatch({ type: 'validate', props: propsRef.current });
-    }
-  }
 
   const elemStyle = {
     overflow: 'hidden',

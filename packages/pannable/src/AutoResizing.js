@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useMemo, useCallback } from 'react';
 import useIsomorphicLayoutEffect from './hooks/useIsomorphicLayoutEffect';
 import usePrevRef from './hooks/usePrevRef';
 import resizeDetector from './utils/resizeDetector';
@@ -19,24 +19,18 @@ function AutoResizing({
 }) {
   const [size, setSize] = useState(null);
   const prevSizeRef = usePrevRef(size);
-  const propsRef = useRef(defaultAutoResizingProps);
   const resizeRef = useRef(null);
-
-  const prevProps = propsRef.current;
-  propsRef.current = { width, height, onResize };
 
   const calculateSize = useCallback(() => {
     const nextSize = getElementSize(resizeRef.current);
 
-    setSize(prevSize =>
-      isEqualToSize(nextSize, prevSize) ? prevSize : nextSize
-    );
+    setSize(nextSize);
   }, []);
 
   useIsomorphicLayoutEffect(() => {
     const prevSize = prevSizeRef.current;
 
-    if (size !== prevSize) {
+    if (!isEqualToSize(size, prevSize)) {
       if (size) {
         onResize(size);
       } else {
@@ -57,16 +51,14 @@ function AutoResizing({
     return () => resizeDetector.uninstall(resizeNode);
   }, [width, height]);
 
-  if (width !== prevProps.width || height !== prevProps.height) {
+  useMemo(() => {
     const nextSize =
       typeof width === 'number' && typeof height === 'number'
         ? { width, height }
         : null;
 
-    setSize(prevSize =>
-      isEqualToSize(nextSize, prevSize) ? prevSize : nextSize
-    );
-  }
+    setSize(nextSize);
+  }, [width, height]);
 
   let element = props.children;
 
@@ -94,14 +86,11 @@ function AutoResizing({
 AutoResizing.defaultProps = defaultAutoResizingProps;
 
 function getStyleDimension(value) {
-  if (typeof value === 'number') {
-    return value;
-  }
-  if (typeof value === 'string' && value) {
-    return value;
+  if (value === undefined || value === null || value === '') {
+    return '100%';
   }
 
-  return '100%';
+  return value;
 }
 
 export default AutoResizing;
