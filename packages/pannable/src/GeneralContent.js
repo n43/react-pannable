@@ -24,7 +24,15 @@ function GeneralContent(props) {
     return () => resizeDetector.uninstall(resizeNode);
   }, [width, height]);
 
-  return <ItemContent {...props} ref={elemRef} />;
+  return (
+    <ItemContent {...props}>
+      {(size, { getResizeNode, calculateSize }) => {
+        elemRef.current = { getResizeNode, calculateSize };
+
+        return props.children;
+      }}
+    </ItemContent>
+  );
 }
 GeneralContent.defaultProps = defaultGeneralContentProps;
 GeneralContent.PadContent = true;
