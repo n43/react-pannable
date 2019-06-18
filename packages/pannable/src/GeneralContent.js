@@ -10,26 +10,32 @@ function GeneralContent(props) {
     width = defaultGeneralContentProps.width,
     height = defaultGeneralContentProps.height,
   } = props;
-  const elemRef = useRef(null);
+  const itemRef = useRef(null);
 
   useIsomorphicLayoutEffect(() => {
     if (typeof width === 'number' && typeof height === 'number') {
       return;
     }
 
-    const resizeNode = elemRef.current.getResizeNode();
+    const resizeNode = itemRef.current.getResizeNode();
 
-    resizeDetector.listenTo(resizeNode, () => elemRef.current.calculateSize());
+    resizeDetector.listenTo(resizeNode, () => itemRef.current.calculateSize());
 
     return () => resizeDetector.uninstall(resizeNode);
   }, [width, height]);
 
   return (
     <ItemContent {...props}>
-      {(size, { getResizeNode, calculateSize }) => {
-        elemRef.current = { getResizeNode, calculateSize };
+      {(size, apis) => {
+        itemRef.current = apis;
 
-        return props.children;
+        let element = props.children;
+
+        if (typeof element === 'function') {
+          element = element(size, apis);
+        }
+
+        return element;
       }}
     </ItemContent>
   );
