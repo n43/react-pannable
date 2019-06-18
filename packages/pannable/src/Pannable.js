@@ -1,5 +1,5 @@
-import React, { useRef, useMemo } from 'react';
-import usePannableReducer from './usePannableReducer';
+import React, { useRef, useMemo, useReducer } from 'react';
+import { initialState, reducer } from './pannableReducer';
 import useIsomorphicLayoutEffect from './hooks/useIsomorphicLayoutEffect';
 import usePrevRef from './hooks/usePrevRef';
 
@@ -35,14 +35,13 @@ function Pannable({
   onCancel = defaultPannableProps.onCancel,
   ...props
 }) {
-  const [state, dispatch] = usePannableReducer();
+  const [state, dispatch] = useReducer(reducer, initialState);
   const prevStateRef = usePrevRef(state);
-  const propsRef = useRef(defaultPannableProps);
   const elemRef = useRef(null);
-  const innerRef = useRef({ state, touchSupported: false });
+  const innerRef = useRef({ touchSupported: false });
 
-  propsRef.current = { enabled, shouldStart, onStart, onMove, onEnd, onCancel };
   innerRef.current.state = state;
+  innerRef.current.shouldStart = shouldStart;
   const { target, translation, velocity, interval } = state;
 
   useIsomorphicLayoutEffect(() => {
@@ -91,7 +90,7 @@ function Pannable({
         elemNode.removeEventListener('mousedown', onMouseDown, false);
       };
     }
-  }, [enabled, dispatch]);
+  }, [enabled]);
 
   useIsomorphicLayoutEffect(() => {
     function move(point) {
@@ -99,7 +98,7 @@ function Pannable({
         type: 'move',
         point,
         now: new Date().getTime(),
-        shouldStart: propsRef.current.shouldStart,
+        shouldStart: innerRef.current.shouldStart,
       });
     }
 
@@ -160,7 +159,7 @@ function Pannable({
         root.removeEventListener('mouseup', onRootMouseUp, false);
       };
     }
-  }, [target, dispatch]);
+  }, [target]);
 
   useIsomorphicLayoutEffect(() => {
     const prevState = prevStateRef.current;
@@ -187,7 +186,7 @@ function Pannable({
     if (!enabled) {
       dispatch({ type: 'disable' });
     }
-  }, [enabled, dispatch]);
+  }, [enabled]);
 
   const elemStyle = {};
 

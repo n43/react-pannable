@@ -1,4 +1,3 @@
-import { useReducer } from 'react';
 import {
   getAdjustedContentVelocity,
   getAdjustedContentOffset,
@@ -12,7 +11,7 @@ import {
 const DECELERATION_RATE_STRONG = 0.025;
 const DECELERATION_RATE_WEAK = 0.0025;
 
-const initialState = {
+export const initialState = {
   size: { width: 0, height: 0 },
   contentSize: { width: 0, height: 0 },
   contentOffset: { x: 0, y: 0 },
@@ -21,7 +20,15 @@ const initialState = {
   deceleration: null,
 };
 
-function reducer(state, action) {
+export function reducer(state, action) {
+  if (action.type !== 'validate') {
+    state = baseReducer(state, action);
+  }
+
+  return validateReducer(state, action);
+}
+
+function baseReducer(state, action) {
   switch (action.type) {
     case 'setSize':
       return setSizeReducer(state, action);
@@ -41,14 +48,9 @@ function reducer(state, action) {
       return setContentOffsetReducer(state, action);
     case 'scrollToRect':
       return scrollToRectReducer(state, action);
-    case 'validate':
     default:
       return state;
   }
-}
-
-function didValidateReducer(state, action) {
-  return validateReducer(reducer(state, action), action);
 }
 
 function validateReducer(state, action) {
@@ -385,8 +387,4 @@ function scrollToRectReducer(state, action) {
     offset,
     animated,
   });
-}
-
-export default function() {
-  return useReducer(didValidateReducer, initialState);
 }

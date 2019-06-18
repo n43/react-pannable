@@ -1,8 +1,6 @@
-import { useReducer } from 'react';
-
 const MIN_DISTANCE = 0;
 
-const initialState = {
+export const initialState = {
   target: null,
   startPoint: null,
   movePoint: null,
@@ -11,7 +9,8 @@ const initialState = {
   velocity: null,
   interval: null,
 };
-function reducer(state, action) {
+
+export function reducer(state, action) {
   switch (action.type) {
     case 'disable':
     case 'end':
@@ -109,8 +108,4 @@ function moveReducer(state, action) {
     velocity: nextVelocity,
     interval: nextInterval,
   };
-}
-
-export default function usePannableReducer() {
-  return useReducer(reducer, initialState);
 }

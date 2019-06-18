@@ -4,8 +4,9 @@ import React, {
   useRef,
   useMemo,
   useCallback,
+  useReducer,
 } from 'react';
-import usePadReducer from './usePadReducer';
+import { reducer, initialState } from './padReducer';
 import Pannable from './Pannable';
 import PadContext from './PadContext';
 import GeneralContent from './GeneralContent';
@@ -61,7 +62,7 @@ function Pad({
     onEnd = defaultPadProps.onEnd,
     onCancel = defaultPadProps.onCancel,
   } = pannableProps;
-  const [state, dispatch] = usePadReducer();
+  const [state, dispatch] = useReducer(reducer, initialState);
   const prevStateRef = usePrevRef(state);
   const propsRef = useRef(defaultPadProps);
 
@@ -98,7 +99,7 @@ function Pad({
 
   const resizeContent = useCallback(
     size => dispatch({ type: 'setContentSize', props: propsRef.current, size }),
-    [dispatch]
+    []
   );
 
   const shouldPannableStart = useCallback(
@@ -115,46 +116,34 @@ function Pad({
     [size, contentSize]
   );
 
-  const onPannableStart = useCallback(
-    evt => {
-      dispatch({
-        type: 'dragStart',
-        props: propsRef.current,
-        velocity: evt.velocity,
-      });
-      propsRef.current.onStart(evt);
-    },
-    [dispatch]
-  );
+  const onPannableStart = useCallback(evt => {
+    dispatch({
+      type: 'dragStart',
+      props: propsRef.current,
+      velocity: evt.velocity,
+    });
+    propsRef.current.onStart(evt);
+  }, []);
 
-  const onPannableMove = useCallback(
-    evt => {
-      dispatch({
-        type: 'dragMove',
-        props: propsRef.current,
-        translation: evt.translation,
-        interval: evt.interval,
-      });
-      propsRef.current.onMove(evt);
-    },
-    [dispatch]
-  );
+  const onPannableMove = useCallback(evt => {
+    dispatch({
+      type: 'dragMove',
+      props: propsRef.current,
+      translation: evt.translation,
+      interval: evt.interval,
+    });
+    propsRef.current.onMove(evt);
+  }, []);
 
-  const onPannableEnd = useCallback(
-    evt => {
-      dispatch({ type: 'dragEnd', props: propsRef.current });
-      propsRef.current.onEnd(evt);
-    },
-    [dispatch]
-  );
+  const onPannableEnd = useCallback(evt => {
+    dispatch({ type: 'dragEnd', props: propsRef.current });
+    propsRef.current.onEnd(evt);
+  }, []);
 
-  const onPannableCancel = useCallback(
-    evt => {
-      dispatch({ type: 'dragCancel', props: propsRef.current });
-      propsRef.current.onCancel(evt);
-    },
-    [dispatch]
-  );
+  const onPannableCancel = useCallback(evt => {
+    dispatch({ type: 'dragCancel', props: propsRef.current });
+    propsRef.current.onCancel(evt);
+  }, []);
 
   useIsomorphicLayoutEffect(() => {
     const prevState = prevStateRef.current;
@@ -208,7 +197,7 @@ function Pad({
         cancelAnimationFrame(timer);
       }
     };
-  }, [state, dispatch]);
+  }, [state]);
 
   useMemo(() => {
     dispatch({
@@ -216,7 +205,7 @@ function Pad({
       props: propsRef.current,
       size: { width, height },
     });
-  }, [width, height, dispatch]);
+  }, [width, height]);
 
   useMemo(() => {
     if (scrollTo) {
@@ -226,7 +215,7 @@ function Pad({
         ...scrollTo,
       });
     }
-  }, [scrollTo, dispatch]);
+  }, [scrollTo]);
 
   useMemo(() => {
     if (scrollToRect) {
@@ -236,13 +225,13 @@ function Pad({
         ...scrollToRect,
       });
     }
-  }, [scrollToRect, dispatch]);
+  }, [scrollToRect]);
 
   useMemo(() => {
     if (pagingEnabled) {
       dispatch({ type: 'validate', props: propsRef.current });
     }
-  }, [pagingEnabled, dispatch]);
+  }, [pagingEnabled]);
 
   const visibleRect = {
     x: -contentOffset.x,
