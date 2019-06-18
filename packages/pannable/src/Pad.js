@@ -258,7 +258,7 @@ function Pad({
     height: size.height,
   };
 
-  const contentStyle = StyleSheet.create({
+  let contentStyle = StyleSheet.create({
     position: 'relative',
     width: contentSize.width,
     height: contentSize.height,
@@ -277,8 +277,12 @@ function Pad({
   let element = pannableProps.children;
 
   if (isValidElement(element) && element.type.PadContent) {
+    if (element.props.style) {
+      contentStyle = { ...contentStyle, ...element.props.style };
+    }
+
     element = cloneElement(element, {
-      style: { ...contentStyle, ...element.props.style },
+      style: contentStyle,
       ref: element.ref,
     });
   } else {

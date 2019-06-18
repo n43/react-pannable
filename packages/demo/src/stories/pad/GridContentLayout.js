@@ -13,8 +13,6 @@ export default class GridContentLayout extends React.Component {
     scrollToIndex: 0,
     size: getSize(),
   };
-  padRef = React.createRef();
-  gridRef = React.createRef();
 
   handleInputChange = evt => {
     const node = evt.target;
@@ -28,13 +26,7 @@ export default class GridContentLayout extends React.Component {
       [node.name]: value,
     });
   };
-  handleScrollToPos = () => {
-    const { scrollToIndex } = this.state;
-    const rect = this.gridRef.current.getItemRect({
-      itemIndex: scrollToIndex,
-    });
-    this.padRef.current.scrollToRect({ rect, animated: true });
-  };
+  handleScrollToPos = () => {};
   render() {
     const { itemWidth, itemHeight, scrollToIndex, size } = this.state;
     const { width, height } = size;
@@ -44,7 +36,6 @@ export default class GridContentLayout extends React.Component {
         <div className="pad-main">
           <div className="pad-preview">
             <Pad
-              ref={this.padRef}
               width={width}
               height={height}
               directionalLockEnabled
@@ -52,7 +43,6 @@ export default class GridContentLayout extends React.Component {
               style={{ backgroundColor: '#f5f5f5' }}
             >
               <GridContent
-                ref={this.gridRef}
                 width={width}
                 itemWidth={itemWidth}
                 itemHeight={itemHeight}

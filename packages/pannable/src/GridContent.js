@@ -77,6 +77,10 @@ function GridContent({
   );
 
   useIsomorphicLayoutEffect(() => {
+    context.resizeContent(size);
+  }, []);
+
+  useIsomorphicLayoutEffect(() => {
     const prevLayout = prevLayoutRef.current;
 
     if (!isEqualToSize(size, prevLayout.size)) {
@@ -86,8 +90,8 @@ function GridContent({
 
   function buildItem(layoutAttrs) {
     const { itemIndex, rect, visibleRect, needsRender, Item } = layoutAttrs;
-
     let element = renderItem(layoutAttrs);
+
     let itemStyle = {
       position: 'absolute',
       left: rect.x,
@@ -116,8 +120,12 @@ function GridContent({
     }
 
     if (isValidElement(element)) {
+      if (element.props.style) {
+        itemStyle = { ...itemStyle, ...element.props.style };
+      }
+
       element = cloneElement(element, {
-        style: { ...itemStyle, ...element.props.style },
+        style: itemStyle,
         ref: element.ref,
       });
     } else {

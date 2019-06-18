@@ -11,9 +11,6 @@ export default class ListContentLayout extends React.Component {
     size: getSize(),
   };
 
-  padRef = React.createRef();
-  listRef = React.createRef();
-
   handleInputChange = evt => {
     const node = evt.target;
     const value = parseInt(node.value, 10);
@@ -27,13 +24,7 @@ export default class ListContentLayout extends React.Component {
     });
   };
 
-  handleScrollToPos = () => {
-    const { scrollToIndex } = this.state;
-    const rect = this.listRef.current.getItemRect({
-      itemIndex: scrollToIndex,
-    });
-    this.padRef.current.scrollToRect({ rect, animated: true });
-  };
+  handleScrollToPos = () => {};
 
   render() {
     const { spacing, scrollToIndex, size } = this.state;
@@ -43,14 +34,12 @@ export default class ListContentLayout extends React.Component {
       <div className="pad-main">
         <div className="pad-preview">
           <Pad
-            ref={this.padRef}
             className="pad-padele"
             width={width}
             height={height}
             directionalLockEnabled
           >
             <ListContent
-              ref={this.listRef}
               width={width}
               spacing={spacing}
               itemCount={40}

@@ -1,143 +1,107 @@
-import React from 'react';
+import React, {
+  isValidElement,
+  cloneElement,
+  useState,
+  useContext,
+  useMemo,
+  useCallback,
+} from 'react';
 import PadContext from './PadContext';
 import ItemContent from './ItemContent';
+import useIsomorphicLayoutEffect from './hooks/useIsomorphicLayoutEffect';
+import usePrevRef from './hooks/usePrevRef';
 import { getItemVisibleRect, needsRender } from './utils/visible';
 import { isEqualToSize } from './utils/geometry';
 
 function Item() {}
 
-export default class ListContent extends React.Component {
-  static defaultProps = {
-    width: null,
-    height: null,
-    direction: 'y',
-    spacing: 0,
-    itemCount: 0,
-    estimatedItemWidth: 0,
-    estimatedItemHeight: 0,
-    renderItem: () => null,
-  };
+const defaultListContentProps = {
+  width: null,
+  height: null,
+  direction: 'y',
+  spacing: 0,
+  itemCount: 0,
+  estimatedItemWidth: 0,
+  estimatedItemHeight: 0,
+  renderItem: () => null,
+};
 
-  static contextType = PadContext;
-
-  state = {
-    layoutHash: '',
-    size: null,
-    fixed: null,
-    layoutList: null,
-    itemHashList: [],
-    itemSizeDict: {},
-  };
-
-  static getDerivedStateFromProps(props, state) {
-    const {
-      direction,
+function ListContent({
+  width = defaultListContentProps.width,
+  height = defaultListContentProps.height,
+  direction = defaultListContentProps.direction,
+  spacing = defaultListContentProps.spacing,
+  itemCount = defaultListContentProps.itemCount,
+  estimatedItemWidth = defaultListContentProps.estimatedItemWidth,
+  estimatedItemHeight = defaultListContentProps.estimatedItemHeight,
+  renderItem = defaultListContentProps.renderItem,
+  ...props
+}) {
+  const [itemHashList, setItemHashList] = useState([]);
+  const [itemSizeDict, setItemSizeDict] = useState({});
+  const layout = useMemo(
+    () =>
+      calculateLayout(
+        {
+          width,
+          height,
+          direction,
+          spacing,
+          itemCount,
+          estimatedItemWidth,
+          estimatedItemHeight,
+        },
+        itemHashList,
+        itemSizeDict
+      ),
+    [
       width,
       height,
+      direction,
       spacing,
       itemCount,
       estimatedItemWidth,
       estimatedItemHeight,
-    } = props;
-    const { size, layoutHash, itemHashList, itemSizeDict } = state;
-    let nextState = null;
+      itemHashList,
+      itemSizeDict,
+    ]
+  );
+  const prevLayoutRef = usePrevRef(layout);
+  const context = useContext(PadContext);
 
-    const itemSizeList = [];
+  const { size, fixed, layoutList } = layout;
+  const nextItemHashList = [];
 
-    for (let itemIndex = 0; itemIndex < itemCount; itemIndex++) {
-      const itemHash = itemHashList[itemIndex];
-      const itemSize = itemSizeDict[itemHash];
+  const resizeContent = useCallback(
+    itemHash => itemSize =>
+      setItemSizeDict(itemSizeDict =>
+        isEqualToSize(itemSize, itemSizeDict[itemHash])
+          ? itemSizeDict
+          : { ...itemSizeDict, [itemHash]: itemSize }
+      ),
+    []
+  );
 
-      itemSizeList[itemIndex] = itemSize
-        ? itemSize.width + '-' + itemSize.height
-        : '';
+  useIsomorphicLayoutEffect(() => {
+    context.resizeContent(size);
+  }, []);
+
+  useIsomorphicLayoutEffect(() => {
+    const prevLayout = prevLayoutRef.current;
+
+    if (!isEqualToSize(size, prevLayout.size)) {
+      context.resizeContent(size);
     }
 
-    const nextLayoutHash = [
-      direction,
-      width,
-      height,
-      spacing,
-      itemCount,
-      estimatedItemWidth,
-      estimatedItemHeight,
-      itemSizeList.join('_'),
-    ].join();
-
-    if (nextLayoutHash !== layoutHash) {
-      const layout = calculateLayout(props, itemHashList, itemSizeDict);
-
-      nextState = nextState || {};
-
-      nextState.layoutHash = nextLayoutHash;
-      nextState.fixed = layout.fixed;
-      nextState.layoutList = layout.layoutList;
-
-      if (!isEqualToSize(layout.size, size)) {
-        nextState.size = layout.size;
-      }
+    if (nextItemHashList.join() !== itemHashList.join()) {
+      setItemHashList(nextItemHashList);
     }
+  });
 
-    return nextState;
-  }
-
-  componentDidMount() {
-    const { size, itemHashList } = this.state;
-
-    if (size) {
-      this.context.resizeContent(size);
-    }
-    if (this._itemHashList.join() !== itemHashList.join()) {
-      this.setState({ itemHashList: this._itemHashList });
-    }
-    this._itemHashList = undefined;
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    const { size, itemHashList } = this.state;
-
-    if (size !== prevState.size) {
-      if (size) {
-        this.context.resizeContent(size);
-      }
-    }
-    if (this._itemHashList.join() !== itemHashList.join()) {
-      this.setState({ itemHashList: this._itemHashList });
-    }
-    this._itemHashList = undefined;
-  }
-
-  getSize() {
-    return this.state.size;
-  }
-
-  getItemRect({ itemIndex }) {
-    const { layoutList } = this.state;
-    const attrs = layoutList[itemIndex];
-
-    return (attrs && attrs.rect) || null;
-  }
-
-  _onItemResize(itemHash) {
-    return itemSize => {
-      this.setState(({ itemSizeDict }) => {
-        if (isEqualToSize(itemSize, itemSizeDict[itemHash])) {
-          return null;
-        }
-
-        return {
-          itemSizeDict: { ...itemSizeDict, [itemHash]: itemSize },
-        };
-      });
-    };
-  }
-
-  _renderItem(layoutAttrs) {
-    const { renderItem } = this.props;
-    const { fixed, itemSizeDict } = this.state;
-
+  function buildItem(layoutAttrs) {
     const { itemIndex, rect, visibleRect, needsRender, Item } = layoutAttrs;
     let element = renderItem(layoutAttrs);
+
     let itemStyle = {
       position: 'absolute',
       left: rect.x,
@@ -149,7 +113,7 @@ export default class ListContent extends React.Component {
     let hash;
     let key;
 
-    if (React.isValidElement(element) && element.type === Item) {
+    if (isValidElement(element) && element.type === Item) {
       if (element.props.style) {
         itemStyle = { ...itemStyle, ...element.props.style };
       }
@@ -170,11 +134,11 @@ export default class ListContent extends React.Component {
     let shouldRender = forceRender || needsRender;
     const itemSize = itemSizeDict[hash];
 
-    if (!itemSize && this._itemHashList.indexOf(hash) !== -1) {
+    if (!itemSize && nextItemHashList.indexOf(hash) !== -1) {
       shouldRender = false;
     }
 
-    this._itemHashList[itemIndex] = hash;
+    nextItemHashList[itemIndex] = hash;
 
     if (!shouldRender) {
       return null;
@@ -194,16 +158,7 @@ export default class ListContent extends React.Component {
       }
     }
 
-    if (
-      !React.isValidElement(element) ||
-      element.type.contextType !== PadContext
-    ) {
-      element = (
-        <ItemContent style={itemStyle} {...sizeProps}>
-          {element}
-        </ItemContent>
-      );
-    } else {
+    if (isValidElement(element) && element.type.PadContent) {
       if (element.props.style) {
         itemStyle = { ...itemStyle, ...element.props.style };
       }
@@ -214,73 +169,63 @@ export default class ListContent extends React.Component {
         sizeProps.height = element.props.height;
       }
 
-      element = React.cloneElement(element, {
+      element = cloneElement(element, {
         ref: element.ref,
         style: itemStyle,
         ...sizeProps,
       });
+    } else {
+      element = (
+        <ItemContent style={itemStyle} {...sizeProps}>
+          {element}
+        </ItemContent>
+      );
     }
 
     return (
       <PadContext.Provider
         key={key}
-        value={{
-          ...this.context,
-          visibleRect,
-          resizeContent: this._onItemResize(hash),
-        }}
+        value={{ ...context, visibleRect, resizeContent: resizeContent(hash) }}
       >
         {element}
       </PadContext.Provider>
     );
   }
 
-  render() {
-    const {
-      direction,
-      width,
-      height,
-      spacing,
-      itemCount,
-      estimatedItemWidth,
-      estimatedItemHeight,
-      renderItem,
-      ...props
-    } = this.props;
-    const { visibleRect } = this.context;
-    const { size, layoutList } = this.state;
+  const elemStyle = { position: 'relative' };
 
-    const elemStyle = { position: 'relative' };
+  if (size) {
+    elemStyle.width = size.width;
+    elemStyle.height = size.height;
+  }
 
-    if (size) {
-      elemStyle.width = size.width;
-      elemStyle.height = size.height;
-    }
+  props.style = {
+    ...elemStyle,
+    ...props.style,
+  };
 
-    props.style = {
-      ...elemStyle,
-      ...props.style,
+  const items = [];
+
+  for (let itemIndex = 0; itemIndex < layoutList.length; itemIndex++) {
+    const attrs = layoutList[itemIndex];
+    const layoutAttrs = {
+      ...attrs,
+      itemIndex,
+      visibleRect: getItemVisibleRect(attrs.rect, context.visibleRect),
+      needsRender: needsRender(attrs.rect, context.visibleRect),
+      Item,
     };
 
-    this._itemHashList = [];
-    const items = [];
-
-    for (let itemIndex = 0; itemIndex < layoutList.length; itemIndex++) {
-      const attrs = layoutList[itemIndex];
-      const layoutAttrs = {
-        ...attrs,
-        itemIndex,
-        visibleRect: getItemVisibleRect(attrs.rect, visibleRect),
-        needsRender: needsRender(attrs.rect, visibleRect),
-        Item,
-      };
-
-      items.push(this._renderItem(layoutAttrs));
-    }
-
-    return <div {...props}>{items}</div>;
+    items.push(buildItem(layoutAttrs));
   }
+
+  return <div {...props}>{items}</div>;
 }
+
+ListContent.defaultProps = defaultListContentProps;
+ListContent.PadContext = true;
+
+export default ListContent;
 
 function calculateLayout(props, itemHashList, itemSizeDict) {
   const { direction, spacing, itemCount } = props;
