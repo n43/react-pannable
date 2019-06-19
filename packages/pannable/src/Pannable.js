@@ -198,7 +198,13 @@ function Pannable({
   props.style = { ...elemStyle, ...props.style };
   props.ref = elemRef;
 
-  return <div {...props} />;
+  let element = props.children;
+
+  if (typeof element === 'function') {
+    element = element(state);
+  }
+
+  return <div {...props}>{element}</div>;
 }
 
 Pannable.defaultProps = defaultPannableProps;
