@@ -26,6 +26,8 @@ function ItemContent({
   const context = useContext(PadContext);
   const resizeRef = useRef(null);
 
+  const prevSize = prevSizeRef.current;
+
   const resizeContent = useCallback(() => {}, []);
   const getResizeNode = useCallback(() => resizeRef.current, []);
   const calculateSize = useCallback(() => {
@@ -35,8 +37,6 @@ function ItemContent({
   }, []);
 
   useIsomorphicLayoutEffect(() => {
-    const prevSize = prevSizeRef.current;
-
     if (!isEqualToSize(size, prevSize)) {
       if (size) {
         context.resizeContent(size);

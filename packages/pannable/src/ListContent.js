@@ -70,6 +70,7 @@ function ListContent({
   const context = useContext(PadContext);
 
   const { size, fixed, layoutList } = layout;
+  const prevLayout = prevLayoutRef.current;
   const nextItemHashList = [];
 
   const resizeContent = useCallback(
@@ -87,8 +88,6 @@ function ListContent({
   }, []);
 
   useIsomorphicLayoutEffect(() => {
-    const prevLayout = prevLayoutRef.current;
-
     if (!isEqualToSize(size, prevLayout.size)) {
       context.resizeContent(size);
     }

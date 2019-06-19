@@ -64,6 +64,7 @@ function GridContent({
   const context = useContext(PadContext);
 
   const { size, count, layoutList } = layout;
+  const prevLayout = prevLayoutRef.current;
 
   const resizeContent = useCallback(() => {}, []);
   const getItemIndex = useCallback(
@@ -81,8 +82,6 @@ function GridContent({
   }, []);
 
   useIsomorphicLayoutEffect(() => {
-    const prevLayout = prevLayoutRef.current;
-
     if (!isEqualToSize(size, prevLayout.size)) {
       context.resizeContent(size);
     }

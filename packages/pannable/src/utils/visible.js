@@ -1,4 +1,8 @@
 export function getItemVisibleRect(rect, vRect, name) {
+  if (!vRect) {
+    return vRect;
+  }
+
   if (name) {
     const [x, width] = name === 'y' ? ['y', 'height'] : ['x', 'width'];
 
@@ -12,6 +16,10 @@ export function getItemVisibleRect(rect, vRect, name) {
 }
 
 export function needsRender(rect, vRect, name) {
+  if (!vRect) {
+    return true;
+  }
+
   if (name) {
     const [x, width] = name === 'y' ? ['y', 'height'] : ['x', 'width'];
 

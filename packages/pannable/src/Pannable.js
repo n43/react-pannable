@@ -43,6 +43,7 @@ function Pannable({
   innerRef.current.state = state;
   innerRef.current.shouldStart = shouldStart;
   const { target, translation, velocity, interval } = state;
+  const prevState = prevStateRef.current;
 
   useIsomorphicLayoutEffect(() => {
     function track(target, point) {
@@ -162,7 +163,6 @@ function Pannable({
   }, [target]);
 
   useIsomorphicLayoutEffect(() => {
-    const prevState = prevStateRef.current;
     const output = { target, translation, velocity, interval };
 
     if (translation !== prevState.translation) {

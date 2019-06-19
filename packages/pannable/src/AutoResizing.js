@@ -21,6 +21,8 @@ function AutoResizing({
   const prevSizeRef = usePrevRef(size);
   const resizeRef = useRef(null);
 
+  const prevSize = prevSizeRef.current;
+
   const calculateSize = useCallback(() => {
     const nextSize = getElementSize(resizeRef.current);
 
@@ -28,8 +30,6 @@ function AutoResizing({
   }, []);
 
   useIsomorphicLayoutEffect(() => {
-    const prevSize = prevSizeRef.current;
-
     if (!isEqualToSize(size, prevSize)) {
       if (size) {
         onResize(size);
