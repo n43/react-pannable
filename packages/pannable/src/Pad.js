@@ -235,6 +235,10 @@ function Pad({
 
   let element = pannableProps.children;
 
+  if (typeof element === 'function') {
+    element = element(state);
+  }
+
   if (isValidElement(element) && element.type.PadContent) {
     if (element.props.style) {
       contentStyle = { ...contentStyle, ...element.props.style };
