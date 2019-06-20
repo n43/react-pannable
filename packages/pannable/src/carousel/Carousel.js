@@ -1,90 +1,105 @@
-import React from 'react';
+import React, { useCallback, useRef, useMemo, useState } from 'react';
 import Player from './Player';
 import GridContent from '../GridContent';
+import useIsomorphicLayoutEffect from '../hooks/useIsomorphicLayoutEffect';
+import usePrevRef from '../hooks/usePrevRef';
 
-export default class Carousel extends React.Component {
-  static defaultProps = {
-    ...Player.defaultProps,
-    itemCount: 0,
-    renderItem: () => null,
-    onSlideChange: () => {},
-  };
+const defaultCarouselrProps = {
+  ...Player.defaultProps,
+  itemCount: 0,
+  renderItem: () => null,
+  onSlideChange: () => {},
+  slideTo: null,
+};
 
-  state = {
-    activeIndex: 0,
-  };
+function Carousel({
+  itemCount = defaultCarouselrProps.itemCount,
+  renderItem = defaultCarouselrProps.renderItem,
+  onSlideChange = defaultCarouselrProps.onSlideChange,
+  slideTo = defaultCarouselrProps.slideTo,
+  ...playerProps
+}) {
+  const {
+    width = defaultCarouselrProps.width,
+    height = defaultCarouselrProps.height,
+    direction = defaultCarouselrProps.direction,
+    onScroll = defaultCarouselrProps.onScroll,
+  } = playerProps;
+  const [activeIndex, setActiveIndex] = useState(0);
+  const prevActiveIndexRef = usePrevRef(activeIndex);
+  const carouselRef = useRef({ activeIndex, player: null });
 
-  playerRef = React.createRef();
+  carouselRef.current.activeIndex = activeIndex;
 
-  componentDidUpdate(prevProps, prevState) {
-    const { onSlideChange, itemCount } = this.props;
-    const { activeIndex } = this.state;
-
-    if (prevState.activeIndex !== activeIndex) {
+  useIsomorphicLayoutEffect(() => {
+    if (prevActiveIndexRef.current !== activeIndex) {
       onSlideChange({ itemCount, activeIndex });
     }
-  }
+  }, [onSlideChange, itemCount, activeIndex]);
 
-  getActiveIndex() {
-    return this.state.activeIndex;
-  }
-
-  slideTo({ index, animated }) {
-    const player = this.playerRef.current;
-    const { activeIndex } = this.state;
-
-    player.go({ delta: index - activeIndex, animated });
-  }
-
-  slidePrev() {
-    this.playerRef.current.rewind();
-  }
-
-  slideNext() {
-    this.playerRef.current.forward();
-  }
-
-  _onPlayerScroll = evt => {
-    const { contentOffset, size, contentSize } = evt;
-    const { direction, itemCount } = this.props;
-
-    const nextActiveIndex = calculateActiveIndex(
-      contentOffset,
-      size,
-      contentSize,
-      itemCount,
-      direction
-    );
-
-    if (nextActiveIndex !== this.state.activeIndex) {
-      this.setState({ activeIndex: nextActiveIndex });
+  useMemo(() => {
+    if (!slideTo) {
+      return;
     }
 
-    this.props.onScroll(evt);
+    const { index, prev, next, animated } = slideTo;
+    const player = carouselRef.current.player;
+
+    if (prev) {
+      player.rewind();
+      return;
+    }
+
+    if (next) {
+      player.forward();
+      return;
+    }
+
+    const activeIndex = carouselRef.current.activeIndex;
+    player.go({ delta: index - activeIndex, animated });
+  }, [slideTo]);
+
+  const onPlayerScroll = useCallback(
+    evt => {
+      const { contentOffset, size, contentSize } = evt;
+      const activeIndex = carouselRef.current.activeIndex;
+      const nextActiveIndex = calculateActiveIndex(
+        contentOffset,
+        size,
+        contentSize,
+        itemCount,
+        direction
+      );
+
+      if (nextActiveIndex !== activeIndex) {
+        setActiveIndex(nextActiveIndex);
+      }
+
+      onScroll(evt);
+    },
+    [direction, itemCount, onScroll]
+  );
+
+  playerProps.onScroll = onPlayerScroll;
+
+  const gridProps = {
+    width,
+    height,
+    itemWidth: width,
+    itemHeight: height,
+    direction,
+    itemCount,
+    renderItem,
   };
 
-  render() {
-    const { itemCount, renderItem, onSlideChange, ...playerProps } = this.props;
-    const { width, height, direction } = playerProps;
-
-    const gridProps = {
-      width,
-      height,
-      itemWidth: width,
-      itemHeight: height,
-      direction,
-      itemCount,
-      renderItem,
-    };
-
-    playerProps.onScroll = this._onPlayerScroll;
-
-    return (
-      <Player {...playerProps} ref={this.playerRef}>
-        <GridContent {...gridProps} />
-      </Player>
-    );
-  }
+  return (
+    <Player {...playerProps}>
+      {apis => {
+        carouselRef.current.player = apis;
+        return <GridContent {...gridProps} />;
+      }}
+    </Player>
+  );
 }
 
 function calculateActiveIndex(offset, size, cSize, itemCount, direction) {
@@ -95,3 +110,6 @@ function calculateActiveIndex(offset, size, cSize, itemCount, direction) {
 
   return index % itemCount;
 }
+
+Carousel.defaultProps = defaultCarouselrProps;
+export default Carousel;

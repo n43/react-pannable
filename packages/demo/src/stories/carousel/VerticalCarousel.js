@@ -16,25 +16,17 @@ class VerticalCarousel extends Component {
     activeIndex: 0,
     slideArr: [photo1, photo2, photo3, photo4, photo5],
     size: getSize(),
+    slideTo: null,
   };
 
-  carouselRef = React.createRef();
-
-  handleInputChange = evt => {
-    const node = evt.target;
-
-    this.setState({
-      [node.name]: node.value,
-    });
-  };
   handleSlidePrev = () => {
-    this.carouselRef.current.slidePrev();
+    this.setState({ slideTo: { prev: true } });
   };
   handleSlideNext = () => {
-    this.carouselRef.current.slideNext();
+    this.setState({ slideTo: { next: true } });
   };
   handlePaginationClick = index => {
-    this.carouselRef.current.slideTo({ index });
+    this.setState({ slideTo: { index, animated: true } });
   };
   handleSlideChange = ({ activeIndex }) => {
     this.setState({ activeIndex });
@@ -62,7 +54,7 @@ class VerticalCarousel extends Component {
   }
 
   render() {
-    const { direction, slideArr, size } = this.state;
+    const { direction, slideArr, size, slideTo } = this.state;
     const itemLength = slideArr.length;
     const { width, height } = size;
 
@@ -85,6 +77,7 @@ class VerticalCarousel extends Component {
 
               return <div style={style} />;
             }}
+            slideTo={slideTo}
             onSlideChange={this.handleSlideChange}
           />
           {this.renderIndicator()}

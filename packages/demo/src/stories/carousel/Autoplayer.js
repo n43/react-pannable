@@ -11,26 +11,6 @@ class Autoplayer extends Component {
     size: getSize(),
   };
 
-  playerRef = React.createRef();
-
-  handleInputChange = evt => {
-    const node = evt.target;
-
-    this.setState({
-      [node.name]: node.value,
-    });
-  };
-
-  handleStart = () => {
-    this.playerRef.current.startAutoplay();
-    this.setState({ statusText: 'start' });
-  };
-
-  handleStop = () => {
-    this.playerRef.current.stopAutoplay();
-    this.setState({ statusText: 'stop' });
-  };
-
   render() {
     const { slideArr, size } = this.state;
     const { width, height } = size;
@@ -38,10 +18,9 @@ class Autoplayer extends Component {
     return (
       <div className="carousel-main">
         <Player
-          ref={this.playerRef}
           width={width}
           height={height}
-          direction="x"
+          direction="y"
           loop={false}
           autoplayEnabled={true}
           style={{ margin: 'auto' }}
@@ -49,7 +28,7 @@ class Autoplayer extends Component {
           <GridContent
             width={width}
             height={height}
-            direction="x"
+            direction="y"
             itemWidth={width}
             itemHeight={height}
             itemCount={slideArr.length}
