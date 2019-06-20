@@ -39,6 +39,10 @@ function Player({
   const [relativeOffset, setRelativeOffset] = useState(null);
   const playerRef = useRef({ padState: null, autoplayTimer: null });
 
+  playerRef.current.loopCount = loopCount;
+  playerRef.current.loopOffset = loopOffset;
+  playerRef.current.direction = direction;
+
   const go = useCallback(({ delta, animated }) => {
     setRelativeOffset({ delta, animated });
   }, []);
@@ -52,8 +56,7 @@ function Player({
   }, []);
 
   const startPlaying = useCallback(() => {
-    const padState = playerRef.current.padState;
-    const autoplayTimer = playerRef.current.autoplayTimer;
+    const { padState, autoplayTimer } = playerRef.current;
     if (padState.drag || padState.deceleration) {
       return;
     }
@@ -102,6 +105,8 @@ function Player({
     }
 
     const { delta, animated } = relativeOffset;
+    const { loopCount, direction } = playerRef.current;
+
     const {
       contentOffset,
       size,
@@ -126,7 +131,7 @@ function Player({
     );
 
     setScrollTo({ offset, animated });
-  }, [relativeOffset, loopCount, direction]);
+  }, [relativeOffset]);
 
   const onPadDragStart = useCallback(
     evt => {
@@ -187,6 +192,7 @@ function Player({
   const onPadScroll = useCallback(
     evt => {
       const padState = playerRef.current.padState;
+      const { loopCount, loopOffset, direction } = playerRef.current;
       const { contentOffset, size, contentSize } = padState;
       const [adjustedContentOffset, delta] = getAdjustedContentOffsetForLoop(
         contentOffset,
@@ -203,12 +209,13 @@ function Player({
 
       onScroll(evt);
     },
-    [loopCount, loopOffset, direction, onScroll]
+    [onScroll]
   );
 
   const onPadContentResize = useCallback(
     contentSize => {
       const padState = playerRef.current.padState;
+      const { loopCount, loopOffset, direction } = playerRef.current;
       const { contentOffset, size } = padState;
 
       let nextLoopCount = calculateLoopCount(
@@ -238,7 +245,7 @@ function Player({
 
       onContentResize(contentSize);
     },
-    [loopCount, loopOffset, direction, onContentResize]
+    [onContentResize]
   );
 
   if (direction === 'x') {
@@ -281,7 +288,7 @@ function Player({
             direction={direction}
             itemCount={loopCount}
             renderItem={({ Item, itemIndex }) => (
-              <Item key={itemIndex + 2} hash="loop">
+              <Item key={itemIndex + loopOffset} hash="loop">
                 {element}
               </Item>
             )}

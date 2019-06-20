@@ -71,7 +71,6 @@ class HorizontalCarousel extends Component {
             itemCount={itemLength}
             renderItem={({ itemIndex }) => {
               const style = {
-                height: '100%',
                 backgroundImage: `url(${slideArr[itemIndex]})`,
                 backgroundSize: 'cover',
               };

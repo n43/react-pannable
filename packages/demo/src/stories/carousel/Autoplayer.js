@@ -28,13 +28,12 @@ class Autoplayer extends Component {
           <GridContent
             width={width}
             height={height}
-            direction="y"
+            direction="x"
             itemWidth={width}
             itemHeight={height}
             itemCount={slideArr.length}
             renderItem={({ itemIndex }) => {
               const style = {
-                height: '100%',
                 backgroundColor: itemIndex % 2 ? '#defdff' : '#cbf1ff',
                 display: 'flex',
                 alignItems: 'center',
