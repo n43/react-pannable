@@ -54,11 +54,8 @@ function Pad({
   ...pannableProps
 }) {
   const {
+    enabled = defaultPadProps.enabled,
     shouldStart = defaultPadProps.shouldStart,
-    onStart = defaultPadProps.onStart,
-    onMove = defaultPadProps.onMove,
-    onEnd = defaultPadProps.onEnd,
-    onCancel = defaultPadProps.onCancel,
   } = pannableProps;
   const [state, dispatch] = useReducer(reducer, initialState);
   const prevStateRef = usePrevRef(state);
@@ -70,6 +67,7 @@ function Pad({
     contentVelocity,
     drag,
     deceleration,
+    pannable,
   } = state;
   const prevState = prevStateRef.current;
 
@@ -90,49 +88,6 @@ function Pad({
       return shouldStart(evt);
     },
     [shouldStart, directionalLockEnabled, size, contentSize]
-  );
-
-  const onPannableStart = useCallback(
-    evt => {
-      dispatch({
-        type: 'dragStart',
-        directionalLockEnabled,
-        velocity: evt.velocity,
-      });
-
-      onStart(evt);
-    },
-    [onStart, directionalLockEnabled]
-  );
-
-  const onPannableMove = useCallback(
-    evt => {
-      dispatch({
-        type: 'dragMove',
-        alwaysBounceX,
-        alwaysBounceY,
-        translation: evt.translation,
-        interval: evt.interval,
-      });
-      onMove(evt);
-    },
-    [onMove, alwaysBounceX, alwaysBounceY]
-  );
-
-  const onPannableEnd = useCallback(
-    evt => {
-      dispatch({ type: 'dragEnd' });
-      onEnd(evt);
-    },
-    [onEnd]
-  );
-
-  const onPannableCancel = useCallback(
-    evt => {
-      dispatch({ type: 'dragCancel' });
-      onCancel(evt);
-    },
-    [onCancel]
   );
 
   useIsomorphicLayoutEffect(() => {
@@ -163,6 +118,21 @@ function Pad({
         onDecelerationStart(output);
       } else if (!deceleration) {
         onDecelerationEnd(output);
+      }
+    }
+    if (pannable.translation !== prevState.pannable.translation) {
+      if (pannable.translation) {
+        if (prevState.pannable.translation) {
+          dispatch({ type: 'dragMove', alwaysBounceX, alwaysBounceY });
+        } else {
+          dispatch({ type: 'dragStart', directionalLockEnabled });
+        }
+      } else if (prevState.pannable.translation) {
+        if (enabled) {
+          dispatch({ type: 'dragEnd' });
+        } else {
+          dispatch({ type: 'dragCancel' });
+        }
       }
     }
   });
@@ -217,44 +187,50 @@ function Pad({
     height: size.height,
   };
 
-  let contentStyle = StyleSheet.create({
-    position: 'relative',
-    width: contentSize.width,
-    height: contentSize.height,
-    transformTranslate: [contentOffset.x, contentOffset.y],
-    willChange: 'transform',
-  });
-
-  pannableProps.shouldStart = shouldPannableStart;
-  pannableProps.onStart = onPannableStart;
-  pannableProps.onMove = onPannableMove;
-  pannableProps.onEnd = onPannableEnd;
-  pannableProps.onCancel = onPannableCancel;
-
   pannableProps.style = { ...elemStyle, ...pannableProps.style };
 
-  let element = pannableProps.children;
-
-  if (typeof element === 'function') {
-    element = element(state);
-  }
-
-  if (isValidElement(element) && element.type.PadContent) {
-    if (element.props.style) {
-      contentStyle = { ...contentStyle, ...element.props.style };
-    }
-
-    element = cloneElement(element, {
-      style: contentStyle,
-      ref: element.ref,
-    });
-  } else {
-    element = <GeneralContent style={contentStyle}>{element}</GeneralContent>;
-  }
+  pannableProps.shouldStart = shouldPannableStart;
 
   return (
     <PadContext.Provider value={{ visibleRect, resizeContent }}>
-      <Pannable {...pannableProps}>{element}</Pannable>
+      <Pannable {...pannableProps}>
+        {pannableState => {
+          if (pannableState !== pannable) {
+            dispatch({ type: 'setPannable', value: pannableState });
+          }
+
+          let contentStyle = StyleSheet.create({
+            position: 'relative',
+            width: contentSize.width,
+            height: contentSize.height,
+            transformTranslate: [contentOffset.x, contentOffset.y],
+            willChange: 'transform',
+          });
+
+          let element = pannableProps.children;
+
+          if (typeof element === 'function') {
+            element = element(state);
+          }
+
+          if (isValidElement(element) && element.type.PadContent) {
+            if (element.props.style) {
+              contentStyle = { ...contentStyle, ...element.props.style };
+            }
+
+            element = cloneElement(element, {
+              style: contentStyle,
+              ref: element.ref,
+            });
+          } else {
+            element = (
+              <GeneralContent style={contentStyle}>{element}</GeneralContent>
+            );
+          }
+
+          return element;
+        }}
+      </Pannable>
     </PadContext.Provider>
   );
 }

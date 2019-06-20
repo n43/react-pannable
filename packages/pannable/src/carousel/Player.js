@@ -4,11 +4,11 @@ import useIsomorphicLayoutEffect from '../hooks/useIsomorphicLayoutEffect';
 import ListContent from '../ListContent';
 
 const defaultPlayerProps = {
-  ...Pad.defaultProps,
   direction: 'x',
   autoplayEnabled: true,
   autoplayInterval: 5000,
   loop: true,
+  ...Pad.defaultProps,
   pagingEnabled: true,
   directionalLockEnabled: true,
 };

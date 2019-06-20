@@ -1,3 +1,4 @@
+import { initialState as pannableInitialState } from './pannableReducer';
 import {
   getAdjustedContentVelocity,
   getAdjustedContentOffset,
@@ -19,6 +20,7 @@ export const initialState = {
   contentVelocity: { x: 0, y: 0 },
   drag: null,
   deceleration: null,
+  pannable: pannableInitialState,
 };
 
 export function reducer(state, action) {
@@ -31,6 +33,8 @@ export function reducer(state, action) {
 
 function baseReducer(state, action) {
   switch (action.type) {
+    case 'setPannable':
+      return setPannableReducer(state, action);
     case 'setPagingEnabled':
       return setPagingEnabledReducer(state, action);
     case 'setSize':
@@ -160,6 +164,10 @@ function validateReducer(state, action) {
   return state;
 }
 
+function setPannableReducer(state, action) {
+  return { ...state, pannable: action.value };
+}
+
 function setPagingEnabledReducer(state, action) {
   return { ...state, pagingEnabled: action.value };
 }
@@ -173,8 +181,9 @@ function setSizeReducer(state, action) {
 }
 
 function dragStartReducer(state, action) {
-  const { contentOffset } = state;
-  const { directionalLockEnabled, velocity } = action;
+  const { contentOffset, pannable } = state;
+  const { directionalLockEnabled } = action;
+  const { velocity } = pannable;
 
   const dragDirection = { x: 1, y: 1 };
 
@@ -200,8 +209,9 @@ function dragStartReducer(state, action) {
 }
 
 function dragMoveReducer(state, action) {
-  const { size, contentSize, contentOffset, drag } = state;
-  const { alwaysBounceX, alwaysBounceY, translation, interval } = action;
+  const { size, contentSize, contentOffset, drag, pannable } = state;
+  const { alwaysBounceX, alwaysBounceY } = action;
+  const { translation, interval } = pannable;
 
   const nextContentOffset = getAdjustedBounceOffset(
     {
