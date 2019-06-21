@@ -20,10 +20,10 @@ class VerticalCarousel extends Component {
   };
 
   handleSlidePrev = () => {
-    this.setState({ slideTo: { prev: true } });
+    this.setState({ slideTo: { prev: true, animated: true } });
   };
   handleSlideNext = () => {
-    this.setState({ slideTo: { next: true } });
+    this.setState({ slideTo: { next: true, animated: true } });
   };
   handlePaginationClick = index => {
     this.setState({ slideTo: { index, animated: true } });

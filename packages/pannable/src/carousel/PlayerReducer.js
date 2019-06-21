@@ -2,9 +2,12 @@ import { initialState as padInitialState } from '../padReducer';
 
 export const initialState = {
   mouseEntered: false,
+
+  activeIndex: 0,
   loopCount: 1,
   loopOffset: 1,
   scrollTo: null,
+  direction: 'x',
   pad: padInitialState,
 };
 
@@ -14,12 +17,16 @@ export function reducer(state, action) {
       return setMouseEnteredReducer(state, action);
     case 'disableLoop':
       return disableLoopReducer(state, action);
+    case 'goTo':
+      return goToReducer(state, action);
     case 'setScrollTo':
       return setScrollToReducer(state, action);
     case 'padScroll':
       return padScrollReducer(state, action);
     case 'padContentResize':
       return padContentResizeReducer(state, action);
+    case 'setDirection':
+      return setDirectionReducer(state, action);
     case 'setPad':
       return setPadReducer(state, action);
     default:
@@ -43,15 +50,57 @@ function disableLoopReducer(state) {
   };
 }
 
-function setScrollToReducer(state, action) {
-  const { offset, animated } = action;
+function goToReducer(state, action) {
+  const { prev, next, index, animated } = action;
+  const { loopCount, pad, direction, activeIndex } = state;
+  const {
+    contentOffset,
+    size,
+    contentSize,
+    drag,
+    deceleration,
+    pagingEnabled,
+  } = pad;
+  let delta = 0;
+
+  if (drag || deceleration) {
+    return state;
+  }
+
+  if (prev) {
+    delta = -1;
+  } else if (next) {
+    delta = 1;
+  } else {
+    delta = index - activeIndex;
+  }
+
+  const offset = getContentOffsetForPlayback(
+    delta,
+    contentOffset,
+    size,
+    contentSize,
+    pagingEnabled,
+    loopCount,
+    direction
+  );
+
   return { ...state, scrollTo: { offset, animated } };
 }
 
-function padScrollReducer(state, action) {
-  const { direction } = action;
-  const { pad, loopCount, loopOffset } = state;
+function setScrollToReducer(state, action) {
+  const { offset, animated } = action;
+  return {
+    ...state,
+    scrollTo: { offset, animated },
+  };
+}
+
+function padScrollReducer(state) {
+  const { pad, loopCount, loopOffset, direction, activeIndex } = state;
   const { contentOffset, size, contentSize } = pad;
+  const nextState = { ...state };
+  let stateChanged = false;
 
   const [adjustedContentOffset, delta] = getAdjustedContentOffsetForLoop(
     contentOffset,
@@ -61,20 +110,34 @@ function padScrollReducer(state, action) {
     direction
   );
 
+  const nextActiveIndex = calculateActiveIndex(
+    contentOffset,
+    size,
+    contentSize,
+    loopCount,
+    direction
+  );
+
+  if (activeIndex !== nextActiveIndex) {
+    stateChanged = true;
+    nextState.activeIndex = nextActiveIndex;
+  }
+
   if (contentOffset !== adjustedContentOffset) {
-    return {
-      ...state,
-      loopOffset: loopOffset + delta,
-      scrollTo: { offset: adjustedContentOffset, animated: false },
-    };
+    stateChanged = true;
+    nextState.loopOffset = loopOffset + delta;
+    nextState.scrollTo = { offset: adjustedContentOffset, animated: false };
+  }
+
+  if (stateChanged) {
+    return nextState;
   }
 
   return state;
 }
 
-function padContentResizeReducer(state, action) {
-  const { direction } = action;
-  const { pad, loopCount, loopOffset } = state;
+function padContentResizeReducer(state) {
+  const { pad, loopCount, loopOffset, direction } = state;
   const { size, contentSize, contentOffset } = pad;
 
   let nextLoopCount = calculateLoopCount(
@@ -109,6 +172,10 @@ function padContentResizeReducer(state, action) {
   }
 
   return state;
+}
+
+function setDirectionReducer(state, action) {
+  return { ...state, direction: action.value };
 }
 
 function setPadReducer(state, action) {
@@ -170,4 +237,45 @@ function calculateLoopCount(size, contentSize, loopCount, direction) {
   }
 
   return 2 + Math.floor(sizeWidth / itemWidth);
+}
+
+function getContentOffsetForPlayback(
+  delta,
+  contentOffset,
+  size,
+  contentSize,
+  pagingEnabled,
+  loopCount,
+  direction
+) {
+  const [width, x, y] =
+    direction === 'y' ? ['height', 'y', 'x'] : ['width', 'x', 'y'];
+
+  const sizeWidth = size[width];
+  let offsetX = contentOffset[x] - delta * sizeWidth;
+
+  if (loopCount === 1) {
+    let minOffsetX = Math.min(sizeWidth - contentSize[width], 0);
+
+    if (pagingEnabled && sizeWidth > 0) {
+      minOffsetX = sizeWidth * Math.ceil(minOffsetX / sizeWidth);
+    }
+
+    if (offsetX < minOffsetX) {
+      offsetX = minOffsetX - sizeWidth < offsetX ? minOffsetX : 0;
+    } else if (0 < offsetX) {
+      offsetX = offsetX < sizeWidth ? 0 : minOffsetX;
+    }
+  }
+
+  return { [x]: offsetX, [y]: contentOffset[y] };
+}
+
+function calculateActiveIndex(offset, size, cSize, loopCount, direction) {
+  const [width, x] = direction === 'y' ? ['height', 'y'] : ['width', 'x'];
+
+  const offsetX = Math.min(Math.max(-cSize[width], offset[x]), 0);
+  const index = Math.round(-offsetX / size[width]);
+  const division = Math.floor(cSize[width] / (size[width] * loopCount));
+  return index % division;
 }

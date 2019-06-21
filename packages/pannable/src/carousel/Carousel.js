@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import Player from './Player';
 import GridContent from '../GridContent';
 import useIsomorphicLayoutEffect from '../hooks/useIsomorphicLayoutEffect';
@@ -23,64 +23,23 @@ function Carousel({
     width = defaultCarouselrProps.width,
     height = defaultCarouselrProps.height,
     direction = defaultCarouselrProps.direction,
-    onScroll = defaultCarouselrProps.onScroll,
   } = playerProps;
-  const [activeIndex, setActiveIndex] = useState(0);
-  const prevActiveIndexRef = usePrevRef(activeIndex);
-  const carouselRef = useRef({ activeIndex, player: null });
-
-  carouselRef.current.activeIndex = activeIndex;
+  const [player, setPlayer] = useState({});
+  const [goTo, setGoTo] = useState(null);
+  const prevPlayerRef = usePrevRef(player);
 
   useIsomorphicLayoutEffect(() => {
-    if (prevActiveIndexRef.current !== activeIndex) {
-      onSlideChange({ itemCount, activeIndex });
+    if (prevPlayerRef.current.activeIndex !== player.activeIndex) {
+      onSlideChange({ itemCount, activeIndex: player.activeIndex });
     }
-  }, [onSlideChange, itemCount, activeIndex]);
+  }, [onSlideChange, itemCount, player]);
 
   useMemo(() => {
-    if (!slideTo) {
-      return;
+    if (slideTo) {
+      const { index, prev, next, animated } = slideTo;
+      setGoTo({ prev, next, index, animated });
     }
-
-    const { index, prev, next, animated } = slideTo;
-    const player = carouselRef.current.player;
-
-    if (prev) {
-      player.rewind();
-      return;
-    }
-
-    if (next) {
-      player.forward();
-      return;
-    }
-
-    const activeIndex = carouselRef.current.activeIndex;
-    player.go({ delta: index - activeIndex, animated });
   }, [slideTo]);
-
-  const onPlayerScroll = useCallback(
-    evt => {
-      const { contentOffset, size, contentSize } = evt;
-      const activeIndex = carouselRef.current.activeIndex;
-      const nextActiveIndex = calculateActiveIndex(
-        contentOffset,
-        size,
-        contentSize,
-        itemCount,
-        direction
-      );
-
-      if (nextActiveIndex !== activeIndex) {
-        setActiveIndex(nextActiveIndex);
-      }
-
-      onScroll(evt);
-    },
-    [direction, itemCount, onScroll]
-  );
-
-  playerProps.onScroll = onPlayerScroll;
 
   const gridProps = {
     width,
@@ -92,23 +51,18 @@ function Carousel({
     renderItem,
   };
 
+  playerProps.goTo = goTo;
+
   return (
     <Player {...playerProps}>
-      {apis => {
-        carouselRef.current.player = apis;
+      {playerState => {
+        if (playerState !== player) {
+          setPlayer(playerState);
+        }
         return <GridContent {...gridProps} />;
       }}
     </Player>
   );
-}
-
-function calculateActiveIndex(offset, size, cSize, itemCount, direction) {
-  const [width, x] = direction === 'y' ? ['height', 'y'] : ['width', 'x'];
-
-  const offsetX = Math.min(Math.max(-cSize[width], offset[x]), 0);
-  const index = Math.round(-offsetX / size[width]);
-
-  return index % itemCount;
 }
 
 Carousel.defaultProps = defaultCarouselrProps;
