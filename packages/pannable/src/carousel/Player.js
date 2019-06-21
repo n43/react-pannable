@@ -11,11 +11,11 @@ import ListContent from '../ListContent';
 import { reducer, initialState } from './padReducer';
 
 const defaultPlayerProps = {
-  ...Pad.defaultProps,
   direction: 'x',
   autoplayEnabled: true,
   autoplayInterval: 5000,
   loop: true,
+  ...Pad.defaultProps,
   pagingEnabled: true,
   directionalLockEnabled: true,
 };
