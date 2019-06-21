@@ -13,30 +13,26 @@ const DECELERATION_RATE_STRONG = 0.025;
 const DECELERATION_RATE_WEAK = 0.0025;
 
 export const initialState = {
-  pagingEnabled: false,
   size: { width: 0, height: 0 },
   contentSize: { width: 0, height: 0 },
   contentOffset: { x: 0, y: 0 },
   contentVelocity: { x: 0, y: 0 },
   drag: null,
   deceleration: null,
+  options: [false, false, true, true],
   pannable: pannableInitialState,
 };
 
 export function reducer(state, action) {
-  if (action.type !== 'validate') {
-    state = baseReducer(state, action);
-  }
-
-  return validateReducer(state, { type: 'validate' });
+  return validateReducer(baseReducer(state, action));
 }
 
 function baseReducer(state, action) {
   switch (action.type) {
     case 'setPannable':
       return setPannableReducer(state, action);
-    case 'setPagingEnabled':
-      return setPagingEnabledReducer(state, action);
+    case 'setOptions':
+      return setOptionsReducer(state, action);
     case 'setSize':
       return setSizeReducer(state, action);
     case 'setContentSize':
@@ -62,13 +58,13 @@ function baseReducer(state, action) {
 
 function validateReducer(state, action) {
   const {
-    pagingEnabled,
     size,
     contentSize,
     contentOffset,
     contentVelocity,
     drag,
     deceleration,
+    options: [pagingEnabled],
   } = state;
 
   const decelerationRate = DECELERATION_RATE_STRONG;
@@ -168,8 +164,8 @@ function setPannableReducer(state, action) {
   return { ...state, pannable: action.value };
 }
 
-function setPagingEnabledReducer(state, action) {
-  return { ...state, pagingEnabled: action.value };
+function setOptionsReducer(state, action) {
+  return { ...state, options: action.value };
 }
 
 function setContentSizeReducer(state, action) {
@@ -181,9 +177,11 @@ function setSizeReducer(state, action) {
 }
 
 function dragStartReducer(state, action) {
-  const { contentOffset, pannable } = state;
-  const { directionalLockEnabled } = action;
-  const { velocity } = pannable;
+  const {
+    contentOffset,
+    options: [, directionalLockEnabled],
+    pannable: { velocity },
+  } = state;
 
   const dragDirection = { x: 1, y: 1 };
 
@@ -209,9 +207,14 @@ function dragStartReducer(state, action) {
 }
 
 function dragMoveReducer(state, action) {
-  const { size, contentSize, contentOffset, drag, pannable } = state;
-  const { alwaysBounceX, alwaysBounceY } = action;
-  const { translation, interval } = pannable;
+  const {
+    size,
+    contentSize,
+    contentOffset,
+    drag,
+    options: [, , alwaysBounceX, alwaysBounceY],
+    pannable: { translation, interval },
+  } = state;
 
   const nextContentOffset = getAdjustedBounceOffset(
     {
@@ -237,7 +240,12 @@ function dragMoveReducer(state, action) {
 }
 
 function dragEndReducer(state, action) {
-  const { pagingEnabled, size, contentOffset, contentVelocity } = state;
+  const {
+    size,
+    contentOffset,
+    contentVelocity,
+    options: [pagingEnabled],
+  } = state;
 
   let decelerationRate = DECELERATION_RATE_WEAK;
   let nextContentVelocity = contentVelocity;
@@ -273,7 +281,13 @@ function dragEndReducer(state, action) {
 }
 
 function dragCancelReducer(state, action) {
-  const { pagingEnabled, size, contentOffset, contentVelocity, drag } = state;
+  const {
+    size,
+    contentOffset,
+    contentVelocity,
+    drag,
+    options: [pagingEnabled],
+  } = state;
 
   const decelerationRate = DECELERATION_RATE_STRONG;
   const decelerationEndOffset = getDecelerationEndOffset(
@@ -329,12 +343,12 @@ function decelerateReducer(state, action) {
 
 function setContentOffsetReducer(state, action) {
   const {
-    pagingEnabled,
     size,
     contentOffset,
     contentVelocity,
     drag,
     deceleration,
+    options: [pagingEnabled],
   } = state;
   const { offset, animated } = action;
 

@@ -1,6 +1,7 @@
 import React, {
   isValidElement,
   cloneElement,
+  useRef,
   useMemo,
   useCallback,
   useReducer,
@@ -59,6 +60,7 @@ function Pad({
   } = pannableProps;
   const [state, dispatch] = useReducer(reducer, initialState);
   const prevStateRef = usePrevRef(state);
+  const innerRef = useRef({});
 
   const {
     size,
@@ -70,6 +72,7 @@ function Pad({
     pannable,
   } = state;
   const prevState = prevStateRef.current;
+  innerRef.current.state = state;
 
   const resizeContent = useCallback(
     contentSize => dispatch({ type: 'setContentSize', value: contentSize }),
@@ -78,6 +81,12 @@ function Pad({
 
   const shouldPannableStart = useCallback(
     evt => {
+      const {
+        size,
+        contentSize,
+        options: [, directionalLockEnabled],
+      } = innerRef.current.state;
+
       if (
         directionalLockEnabled &&
         !shouldDragStart(evt.velocity, size, contentSize)
@@ -87,10 +96,26 @@ function Pad({
 
       return shouldStart(evt);
     },
-    [shouldStart, directionalLockEnabled, size, contentSize]
+    [shouldStart]
   );
 
   useIsomorphicLayoutEffect(() => {
+    if (pannable.translation !== prevState.pannable.translation) {
+      if (pannable.translation) {
+        if (prevState.pannable.translation) {
+          dispatch({ type: 'dragMove' });
+        } else {
+          dispatch({ type: 'dragStart' });
+        }
+      } else if (prevState.pannable.translation) {
+        if (enabled) {
+          dispatch({ type: 'dragEnd' });
+        } else {
+          dispatch({ type: 'dragCancel' });
+        }
+      }
+    }
+
     const output = {
       size,
       contentSize,
@@ -120,21 +145,6 @@ function Pad({
         onDecelerationEnd(output);
       }
     }
-    if (pannable.translation !== prevState.pannable.translation) {
-      if (pannable.translation) {
-        if (prevState.pannable.translation) {
-          dispatch({ type: 'dragMove', alwaysBounceX, alwaysBounceY });
-        } else {
-          dispatch({ type: 'dragStart', directionalLockEnabled });
-        }
-      } else if (prevState.pannable.translation) {
-        if (enabled) {
-          dispatch({ type: 'dragEnd' });
-        } else {
-          dispatch({ type: 'dragCancel' });
-        }
-      }
-    }
   });
 
   useIsomorphicLayoutEffect(() => {
@@ -157,9 +167,18 @@ function Pad({
   useMemo(() => {
     dispatch({ type: 'setSize', value: { width, height } });
   }, [width, height]);
+
   useMemo(() => {
-    dispatch({ type: 'setPagingEnabled', value: pagingEnabled });
-  }, [pagingEnabled]);
+    dispatch({
+      type: 'setOptions',
+      value: [
+        pagingEnabled,
+        directionalLockEnabled,
+        alwaysBounceX,
+        alwaysBounceY,
+      ],
+    });
+  }, [pagingEnabled, directionalLockEnabled, alwaysBounceX, alwaysBounceY]);
 
   useMemo(() => {
     if (scrollTo) {
@@ -173,12 +192,7 @@ function Pad({
     }
   }, [scrollToRect]);
 
-  const visibleRect = {
-    x: -contentOffset.x,
-    y: -contentOffset.y,
-    width: size.width,
-    height: size.height,
-  };
+  pannableProps.shouldStart = shouldPannableStart;
 
   const elemStyle = {
     overflow: 'hidden',
@@ -189,7 +203,12 @@ function Pad({
 
   pannableProps.style = { ...elemStyle, ...pannableProps.style };
 
-  pannableProps.shouldStart = shouldPannableStart;
+  const visibleRect = {
+    x: -contentOffset.x,
+    y: -contentOffset.y,
+    width: size.width,
+    height: size.height,
+  };
 
   return (
     <PadContext.Provider value={{ visibleRect, resizeContent }}>
