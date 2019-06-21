@@ -29,8 +29,11 @@ function Carousel({
   const prevPlayerRef = usePrevRef(player);
 
   useIsomorphicLayoutEffect(() => {
-    if (prevPlayerRef.current.activeIndex !== player.activeIndex) {
-      onSlideChange({ itemCount, activeIndex: player.activeIndex });
+    const prevActiveIndex = prevPlayerRef.current.activeIndex;
+    const activeIndex = player.activeIndex;
+
+    if (prevActiveIndex !== activeIndex) {
+      onSlideChange({ itemCount, activeIndex });
     }
   }, [onSlideChange, itemCount, player]);
 
