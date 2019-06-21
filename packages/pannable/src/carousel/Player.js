@@ -1,14 +1,8 @@
-import React, {
-  useState,
-  useCallback,
-  useRef,
-  useMemo,
-  useReducer,
-} from 'react';
+import React, { useCallback, useRef, useMemo, useReducer } from 'react';
 import Pad from '../Pad';
 import useIsomorphicLayoutEffect from '../hooks/useIsomorphicLayoutEffect';
 import ListContent from '../ListContent';
-import { reducer, initialState } from './padReducer';
+import { reducer, initialState } from './playerReducer';
 
 const defaultPlayerProps = {
   direction: 'x',
@@ -32,52 +26,57 @@ function Player({
   const {
     onMouseEnter = defaultPlayerProps.onMouseEnter,
     onMouseLeave = defaultPlayerProps.onMouseLeave,
+    onScroll = defaultPlayerProps.onScroll,
+    onContentResize = defaultPlayerProps.onContentResize,
   } = padProps;
 
   const playerRef = useRef({ autoplayTimer: null });
   const [state, dispatch] = useReducer(reducer, initialState);
-  const { padState, mouseEntered, loopCount, loopOffset, scrollTo } = state;
-  const { drag, deceleration, contentOffset, contentSize } = padState;
+  const { pad, mouseEntered, loopCount, loopOffset, scrollTo } = state;
+  const { drag, deceleration } = pad;
 
-  const go = useCallback(({ delta, animated }) => {
-    const { delta, animated } = relativeOffset;
-    const { loopCount, direction } = playerRef.current;
+  playerRef.current.pad = pad;
 
-    const {
-      contentOffset,
-      size,
-      contentSize,
-      drag,
-      deceleration,
-      pagingEnabled,
-    } = playerRef.current.padState;
+  const go = useCallback(
+    ({ delta, animated }) => {
+      const {
+        contentOffset,
+        size,
+        contentSize,
+        drag,
+        deceleration,
+        pagingEnabled,
+      } = playerRef.current.pad;
 
-    if (drag || deceleration) {
-      return;
-    }
+      if (drag || deceleration) {
+        return;
+      }
 
-    const offset = getContentOffsetForPlayback(
-      delta,
-      contentOffset,
-      size,
-      contentSize,
-      pagingEnabled,
-      loopCount,
-      direction
-    );
+      const offset = getContentOffsetForPlayback(
+        delta,
+        contentOffset,
+        size,
+        contentSize,
+        pagingEnabled,
+        loopCount,
+        direction
+      );
 
-    setScrollTo({ offset, animated });
-  }, []);
+      dispatch({ type: 'setScrollTo', offset, animated });
+    },
+    [loopCount, direction]
+  );
 
   const rewind = useCallback(() => {
-    setRelativeOffset({ delta: -1, animated: true });
-  }, []);
+    go({ delta: -1, animated: true });
+  }, [go]);
 
   const forward = useCallback(() => {
-    setRelativeOffset({ delta: 1, animated: true });
-  }, []);
+    go({ delta: 1, animated: true });
+  }, [go]);
 
   const startPlaying = useCallback(() => {
+    const autoplayTimer = playerRef.current.autoplayTimer;
     if (autoplayTimer) {
       clearTimeout(autoplayTimer);
     }
@@ -120,46 +119,28 @@ function Player({
     stopPlaying,
   ]);
 
-  const adjustedContentOffset = useMemo(() => {
-    return getAdjustedContentOffsetForLoop(
-      contentOffset,
-      size,
-      contentSize,
-      loopCount,
-      direction
-    );
-  }, [contentOffset, size, contentSize, loopCount, direction]);
-
-  const nextLoopCount = useMemo(() => {
-    return calculateLoopCount(size, contentSize, loopCount, direction);
-  }, [size, contentSize, loopCount, direction]);
-
-  useIsomorphicLayoutEffect(() => {
-    dispatch({
-      type: 'updateLoopCount',
-      loopCount: nextLoopCount,
-      loopOffset: 0,
-    });
-  }, [nextLoopCount, loopOffset]);
-
-  useIsomorphicLayoutEffect(() => {
-    const [nextContentOffset, delta] = adjustedContentOffset;
-
-    if (contentOffset !== adjustedContentOffset) {
-      dispatch({
-        type: 'setScrollTo',
-        offset: nextContentOffset,
-        animated: false,
-      });
-      dispatch({ type: 'setLoopOffset', value: loopOffset + delta });
-    }
-  }, [adjustedContentOffset, loopOffset]);
-
   useMemo(() => {
     if (!loop) {
       dispatch({ type: 'disableLoop' });
     }
   }, [loop]);
+
+  const onPadScroll = useCallback(
+    evt => {
+      dispatch({ type: 'padScroll', direction });
+
+      onScroll(evt);
+    },
+    [onScroll, direction]
+  );
+
+  const onPadContentResize = useCallback(
+    contentSize => {
+      dispatch({ type: 'padContentResize', direction });
+      onContentResize(contentSize);
+    },
+    [onContentResize, direction]
+  );
 
   const onPadMouseEnter = useCallback(
     evt => {
@@ -182,6 +163,11 @@ function Player({
     },
     [onMouseLeave]
   );
+
+  if (loop) {
+    padProps.onScroll = onPadScroll;
+    padProps.onContentResize = onPadContentResize;
+  }
 
   if (direction === 'x') {
     padProps.alwaysBounceY = false;
@@ -207,7 +193,9 @@ function Player({
   return (
     <Pad {...padProps}>
       {padState => {
-        dispatch({ type: 'setPadState', pad: padState });
+        if (padState !== pad) {
+          dispatch({ type: 'setPad', value: padState });
+        }
 
         return (
           <ListContent
@@ -223,63 +211,6 @@ function Player({
       }}
     </Pad>
   );
-}
-
-function calculateLoopCount(size, contentSize, loopCount, direction) {
-  const width = direction === 'y' ? 'height' : 'width';
-
-  const itemWidth = contentSize[width] / loopCount;
-  const sizeWidth = size[width];
-
-  if (!itemWidth || !sizeWidth) {
-    return 1;
-  }
-
-  return 2 + Math.floor(sizeWidth / itemWidth);
-}
-
-function getAdjustedContentOffsetForLoop(
-  contentOffset,
-  size,
-  contentSize,
-  loopCount,
-  direction
-) {
-  if (loopCount === 1) {
-    return [contentOffset, 0];
-  }
-
-  const [width, x, y] =
-    direction === 'y' ? ['height', 'y', 'x'] : ['width', 'x', 'y'];
-
-  const contentWidth = contentSize[width];
-  const sizeWidth = size[width];
-  const itemWidth = contentWidth / loopCount;
-  const bufferWidth = 0.5 * (itemWidth - sizeWidth);
-
-  let maxOffsetX = 0;
-  let minOffsetX = sizeWidth - contentWidth;
-  let offsetX = contentOffset[x];
-  let delta = 0;
-
-  offsetX = maxOffsetX - ((maxOffsetX - offsetX) % (maxOffsetX - minOffsetX));
-
-  maxOffsetX -= bufferWidth;
-  minOffsetX += bufferWidth;
-
-  if (offsetX < minOffsetX) {
-    delta = loopCount - 1;
-  } else if (maxOffsetX < offsetX) {
-    delta = 1 - loopCount;
-  }
-
-  if (delta === 0) {
-    return [contentOffset, 0];
-  }
-
-  offsetX += itemWidth * delta;
-
-  return [{ [x]: offsetX, [y]: contentOffset[y] }, delta];
 }
 
 function getContentOffsetForPlayback(
