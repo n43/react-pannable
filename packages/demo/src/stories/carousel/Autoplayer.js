@@ -20,8 +20,8 @@ class Autoplayer extends Component {
         <Player
           width={width}
           height={height}
-          direction="y"
-          loop={false}
+          direction="x"
+          loop={true}
           autoplayEnabled={true}
           style={{ margin: 'auto' }}
         >

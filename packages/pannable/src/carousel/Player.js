@@ -1,7 +1,8 @@
-import React, { useState, useCallback, useRef, useMemo } from 'react';
+import React, { useCallback, useRef, useMemo, useReducer } from 'react';
 import Pad from '../Pad';
 import useIsomorphicLayoutEffect from '../hooks/useIsomorphicLayoutEffect';
 import ListContent from '../ListContent';
+import { reducer, initialState } from './playerReducer';
 
 const defaultPlayerProps = {
   direction: 'x',
@@ -23,47 +24,59 @@ function Player({
   ...padProps
 }) {
   const {
-    onDragStart = defaultPlayerProps.onDragStart,
-    onDragEnd = defaultPlayerProps.onDragEnd,
-    onDecelerationStart = defaultPlayerProps.onDecelerationStart,
-    onDecelerationEnd = defaultPlayerProps.onDecelerationEnd,
     onMouseEnter = defaultPlayerProps.onMouseEnter,
     onMouseLeave = defaultPlayerProps.onMouseLeave,
     onScroll = defaultPlayerProps.onScroll,
     onContentResize = defaultPlayerProps.onContentResize,
   } = padProps;
-  const [mouseEntered, setMouseEntered] = useState(false);
-  const [loopCount, setLoopCount] = useState(1);
-  const [loopOffset, setLoopOffset] = useState(0);
-  const [scrollTo, setScrollTo] = useState(null);
-  const [relativeOffset, setRelativeOffset] = useState(null);
-  const playerRef = useRef({ padState: null, autoplayTimer: null });
 
-  playerRef.current.loopCount = loopCount;
-  playerRef.current.loopOffset = loopOffset;
-  playerRef.current.direction = direction;
+  const playerRef = useRef({ autoplayTimer: null });
+  const [state, dispatch] = useReducer(reducer, initialState);
+  const { pad, mouseEntered, loopCount, loopOffset, scrollTo } = state;
+  const { drag, deceleration } = pad;
 
-  const go = useCallback(({ delta, animated }) => {
-    setRelativeOffset({ delta, animated });
-  }, []);
+  playerRef.current.pad = pad;
+
+  const go = useCallback(
+    ({ delta, animated }) => {
+      const {
+        contentOffset,
+        size,
+        contentSize,
+        drag,
+        deceleration,
+        pagingEnabled,
+      } = playerRef.current.pad;
+
+      if (drag || deceleration) {
+        return;
+      }
+
+      const offset = getContentOffsetForPlayback(
+        delta,
+        contentOffset,
+        size,
+        contentSize,
+        pagingEnabled,
+        loopCount,
+        direction
+      );
+
+      dispatch({ type: 'setScrollTo', offset, animated });
+    },
+    [loopCount, direction]
+  );
 
   const rewind = useCallback(() => {
-    setRelativeOffset({ delta: -1, animated: true });
-  }, []);
+    go({ delta: -1, animated: true });
+  }, [go]);
 
   const forward = useCallback(() => {
-    setRelativeOffset({ delta: 1, animated: true });
-  }, []);
+    go({ delta: 1, animated: true });
+  }, [go]);
 
   const startPlaying = useCallback(() => {
-    const { padState, autoplayTimer } = playerRef.current;
-    if (padState.drag || padState.deceleration) {
-      return;
-    }
-    if (mouseEntered) {
-      return;
-    }
-
+    const autoplayTimer = playerRef.current.autoplayTimer;
     if (autoplayTimer) {
       clearTimeout(autoplayTimer);
     }
@@ -72,7 +85,7 @@ function Player({
       playerRef.current.autoplayTimer = undefined;
       forward();
     }, autoplayInterval);
-  }, [mouseEntered, autoplayInterval, forward]);
+  }, [autoplayInterval, forward]);
 
   const stopPlaying = useCallback(() => {
     const autoplayTimer = playerRef.current.autoplayTimer;
@@ -83,170 +96,78 @@ function Player({
   }, []);
 
   useIsomorphicLayoutEffect(() => {
-    if (autoplayEnabled) {
-      startPlaying();
-    } else {
-      stopPlaying();
-    }
-
-    return () => stopPlaying();
-  }, [autoplayEnabled, autoplayInterval, startPlaying, stopPlaying]);
-
-  useMemo(() => {
-    if (!loop && loopCount !== 1) {
-      setLoopCount(1);
-      setLoopOffset(0);
-    }
-  }, [loop, loopCount]);
-
-  useMemo(() => {
-    if (!relativeOffset) {
+    if (!autoplayEnabled) {
       return;
     }
-
-    const { delta, animated } = relativeOffset;
-    const { loopCount, direction } = playerRef.current;
-
-    const {
-      contentOffset,
-      size,
-      contentSize,
-      drag,
-      deceleration,
-      pagingEnabled,
-    } = playerRef.current.padState;
 
     if (drag || deceleration) {
       return;
     }
+    if (mouseEntered) {
+      return;
+    }
 
-    const offset = getContentOffsetForPlayback(
-      delta,
-      contentOffset,
-      size,
-      contentSize,
-      pagingEnabled,
-      loopCount,
-      direction
-    );
+    startPlaying();
 
-    setScrollTo({ offset, animated });
-  }, [relativeOffset]);
+    return stopPlaying;
+  }, [
+    autoplayEnabled,
+    mouseEntered,
+    drag,
+    deceleration,
+    startPlaying,
+    stopPlaying,
+  ]);
 
-  const onPadDragStart = useCallback(
+  useMemo(() => {
+    if (!loop) {
+      dispatch({ type: 'disableLoop' });
+    }
+  }, [loop]);
+
+  const onPadScroll = useCallback(
     evt => {
-      stopPlaying();
-      onDragStart(evt);
+      dispatch({ type: 'padScroll', direction });
+
+      onScroll(evt);
     },
-    [onDragStart, stopPlaying]
+    [onScroll, direction]
   );
 
-  const onPadDragEnd = useCallback(
-    evt => {
-      startPlaying();
-      onDragEnd(evt);
+  const onPadContentResize = useCallback(
+    contentSize => {
+      dispatch({ type: 'padContentResize', direction });
+      onContentResize(contentSize);
     },
-    [onDragEnd, startPlaying]
-  );
-
-  const onPadDecelerationStart = useCallback(
-    evt => {
-      stopPlaying();
-      onDecelerationStart(evt);
-    },
-    [onDecelerationStart, stopPlaying]
-  );
-
-  const onPadDecelerationEnd = useCallback(
-    evt => {
-      startPlaying();
-      onDecelerationEnd(evt);
-    },
-    [onDecelerationEnd, startPlaying]
+    [onContentResize, direction]
   );
 
   const onPadMouseEnter = useCallback(
     evt => {
-      setMouseEntered(true);
-      stopPlaying();
+      dispatch({ type: 'setMouseEntered', value: true });
 
       if (onMouseEnter) {
         onMouseEnter(evt);
       }
     },
-    [onMouseEnter, stopPlaying]
+    [onMouseEnter]
   );
 
   const onPadMouseLeave = useCallback(
     evt => {
-      setMouseEntered(false);
-      startPlaying();
+      dispatch({ type: 'setMouseEntered', value: false });
 
       if (onMouseLeave) {
         onMouseLeave(evt);
       }
     },
-    [onMouseLeave, startPlaying]
+    [onMouseLeave]
   );
 
-  const onPadScroll = useCallback(
-    evt => {
-      const padState = playerRef.current.padState;
-      const { loopCount, loopOffset, direction } = playerRef.current;
-      const { contentOffset, size, contentSize } = padState;
-      const [adjustedContentOffset, delta] = getAdjustedContentOffsetForLoop(
-        contentOffset,
-        size,
-        contentSize,
-        loopCount,
-        direction
-      );
-
-      if (contentOffset !== adjustedContentOffset) {
-        setScrollTo({ offset: adjustedContentOffset, animated: false });
-        setLoopOffset(loopOffset + delta);
-      }
-
-      onScroll(evt);
-    },
-    [onScroll]
-  );
-
-  const onPadContentResize = useCallback(
-    contentSize => {
-      const padState = playerRef.current.padState;
-      const { loopCount, loopOffset, direction } = playerRef.current;
-      const { contentOffset, size } = padState;
-
-      let nextLoopCount = calculateLoopCount(
-        size,
-        contentSize,
-        loopCount,
-        direction
-      );
-
-      if (nextLoopCount !== loopCount) {
-        setLoopCount(nextLoopCount);
-        setLoopOffset(0);
-      } else {
-        const [adjustedContentOffset, delta] = getAdjustedContentOffsetForLoop(
-          contentOffset,
-          size,
-          contentSize,
-          nextLoopCount,
-          direction
-        );
-
-        if (contentOffset !== adjustedContentOffset) {
-          setScrollTo({ offset: adjustedContentOffset, animated: false });
-          setLoopOffset(loopOffset + delta);
-        }
-      }
-
-      onContentResize(contentSize);
-    },
-    [onContentResize]
-  );
+  if (loop) {
+    padProps.onScroll = onPadScroll;
+    padProps.onContentResize = onPadContentResize;
+  }
 
   if (direction === 'x') {
     padProps.alwaysBounceY = false;
@@ -254,16 +175,7 @@ function Player({
     padProps.alwaysBounceX = false;
   }
 
-  if (loop) {
-    padProps.onScroll = onPadScroll;
-    padProps.onContentResize = onPadContentResize;
-  }
-
   if (autoplayEnabled) {
-    padProps.onDragStart = onPadDragStart;
-    padProps.onDragEnd = onPadDragEnd;
-    padProps.onDecelerationStart = onPadDecelerationStart;
-    padProps.onDecelerationEnd = onPadDecelerationEnd;
     padProps.onMouseEnter = onPadMouseEnter;
     padProps.onMouseLeave = onPadMouseLeave;
   }
@@ -281,7 +193,9 @@ function Player({
   return (
     <Pad {...padProps}>
       {padState => {
-        playerRef.current.padState = padState;
+        if (padState !== pad) {
+          dispatch({ type: 'setPad', value: padState });
+        }
 
         return (
           <ListContent
@@ -297,63 +211,6 @@ function Player({
       }}
     </Pad>
   );
-}
-
-function calculateLoopCount(size, contentSize, loopCount, direction) {
-  const width = direction === 'y' ? 'height' : 'width';
-
-  const itemWidth = contentSize[width] / loopCount;
-  const sizeWidth = size[width];
-
-  if (!itemWidth || !sizeWidth) {
-    return 1;
-  }
-
-  return 2 + Math.floor(sizeWidth / itemWidth);
-}
-
-function getAdjustedContentOffsetForLoop(
-  contentOffset,
-  size,
-  contentSize,
-  loopCount,
-  direction
-) {
-  if (loopCount === 1) {
-    return [contentOffset, 0];
-  }
-
-  const [width, x, y] =
-    direction === 'y' ? ['height', 'y', 'x'] : ['width', 'x', 'y'];
-
-  const contentWidth = contentSize[width];
-  const sizeWidth = size[width];
-  const itemWidth = contentWidth / loopCount;
-  const bufferWidth = 0.5 * (itemWidth - sizeWidth);
-
-  let maxOffsetX = 0;
-  let minOffsetX = sizeWidth - contentWidth;
-  let offsetX = contentOffset[x];
-  let delta = 0;
-
-  offsetX = maxOffsetX - ((maxOffsetX - offsetX) % (maxOffsetX - minOffsetX));
-
-  maxOffsetX -= bufferWidth;
-  minOffsetX += bufferWidth;
-
-  if (offsetX < minOffsetX) {
-    delta = loopCount - 1;
-  } else if (maxOffsetX < offsetX) {
-    delta = 1 - loopCount;
-  }
-
-  if (delta === 0) {
-    return [contentOffset, 0];
-  }
-
-  offsetX += itemWidth * delta;
-
-  return [{ [x]: offsetX, [y]: contentOffset[y] }, delta];
 }
 
 function getContentOffsetForPlayback(
