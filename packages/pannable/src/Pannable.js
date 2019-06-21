@@ -2,6 +2,7 @@ import React, { useRef, useMemo, useReducer } from 'react';
 import { initialState, reducer } from './pannableReducer';
 import useIsomorphicLayoutEffect from './hooks/useIsomorphicLayoutEffect';
 import usePrevRef from './hooks/usePrevRef';
+import StyleSheet from './utils/StyleSheet';
 
 /* eslint no-restricted-globals:"off" */
 
@@ -193,9 +194,10 @@ function Pannable({
   if (translation) {
     elemStyle.touchAction = 'none';
     elemStyle.pointerEvents = 'none';
+    elemStyle.userSelect = 'none';
   }
 
-  props.style = { ...elemStyle, ...props.style };
+  props.style = { ...StyleSheet.create(elemStyle), ...props.style };
   props.ref = elemRef;
 
   let element = props.children;
