@@ -143,9 +143,6 @@ export default class ProductMaster extends React.Component {
     ],
   };
 
-  padRef = React.createRef();
-  listRef = React.createRef();
-
   handleTriggerTips = index => {
     this.setState(state => {
       const list = [...state.list];
@@ -161,7 +158,6 @@ export default class ProductMaster extends React.Component {
     return (
       <div className="main">
         <Pad
-          ref={this.padRef}
           className="pad"
           directionalLockEnabled
           width={320}
@@ -169,7 +165,6 @@ export default class ProductMaster extends React.Component {
           alwaysBounceX={false}
         >
           <ListContent
-            ref={this.listRef}
             width={320}
             spacing={10}
             itemCount={list.length}
