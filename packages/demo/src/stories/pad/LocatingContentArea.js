@@ -10,8 +10,8 @@ class LocatingContentArea extends Component {
     scrollAlignX: 'auto',
     scrollAlignY: 'auto',
     size: getSize(),
+    scrollToRect: null,
   };
-  padRef = React.createRef();
 
   handleInputChange = evt => {
     const node = evt.target;
@@ -39,15 +39,17 @@ class LocatingContentArea extends Component {
       align.y = scrollAlignY;
     }
 
-    this.padRef.current.scrollToRect({
-      rect: { x: 854, y: 422, width: 120, height: 120 },
-      align,
-      animated: true,
+    this.setState({
+      scrollToRect: {
+        rect: { x: 854, y: 422, width: 120, height: 120 },
+        align,
+        animated: true,
+      },
     });
   };
 
   render() {
-    const { scrollAlignX, scrollAlignY, size } = this.state;
+    const { scrollAlignX, scrollAlignY, size, scrollToRect } = this.state;
     const scrollAlignXOptions = [
       { title: 'auto', value: 'auto', checked: scrollAlignX === 'auto' },
       { title: 'start', value: 'start', checked: scrollAlignX === 'start' },
@@ -67,10 +69,10 @@ class LocatingContentArea extends Component {
       <div className="pad-main">
         <div className="pad-preview" style={{ width, height }}>
           <Pad
-            ref={this.padRef}
             className="pad-padele"
             width={width}
             height={height}
+            scrollToRect={scrollToRect}
           >
             <img src={map} width={1300} height={973} />
             <div

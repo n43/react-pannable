@@ -9,6 +9,7 @@ import './GeneralContentLayout.css';
 class GeneralContentLayout extends Component {
   state = {
     messageList: [
+      'react-pannable v2 is coming!',
       'react-pannable will be better!',
       'Coding makes me happy~ 😄',
       'GitHub brings teams together to work through problems, move ideas forward, and learn from each other along the way.',

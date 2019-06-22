@@ -24,7 +24,13 @@ export default class ListContentLayout extends React.Component {
     });
   };
 
-  handleScrollToPos = () => {};
+  handleScrollToPos = () => {
+    // const { scrollToIndex } = this.state;
+    // const rect = this.listRef.current.getItemRect({
+    //   itemIndex: scrollToIndex,
+    // });
+    // this.padRef.current.scrollToRect({ rect, animated: true });
+  };
 
   render() {
     const { spacing, scrollToIndex, size } = this.state;
