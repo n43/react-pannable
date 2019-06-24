@@ -1,6 +1,5 @@
 import React, { useCallback, useMemo, useReducer, useEffect } from 'react';
 import Pad from '../Pad';
-import useIsomorphicLayoutEffect from '../hooks/useIsomorphicLayoutEffect';
 import ListContent from '../ListContent';
 import { reducer, initialState } from './playerReducer';
 
@@ -31,6 +30,13 @@ function Player({
     onScroll = defaultPlayerProps.onScroll,
     onContentResize = defaultPlayerProps.onContentResize,
   } = padProps;
+
+  if (typeof padProps.pagingEnabled === 'undefined') {
+    padProps.pagingEnabled = pagingEnabled;
+  }
+  if (typeof padProps.directionalLockEnabled === 'undefined') {
+    padProps.directionalLockEnabled = directionalLockEnabled;
+  }
 
   const [state, dispatch] = useReducer(reducer, initialState);
   const { pad, mouseEntered, loopCount, loopOffset, scrollTo } = state;
@@ -130,8 +136,6 @@ function Player({
   }
 
   padProps.scrollTo = scrollTo;
-  padProps.pagingEnabled = pagingEnabled;
-  padProps.directionalLockEnabled = directionalLockEnabled;
 
   return (
     <Pad {...padProps}>
