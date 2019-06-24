@@ -59,8 +59,6 @@ The estimated height of items.
 
 Returns the React element that corresponds to the specified item.
 
-## APIs
-
 ## Types
 
 #### `ItemProps` { key: string, hash: string, forceRender: boolean, style: CSSProperties }

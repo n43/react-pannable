@@ -82,13 +82,11 @@ Calls when decelerating ended.
 
 Calls when changes the size of the content.
 
-## APIs
-
-#### scrollTo({ offset: [Point](types.md#point--x-number-y-number-), animated?: boolean })
+#### `scrollTo`?: { offset: [Point](types.md#point--x-number-y-number-), animated?: boolean }
 
 Scrolls the content to the specified offset.
 
-#### scrollToRect({ rect: [Rect](types.md#rect--x-number-y-number-width-number-height-number-), align: [Align2D](types.md#align2d--x-align-y-align---align), animated?: boolean })
+#### `scrollToRect`?: { rect: [Rect](types.md#rect--x-number-y-number-width-number-height-number-), align: [Align2D](types.md#align2d--x-align-y-align---align), animated?: boolean }
 
 Scrolls the content until the specified rectangle is visible.
 
