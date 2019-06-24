@@ -27,7 +27,6 @@ class Page extends React.Component {
           itemCount={3}
           renderItem={({ itemIndex }) => {
             const style = {
-              height: '100%',
               backgroundColor: itemIndex % 2 ? '#defdff' : '#cbf1ff',
             };
 
@@ -62,16 +61,6 @@ Delay between transitions (in ms). The default value is `5000`
 
 Determines whether the player should loop indefinitely. The default value is `true`
 
-## APIs
+#### `goTo`?: { prev?: boolean, next?: boolean index?: number, animated: boolean }
 
-#### go({delta: number, animated?: boolean})
-
-Seeks to a page, identified by its relative location to the current page.
-
-#### rewind()
-
-Seeks to the previous page.
-
-#### forward()
-
-Seeks to the next page.
+Seeks to the previous page or the next page or the specified page.

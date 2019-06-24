@@ -53,19 +53,9 @@ Returns the React element that corresponds to the specified item.
 
 Calls when the active item changes.
 
-## APIs
+#### `slideTo`?: { prev?: boolean, next?: boolean index?: number, animated: boolean }
 
-#### slideTo({index: number, animated: boolean})
-
-Slides to the specified item.
-
-#### slidePrev()
-
-Slides to the previous item.
-
-#### slideNext()
-
-Slides to the next item.
+Slides to the previous item or the next item or the specified item.
 
 ## Types
 
