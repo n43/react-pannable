@@ -6,10 +6,7 @@ import useIsomorphicLayoutEffect from './hooks/useIsomorphicLayoutEffect';
 const defaultGeneralContentProps = { ...ItemContent.defaultProps };
 
 function GeneralContent(props) {
-  const {
-    width = defaultGeneralContentProps.width,
-    height = defaultGeneralContentProps.height,
-  } = props;
+  const { width, height } = props;
   const itemRef = useRef(null);
 
   useIsomorphicLayoutEffect(() => {

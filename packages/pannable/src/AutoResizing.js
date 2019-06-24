@@ -11,12 +11,7 @@ const defaultAutoResizingProps = {
   onResize: () => {},
 };
 
-function AutoResizing({
-  width = defaultAutoResizingProps.width,
-  height = defaultAutoResizingProps.height,
-  onResize = defaultAutoResizingProps.onResize,
-  ...props
-}) {
+function AutoResizing({ width, height, onResize, ...props }) {
   const [size, setSize] = useState(null);
   const prevSizeRef = usePrevRef(size);
   const resizeRef = useRef(null);

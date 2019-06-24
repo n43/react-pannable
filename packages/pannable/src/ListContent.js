@@ -27,14 +27,14 @@ const defaultListContentProps = {
 };
 
 function ListContent({
-  width = defaultListContentProps.width,
-  height = defaultListContentProps.height,
-  direction = defaultListContentProps.direction,
-  spacing = defaultListContentProps.spacing,
-  itemCount = defaultListContentProps.itemCount,
-  estimatedItemWidth = defaultListContentProps.estimatedItemWidth,
-  estimatedItemHeight = defaultListContentProps.estimatedItemHeight,
-  renderItem = defaultListContentProps.renderItem,
+  width,
+  height,
+  direction,
+  spacing,
+  itemCount,
+  estimatedItemWidth,
+  estimatedItemHeight,
+  renderItem,
   ...props
 }) {
   const [itemHashList, setItemHashList] = useState([]);

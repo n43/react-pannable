@@ -14,17 +14,13 @@ const defaultCarouselrProps = {
 };
 
 function Carousel({
-  itemCount = defaultCarouselrProps.itemCount,
-  renderItem = defaultCarouselrProps.renderItem,
-  onSlideChange = defaultCarouselrProps.onSlideChange,
-  slideTo = defaultCarouselrProps.slideTo,
+  itemCount,
+  renderItem,
+  onSlideChange,
+  slideTo,
   ...playerProps
 }) {
-  const {
-    width = defaultCarouselrProps.width,
-    height = defaultCarouselrProps.height,
-    direction = defaultCarouselrProps.direction,
-  } = playerProps;
+  const { width, height, direction } = playerProps;
   const [player, setPlayer] = useState(initialState);
   const [goTo, setGoTo] = useState(null);
   const prevPlayerRef = usePrevRef(player);

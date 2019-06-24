@@ -38,26 +38,23 @@ const defaultPadProps = {
 };
 
 function Pad({
-  width = defaultPadProps.width,
-  height = defaultPadProps.height,
-  pagingEnabled = defaultPadProps.pagingEnabled,
-  directionalLockEnabled = defaultPadProps.directionalLockEnabled,
-  alwaysBounceX = defaultPadProps.alwaysBounceX,
-  alwaysBounceY = defaultPadProps.alwaysBounceY,
-  scrollTo = defaultPadProps.scrollTo,
-  scrollToRect = defaultPadProps.scrollToRect,
-  onScroll = defaultPadProps.onScroll,
-  onDragStart = defaultPadProps.onDragStart,
-  onDragEnd = defaultPadProps.onDragEnd,
-  onDecelerationStart = defaultPadProps.onDecelerationStart,
-  onDecelerationEnd = defaultPadProps.onDecelerationEnd,
-  onContentResize = defaultPadProps.onContentResize,
+  width,
+  height,
+  pagingEnabled,
+  directionalLockEnabled,
+  alwaysBounceX,
+  alwaysBounceY,
+  scrollTo,
+  scrollToRect,
+  onScroll,
+  onDragStart,
+  onDragEnd,
+  onDecelerationStart,
+  onDecelerationEnd,
+  onContentResize,
   ...pannableProps
 }) {
-  const {
-    enabled = defaultPadProps.enabled,
-    shouldStart = defaultPadProps.shouldStart,
-  } = pannableProps;
+  const { enabled, shouldStart } = pannableProps;
   const [state, dispatch] = useReducer(reducer, initialState);
   const prevStateRef = usePrevRef(state);
   const innerRef = useRef({});

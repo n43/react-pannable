@@ -26,15 +26,15 @@ const defaultGridContentProps = {
 };
 
 function GridContent({
-  width = defaultGridContentProps.width,
-  height = defaultGridContentProps.height,
-  direction = defaultGridContentProps.direction,
-  rowSpacing = defaultGridContentProps.rowSpacing,
-  columnSpacing = defaultGridContentProps.columnSpacing,
-  itemCount = defaultGridContentProps.itemCount,
-  itemWidth = defaultGridContentProps.itemWidth,
-  itemHeight = defaultGridContentProps.itemHeight,
-  renderItem = defaultGridContentProps.renderItem,
+  width,
+  height,
+  direction,
+  rowSpacing,
+  columnSpacing,
+  itemCount,
+  itemWidth,
+  itemHeight,
+  renderItem,
   ...props
 }) {
   const layout = useMemo(

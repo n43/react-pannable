@@ -28,12 +28,12 @@ const defaultPannableProps = {
 };
 
 function Pannable({
-  enabled = defaultPannableProps.enabled,
-  shouldStart = defaultPannableProps.shouldStart,
-  onStart = defaultPannableProps.onStart,
-  onMove = defaultPannableProps.onMove,
-  onEnd = defaultPannableProps.onEnd,
-  onCancel = defaultPannableProps.onCancel,
+  enabled,
+  shouldStart,
+  onStart,
+  onMove,
+  onEnd,
+  onCancel,
   ...props
 }) {
   const [state, dispatch] = useReducer(reducer, initialState);

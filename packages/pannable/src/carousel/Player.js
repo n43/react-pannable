@@ -15,28 +15,14 @@ const defaultPlayerProps = {
 };
 
 function Player({
-  direction = defaultPlayerProps.direction,
-  autoplayEnabled = defaultPlayerProps.autoplayEnabled,
-  autoplayInterval = defaultPlayerProps.autoplayInterval,
-  loop = defaultPlayerProps.loop,
-  goTo = defaultPlayerProps.goTo,
+  direction,
+  autoplayEnabled,
+  autoplayInterval,
+  loop,
+  goTo,
   ...padProps
 }) {
-  const {
-    pagingEnabled = defaultPlayerProps.pagingEnabled,
-    directionalLockEnabled = defaultPlayerProps.directionalLockEnabled,
-    onMouseEnter = defaultPlayerProps.onMouseEnter,
-    onMouseLeave = defaultPlayerProps.onMouseLeave,
-    onScroll = defaultPlayerProps.onScroll,
-    onContentResize = defaultPlayerProps.onContentResize,
-  } = padProps;
-
-  if (typeof padProps.pagingEnabled === 'undefined') {
-    padProps.pagingEnabled = pagingEnabled;
-  }
-  if (typeof padProps.directionalLockEnabled === 'undefined') {
-    padProps.directionalLockEnabled = directionalLockEnabled;
-  }
+  const { onMouseEnter, onMouseLeave, onScroll, onContentResize } = padProps;
 
   const [state, dispatch] = useReducer(reducer, initialState);
   const { pad, mouseEntered, loopCount, loopOffset, scrollTo } = state;

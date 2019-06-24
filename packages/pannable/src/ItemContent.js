@@ -4,7 +4,6 @@ import React, {
   useCallback,
   useRef,
   useContext,
-  useEffect,
 } from 'react';
 import PadContext from './PadContext';
 import useIsomorphicLayoutEffect from './hooks/useIsomorphicLayoutEffect';
@@ -17,11 +16,7 @@ const defaultItemContentProps = {
   height: null,
 };
 
-function ItemContent({
-  width = defaultItemContentProps.width,
-  height = defaultItemContentProps.height,
-  ...props
-}) {
+function ItemContent({ width, height, ...props }) {
   const [size, setSize] = useState(null);
   const prevSizeRef = usePrevRef(size);
   const context = useContext(PadContext);
