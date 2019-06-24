@@ -4,6 +4,7 @@
   "description": "Flexible and Customizable Layouts for Scrolling Content with React",
   "keywords": [
     "react",
+    "hooks",
     "scroll",
     "pan",
     "drag",
