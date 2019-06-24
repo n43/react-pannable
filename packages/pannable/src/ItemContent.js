@@ -4,6 +4,7 @@ import React, {
   useCallback,
   useRef,
   useContext,
+  useEffect,
 } from 'react';
 import PadContext from './PadContext';
 import useIsomorphicLayoutEffect from './hooks/useIsomorphicLayoutEffect';
@@ -36,13 +37,16 @@ function ItemContent({
     setSize(nextSize);
   }, []);
 
+  useIsomorphicLayoutEffect(() => {}, []);
+
   useIsomorphicLayoutEffect(() => {
     if (!isEqualToSize(size, prevSize)) {
       if (size) {
         context.resizeContent(size);
-      } else {
-        calculateSize();
       }
+    }
+    if (!size) {
+      calculateSize();
     }
   });
 
@@ -51,7 +55,6 @@ function ItemContent({
       typeof width === 'number' && typeof height === 'number'
         ? { width, height }
         : null;
-
     setSize(nextSize);
   }, [width, height]);
 

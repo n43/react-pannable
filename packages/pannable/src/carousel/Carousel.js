@@ -3,6 +3,7 @@ import Player from './Player';
 import GridContent from '../GridContent';
 import useIsomorphicLayoutEffect from '../hooks/useIsomorphicLayoutEffect';
 import usePrevRef from '../hooks/usePrevRef';
+import { initialState } from './playerReducer';
 
 const defaultCarouselrProps = {
   ...Player.defaultProps,
@@ -24,23 +25,22 @@ function Carousel({
     height = defaultCarouselrProps.height,
     direction = defaultCarouselrProps.direction,
   } = playerProps;
-  const [player, setPlayer] = useState({});
+  const [player, setPlayer] = useState(initialState);
   const [goTo, setGoTo] = useState(null);
   const prevPlayerRef = usePrevRef(player);
+  const { activeIndex } = player;
 
   useIsomorphicLayoutEffect(() => {
-    const prevActiveIndex = prevPlayerRef.current.activeIndex;
-    const activeIndex = player.activeIndex;
+    const prevPlayer = prevPlayerRef.current;
 
-    if (prevActiveIndex !== activeIndex) {
+    if (prevPlayer.activeIndex !== activeIndex) {
       onSlideChange({ itemCount, activeIndex });
     }
-  }, [onSlideChange, itemCount, player]);
+  });
 
   useMemo(() => {
     if (slideTo) {
-      const { index, prev, next, animated } = slideTo;
-      setGoTo({ prev, next, index, animated });
+      setGoTo(slideTo);
     }
   }, [slideTo]);
 

@@ -89,10 +89,9 @@ function goToReducer(state, action) {
 }
 
 function setScrollToReducer(state, action) {
-  const { offset, animated } = action;
   return {
     ...state,
-    scrollTo: { offset, animated },
+    scrollTo: action.value,
   };
 }
 

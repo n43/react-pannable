@@ -75,11 +75,11 @@ function ListContent({
 
   const resizeContent = useCallback(
     itemHash => itemSize =>
-      setItemSizeDict(itemSizeDict =>
-        isEqualToSize(itemSize, itemSizeDict[itemHash])
+      setItemSizeDict(itemSizeDict => {
+        return isEqualToSize(itemSize, itemSizeDict[itemHash])
           ? itemSizeDict
-          : { ...itemSizeDict, [itemHash]: itemSize }
-      ),
+          : { ...itemSizeDict, [itemHash]: itemSize };
+      }),
     []
   );
 

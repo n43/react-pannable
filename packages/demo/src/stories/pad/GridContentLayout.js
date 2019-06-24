@@ -26,9 +26,8 @@ export default class GridContentLayout extends React.Component {
       [node.name]: value,
     });
   };
-  handleScrollToPos = () => {};
   render() {
-    const { itemWidth, itemHeight, scrollToIndex, size } = this.state;
+    const { itemWidth, itemHeight, size } = this.state;
     const { width, height } = size;
 
     return (
@@ -78,15 +77,6 @@ export default class GridContentLayout extends React.Component {
               placeholder="integer"
               onChange={this.handleInputChange}
             />
-            <TextField
-              name="scrollToIndex"
-              defaultValue={scrollToIndex}
-              placeholder="integer"
-              onChange={this.handleInputChange}
-            />
-            <div className="pad-btn" onClick={this.handleScrollToPos}>
-              scroll
-            </div>
           </div>
         </div>
       </React.Fragment>

@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useReducer } from 'react';
+import React, { useCallback, useMemo, useReducer, useEffect } from 'react';
 import Pad from '../Pad';
 import useIsomorphicLayoutEffect from '../hooks/useIsomorphicLayoutEffect';
 import ListContent from '../ListContent';
@@ -9,10 +9,10 @@ const defaultPlayerProps = {
   autoplayEnabled: true,
   autoplayInterval: 5000,
   loop: true,
+  goTo: null,
   ...Pad.defaultProps,
   pagingEnabled: true,
   directionalLockEnabled: true,
-  goTo: null,
 };
 
 function Player({
@@ -36,7 +36,7 @@ function Player({
   const { pad, mouseEntered, loopCount, loopOffset, scrollTo } = state;
   const { drag, deceleration } = pad;
 
-  useIsomorphicLayoutEffect(() => {
+  useEffect(() => {
     if (!autoplayEnabled || drag || deceleration || mouseEntered) {
       return;
     }
@@ -55,16 +55,13 @@ function Player({
 
   useMemo(() => {
     if (goTo) {
-      const { prev, next, index, animated } = goTo;
-
-      dispatch({ type: 'goTo', prev, next, index, animated });
+      dispatch({ type: 'goTo', ...goTo });
     }
   }, [goTo]);
 
   useMemo(() => {
     if (padProps.scrollTo) {
-      const { offset, animated } = padProps.scrollTo;
-      dispatch({ type: 'setScrollTo', offset, animated });
+      dispatch({ type: 'setScrollTo', value: padProps.scrollTo });
     }
   }, [padProps.scrollTo]);
 

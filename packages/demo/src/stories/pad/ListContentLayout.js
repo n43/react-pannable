@@ -7,7 +7,6 @@ import './Pad.css';
 export default class ListContentLayout extends React.Component {
   state = {
     spacing: 8,
-    scrollToIndex: 0,
     size: getSize(),
   };
 
@@ -24,10 +23,8 @@ export default class ListContentLayout extends React.Component {
     });
   };
 
-  handleScrollToPos = () => {};
-
   render() {
-    const { spacing, scrollToIndex, size } = this.state;
+    const { spacing, size } = this.state;
     const { width, height } = size;
 
     return (
@@ -69,15 +66,6 @@ export default class ListContentLayout extends React.Component {
             placeholder="integer"
             onChange={this.handleInputChange}
           />
-          <TextField
-            name="scrollToIndex"
-            defaultValue={scrollToIndex}
-            placeholder="integer"
-            onChange={this.handleInputChange}
-          />
-          <div className="pad-btn" onClick={this.handleScrollToPos}>
-            Scroll
-          </div>
         </div>
       </div>
     );
