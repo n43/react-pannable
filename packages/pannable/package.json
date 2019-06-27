@@ -44,18 +44,18 @@
     "src"
   ],
   "scripts": {
+    "clean": "rimraf lib dist es coverage",
+    "lint": "eslint src",
+    "coverage": "yarn lint",
     "build:commonjs": "BABEL_ENV=commonjs babel src --out-dir lib",
     "build:es": "babel src --out-dir es",
     "build:umd": "NODE_ENV=development rollup -c -o dist/react-pannable.js",
     "build:umd:min": "NODE_ENV=production rollup -c -o dist/react-pannable.min.js",
     "build": "yarn build:commonjs && yarn build:es && yarn build:umd && yarn build:umd:min",
     "prebuild": "yarn clean",
-    "clean": "rimraf lib dist es coverage",
-    "pretest": "yarn build",
-    "test": "yarn lint",
+    "test": "jest",
+    "pretest": "yarn lint && yarn build",
     "prepare": "yarn test",
-    "lint": "eslint src",
-    "cover": "yarn lint",
     "prepublishOnly": "cd ../demo && yarn deploy"
   },
   "peerDependencies": {
@@ -90,9 +90,10 @@
     "rimraf": "^2.6.3",
     "rollup": "1.16.2",
     "rollup-plugin-babel": "4.3.3",
-    "rollup-plugin-commonjs": "10.0.0",
-    "rollup-plugin-node-resolve": "5.0.4",
+    "rollup-plugin-commonjs": "10.0.1",
+    "rollup-plugin-node-resolve": "5.1.0",
     "rollup-plugin-replace": "2.2.0",
-    "rollup-plugin-uglify": "6.0.2"
+    "rollup-plugin-terser": "5.0.0",
+    "typescript": "3.x"
   }
 }
