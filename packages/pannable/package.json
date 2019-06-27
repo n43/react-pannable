@@ -46,7 +46,7 @@
   "scripts": {
     "clean": "rimraf lib dist es coverage",
     "lint": "eslint src",
-    "coverage": "yarn lint",
+    "coverage": "",
     "build:commonjs": "BABEL_ENV=commonjs babel src --out-dir lib",
     "build:es": "babel src --out-dir es",
     "build:umd": "NODE_ENV=development rollup -c -o dist/react-pannable.js",
