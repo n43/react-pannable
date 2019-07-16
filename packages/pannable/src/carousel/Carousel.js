@@ -1,16 +1,16 @@
-import React, { useMemo, useState } from 'react';
+import React, { Fragment, useMemo, useReducer } from 'react';
 import Player from './Player';
 import GridContent from '../GridContent';
 import useIsomorphicLayoutEffect from '../hooks/useIsomorphicLayoutEffect';
 import usePrevRef from '../hooks/usePrevRef';
-import { initialState } from './playerReducer';
+import { reducer, initialState } from './carouselReducer';
 
-const defaultCarouselrProps = {
-  ...Player.defaultProps,
+const defaultCarouselProps = {
   itemCount: 0,
   renderItem: () => null,
   onSlideChange: () => {},
   slideTo: null,
+  ...Player.defaultProps,
 };
 
 function Carousel({
@@ -21,22 +21,27 @@ function Carousel({
   ...playerProps
 }) {
   const { width, height, direction } = playerProps;
-  const [player, setPlayer] = useState(initialState);
-  const [goTo, setGoTo] = useState(null);
-  const prevPlayerRef = usePrevRef(player);
-  const { activeIndex } = player;
+  const [state, dispatch] = useReducer(reducer, initialState);
+  const prevStateRef = usePrevRef(state);
+
+  const { activeIndex, scrollTo } = state;
+  const prevState = prevStateRef.current;
 
   useIsomorphicLayoutEffect(() => {
-    const prevPlayer = prevPlayerRef.current;
-
-    if (prevPlayer.activeIndex !== activeIndex) {
+    if (activeIndex !== prevState.activeIndex) {
       onSlideChange({ itemCount, activeIndex });
     }
   });
 
   useMemo(() => {
+    if (playerProps.scrollTo) {
+      dispatch({ type: 'setScrollTo', value: playerProps.scrollTo });
+    }
+  }, [playerProps.scrollTo]);
+
+  useMemo(() => {
     if (slideTo) {
-      setGoTo(slideTo);
+      dispatch({ type: 'slideTo', ...slideTo });
     }
   }, [slideTo]);
 
@@ -50,19 +55,29 @@ function Carousel({
     renderItem,
   };
 
-  playerProps.goTo = goTo;
+  playerProps.scrollTo = scrollTo;
+
+  let element = playerProps.children;
+
+  if (typeof element === 'function') {
+    element = element(state);
+  }
 
   return (
-    <Player {...playerProps}>
-      {playerState => {
-        if (playerState !== player) {
-          setPlayer(playerState);
-        }
-        return <GridContent {...gridProps} />;
-      }}
-    </Player>
+    <Fragment>
+      <Player {...playerProps}>
+        {player => {
+          if (player !== state.player) {
+            dispatch({ type: 'setPlayer', value: player });
+          }
+
+          return <GridContent {...gridProps} />;
+        }}
+      </Player>
+      {element}
+    </Fragment>
   );
 }
 
-Carousel.defaultProps = defaultCarouselrProps;
+Carousel.defaultProps = defaultCarouselProps;
 export default Carousel;

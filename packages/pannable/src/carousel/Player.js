@@ -5,10 +5,9 @@ import { reducer, initialState } from './playerReducer';
 
 const defaultPlayerProps = {
   direction: 'x',
+  loop: true,
   autoplayEnabled: true,
   autoplayInterval: 5000,
-  loop: true,
-  goTo: null,
   ...Pad.defaultProps,
   pagingEnabled: true,
   directionalLockEnabled: true,
@@ -16,17 +15,16 @@ const defaultPlayerProps = {
 
 function Player({
   direction,
+  loop,
   autoplayEnabled,
   autoplayInterval,
-  loop,
-  goTo,
   ...padProps
 }) {
-  const { onMouseEnter, onMouseLeave, onScroll, onContentResize } = padProps;
+  const { onMouseEnter, onMouseLeave } = padProps;
 
   const [state, dispatch] = useReducer(reducer, initialState);
-  const { pad, mouseEntered, loopCount, loopOffset, scrollTo } = state;
-  const { drag, deceleration } = pad;
+  const { mouseEntered, loopCount, loopOffset, scrollTo } = state;
+  const { drag, deceleration } = state.pad;
 
   useEffect(() => {
     if (!autoplayEnabled || drag || deceleration || mouseEntered) {
@@ -35,7 +33,7 @@ function Player({
 
     let autoplayTimer = setTimeout(() => {
       autoplayTimer = undefined;
-      dispatch({ type: 'goTo', next: true, animated: true });
+      dispatch({ type: 'playNext' });
     }, autoplayInterval);
 
     return () => {
@@ -46,42 +44,14 @@ function Player({
   }, [autoplayEnabled, mouseEntered, drag, deceleration, autoplayInterval]);
 
   useMemo(() => {
-    if (goTo) {
-      dispatch({ type: 'goTo', ...goTo });
-    }
-  }, [goTo]);
-
-  useMemo(() => {
     if (padProps.scrollTo) {
       dispatch({ type: 'setScrollTo', value: padProps.scrollTo });
     }
   }, [padProps.scrollTo]);
 
   useMemo(() => {
-    if (!loop) {
-      dispatch({ type: 'disableLoop' });
-    }
-  }, [loop]);
-
-  useMemo(() => {
-    dispatch({ type: 'setDirection', value: direction });
-  }, [direction]);
-
-  const onPadScroll = useCallback(
-    evt => {
-      dispatch({ type: 'padScroll' });
-      onScroll(evt);
-    },
-    [onScroll]
-  );
-
-  const onPadContentResize = useCallback(
-    contentSize => {
-      dispatch({ type: 'padContentResize' });
-      onContentResize(contentSize);
-    },
-    [onContentResize]
-  );
+    dispatch({ type: 'setOptions', value: [direction, loop] });
+  }, [loop, direction]);
 
   const onPadMouseEnter = useCallback(
     evt => {
@@ -105,11 +75,6 @@ function Player({
     [onMouseLeave]
   );
 
-  if (loop) {
-    padProps.onScroll = onPadScroll;
-    padProps.onContentResize = onPadContentResize;
-  }
-
   if (direction === 'x') {
     padProps.alwaysBounceY = false;
   } else {
@@ -125,9 +90,9 @@ function Player({
 
   return (
     <Pad {...padProps}>
-      {padState => {
-        if (padState !== pad) {
-          dispatch({ type: 'setPad', value: padState });
+      {pad => {
+        if (pad !== state.pad) {
+          dispatch({ type: 'setPad', value: pad });
         }
 
         let element = padProps.children;

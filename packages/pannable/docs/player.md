@@ -49,6 +49,10 @@ class Page extends React.Component {
 
 The scroll direction of the player. The default value is `x`.
 
+#### `loop`?: boolean
+
+Determines whether the player should loop indefinitely. The default value is `true`
+
 #### `autoplayEnabled`?: boolean
 
 Determines whether the player should automatically playback. The default value is `true`
@@ -56,11 +60,3 @@ Determines whether the player should automatically playback. The default value i
 #### `autoplayInterval`?: number
 
 Delay between transitions (in ms). The default value is `5000`
-
-#### `loop`?: boolean
-
-Determines whether the player should loop indefinitely. The default value is `true`
-
-#### `goTo`?: { prev?: boolean, next?: boolean index?: number, animated: boolean }
-
-Seeks to the previous page or the next page or the specified page.

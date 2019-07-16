@@ -19,6 +19,7 @@ export const initialState = {
   contentVelocity: { x: 0, y: 0 },
   drag: null,
   deceleration: null,
+  /* pagingEnabled, directionalLockEnabled, alwaysBounceX, alwaysBounceY */
   options: [false, false, true, true],
   pannable: pannableInitialState,
 };

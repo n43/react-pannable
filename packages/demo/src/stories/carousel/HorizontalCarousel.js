@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { Carousel } from 'react-pannable';
 import SvgPrev from './SvgPrev';
 import SvgNext from './SvgNext';
@@ -14,28 +14,23 @@ import photo5 from './media/photo5.jpg';
 
 class HorizontalCarousel extends Component {
   state = {
-    direction: 'x',
-    activeIndex: 0,
     slideArr: [photo1, photo2, photo3, photo4, photo5],
     size: getSize(),
     slideTo: null,
   };
 
   handleSlidePrev = () => {
-    this.setState({ slideTo: { prev: true, animated: true } });
+    this.setState({ slideTo: { index: idx => idx - 1, animated: true } });
   };
   handleSlideNext = () => {
-    this.setState({ slideTo: { next: true, animated: true } });
+    this.setState({ slideTo: { index: idx => idx + 1, animated: true } });
   };
   handlePaginationClick = index => {
     this.setState({ slideTo: { index, animated: true } });
   };
-  handleSlideChange = ({ activeIndex }) => {
-    this.setState({ activeIndex });
-  };
 
-  renderIndicator() {
-    const { slideArr, activeIndex } = this.state;
+  renderIndicator(activeIndex) {
+    const { slideArr } = this.state;
 
     return (
       <div className="hcarousel-pagination">
@@ -55,7 +50,7 @@ class HorizontalCarousel extends Component {
   }
 
   render() {
-    const { direction, slideArr, size, slideTo } = this.state;
+    const { slideArr, size, slideTo } = this.state;
     const itemLength = slideArr.length;
     const { width, height } = size;
 
@@ -63,10 +58,9 @@ class HorizontalCarousel extends Component {
       <div className="carousel-main">
         <div className="carousel-box" style={{ width, height }}>
           <Carousel
-            ref={this.carouselRef}
             width={width}
             height={height}
-            direction={direction}
+            direction="x"
             loop={true}
             itemCount={itemLength}
             renderItem={({ itemIndex }) => {
@@ -78,18 +72,23 @@ class HorizontalCarousel extends Component {
               return <div style={style} />;
             }}
             slideTo={slideTo}
-            onSlideChange={this.handleSlideChange}
-          />
-
-          {this.renderIndicator()}
-          <SvgPrev
-            className="carousel-box-prev"
-            onClick={this.handleSlidePrev}
-          />
-          <SvgNext
-            className="carousel-box-next"
-            onClick={this.handleSlideNext}
-          />
+          >
+            {({ activeIndex }) => {
+              return (
+                <Fragment>
+                  {this.renderIndicator(activeIndex)}
+                  <SvgPrev
+                    className="carousel-box-prev"
+                    onClick={this.handleSlidePrev}
+                  />
+                  <SvgNext
+                    className="carousel-box-next"
+                    onClick={this.handleSlideNext}
+                  />
+                </Fragment>
+              );
+            }}
+          </Carousel>
         </div>
       </div>
     );

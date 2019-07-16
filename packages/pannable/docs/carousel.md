@@ -26,10 +26,9 @@ class Page extends React.Component {
 
           return <div style={style} />;
         }}
-        onSlideChange={({ itemCount, activeIndex }) => {
-          console.log(itemCount, activeIndex);
-        }}
-      />
+      >
+        {({ activeIndex }) => <div>{activeIndex}</div>}
+      </Carousel>
     );
   }
 }
@@ -53,9 +52,9 @@ Returns the React element that corresponds to the specified item.
 
 Calls when the active item changes.
 
-#### `slideTo`?: { prev?: boolean, next?: boolean index?: number, animated: boolean }
+#### `slideTo`?: { index?: number | function, animated: boolean }
 
-Slides to the previous item or the next item or the specified item.
+Slides to the specified index of item.
 
 ## Types
 

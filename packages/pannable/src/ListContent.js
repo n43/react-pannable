@@ -91,10 +91,6 @@ function ListContent({
     if (!isEqualToSize(size, prevLayout.size)) {
       context.resizeContent(size);
     }
-
-    if (nextItemHashList.join() !== itemHashList.join()) {
-      setItemHashList(nextItemHashList);
-    }
   });
 
   function buildItem(layoutAttrs) {
@@ -216,6 +212,10 @@ function ListContent({
     };
 
     items.push(buildItem(layoutAttrs));
+  }
+
+  if (nextItemHashList.join() !== itemHashList.join()) {
+    setItemHashList(nextItemHashList);
   }
 
   return <div {...props}>{items}</div>;
