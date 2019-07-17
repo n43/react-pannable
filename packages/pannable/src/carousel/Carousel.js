@@ -22,14 +22,14 @@ function Carousel({
 }) {
   const { width, height, direction } = playerProps;
   const [state, dispatch] = useReducer(reducer, initialState);
-  const prevStateRef = usePrevRef(state);
-
-  const { activeIndex, scrollTo } = state;
-  const prevState = prevStateRef.current;
+  const { pageIndex, scrollTo } = state;
+  const activeIndex = pageIndex % itemCount;
+  const innerRef = usePrevRef({ activeIndex, itemCount });
+  const prevInner = innerRef.current;
 
   useIsomorphicLayoutEffect(() => {
-    if (activeIndex !== prevState.activeIndex) {
-      onSlideChange({ itemCount, activeIndex });
+    if (activeIndex !== prevInner.activeIndex) {
+      onSlideChange({ activeIndex, itemCount });
     }
   });
 
@@ -41,9 +41,9 @@ function Carousel({
 
   useMemo(() => {
     if (slideTo) {
-      dispatch({ type: 'slideTo', ...slideTo });
+      dispatch({ type: 'slideTo', ...slideTo, ...innerRef.current });
     }
-  }, [slideTo]);
+  }, [slideTo, innerRef]);
 
   const gridProps = {
     width,
@@ -60,7 +60,7 @@ function Carousel({
   let element = playerProps.children;
 
   if (typeof element === 'function') {
-    element = element(state);
+    element = element({ activeIndex, itemCount });
   }
 
   return (

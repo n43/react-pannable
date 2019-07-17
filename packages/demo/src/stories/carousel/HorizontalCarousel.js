@@ -20,10 +20,22 @@ class HorizontalCarousel extends Component {
   };
 
   handleSlidePrev = () => {
-    this.setState({ slideTo: { index: idx => idx - 1, animated: true } });
+    this.setState({
+      slideTo: {
+        index: ({ activeIndex, itemCount }) =>
+          activeIndex > 0 ? activeIndex - 1 : itemCount - 1,
+        animated: true,
+      },
+    });
   };
   handleSlideNext = () => {
-    this.setState({ slideTo: { index: idx => idx + 1, animated: true } });
+    this.setState({
+      slideTo: {
+        index: ({ activeIndex, itemCount }) =>
+          activeIndex < itemCount - 1 ? activeIndex + 1 : 0,
+        animated: true,
+      },
+    });
   };
   handlePaginationClick = index => {
     this.setState({ slideTo: { index, animated: true } });
@@ -61,7 +73,6 @@ class HorizontalCarousel extends Component {
             width={width}
             height={height}
             direction="x"
-            loop={true}
             itemCount={itemLength}
             renderItem={({ itemIndex }) => {
               const style = {

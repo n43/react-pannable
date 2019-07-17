@@ -1,7 +1,7 @@
 import { initialState as playerInitialState } from './playerReducer';
 
 export const initialState = {
-  activeIndex: 0,
+  pageIndex: 0,
   scrollTo: null,
   player: playerInitialState,
 };
@@ -21,7 +21,7 @@ export function reducer(state, action) {
 
 function setPlayerReducer(state, action) {
   let nextState = { ...state, player: action.value };
-  nextState = calculateActiveIndexReducer(nextState);
+  nextState = calculatePageIndexReducer(nextState);
 
   return nextState;
 }
@@ -34,69 +34,50 @@ function setScrollToReducer(state, action) {
 }
 
 function slideToReducer(state, action) {
-  const { activeIndex } = state;
-  const [direction] = state.player.options;
-  const { contentOffset, size, contentSize } = state.player.pad;
-  const { index, animated } = action;
-  let delta = index;
+  const { pageIndex } = state;
+  const [direction, loop] = state.player.options;
+  const { contentOffset, size } = state.player.pad;
+  const { activeIndex, itemCount, animated } = action;
+  let index = action.index;
 
-  if (typeof delta === 'function') {
-    delta = delta(activeIndex);
+  if (itemCount === 0) {
+    return state;
+  }
+  if (typeof index === 'function') {
+    index = index({ activeIndex, itemCount });
+  }
+  if (loop) {
+    index += itemCount * Math.round((pageIndex - index) / itemCount);
   }
 
-  delta -= activeIndex;
-
-  const offset = getContentOffsetForDelta(
-    delta,
-    contentOffset,
-    size,
-    contentSize,
-    direction
-  );
+  if (index === pageIndex) {
+    return state;
+  }
+  const offset = getContentOffsetAtIndex(index, contentOffset, size, direction);
 
   return { ...state, scrollTo: { offset, animated } };
 }
 
-function calculateActiveIndexReducer(state) {
-  const { activeIndex } = state;
-  const { loopWidth } = state.player;
+function calculatePageIndexReducer(state) {
+  const { pageIndex } = state;
   const [direction] = state.player.options;
   const { contentOffset, size, contentSize } = state.player.pad;
-  const nextActiveIndex = calculateActiveIndex(
+  const nextPageIndex = calculatePageIndex(
     contentOffset,
     size,
     contentSize,
-    loopWidth,
     direction
   );
 
-  if (nextActiveIndex !== activeIndex) {
-    return { ...state, activeIndex: nextActiveIndex };
+  if (nextPageIndex !== pageIndex) {
+    return { ...state, pageIndex: nextPageIndex };
   }
 
   return state;
 }
 
-function calculateActiveIndex(offset, size, cSize, loopWidth, direction) {
+function calculatePageIndex(offset, size, cSize, direction) {
   const [width, x] = direction === 'y' ? ['height', 'y'] : ['width', 'x'];
-  const sizeWidth = size[width];
-  let index = 0;
-
-  if (sizeWidth > 0 && loopWidth > 0) {
-    const minOffsetX = Math.min(sizeWidth - cSize[width], 0);
-    const offsetX = Math.max(minOffsetX, Math.min(offset[x], 0));
-    const len = Math.round(loopWidth / sizeWidth);
-
-    index = Math.round(-offsetX / sizeWidth);
-    index = index % len;
-  }
-
-  return index;
-}
-
-function getContentOffsetForDelta(delta, offset, size, cSize, direction) {
-  const [width, x, y] =
-    direction === 'y' ? ['height', 'y', 'x'] : ['width', 'x', 'y'];
   const sizeWidth = size[width];
   let index = 0;
 
@@ -107,5 +88,13 @@ function getContentOffsetForDelta(delta, offset, size, cSize, direction) {
     index = Math.round(-offsetX / sizeWidth);
   }
 
-  return { [x]: -(index + delta) * sizeWidth, [y]: offset[y] };
+  return index;
+}
+
+function getContentOffsetAtIndex(index, offset, size, direction) {
+  const [width, x, y] =
+    direction === 'y' ? ['height', 'y', 'x'] : ['width', 'x', 'y'];
+  const sizeWidth = size[width];
+
+  return { [x]: -index * sizeWidth, [y]: offset[y] };
 }

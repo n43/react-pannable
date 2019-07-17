@@ -44,17 +44,21 @@ class Page extends React.Component {
 
 The number of items.
 
-#### `renderItem`: (attrs: [`LayoutAttrs`](gridcontent.md#LayoutAttrs)) => ReactNode
+#### `renderItem`: (attrs: [LayoutAttrs](gridcontent.md#LayoutAttrs)) => ReactNode
 
 Returns the React element that corresponds to the specified item.
 
-#### `onSlideChange`?: (attrs: SlideAttrs) => void
+#### `onSlideChange`?: (attrs: [SlideAttrs](#slideattrs--itemcount-number-activeindex-number-)) => void
 
 Calls when the active item changes.
 
-#### `slideTo`?: { index?: number | function, animated: boolean }
+#### `slideTo`?: { index?: number | (attrs: [SlideAttrs](#slideattrs--itemcount-number-activeindex-number-)) => number, animated: boolean }
 
 Slides to the specified index of item.
+
+#### `children`?: ReactNode | (attrs: [SlideAttrs](#slideattrs--itemcount-number-activeindex-number-)) => ReactNode
+
+You can add some controls with active index.
 
 ## Types
 
