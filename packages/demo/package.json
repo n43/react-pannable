@@ -3,18 +3,18 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "normalize.css": "8.0.1",
+    "normalize.css": "^8.0.1",
     "clsx": "^1.0.3",
     "react": "^16.8.3",
     "react-dom": "^16.8.3",
-    "react-pannable": "^2.1.0"
+    "react-pannable": "^2.2.0"
   },
   "devDependencies": {
-    "@babel/core": "7.5.4",
-    "@storybook/react": "5.1.9",
-    "@storybook/storybook-deployer": "2.8.1",
-    "babel-loader": "8.0.6",
-    "webpack": "4.35.3"
+    "@babel/core": "^7.6.4",
+    "@storybook/react": "^5.2.5",
+    "@storybook/storybook-deployer": "^2.8.1",
+    "babel-loader": "^8.0.6",
+    "webpack": "^4.41.2"
   },
   "scripts": {
     "start": "start-storybook -p 9001 -c .storybook",
