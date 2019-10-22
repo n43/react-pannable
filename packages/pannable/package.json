@@ -1,6 +1,6 @@
 {
   "name": "react-pannable",
-  "version": "2.2.1",
+  "version": "2.2.2",
   "description": "Flexible and Customizable Layouts for Scrolling Content with React",
   "keywords": [
     "react",
@@ -69,9 +69,9 @@
     "@babel/cli": "^7.6.4",
     "@babel/core": "^7.6.4",
     "@babel/plugin-proposal-object-rest-spread": "^7.6.2",
+    "@babel/plugin-transform-react-jsx": "^7.3.0",
     "@babel/plugin-transform-runtime": "^7.6.2",
     "@babel/preset-env": "^7.6.3",
-    "@babel/preset-react": "^7.6.3",
     "@typescript-eslint/eslint-plugin": "^2.5.0",
     "@typescript-eslint/parser": "^2.5.0",
     "babel-eslint": "^10.0.3",
