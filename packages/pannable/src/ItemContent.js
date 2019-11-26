@@ -6,8 +6,8 @@ import React, {
   useContext,
 } from 'react';
 import PadContext from './PadContext';
-import useIsomorphicLayoutEffect from './hooks/useIsomorphicLayoutEffect';
-import usePrevRef from './hooks/usePrevRef';
+import { useIsomorphicLayoutEffect } from './hooks/useIsomorphicLayoutEffect';
+import { usePrevRef } from './hooks/usePrevRef';
 import { getElementSize } from './utils/sizeGetter';
 import { isEqualToSize } from './utils/geometry';
 

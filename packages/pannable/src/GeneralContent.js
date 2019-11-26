@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
 import ItemContent from './ItemContent';
 import resizeDetector from './utils/resizeDetector';
-import useIsomorphicLayoutEffect from './hooks/useIsomorphicLayoutEffect';
+import { useIsomorphicLayoutEffect } from './hooks/useIsomorphicLayoutEffect';
 
 const defaultGeneralContentProps = { ...ItemContent.defaultProps };
 
@@ -14,11 +14,14 @@ function GeneralContent(props) {
       return;
     }
 
-    const resizeNode = itemRef.current.getResizeNode();
+    if (resizeDetector) {
+      const resizeNode = itemRef.current.getResizeNode();
+      resizeDetector.listenTo(resizeNode, () =>
+        itemRef.current.calculateSize()
+      );
 
-    resizeDetector.listenTo(resizeNode, () => itemRef.current.calculateSize());
-
-    return () => resizeDetector.uninstall(resizeNode);
+      return () => resizeDetector.uninstall(resizeNode);
+    }
   }, [width, height]);
 
   return (

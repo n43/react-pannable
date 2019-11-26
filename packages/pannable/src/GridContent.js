@@ -6,8 +6,8 @@ import React, {
   useCallback,
 } from 'react';
 import PadContext from './PadContext';
-import useIsomorphicLayoutEffect from './hooks/useIsomorphicLayoutEffect';
-import usePrevRef from './hooks/usePrevRef';
+import { useIsomorphicLayoutEffect } from './hooks/useIsomorphicLayoutEffect';
+import { usePrevRef } from './hooks/usePrevRef';
 import { getItemVisibleRect, needsRender } from './utils/visible';
 import { isEqualToSize } from './utils/geometry';
 
