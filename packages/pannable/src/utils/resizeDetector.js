@@ -1,3 +1,9 @@
 import elementResizeDetectorMaker from 'element-resize-detector';
 
-export default elementResizeDetectorMaker({ strategy: 'scroll' });
+let detector = null;
+
+if (typeof window !== 'undefined') {
+  detector = elementResizeDetectorMaker({ strategy: 'scroll' });
+}
+
+export default detector;

@@ -1,22 +1,9 @@
 import React, { useRef, useMemo, useReducer } from 'react';
 import { initialState, reducer } from './pannableReducer';
-import useIsomorphicLayoutEffect from './hooks/useIsomorphicLayoutEffect';
-import usePrevRef from './hooks/usePrevRef';
+import { useIsomorphicLayoutEffect } from './hooks/useIsomorphicLayoutEffect';
+import { usePrevRef } from './hooks/usePrevRef';
 import StyleSheet from './utils/StyleSheet';
-
-/* eslint no-restricted-globals:"off" */
-
-let root;
-
-if (typeof self !== 'undefined') {
-  root = self;
-} else if (typeof window !== 'undefined') {
-  root = window;
-} else if (typeof global !== 'undefined') {
-  root = global;
-} else {
-  root = {};
-}
+import { addEventListener, removeEventListener } from './utils/eventListener';
 
 const defaultPannableProps = {
   enabled: true,
@@ -153,12 +140,12 @@ function Pannable({
         target.removeEventListener('touchcancel', onTargetTouchEnd, false);
       };
     } else {
-      root.addEventListener('mousemove', onRootMouseMove, false);
-      root.addEventListener('mouseup', onRootMouseUp, false);
+      addEventListener('mousemove', onRootMouseMove, false);
+      addEventListener('mouseup', onRootMouseUp, false);
 
       return () => {
-        root.removeEventListener('mousemove', onRootMouseMove, false);
-        root.removeEventListener('mouseup', onRootMouseUp, false);
+        removeEventListener('mousemove', onRootMouseMove, false);
+        removeEventListener('mouseup', onRootMouseUp, false);
       };
     }
   }, [target]);

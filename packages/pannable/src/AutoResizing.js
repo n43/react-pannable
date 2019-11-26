@@ -1,6 +1,6 @@
 import React, { useState, useRef, useMemo, useCallback } from 'react';
-import useIsomorphicLayoutEffect from './hooks/useIsomorphicLayoutEffect';
-import usePrevRef from './hooks/usePrevRef';
+import { useIsomorphicLayoutEffect } from './hooks/useIsomorphicLayoutEffect';
+import { usePrevRef } from './hooks/usePrevRef';
 import resizeDetector from './utils/resizeDetector';
 import { getElementSize } from './utils/sizeGetter';
 import { isEqualToSize } from './utils/geometry';
@@ -39,11 +39,12 @@ function AutoResizing({ width, height, onResize, ...props }) {
       return;
     }
 
-    const resizeNode = resizeRef.current;
+    if (resizeDetector) {
+      const resizeNode = resizeRef.current;
+      resizeDetector.listenTo(resizeNode, () => calculateSize());
 
-    resizeDetector.listenTo(resizeNode, () => calculateSize());
-
-    return () => resizeDetector.uninstall(resizeNode);
+      return () => resizeDetector.uninstall(resizeNode);
+    }
   }, [width, height]);
 
   useMemo(() => {

@@ -10,14 +10,14 @@ import { reducer, initialState } from './padReducer';
 import Pannable from './Pannable';
 import PadContext from './PadContext';
 import GeneralContent from './GeneralContent';
-import useIsomorphicLayoutEffect from './hooks/useIsomorphicLayoutEffect';
-import usePrevRef from './hooks/usePrevRef';
+import { useIsomorphicLayoutEffect } from './hooks/useIsomorphicLayoutEffect';
+import { usePrevRef } from './hooks/usePrevRef';
 import StyleSheet from './utils/StyleSheet';
+import { shouldDragStart } from './utils/motion';
 import {
   requestAnimationFrame,
   cancelAnimationFrame,
 } from './utils/animationFrame';
-import { shouldDragStart } from './utils/motion';
 
 const defaultPadProps = {
   width: 0,

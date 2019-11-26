@@ -1,31 +1,40 @@
-// requestAnimationFrame() shim by Paul Irish
 // http://paulirish.com/2011/requestanimationframe-for-smart-animating/
+// http://my.opera.com/emoller/blog/2011/12/20/requestanimationframe-for-smart-er-animating
 
-/* eslint no-restricted-globals:"off" */
+let requestAnimationFrame = function() {};
+let cancelAnimationFrame = function() {};
 
-let root;
+if (typeof window !== 'undefined') {
+  requestAnimationFrame = window.requestAnimationFrame;
+  cancelAnimationFrame = window.cancelAnimationFrame;
 
-if (typeof self !== 'undefined') {
-  root = self;
-} else if (typeof window !== 'undefined') {
-  root = window;
-} else if (typeof global !== 'undefined') {
-  root = global;
-} else {
-  root = {};
+  const vendors = ['ms', 'moz', 'webkit', 'o'];
+  let lastTime = 0;
+
+  for (let x = 0; x < vendors.length && !requestAnimationFrame; ++x) {
+    requestAnimationFrame = window[vendors[x] + 'RequestAnimationFrame'];
+    cancelAnimationFrame =
+      window[vendors[x] + 'CancelAnimationFrame'] ||
+      window[vendors[x] + 'CancelRequestAnimationFrame'];
+  }
+
+  if (!requestAnimationFrame) {
+    requestAnimationFrame = function(callback) {
+      const currTime = new Date().getTime();
+      const timeToCall = Math.max(0, 16 - (currTime - lastTime));
+
+      const id = window.setTimeout(function() {
+        callback(currTime + timeToCall);
+      }, timeToCall);
+
+      lastTime = currTime + timeToCall;
+      return id;
+    };
+
+    cancelAnimationFrame = function(id) {
+      clearTimeout(id);
+    };
+  }
 }
 
-export const requestAnimationFrame =
-  root.requestAnimationFrame ||
-  root.webkitRequestAnimationFrame ||
-  root.mozRequestAnimationFrame ||
-  root.msRequestAnimationFrame ||
-  (root.setTimeout && (fn => root.setTimeout(fn, 20))) ||
-  (() => {});
-
-export const cancelAnimationFrame =
-  root.cancelAnimationFrame ||
-  root.webkitCancelAnimationFrame ||
-  root.mozCancelAnimationFrame ||
-  root.clearTimeout ||
-  (() => {});
+export { requestAnimationFrame, cancelAnimationFrame };
