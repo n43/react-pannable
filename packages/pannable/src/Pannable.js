@@ -14,15 +14,17 @@ const defaultPannableProps = {
   onCancel: () => {},
 };
 
-function Pannable({
-  enabled,
-  shouldStart,
-  onStart,
-  onMove,
-  onEnd,
-  onCancel,
-  ...props
-}) {
+function Pannable(props) {
+  const {
+    enabled,
+    shouldStart,
+    onStart,
+    onMove,
+    onEnd,
+    onCancel,
+    children,
+    ...divProps
+  } = props;
   const [state, dispatch] = useReducer(reducer, initialState);
   const prevStateRef = usePrevRef(state);
   const elemRef = useRef(null);
@@ -153,7 +155,7 @@ function Pannable({
   useIsomorphicLayoutEffect(() => {
     const output = { target, translation, velocity, interval };
 
-    if (translation !== prevState.translation) {
+    if (prevState.translation !== translation) {
       if (translation) {
         if (prevState.translation) {
           onMove(output);
@@ -179,21 +181,29 @@ function Pannable({
   const elemStyle = {};
 
   if (translation) {
-    elemStyle.touchAction = 'none';
-    elemStyle.pointerEvents = 'none';
-    elemStyle.userSelect = 'none';
+    Object.assign(
+      elemStyle,
+      StyleSheet.create({
+        touchAction: 'none',
+        pointerEvents: 'none',
+        userSelect: 'none',
+      })
+    );
   }
 
-  props.style = { ...StyleSheet.create(elemStyle), ...props.style };
-  props.ref = elemRef;
-
-  let element = props.children;
-
-  if (typeof element === 'function') {
-    element = element(state);
+  if (divProps.style) {
+    Object.assign(elemStyle, divProps.style);
   }
 
-  return <div {...props}>{element}</div>;
+  divProps.style = elemStyle;
+
+  const element = typeof children === 'function' ? children(state) : children;
+
+  return (
+    <div {...divProps} ref={elemRef}>
+      {element}
+    </div>
+  );
 }
 
 Pannable.defaultProps = defaultPannableProps;

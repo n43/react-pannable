@@ -1,7 +1,8 @@
 import { initialState as playerInitialState } from './playerReducer';
 
 export const initialState = {
-  pageIndex: 0,
+  activeIndex: 0,
+  itemCount: 0,
   scrollTo: null,
   player: playerInitialState,
 };
@@ -20,10 +21,26 @@ export function reducer(state, action) {
 }
 
 function setPlayerReducer(state, action) {
-  let nextState = { ...state, player: action.value };
-  nextState = calculatePageIndexReducer(nextState);
+  const player = action.value;
 
-  return nextState;
+  const { loopWidth } = player;
+  const [direction] = player.options;
+  const { contentOffset, size, contentSize } = player.pad;
+  const itemCount = calculateItemCount(size, loopWidth, direction);
+  let activeIndex = 0;
+
+  if (itemCount > 0) {
+    const pageIndex = calculatePageIndex(
+      contentOffset,
+      size,
+      contentSize,
+      direction
+    );
+
+    activeIndex = pageIndex % itemCount;
+  }
+
+  return { ...state, player, itemCount, activeIndex };
 }
 
 function setScrollToReducer(state, action) {
@@ -34,46 +51,32 @@ function setScrollToReducer(state, action) {
 }
 
 function slideToReducer(state, action) {
-  const { pageIndex } = state;
-  const [direction, loop] = state.player.options;
+  const { activeIndex, itemCount } = state;
+  const [direction] = state.player.options;
   const { contentOffset, size } = state.player.pad;
-  const { activeIndex, itemCount, animated } = action;
-  let index = action.index;
+  const { animated } = action;
+  let { index } = action;
 
   if (itemCount === 0) {
     return state;
   }
+
   if (typeof index === 'function') {
     index = index({ activeIndex, itemCount });
   }
-  if (loop) {
-    index += itemCount * Math.round((pageIndex - index) / itemCount);
-  }
 
-  if (index === pageIndex) {
+  if (index === activeIndex) {
     return state;
   }
-  const offset = getContentOffsetAtIndex(index, contentOffset, size, direction);
 
-  return { ...state, scrollTo: { offset, animated } };
-}
-
-function calculatePageIndexReducer(state) {
-  const { pageIndex } = state;
-  const [direction] = state.player.options;
-  const { contentOffset, size, contentSize } = state.player.pad;
-  const nextPageIndex = calculatePageIndex(
+  const offset = getContentOffsetForIndexOffset(
+    index - activeIndex,
     contentOffset,
     size,
-    contentSize,
     direction
   );
 
-  if (nextPageIndex !== pageIndex) {
-    return { ...state, pageIndex: nextPageIndex };
-  }
-
-  return state;
+  return { ...state, scrollTo: { offset, animated } };
 }
 
 function calculatePageIndex(offset, size, cSize, direction) {
@@ -91,10 +94,22 @@ function calculatePageIndex(offset, size, cSize, direction) {
   return index;
 }
 
-function getContentOffsetAtIndex(index, offset, size, direction) {
+function calculateItemCount(size, loopWidth, direction) {
+  const width = direction === 'y' ? 'height' : 'width';
+  const sizeWidth = size[width];
+  let count = 0;
+
+  if (sizeWidth > 0) {
+    count = Math.ceil(loopWidth / sizeWidth);
+  }
+
+  return count;
+}
+
+function getContentOffsetForIndexOffset(indexOffset, offset, size, direction) {
   const [width, x, y] =
     direction === 'y' ? ['height', 'y', 'x'] : ['width', 'x', 'y'];
   const sizeWidth = size[width];
 
-  return { [x]: -index * sizeWidth, [y]: offset[y] };
+  return { [x]: offset[x] - indexOffset * sizeWidth, [y]: offset[y] };
 }

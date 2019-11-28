@@ -12,8 +12,6 @@ import photo5 from './media/photo5.jpg';
 
 class VerticalCarousel extends Component {
   state = {
-    direction: 'y',
-    activeIndex: 0,
     slideArr: [photo1, photo2, photo3, photo4, photo5],
     size: getSize(),
     slideTo: null,
@@ -28,12 +26,9 @@ class VerticalCarousel extends Component {
   handlePaginationClick = index => {
     this.setState({ slideTo: { index, animated: true } });
   };
-  handleSlideChange = ({ activeIndex }) => {
-    this.setState({ activeIndex });
-  };
 
-  renderIndicator() {
-    const { slideArr, activeIndex } = this.state;
+  renderIndicator = ({ activeIndex }) => {
+    const { slideArr } = this.state;
 
     return (
       <div className="vcarousel-pagination">
@@ -44,17 +39,17 @@ class VerticalCarousel extends Component {
               className={
                 activeIndex === index ? 'pagination-active' : 'pagination-item'
               }
-              style={{ backgroundImage: `url(${slideArr[index]})` }}
+              style={{ backgroundImage: `url(${item})` }}
               onClick={() => this.handlePaginationClick(index)}
             />
           );
         })}
       </div>
     );
-  }
+  };
 
   render() {
-    const { direction, slideArr, size, slideTo } = this.state;
+    const { slideArr, size, slideTo } = this.state;
     const itemLength = slideArr.length;
     const { width, height } = size;
 
@@ -65,7 +60,7 @@ class VerticalCarousel extends Component {
             ref={this.carouselRef}
             width={width}
             height={height}
-            direction={direction}
+            direction="y"
             loop={true}
             itemCount={itemLength}
             renderItem={({ itemIndex }) => {
@@ -77,9 +72,9 @@ class VerticalCarousel extends Component {
               return <div style={style} />;
             }}
             slideTo={slideTo}
-            onSlideChange={this.handleSlideChange}
-          />
-          {this.renderIndicator()}
+          >
+            {this.renderIndicator}
+          </Carousel>
         </div>
       </div>
     );

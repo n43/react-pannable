@@ -6,7 +6,6 @@ import {
   getDecelerationEndOffset,
   createDeceleration,
   calculateDeceleration,
-  calculateRectOffset,
 } from './utils/motion';
 
 const DECELERATION_RATE_STRONG = 0.025;
@@ -48,8 +47,8 @@ function baseReducer(state, action) {
       return dragCancelReducer(state, action);
     case 'decelerate':
       return decelerateReducer(state, action);
-    case 'setContentOffset':
-      return setContentOffsetReducer(state, action);
+    case 'scrollTo':
+      return scrollToReducer(state, action);
     case 'scrollToRect':
       return scrollToRectReducer(state, action);
     default:
@@ -342,7 +341,7 @@ function decelerateReducer(state, action) {
   };
 }
 
-function setContentOffsetReducer(state, action) {
+function scrollToReducer(state, action) {
   const {
     size,
     contentOffset,
@@ -351,7 +350,12 @@ function setContentOffsetReducer(state, action) {
     deceleration,
     options: [pagingEnabled],
   } = state;
-  const { offset, animated } = action;
+  const { point, animated } = action;
+  let { offset = { x: 0, y: 0 } } = action;
+
+  if (point) {
+    offset = { x: -point.x, y: -point.y };
+  }
 
   if (drag || !animated) {
     if (offset.x === contentOffset.x && offset.y === contentOffset.y) {
@@ -407,17 +411,53 @@ function setContentOffsetReducer(state, action) {
 function scrollToRectReducer(state, action) {
   const { contentOffset, size } = state;
   const { rect, align, animated } = action;
-  const visibleRect = {
-    x: -contentOffset.x,
-    y: -contentOffset.y,
-    width: size.width,
-    height: size.height,
-  };
-  const offset = calculateRectOffset(rect, visibleRect, align);
+  const offset = getContentOffsetForRect(rect, align, contentOffset, size);
 
-  return setContentOffsetReducer(state, {
-    type: 'setContentOffset',
+  return scrollToReducer(state, {
+    type: 'scrollTo',
     offset,
     animated,
   });
+}
+
+function getContentOffsetForRect(rect, align, cOffset, size, name) {
+  if (name) {
+    const [x, width] = name === 'y' ? ['y', 'height'] : ['x', 'width'];
+
+    let offsetX = -rect[x];
+    const delta = size[width] - rect[width];
+
+    if (align[x] === 'auto') {
+      const direction = delta < 0 ? -1 : 1;
+      const dOffsetX = cOffset[x] - offsetX;
+
+      offsetX +=
+        direction *
+        Math.max(0, Math.min(direction * dOffsetX, direction * delta));
+    } else {
+      if (align[x] === 'start') {
+        align[x] = 0;
+      } else if (align[x] === 'center') {
+        align[x] = 0.5;
+      } else if (align[x] === 'end') {
+        align[x] = 1;
+      }
+      if (typeof align[x] !== 'number' || isNaN(align[x])) {
+        align[x] = 0.5;
+      }
+
+      offsetX += align[x] * delta;
+    }
+
+    return offsetX;
+  }
+
+  if (typeof align !== 'object') {
+    align = { x: align, y: align };
+  }
+
+  return {
+    x: getContentOffsetForRect(rect, align, cOffset, size, 'x'),
+    y: getContentOffsetForRect(rect, align, cOffset, size, 'y'),
+  };
 }

@@ -26,17 +26,19 @@ const defaultListContentProps = {
   renderItem: () => null,
 };
 
-function ListContent({
-  width,
-  height,
-  direction,
-  spacing,
-  itemCount,
-  estimatedItemWidth,
-  estimatedItemHeight,
-  renderItem,
-  ...props
-}) {
+function ListContent(props) {
+  const {
+    width,
+    height,
+    direction,
+    spacing,
+    itemCount,
+    estimatedItemWidth,
+    estimatedItemHeight,
+    renderItem,
+    children,
+    ...divProps
+  } = props;
   const [itemHashList, setItemHashList] = useState([]);
   const [itemSizeDict, setItemSizeDict] = useState({});
   const layout = useMemo(
@@ -74,68 +76,69 @@ function ListContent({
   const nextItemHashList = [];
 
   const resizeContent = useCallback(
-    itemHash => itemSize =>
-      setItemSizeDict(itemSizeDict => {
-        return isEqualToSize(itemSize, itemSizeDict[itemHash])
+    itemHash => itemSize => {
+      setItemSizeDict(itemSizeDict =>
+        isEqualToSize(itemSizeDict[itemHash], itemSize)
           ? itemSizeDict
-          : { ...itemSizeDict, [itemHash]: itemSize };
-      }),
+          : { ...itemSizeDict, [itemHash]: itemSize }
+      );
+    },
+
     []
   );
 
   useIsomorphicLayoutEffect(() => {
     context.resizeContent(size);
   }, []);
-
   useIsomorphicLayoutEffect(() => {
-    if (!isEqualToSize(size, prevLayout.size)) {
+    if (!isEqualToSize(prevLayout.size, size)) {
       context.resizeContent(size);
     }
   });
 
-  function buildItem(layoutAttrs) {
-    const { itemIndex, rect, visibleRect, needsRender, Item } = layoutAttrs;
-    let element = renderItem(layoutAttrs);
+  function buildItem(attrs) {
+    const { rect, itemIndex, visibleRect, needsRender, Item } = attrs;
+    let forceRender = false;
+    let element = renderItem(attrs);
 
-    let itemStyle = {
+    let key = String(itemIndex);
+    let hash;
+    const itemStyle = {
       position: 'absolute',
       left: rect.x,
       top: rect.y,
       width: rect.width,
       height: rect.height,
     };
-    let forceRender;
-    let hash;
-    let key;
 
     if (isValidElement(element) && element.type === Item) {
-      if (element.props.style) {
-        itemStyle = { ...itemStyle, ...element.props.style };
+      if (element.props.forceRender !== undefined) {
+        forceRender = element.props.forceRender;
       }
-      forceRender = element.props.forceRender;
-      hash = element.props.hash;
-      key = element.key;
+      if (element.key) {
+        key = element.key;
+      }
+      if (element.props.hash !== undefined) {
+        hash = element.props.hash;
+      }
 
       element = element.props.children;
     }
 
-    if (!key) {
-      key = '' + itemIndex;
-    }
     if (hash === undefined) {
       hash = key;
     }
 
-    let shouldRender = forceRender || needsRender;
     const itemSize = itemSizeDict[hash];
+    let skipRender = !needsRender && !forceRender;
 
     if (!itemSize && nextItemHashList.indexOf(hash) !== -1) {
-      shouldRender = false;
+      skipRender = true;
     }
 
     nextItemHashList[itemIndex] = hash;
 
-    if (!shouldRender) {
+    if (skipRender) {
       return null;
     }
 
@@ -155,7 +158,7 @@ function ListContent({
 
     if (isValidElement(element) && element.type.PadContent) {
       if (element.props.style) {
-        itemStyle = { ...itemStyle, ...element.props.style };
+        Object.assign(itemStyle, element.props.style);
       }
       if (typeof element.props.width === 'number') {
         sizeProps.width = element.props.width;
@@ -165,9 +168,9 @@ function ListContent({
       }
 
       element = cloneElement(element, {
-        ref: element.ref,
-        style: itemStyle,
         ...sizeProps,
+        style: itemStyle,
+        ref: element.ref,
       });
     } else {
       element = (
@@ -194,31 +197,29 @@ function ListContent({
     elemStyle.height = size.height;
   }
 
-  props.style = {
-    ...elemStyle,
-    ...props.style,
-  };
+  if (divProps.style) {
+    Object.assign(elemStyle, divProps.style);
+  }
+  divProps.style = elemStyle;
 
-  const items = [];
-
-  for (let itemIndex = 0; itemIndex < layoutList.length; itemIndex++) {
-    const attrs = layoutList[itemIndex];
-    const layoutAttrs = {
+  const items = layoutList.map(attrs =>
+    buildItem({
       ...attrs,
-      itemIndex,
       visibleRect: getItemVisibleRect(attrs.rect, context.visibleRect),
       needsRender: needsRender(attrs.rect, context.visibleRect),
       Item,
-    };
+    })
+  );
 
-    items.push(buildItem(layoutAttrs));
-  }
-
-  if (nextItemHashList.join() !== itemHashList.join()) {
+  if (itemHashList.join() !== nextItemHashList.join()) {
     setItemHashList(nextItemHashList);
   }
 
-  return <div {...props}>{items}</div>;
+  if (typeof children === 'function') {
+    children(layout);
+  }
+
+  return <div {...divProps}>{items}</div>;
 }
 
 ListContent.defaultProps = defaultListContentProps;
@@ -263,6 +264,7 @@ function calculateLayout(props, itemHashList, itemSizeDict) {
         [width]: itemSize[width],
         [height]: itemSize[height],
       },
+      itemIndex,
     });
 
     if (itemSize[height] > 0) {

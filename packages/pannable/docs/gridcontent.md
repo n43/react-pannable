@@ -17,11 +17,7 @@ class Page extends React.Component {
           itemWidth={80}
           itemHeight={80}
           itemCount={100}
-          renderItem={({ Item }) => (
-            <Item hash="img">
-              <img src="beauty.jpg" width="80" height="80" />
-            </Item>
-          )}
+          renderItem={() => <img src="beauty.jpg" width="80" height="80" />}
         />
       </Pad>
     );
@@ -71,6 +67,6 @@ Returns the React element that corresponds to the specified item.
 
 ## Types
 
-#### `ItemProps` { key: string, forceRender: boolean, style: CSSProperties }
+#### `ItemProps` { key?: string, forceRender?: boolean }
 
 #### LayoutAttrs { itemIndex: number, rowIndex: number, columnIndex: number, rect: [Rect](types.md#rect--x-number-y-number-width-number-height-number-), visibleRect: [Rect](types.md#rect--x-number-y-number-width-number-height-number-), needsRender: boolean, Item: Component<[ItemProps](#itemprops--key-string-forcerender-boolean-style-cssproperties-), any> };

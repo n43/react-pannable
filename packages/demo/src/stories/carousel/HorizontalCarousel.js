@@ -22,8 +22,7 @@ class HorizontalCarousel extends Component {
   handleSlidePrev = () => {
     this.setState({
       slideTo: {
-        index: ({ activeIndex, itemCount }) =>
-          activeIndex > 0 ? activeIndex - 1 : itemCount - 1,
+        index: ({ activeIndex }) => activeIndex - 1,
         animated: true,
       },
     });
@@ -31,8 +30,7 @@ class HorizontalCarousel extends Component {
   handleSlideNext = () => {
     this.setState({
       slideTo: {
-        index: ({ activeIndex, itemCount }) =>
-          activeIndex < itemCount - 1 ? activeIndex + 1 : 0,
+        index: ({ activeIndex }) => activeIndex + 1,
         animated: true,
       },
     });
@@ -74,14 +72,14 @@ class HorizontalCarousel extends Component {
             height={height}
             direction="x"
             itemCount={itemLength}
-            renderItem={({ itemIndex }) => {
-              const style = {
-                backgroundImage: `url(${slideArr[itemIndex]})`,
-                backgroundSize: 'cover',
-              };
-
-              return <div style={style} />;
-            }}
+            renderItem={({ itemIndex }) => (
+              <div
+                style={{
+                  backgroundImage: `url(${slideArr[itemIndex]})`,
+                  backgroundSize: 'cover',
+                }}
+              />
+            )}
             slideTo={slideTo}
           >
             {({ activeIndex }) => {

@@ -39,7 +39,7 @@ class BasicScroll extends Component {
 
     this.setState({
       scrollTo: {
-        offset: { x: scrollToX, y: scrollToY },
+        point: { x: scrollToX, y: scrollToY },
         animated: true,
       },
     });

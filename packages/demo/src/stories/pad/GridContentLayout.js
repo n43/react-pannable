@@ -10,7 +10,6 @@ export default class GridContentLayout extends React.Component {
   state = {
     itemWidth: 187,
     itemHeight: 150,
-    scrollToIndex: 0,
     size: getSize(),
   };
 

@@ -1,7 +1,6 @@
 import React, {
   isValidElement,
   cloneElement,
-  useRef,
   useMemo,
   useCallback,
   useReducer,
@@ -13,7 +12,6 @@ import GeneralContent from './GeneralContent';
 import { useIsomorphicLayoutEffect } from './hooks/useIsomorphicLayoutEffect';
 import { usePrevRef } from './hooks/usePrevRef';
 import StyleSheet from './utils/StyleSheet';
-import { shouldDragStart } from './utils/motion';
 import {
   requestAnimationFrame,
   cancelAnimationFrame,
@@ -37,27 +35,28 @@ const defaultPadProps = {
   ...Pannable.defaultProps,
 };
 
-function Pad({
-  width,
-  height,
-  pagingEnabled,
-  directionalLockEnabled,
-  alwaysBounceX,
-  alwaysBounceY,
-  scrollTo,
-  scrollToRect,
-  onScroll,
-  onDragStart,
-  onDragEnd,
-  onDecelerationStart,
-  onDecelerationEnd,
-  onContentResize,
-  ...pannableProps
-}) {
+function Pad(props) {
+  const {
+    width,
+    height,
+    pagingEnabled,
+    directionalLockEnabled,
+    alwaysBounceX,
+    alwaysBounceY,
+    scrollTo,
+    scrollToRect,
+    onScroll,
+    onDragStart,
+    onDragEnd,
+    onDecelerationStart,
+    onDecelerationEnd,
+    onContentResize,
+    children,
+    ...pannableProps
+  } = props;
   const { enabled, shouldStart } = pannableProps;
   const [state, dispatch] = useReducer(reducer, initialState);
   const prevStateRef = usePrevRef(state);
-  const innerRef = useRef({});
 
   const {
     size,
@@ -68,21 +67,13 @@ function Pad({
     deceleration,
   } = state;
   const prevState = prevStateRef.current;
-  innerRef.current.state = state;
 
-  const resizeContent = useCallback(
-    contentSize => dispatch({ type: 'setContentSize', value: contentSize }),
-    []
-  );
+  const resizeContent = useCallback(contentSize => {
+    dispatch({ type: 'setContentSize', value: contentSize });
+  }, []);
 
   const shouldPannableStart = useCallback(
     evt => {
-      const {
-        size,
-        contentSize,
-        options: [, directionalLockEnabled],
-      } = innerRef.current.state;
-
       if (
         directionalLockEnabled &&
         !shouldDragStart(evt.velocity, size, contentSize)
@@ -92,11 +83,11 @@ function Pad({
 
       return shouldStart(evt);
     },
-    [shouldStart]
+    [shouldStart, directionalLockEnabled, size, contentSize]
   );
 
   useIsomorphicLayoutEffect(() => {
-    if (state.pannable.translation !== prevState.pannable.translation) {
+    if (prevState.pannable.translation !== state.pannable.translation) {
       if (state.pannable.translation) {
         if (prevState.pannable.translation) {
           dispatch({ type: 'dragMove' });
@@ -121,20 +112,20 @@ function Pad({
       decelerating: !!deceleration,
     };
 
-    if (contentSize !== prevState.contentSize) {
+    if (prevState.contentSize !== contentSize) {
       onContentResize(contentSize);
     }
-    if (contentOffset !== prevState.contentOffset) {
+    if (prevState.contentOffset !== contentOffset) {
       onScroll(output);
     }
-    if (drag !== prevState.drag) {
+    if (prevState.drag !== drag) {
       if (!prevState.drag) {
         onDragStart(output);
       } else if (!drag) {
         onDragEnd(output);
       }
     }
-    if (deceleration !== prevState.deceleration) {
+    if (prevState.deceleration !== deceleration) {
       if (!prevState.deceleration) {
         onDecelerationStart(output);
       } else if (!deceleration) {
@@ -148,15 +139,12 @@ function Pad({
       return;
     }
 
-    let timer = requestAnimationFrame(() => {
-      timer = undefined;
+    const timer = requestAnimationFrame(() => {
       dispatch({ type: 'decelerate', now: new Date().getTime() });
     });
 
     return () => {
-      if (timer) {
-        cancelAnimationFrame(timer);
-      }
+      cancelAnimationFrame(timer);
     };
   }, [state]);
 
@@ -178,7 +166,7 @@ function Pad({
 
   useMemo(() => {
     if (scrollTo) {
-      dispatch({ type: 'setContentOffset', ...scrollTo });
+      dispatch({ type: 'scrollTo', ...scrollTo });
     }
   }, [scrollTo]);
 
@@ -197,7 +185,11 @@ function Pad({
     height: size.height,
   };
 
-  pannableProps.style = { ...elemStyle, ...pannableProps.style };
+  if (pannableProps.style) {
+    Object.assign(elemStyle, pannableProps.style);
+  }
+
+  pannableProps.style = elemStyle;
 
   const visibleRect = {
     x: -contentOffset.x,
@@ -210,11 +202,11 @@ function Pad({
     <PadContext.Provider value={{ visibleRect, resizeContent }}>
       <Pannable {...pannableProps}>
         {pannable => {
-          if (pannable !== state.pannable) {
+          if (state.pannable !== pannable) {
             dispatch({ type: 'setPannable', value: pannable });
           }
 
-          let contentStyle = StyleSheet.create({
+          const contentStyle = StyleSheet.create({
             position: 'relative',
             width: contentSize.width,
             height: contentSize.height,
@@ -222,15 +214,12 @@ function Pad({
             willChange: 'transform',
           });
 
-          let element = pannableProps.children;
-
-          if (typeof element === 'function') {
-            element = element(state);
-          }
+          let element =
+            typeof children === 'function' ? children(state) : children;
 
           if (isValidElement(element) && element.type.PadContent) {
             if (element.props.style) {
-              contentStyle = { ...contentStyle, ...element.props.style };
+              Object.assign(contentStyle, element.props.style);
             }
 
             element = cloneElement(element, {
@@ -253,3 +242,10 @@ function Pad({
 Pad.defaultProps = defaultPadProps;
 
 export default Pad;
+
+function shouldDragStart(velocity, size, cSize) {
+  const height =
+    Math.abs(velocity.y) < Math.abs(velocity.x) ? 'width' : 'height';
+
+  return size[height] < cSize[height];
+}

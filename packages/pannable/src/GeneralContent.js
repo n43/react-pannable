@@ -6,7 +6,7 @@ import { useIsomorphicLayoutEffect } from './hooks/useIsomorphicLayoutEffect';
 const defaultGeneralContentProps = { ...ItemContent.defaultProps };
 
 function GeneralContent(props) {
-  const { width, height } = props;
+  const { width, height, children } = props;
   const itemRef = useRef(null);
 
   useIsomorphicLayoutEffect(() => {
@@ -29,13 +29,7 @@ function GeneralContent(props) {
       {(size, apis) => {
         itemRef.current = apis;
 
-        let element = props.children;
-
-        if (typeof element === 'function') {
-          element = element(size, apis);
-        }
-
-        return element;
+        return typeof children === 'function' ? children(size, apis) : children;
       }}
     </ItemContent>
   );

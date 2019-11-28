@@ -13,37 +13,39 @@ const defaultCarouselProps = {
   ...Player.defaultProps,
 };
 
-function Carousel({
-  itemCount,
-  renderItem,
-  onSlideChange,
-  slideTo,
-  ...playerProps
-}) {
-  const { width, height, direction } = playerProps;
+function Carousel(props) {
+  const {
+    itemCount: gridItemCount,
+    renderItem,
+    onSlideChange,
+    slideTo,
+    children,
+    ...playerProps
+  } = props;
+  const { width, height, direction, scrollTo: playerScrollTo } = playerProps;
   const [state, dispatch] = useReducer(reducer, initialState);
-  const { pageIndex, scrollTo } = state;
-  const activeIndex = pageIndex % itemCount;
-  const innerRef = usePrevRef({ activeIndex, itemCount });
-  const prevInner = innerRef.current;
+  const prevStateRef = usePrevRef(state);
+
+  const { activeIndex, itemCount, scrollTo } = state;
+  const prevState = prevStateRef.current;
 
   useIsomorphicLayoutEffect(() => {
-    if (activeIndex !== prevInner.activeIndex) {
+    if (prevState.activeIndex !== activeIndex) {
       onSlideChange({ activeIndex, itemCount });
     }
   });
 
   useMemo(() => {
-    if (playerProps.scrollTo) {
-      dispatch({ type: 'setScrollTo', value: playerProps.scrollTo });
+    if (playerScrollTo) {
+      dispatch({ type: 'setScrollTo', value: playerScrollTo });
     }
-  }, [playerProps.scrollTo]);
+  }, [playerScrollTo]);
 
   useMemo(() => {
     if (slideTo) {
-      dispatch({ type: 'slideTo', ...slideTo, ...innerRef.current });
+      dispatch({ type: 'slideTo', ...slideTo });
     }
-  }, [slideTo, innerRef]);
+  }, [slideTo]);
 
   const gridProps = {
     width,
@@ -51,23 +53,22 @@ function Carousel({
     itemWidth: width,
     itemHeight: height,
     direction,
-    itemCount,
+    itemCount: gridItemCount,
     renderItem,
   };
 
   playerProps.scrollTo = scrollTo;
 
-  let element = playerProps.children;
-
-  if (typeof element === 'function') {
-    element = element({ activeIndex, itemCount });
-  }
+  const element =
+    typeof children === 'function'
+      ? children({ activeIndex, itemCount })
+      : children;
 
   return (
     <Fragment>
       <Player {...playerProps}>
         {player => {
-          if (player !== state.player) {
+          if (state.player !== player) {
             dispatch({ type: 'setPlayer', value: player });
           }
 

@@ -16,7 +16,8 @@ const defaultItemContentProps = {
   height: null,
 };
 
-function ItemContent({ width, height, ...props }) {
+function ItemContent(props) {
+  const { width, height, children, ...divProps } = props;
   const [size, setSize] = useState(null);
   const prevSizeRef = usePrevRef(size);
   const context = useContext(PadContext);
@@ -32,24 +33,25 @@ function ItemContent({ width, height, ...props }) {
     setSize(nextSize);
   }, []);
 
-  useIsomorphicLayoutEffect(() => {}, []);
-
   useIsomorphicLayoutEffect(() => {
-    if (!isEqualToSize(size, prevSize)) {
+    if (!isEqualToSize(prevSize, size)) {
       if (size) {
         context.resizeContent(size);
       }
     }
+
     if (!size) {
       calculateSize();
     }
   });
 
   useMemo(() => {
-    const nextSize =
-      typeof width === 'number' && typeof height === 'number'
-        ? { width, height }
-        : null;
+    let nextSize = null;
+
+    if (typeof width === 'number' && typeof height === 'number') {
+      nextSize = { width, height };
+    }
+
     setSize(nextSize);
   }, [width, height]);
 
@@ -67,17 +69,19 @@ function ItemContent({ width, height, ...props }) {
     elemStyle.height = size.height;
   }
 
-  props.style = { ...elemStyle, ...props.style };
-
-  let element = props.children;
-
-  if (typeof element === 'function') {
-    element = element(size, { getResizeNode, calculateSize });
+  if (divProps.style) {
+    Object.assign(elemStyle, divProps.style);
   }
+  divProps.style = elemStyle;
+
+  const element =
+    typeof children === 'function'
+      ? children(size, { getResizeNode, calculateSize })
+      : children;
 
   return (
     <PadContext.Provider value={{ ...context, resizeContent }}>
-      <div {...props}>
+      <div {...divProps}>
         <div ref={resizeRef} style={resizeStyle}>
           {element}
         </div>

@@ -11,7 +11,8 @@ const defaultAutoResizingProps = {
   onResize: () => {},
 };
 
-function AutoResizing({ width, height, onResize, ...props }) {
+function AutoResizing(props) {
+  const { width, height, onResize, children, ...divProps } = props;
   const [size, setSize] = useState(null);
   const prevSizeRef = usePrevRef(size);
   const resizeRef = useRef(null);
@@ -25,12 +26,14 @@ function AutoResizing({ width, height, onResize, ...props }) {
   }, []);
 
   useIsomorphicLayoutEffect(() => {
-    if (!isEqualToSize(size, prevSize)) {
+    if (!isEqualToSize(prevSize, size)) {
       if (size) {
         onResize(size);
-      } else {
-        calculateSize();
       }
+    }
+
+    if (!size) {
+      calculateSize();
     }
   });
 
@@ -48,38 +51,37 @@ function AutoResizing({ width, height, onResize, ...props }) {
   }, [width, height]);
 
   useMemo(() => {
-    const nextSize =
-      typeof width === 'number' && typeof height === 'number'
-        ? { width, height }
-        : null;
+    let nextSize = null;
+
+    if (typeof width === 'number' && typeof height === 'number') {
+      nextSize = { width, height };
+    }
 
     setSize(nextSize);
   }, [width, height]);
 
-  let element = props.children;
-
-  if (size) {
-    if (typeof element === 'function') {
-      element = element(size);
-    }
-  } else {
-    element = null;
-  }
-
-  props.style = {
+  divProps.style = {
     width: getStyleDimension(width),
     height: getStyleDimension(height),
-    ...props.style,
+    ...divProps.style,
   };
 
+  let element = null;
+
+  if (size) {
+    element = typeof children === 'function' ? children(size) : children;
+  }
+
   return (
-    <div {...props} ref={resizeRef}>
+    <div {...divProps} ref={resizeRef}>
       {element}
     </div>
   );
 }
 
 AutoResizing.defaultProps = defaultAutoResizingProps;
+
+export default AutoResizing;
 
 function getStyleDimension(value) {
   if (value === undefined || value === null || value === '') {
@@ -88,5 +90,3 @@ function getStyleDimension(value) {
 
   return value;
 }
-
-export default AutoResizing;

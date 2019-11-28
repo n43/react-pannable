@@ -82,7 +82,7 @@ Calls when decelerating ended.
 
 Calls when changes the size of the content.
 
-#### `scrollTo`?: { offset: [Point](types.md#point--x-number-y-number-), animated?: boolean }
+#### `scrollTo`?: { point?: [Point](types.md#point--x-number-y-number-), offset?: [Point](types.md#point--x-number-y-number-), animated?: boolean }
 
 Scrolls the content to the specified offset.
 

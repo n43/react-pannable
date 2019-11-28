@@ -61,6 +61,6 @@ Returns the React element that corresponds to the specified item.
 
 ## Types
 
-#### `ItemProps` { key: string, hash: string, forceRender: boolean, style: CSSProperties }
+#### `ItemProps` { key?: string, hash?: string, forceRender?: boolean }
 
 #### `LayoutAttrs` { itemIndex: number, rect: [Rect](types.md#rect--x-number-y-number-width-number-height-number-), visibleRect: [Rect](types.md#rect--x-number-y-number-width-number-height-number-), needsRender: boolean, Item: Component<[ItemProps](#itemprops--key-string-hash-string-forcerender-boolean-style-cssproperties-), any> };

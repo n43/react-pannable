@@ -13,45 +13,20 @@ const defaultPlayerProps = {
   directionalLockEnabled: true,
 };
 
-function Player({
-  direction,
-  loop,
-  autoplayEnabled,
-  autoplayInterval,
-  ...padProps
-}) {
-  const { onMouseEnter, onMouseLeave } = padProps;
+function Player(props) {
+  const {
+    direction,
+    loop,
+    autoplayEnabled,
+    autoplayInterval,
+    children,
+    ...padProps
+  } = props;
+  const { scrollTo: padScrollTo, onMouseEnter, onMouseLeave } = padProps;
 
   const [state, dispatch] = useReducer(reducer, initialState);
   const { mouseEntered, loopCount, loopOffset, scrollTo } = state;
   const { drag, deceleration } = state.pad;
-
-  useEffect(() => {
-    if (!autoplayEnabled || drag || deceleration || mouseEntered) {
-      return;
-    }
-
-    let autoplayTimer = setTimeout(() => {
-      autoplayTimer = undefined;
-      dispatch({ type: 'playNext' });
-    }, autoplayInterval);
-
-    return () => {
-      if (autoplayTimer) {
-        clearTimeout(autoplayTimer);
-      }
-    };
-  }, [autoplayEnabled, mouseEntered, drag, deceleration, autoplayInterval]);
-
-  useMemo(() => {
-    if (padProps.scrollTo) {
-      dispatch({ type: 'setScrollTo', value: padProps.scrollTo });
-    }
-  }, [padProps.scrollTo]);
-
-  useMemo(() => {
-    dispatch({ type: 'setOptions', value: [direction, loop] });
-  }, [loop, direction]);
 
   const onPadMouseEnter = useCallback(
     evt => {
@@ -75,6 +50,30 @@ function Player({
     [onMouseLeave]
   );
 
+  useEffect(() => {
+    if (!autoplayEnabled || mouseEntered || drag || deceleration) {
+      return;
+    }
+
+    const autoplayTimer = setTimeout(() => {
+      dispatch({ type: 'playNext' });
+    }, autoplayInterval);
+
+    return () => {
+      clearTimeout(autoplayTimer);
+    };
+  }, [autoplayEnabled, autoplayInterval, mouseEntered, drag, deceleration]);
+
+  useMemo(() => {
+    dispatch({ type: 'setOptions', value: [direction, loop] });
+  }, [loop, direction]);
+
+  useMemo(() => {
+    if (padScrollTo) {
+      dispatch({ type: 'setScrollTo', value: padScrollTo });
+    }
+  }, [padScrollTo]);
+
   if (direction === 'x') {
     padProps.alwaysBounceY = false;
   } else {
@@ -91,15 +90,12 @@ function Player({
   return (
     <Pad {...padProps}>
       {pad => {
-        if (pad !== state.pad) {
+        if (state.pad !== pad) {
           dispatch({ type: 'setPad', value: pad });
         }
 
-        let element = padProps.children;
-
-        if (typeof element === 'function') {
-          element = element(state);
-        }
+        const element =
+          typeof children === 'function' ? children(state) : children;
 
         return (
           <ListContent

@@ -8,7 +8,6 @@ import './NestedMutipleContent.css';
 export default class NestedMutipleContent extends React.Component {
   state = {
     spacing: 8,
-    scrollToIndex: 0,
     size: getSize(),
   };
 

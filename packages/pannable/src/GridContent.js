@@ -25,18 +25,20 @@ const defaultGridContentProps = {
   renderItem: () => null,
 };
 
-function GridContent({
-  width,
-  height,
-  direction,
-  rowSpacing,
-  columnSpacing,
-  itemCount,
-  itemWidth,
-  itemHeight,
-  renderItem,
-  ...props
-}) {
+function GridContent(props) {
+  const {
+    width,
+    height,
+    direction,
+    rowSpacing,
+    columnSpacing,
+    itemCount,
+    itemWidth,
+    itemHeight,
+    renderItem,
+    children,
+    ...divProps
+  } = props;
   const layout = useMemo(
     () =>
       calculateLayout({
@@ -63,70 +65,55 @@ function GridContent({
   const prevLayoutRef = usePrevRef(layout);
   const context = useContext(PadContext);
 
-  const { size, count, layoutList } = layout;
+  const { size, layoutList } = layout;
   const prevLayout = prevLayoutRef.current;
 
   const resizeContent = useCallback(() => {}, []);
-  const getItemIndex = useCallback(
-    ({ rowIndex, columnIndex }) =>
-      calculateItemIndex(
-        { row: rowIndex, column: columnIndex },
-        count,
-        direction
-      ),
-    [direction, count]
-  );
 
   useIsomorphicLayoutEffect(() => {
     context.resizeContent(size);
   }, []);
-
   useIsomorphicLayoutEffect(() => {
-    if (!isEqualToSize(size, prevLayout.size)) {
+    if (!isEqualToSize(prevLayout.size, size)) {
       context.resizeContent(size);
     }
   });
 
-  function buildItem(layoutAttrs) {
-    const { itemIndex, rect, visibleRect, needsRender, Item } = layoutAttrs;
-    let element = renderItem(layoutAttrs);
+  function buildItem(attrs) {
+    const { rect, itemIndex, visibleRect, needsRender, Item } = attrs;
+    let forceRender = false;
+    let element = renderItem(attrs);
 
-    let itemStyle = {
+    let key = String(itemIndex);
+    const itemStyle = {
       position: 'absolute',
       left: rect.x,
       top: rect.y,
       width: rect.width,
       height: rect.height,
     };
-    let forceRender;
-    let key;
 
     if (isValidElement(element) && element.type === Item) {
-      if (element.props.style) {
-        itemStyle = { ...itemStyle, ...element.props.style };
+      if (element.props.forceRender !== undefined) {
+        forceRender = element.props.forceRender;
       }
-      forceRender = element.props.forceRender;
-      key = element.key;
+      if (element.key) {
+        key = element.key;
+      }
 
       element = element.props.children;
     }
 
-    if (!key) {
-      key = '' + itemIndex;
-    }
-    if (!(forceRender || needsRender)) {
+    if (!needsRender && !forceRender) {
       return null;
     }
 
     if (isValidElement(element)) {
       if (element.props.style) {
-        itemStyle = { ...itemStyle, ...element.props.style };
+        Object.assign(itemStyle, element.props.style);
       }
 
-      element = cloneElement(element, {
-        style: itemStyle,
-        ref: element.ref,
-      });
+      element = cloneElement(element, { style: itemStyle, ref: element.ref });
     } else {
       element = <div style={itemStyle}>{element}</div>;
     }
@@ -148,35 +135,25 @@ function GridContent({
     elemStyle.height = size.height;
   }
 
-  props.style = { ...elemStyle, ...props.style };
+  if (divProps.style) {
+    Object.assign(elemStyle, divProps.style);
+  }
+  divProps.style = elemStyle;
 
-  const items = [];
-
-  for (let itemIndex = 0; itemIndex < layoutList.length; itemIndex++) {
-    const attrs = layoutList[itemIndex];
-    const layoutAttrs = {
+  const items = layoutList.map(attrs =>
+    buildItem({
       ...attrs,
-      itemIndex,
       visibleRect: getItemVisibleRect(attrs.rect, context.visibleRect),
       needsRender: needsRender(attrs.rect, context.visibleRect),
       Item,
-    };
+    })
+  );
 
-    items.push(buildItem(layoutAttrs));
+  if (typeof children === 'function') {
+    children(layout);
   }
 
-  if (typeof props.children === 'function') {
-    props.children(layout, { getItemIndex });
-  }
-
-  return <div {...props}>{items}</div>;
-}
-
-function calculateItemIndex(index, count, direction) {
-  const [row, column] =
-    direction === 'x' ? ['column', 'row'] : ['row', 'column'];
-
-  return index[column] + index[row] * count[column];
+  return <div {...divProps}>{items}</div>;
 }
 
 function calculateLayout(props) {
@@ -261,6 +238,7 @@ function calculateLayout(props) {
         },
         [row + 'Index']: rowIndex,
         [column + 'Index']: columnIndex,
+        itemIndex,
       });
     }
 

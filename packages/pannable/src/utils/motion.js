@@ -172,13 +172,6 @@ export function getDecelerationEndOffset(
   };
 }
 
-export function shouldDragStart(velocity, size, cSize) {
-  const height =
-    Math.abs(velocity.y) < Math.abs(velocity.x) ? 'width' : 'height';
-
-  return size[height] < cSize[height];
-}
-
 export function calculateDeceleration(deceleration, moveTime, name) {
   if (name) {
     const [x] = name === 'y' ? ['y'] : ['x'];
@@ -262,50 +255,5 @@ export function createDeceleration(
     startTime: new Date().getTime(),
     endOffset,
     rate,
-  };
-}
-
-export function calculateRectOffset(rect, vRect, align, name) {
-  if (name) {
-    const [x, width] = name === 'y' ? ['y', 'height'] : ['x', 'width'];
-
-    let offsetX = -rect[x];
-    const maxOffsetX = vRect[width] - rect[width];
-
-    if (align[x] === 'auto') {
-      const direction = maxOffsetX < 0 ? -1 : 1;
-      const vOffsetX = -vRect[x];
-
-      offsetX +=
-        direction *
-        Math.max(
-          0,
-          Math.min(direction * (vOffsetX - offsetX), direction * maxOffsetX)
-        );
-    } else {
-      if (align[x] === 'start') {
-        align[x] = 0;
-      } else if (align[x] === 'center') {
-        align[x] = 0.5;
-      } else if (align[x] === 'end') {
-        align[x] = 1;
-      }
-      if (typeof align[x] !== 'number' || isNaN(align[x])) {
-        align[x] = 0.5;
-      }
-
-      offsetX += align[x] * maxOffsetX;
-    }
-
-    return offsetX;
-  }
-
-  if (typeof align !== 'object') {
-    align = { x: align, y: align };
-  }
-
-  return {
-    x: calculateRectOffset(rect, vRect, align, 'x'),
-    y: calculateRectOffset(rect, vRect, align, 'y'),
   };
 }
