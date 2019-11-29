@@ -13,8 +13,8 @@ export function reducer(state, action) {
       return setPlayerReducer(state, action);
     case 'setScrollTo':
       return setScrollToReducer(state, action);
-    case 'slideTo':
-      return slideToReducer(state, action);
+    case 'scrollToIndex':
+      return scrollToIndexReducer(state, action);
     default:
       return state;
   }
@@ -50,7 +50,7 @@ function setScrollToReducer(state, action) {
   };
 }
 
-function slideToReducer(state, action) {
+function scrollToIndexReducer(state, action) {
   const { activeIndex, itemCount } = state;
   const [direction] = state.player.options;
   const { contentOffset, size } = state.player.pad;
@@ -62,7 +62,7 @@ function slideToReducer(state, action) {
   }
 
   if (typeof index === 'function') {
-    index = index({ activeIndex, itemCount });
+    index = index(state);
   }
 
   if (index === activeIndex) {

@@ -8,8 +8,8 @@ import { reducer, initialState } from './carouselReducer';
 const defaultCarouselProps = {
   itemCount: 0,
   renderItem: () => null,
-  onSlideChange: () => {},
-  slideTo: null,
+  onActiveIndexChange: () => {},
+  scrollToIndex: null,
   ...Player.defaultProps,
 };
 
@@ -17,8 +17,8 @@ function Carousel(props) {
   const {
     itemCount: gridItemCount,
     renderItem,
-    onSlideChange,
-    slideTo,
+    onActiveIndexChange,
+    scrollToIndex,
     children,
     ...playerProps
   } = props;
@@ -26,51 +26,47 @@ function Carousel(props) {
   const [state, dispatch] = useReducer(reducer, initialState);
   const prevStateRef = usePrevRef(state);
 
-  const { activeIndex, itemCount, scrollTo } = state;
+  const { activeIndex, itemCount, scrollTo, player } = state;
+  const output = { activeIndex, itemCount };
   const prevState = prevStateRef.current;
 
   useIsomorphicLayoutEffect(() => {
     if (prevState.activeIndex !== activeIndex) {
-      onSlideChange({ activeIndex, itemCount });
+      onActiveIndexChange(output);
     }
   });
 
   useMemo(() => {
-    if (playerScrollTo) {
-      dispatch({ type: 'setScrollTo', value: playerScrollTo });
-    }
+    dispatch({ type: 'setScrollTo', value: playerScrollTo });
   }, [playerScrollTo]);
 
   useMemo(() => {
-    if (slideTo) {
-      dispatch({ type: 'slideTo', ...slideTo });
+    if (scrollToIndex) {
+      dispatch({ type: 'scrollToIndex', ...scrollToIndex });
     }
-  }, [slideTo]);
-
-  const gridProps = {
-    width,
-    height,
-    itemWidth: width,
-    itemHeight: height,
-    direction,
-    itemCount: gridItemCount,
-    renderItem,
-  };
+  }, [scrollToIndex]);
 
   playerProps.scrollTo = scrollTo;
 
-  const element =
-    typeof children === 'function'
-      ? children({ activeIndex, itemCount })
-      : children;
+  const element = typeof children === 'function' ? children(output) : children;
 
   return (
     <Fragment>
       <Player {...playerProps}>
-        {player => {
-          if (state.player !== player) {
-            dispatch({ type: 'setPlayer', value: player });
+        {nextPlayer => {
+          if (player !== nextPlayer) {
+            dispatch({ type: 'setPlayer', value: nextPlayer });
           }
+
+          const gridProps = {
+            width,
+            height,
+            itemWidth: width,
+            itemHeight: height,
+            direction,
+            itemCount: gridItemCount,
+            renderItem,
+          };
 
           return <GridContent {...gridProps} />;
         }}

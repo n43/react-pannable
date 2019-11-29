@@ -48,11 +48,11 @@ The number of items.
 
 Returns the React element that corresponds to the specified item.
 
-#### `onSlideChange`?: (attrs: [SlideAttrs](#slideattrs--itemcount-number-activeindex-number-)) => void
+#### `onActiveIndexChange`?: (attrs: [SlideAttrs](#slideattrs--itemcount-number-activeindex-number-)) => void
 
 Calls when the active item changes.
 
-#### `slideTo`?: { index?: number | (attrs: [SlideAttrs](#slideattrs--itemcount-number-activeindex-number-)) => number, animated: boolean }
+#### `scrollToIndex`?: { index?: number | (attrs: [SlideAttrs](#slideattrs--itemcount-number-activeindex-number-)) => number, animated: boolean }
 
 Slides to the specified index of item.
 

@@ -14,17 +14,17 @@ class VerticalCarousel extends Component {
   state = {
     slideArr: [photo1, photo2, photo3, photo4, photo5],
     size: getSize(),
-    slideTo: null,
+    scrollToIndex: null,
   };
 
   handleSlidePrev = () => {
-    this.setState({ slideTo: { prev: true, animated: true } });
+    this.setState({ scrollToIndex: { prev: true, animated: true } });
   };
   handleSlideNext = () => {
-    this.setState({ slideTo: { next: true, animated: true } });
+    this.setState({ scrollToIndex: { next: true, animated: true } });
   };
   handlePaginationClick = index => {
-    this.setState({ slideTo: { index, animated: true } });
+    this.setState({ scrollToIndex: { index, animated: true } });
   };
 
   renderIndicator = ({ activeIndex }) => {
@@ -49,7 +49,7 @@ class VerticalCarousel extends Component {
   };
 
   render() {
-    const { slideArr, size, slideTo } = this.state;
+    const { slideArr, size, scrollToIndex } = this.state;
     const itemLength = slideArr.length;
     const { width, height } = size;
 
@@ -71,7 +71,7 @@ class VerticalCarousel extends Component {
 
               return <div style={style} />;
             }}
-            slideTo={slideTo}
+            scrollToIndex={scrollToIndex}
           >
             {this.renderIndicator}
           </Carousel>

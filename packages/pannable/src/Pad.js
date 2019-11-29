@@ -65,7 +65,16 @@ function Pad(props) {
     contentVelocity,
     drag,
     deceleration,
+    pannable,
   } = state;
+  const output = {
+    size,
+    contentSize,
+    contentOffset,
+    contentVelocity,
+    dragging: !!drag,
+    decelerating: !!deceleration,
+  };
   const prevState = prevStateRef.current;
 
   const resizeContent = useCallback(contentSize => {
@@ -87,8 +96,8 @@ function Pad(props) {
   );
 
   useIsomorphicLayoutEffect(() => {
-    if (prevState.pannable.translation !== state.pannable.translation) {
-      if (state.pannable.translation) {
+    if (prevState.pannable.translation !== pannable.translation) {
+      if (pannable.translation) {
         if (prevState.pannable.translation) {
           dispatch({ type: 'dragMove' });
         } else {
@@ -102,15 +111,6 @@ function Pad(props) {
         }
       }
     }
-
-    const output = {
-      size,
-      contentSize,
-      contentOffset,
-      contentVelocity,
-      dragging: !!drag,
-      decelerating: !!deceleration,
-    };
 
     if (prevState.contentSize !== contentSize) {
       onContentResize(contentSize);
@@ -201,9 +201,9 @@ function Pad(props) {
   return (
     <PadContext.Provider value={{ visibleRect, resizeContent }}>
       <Pannable {...pannableProps}>
-        {pannable => {
-          if (state.pannable !== pannable) {
-            dispatch({ type: 'setPannable', value: pannable });
+        {nextPannable => {
+          if (pannable !== nextPannable) {
+            dispatch({ type: 'setPannable', value: nextPannable });
           }
 
           const contentStyle = StyleSheet.create({

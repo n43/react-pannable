@@ -23,10 +23,9 @@ function Player(props) {
     ...padProps
   } = props;
   const { scrollTo: padScrollTo, onMouseEnter, onMouseLeave } = padProps;
-
   const [state, dispatch] = useReducer(reducer, initialState);
-  const { mouseEntered, loopCount, loopOffset, scrollTo } = state;
-  const { drag, deceleration } = state.pad;
+
+  const { mouseEntered, loopCount, loopOffset, scrollTo, pad } = state;
 
   const onPadMouseEnter = useCallback(
     evt => {
@@ -51,7 +50,7 @@ function Player(props) {
   );
 
   useEffect(() => {
-    if (!autoplayEnabled || mouseEntered || drag || deceleration) {
+    if (!autoplayEnabled || mouseEntered || pad.drag || pad.deceleration) {
       return;
     }
 
@@ -62,17 +61,23 @@ function Player(props) {
     return () => {
       clearTimeout(autoplayTimer);
     };
-  }, [autoplayEnabled, autoplayInterval, mouseEntered, drag, deceleration]);
+  }, [
+    autoplayEnabled,
+    autoplayInterval,
+    mouseEntered,
+    pad.drag,
+    pad.deceleration,
+  ]);
 
   useMemo(() => {
     dispatch({ type: 'setOptions', value: [direction, loop] });
   }, [loop, direction]);
 
   useMemo(() => {
-    if (padScrollTo) {
-      dispatch({ type: 'setScrollTo', value: padScrollTo });
-    }
+    dispatch({ type: 'setScrollTo', value: padScrollTo });
   }, [padScrollTo]);
+
+  padProps.scrollTo = scrollTo;
 
   if (direction === 'x') {
     padProps.alwaysBounceY = false;
@@ -85,13 +90,11 @@ function Player(props) {
     padProps.onMouseLeave = onPadMouseLeave;
   }
 
-  padProps.scrollTo = scrollTo;
-
   return (
     <Pad {...padProps}>
-      {pad => {
-        if (state.pad !== pad) {
-          dispatch({ type: 'setPad', value: pad });
+      {nextPad => {
+        if (pad !== nextPad) {
+          dispatch({ type: 'setPad', value: nextPad });
         }
 
         const element =

@@ -16,12 +16,12 @@ class HorizontalCarousel extends Component {
   state = {
     slideArr: [photo1, photo2, photo3, photo4, photo5],
     size: getSize(),
-    slideTo: null,
+    scrollToIndex: null,
   };
 
   handleSlidePrev = () => {
     this.setState({
-      slideTo: {
+      scrollToIndex: {
         index: ({ activeIndex }) => activeIndex - 1,
         animated: true,
       },
@@ -29,14 +29,14 @@ class HorizontalCarousel extends Component {
   };
   handleSlideNext = () => {
     this.setState({
-      slideTo: {
+      scrollToIndex: {
         index: ({ activeIndex }) => activeIndex + 1,
         animated: true,
       },
     });
   };
   handlePaginationClick = index => {
-    this.setState({ slideTo: { index, animated: true } });
+    this.setState({ scrollToIndex: { index, animated: true } });
   };
 
   renderIndicator(activeIndex) {
@@ -60,7 +60,7 @@ class HorizontalCarousel extends Component {
   }
 
   render() {
-    const { slideArr, size, slideTo } = this.state;
+    const { slideArr, size, scrollToIndex } = this.state;
     const itemLength = slideArr.length;
     const { width, height } = size;
 
@@ -80,7 +80,7 @@ class HorizontalCarousel extends Component {
                 }}
               />
             )}
-            slideTo={slideTo}
+            scrollToIndex={scrollToIndex}
           >
             {({ activeIndex }) => {
               return (

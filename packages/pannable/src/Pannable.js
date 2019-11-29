@@ -33,6 +33,7 @@ function Pannable(props) {
   innerRef.current.state = state;
   innerRef.current.shouldStart = shouldStart;
   const { target, translation, velocity, interval } = state;
+  const output = { target, translation, velocity, interval };
   const prevState = prevStateRef.current;
 
   useIsomorphicLayoutEffect(() => {
@@ -153,8 +154,6 @@ function Pannable(props) {
   }, [target]);
 
   useIsomorphicLayoutEffect(() => {
-    const output = { target, translation, velocity, interval };
-
     if (prevState.translation !== translation) {
       if (translation) {
         if (prevState.translation) {
