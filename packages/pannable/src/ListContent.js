@@ -77,6 +77,7 @@ function ListContent(props) {
   useIsomorphicLayoutEffect(() => {
     context.resizeContent(size);
   }, []);
+
   useIsomorphicLayoutEffect(() => {
     if (!isEqualToSize(prevLayout.size, size)) {
       context.resizeContent(size);
@@ -218,7 +219,7 @@ function ListContent(props) {
 }
 
 ListContent.defaultProps = defaultListContentProps;
-ListContent.PadContext = true;
+ListContent.PadContent = true;
 
 export default ListContent;
 

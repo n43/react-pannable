@@ -16,6 +16,7 @@ import {
   requestAnimationFrame,
   cancelAnimationFrame,
 } from './utils/animationFrame';
+import { isEqualToSize } from './utils/geometry';
 
 const defaultPadProps = {
   width: 0,
@@ -77,9 +78,14 @@ function Pad(props) {
   };
   const prevState = prevStateRef.current;
 
-  const resizeContent = useCallback(contentSize => {
-    dispatch({ type: 'setContentSize', value: contentSize });
-  }, []);
+  const resizeContent = useCallback(
+    nextContentSize => {
+      if (!isEqualToSize(contentSize, nextContentSize)) {
+        dispatch({ type: 'setContentSize', value: nextContentSize });
+      }
+    },
+    [contentSize]
+  );
 
   const shouldPannableStart = useCallback(
     evt => {

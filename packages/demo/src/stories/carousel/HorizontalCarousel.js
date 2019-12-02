@@ -72,6 +72,7 @@ class HorizontalCarousel extends Component {
             height={height}
             direction="x"
             itemCount={itemLength}
+            autoplayEnabled={true}
             renderItem={({ itemIndex }) => (
               <div
                 style={{
