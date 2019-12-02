@@ -4,7 +4,6 @@ import React, {
   useState,
   useContext,
   useMemo,
-  useCallback,
 } from 'react';
 import PadContext from './PadContext';
 import ItemContent from './ItemContent';
@@ -75,18 +74,6 @@ function ListContent(props) {
   const prevLayout = prevLayoutRef.current;
   const nextItemHashList = [];
 
-  const resizeContent = useCallback(
-    itemHash => itemSize => {
-      setItemSizeDict(itemSizeDict =>
-        isEqualToSize(itemSizeDict[itemHash], itemSize)
-          ? itemSizeDict
-          : { ...itemSizeDict, [itemHash]: itemSize }
-      );
-    },
-
-    []
-  );
-
   useIsomorphicLayoutEffect(() => {
     context.resizeContent(size);
   }, []);
@@ -97,7 +84,7 @@ function ListContent(props) {
   });
 
   function buildItem(attrs) {
-    const { rect, itemIndex, visibleRect, needsRender, Item } = attrs;
+    const { rect, itemIndex, itemSize, visibleRect, needsRender, Item } = attrs;
     let forceRender = false;
     let element = renderItem(attrs);
 
@@ -129,7 +116,6 @@ function ListContent(props) {
       hash = key;
     }
 
-    const itemSize = itemSizeDict[hash];
     let skipRender = !needsRender && !forceRender;
 
     if (!itemSize && nextItemHashList.indexOf(hash) !== -1) {
@@ -145,8 +131,7 @@ function ListContent(props) {
     const sizeProps = {};
 
     if (itemSize) {
-      sizeProps.width = itemSize.width;
-      sizeProps.height = itemSize.height;
+      Object.assign(sizeProps, itemSize);
     } else {
       if (typeof fixed.width === 'number') {
         sizeProps.width = fixed.width;
@@ -174,10 +159,20 @@ function ListContent(props) {
       });
     } else {
       element = (
-        <ItemContent style={itemStyle} {...sizeProps}>
+        <ItemContent {...sizeProps} style={itemStyle}>
           {element}
         </ItemContent>
       );
+    }
+
+    function resizeContent(itemHash) {
+      return function(itemSize) {
+        setItemSizeDict(itemSizeDict =>
+          isEqualToSize(itemSizeDict[itemHash], itemSize)
+            ? itemSizeDict
+            : { ...itemSizeDict, [itemHash]: itemSize }
+        );
+      };
     }
 
     return (
@@ -211,7 +206,7 @@ function ListContent(props) {
     })
   );
 
-  if (itemHashList.join() !== nextItemHashList.join()) {
+  if (!isEqualToArray(itemHashList, nextItemHashList)) {
     setItemHashList(nextItemHashList);
   }
 
@@ -250,32 +245,31 @@ function calculateLayout(props, itemHashList, itemSizeDict) {
   }
 
   for (let itemIndex = 0; itemIndex < itemCount; itemIndex++) {
-    const itemHash = itemHashList[itemIndex];
-    let itemSize = itemSizeDict[itemHash] || {
-      [width]:
-        fixed[width] === undefined ? estimatedItemSize[width] : fixed[width],
-      [height]: estimatedItemSize[height],
-    };
+    const itemHash = itemHashList[itemIndex] || null;
+    const itemSize = itemSizeDict[itemHash] || null;
+    const rect = { [x]: 0, [y]: sizeHeight };
 
-    layoutList.push({
-      rect: {
-        [x]: 0,
-        [y]: sizeHeight,
-        [width]: itemSize[width],
-        [height]: itemSize[height],
-      },
-      itemIndex,
-    });
+    if (itemSize) {
+      Object.assign(rect, itemSize);
+    } else {
+      Object.assign(rect, estimatedItemSize);
 
-    if (itemSize[height] > 0) {
-      sizeHeight += itemSize[height];
+      if (fixed[width] !== undefined) {
+        rect[width] = fixed[width];
+      }
+    }
+
+    layoutList.push({ rect, itemIndex, itemHash, itemSize });
+
+    if (rect[height] > 0) {
+      sizeHeight += rect[height];
 
       if (itemIndex < itemCount - 1) {
         sizeHeight += spacing;
       }
     }
-    if (sizeWidth < itemSize[width]) {
-      sizeWidth = itemSize[width];
+    if (sizeWidth < rect[width]) {
+      sizeWidth = rect[width];
     }
   }
 
@@ -284,4 +278,23 @@ function calculateLayout(props, itemHashList, itemSizeDict) {
     fixed,
     layoutList,
   };
+}
+
+function isEqualToArray(a1, a2) {
+  if (a1 === a2) {
+    return true;
+  }
+  if (!a1 || !a2) {
+    return false;
+  }
+  if (a1.length !== a2.length) {
+    return false;
+  }
+  for (let idx = 0; idx < a1.length; idx++) {
+    if (a1[idx] !== a2[idx]) {
+      return false;
+    }
+  }
+
+  return true;
 }
