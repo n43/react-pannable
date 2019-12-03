@@ -173,10 +173,15 @@ export function getDecelerationEndOffset(
 }
 
 export function calculateDeceleration(deceleration, moveTime, name) {
+  const { points, duration, startTime, endOffset } = deceleration;
+  let t = 1;
+
+  if (duration > 0) {
+    t = (moveTime - startTime) / duration;
+  }
+
   if (name) {
     const [x] = name === 'y' ? ['y'] : ['x'];
-    const { points, duration, startTime } = deceleration;
-    const t = Math.max(0, Math.min((moveTime - startTime) / duration, 1));
     const [p0, p1, p2, p3] = points[x];
     const offsetX =
       p0 -
@@ -192,18 +197,39 @@ export function calculateDeceleration(deceleration, moveTime, name) {
     return { [x + 'Offset']: offsetX, [x + 'Velocity']: velocityX };
   }
 
-  return {
+  if (t < 0 || 1 <= t) {
+    return {
+      offset: endOffset,
+      velocity: { x: 0, y: 0 },
+      didEnd: true,
+    };
+  }
+
+  const { xOffset, yOffset, xVelocity, yVelocity } = {
     ...calculateDeceleration(deceleration, moveTime, 'x'),
     ...calculateDeceleration(deceleration, moveTime, 'y'),
+  };
+
+  return {
+    offset: { x: xOffset, y: yOffset },
+    velocity: { x: xVelocity, y: yVelocity },
+    didEnd: false,
   };
 }
 
 export function createDeceleration(
-  startOffset,
-  startVelocity,
   endOffset,
-  rate
+  rate,
+  startOffset,
+  startVelocity
 ) {
+  const startTime = new Date().getTime();
+  let duration = 0;
+
+  if (!rate) {
+    return { endOffset, rate, duration, startTime };
+  }
+
   const s = {
     x: endOffset.x - startOffset.x,
     y: endOffset.y - startOffset.y,
@@ -211,7 +237,6 @@ export function createDeceleration(
 
   const sm = Math.sqrt(Math.pow(s.x, 2) + Math.pow(s.y, 2));
   let vm;
-  let duration;
 
   if (sm) {
     vm = (startVelocity.x * s.x + startVelocity.y * s.y) / sm;
@@ -230,10 +255,6 @@ export function createDeceleration(
     duration = ((Math.sqrt(2) + 1) * vm) / rate;
   }
 
-  if (duration <= 0) {
-    return null;
-  }
-
   const points = {
     x: [
       startOffset.x,
@@ -249,11 +270,5 @@ export function createDeceleration(
     ],
   };
 
-  return {
-    points,
-    duration,
-    startTime: new Date().getTime(),
-    endOffset,
-    rate,
-  };
+  return { endOffset, rate, duration, startTime, points };
 }

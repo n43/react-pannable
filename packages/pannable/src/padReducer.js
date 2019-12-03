@@ -120,10 +120,10 @@ function validateReducer(state, action) {
         contentVelocity: nextContentVelocity,
         drag: null,
         deceleration: createDeceleration(
-          contentOffset,
-          nextContentVelocity,
           decelerationEndOffset,
-          decelerationRate
+          decelerationRate,
+          contentOffset,
+          nextContentVelocity
         ),
       };
     }
@@ -148,10 +148,10 @@ function validateReducer(state, action) {
         ...state,
         drag: null,
         deceleration: createDeceleration(
-          contentOffset,
-          contentVelocity,
           decelerationEndOffset,
-          decelerationRate
+          decelerationRate,
+          contentOffset,
+          contentVelocity
         ),
       };
     }
@@ -272,10 +272,10 @@ function dragEndReducer(state, action) {
     contentVelocity: nextContentVelocity,
     drag: null,
     deceleration: createDeceleration(
-      contentOffset,
-      nextContentVelocity,
       decelerationEndOffset,
-      decelerationRate
+      decelerationRate,
+      contentOffset,
+      nextContentVelocity
     ),
   };
 }
@@ -302,10 +302,10 @@ function dragCancelReducer(state, action) {
     ...state,
     drag: null,
     deceleration: createDeceleration(
-      contentOffset,
-      contentVelocity,
       decelerationEndOffset,
-      decelerationRate
+      decelerationRate,
+      contentOffset,
+      contentVelocity
     ),
   };
 }
@@ -317,27 +317,19 @@ function decelerateReducer(state, action) {
   if (!deceleration) {
     return state;
   }
-  if (deceleration.startTime + deceleration.duration <= moveTime) {
-    return {
-      ...state,
-      contentOffset: deceleration.endOffset,
-      contentVelocity: { x: 0, y: 0 },
-      drag: null,
-      deceleration: null,
-    };
-  }
 
-  const { xOffset, yOffset, xVelocity, yVelocity } = calculateDeceleration(
-    deceleration,
-    moveTime
-  );
+  const {
+    offset: contentOffset,
+    velocity: contentVelocity,
+    didEnd,
+  } = calculateDeceleration(deceleration, moveTime);
 
   return {
     ...state,
-    contentOffset: { x: xOffset, y: yOffset },
-    contentVelocity: { x: xVelocity, y: yVelocity },
+    contentOffset,
+    contentVelocity,
     drag: null,
-    deceleration,
+    deceleration: didEnd ? null : deceleration,
   };
 }
 
@@ -346,26 +338,25 @@ function scrollToReducer(state, action) {
     size,
     contentOffset,
     contentVelocity,
-    drag,
-    deceleration,
     options: [pagingEnabled],
   } = state;
-  const { point, animated } = action;
-  let { offset = { x: 0, y: 0 } } = action;
+  const { point } = action;
+  let { drag, deceleration } = state;
+  let { offset = { x: 0, y: 0 }, animated } = action;
 
   if (point) {
     offset = { x: -point.x, y: -point.y };
   }
+  if (offset.x === contentOffset.x && offset.y === contentOffset.y) {
+    return state;
+  }
+  if (drag) {
+    animated = false;
+  }
 
-  if (drag || !animated) {
-    if (offset.x === contentOffset.x && offset.y === contentOffset.y) {
-      return state;
-    }
-
-    const nextState = { ...state, contentOffset: offset };
-
+  if (!animated) {
     if (drag) {
-      nextState.drag = {
+      drag = {
         ...drag,
         startOffset: {
           x: drag.startOffset.x + offset.x - contentOffset.x,
@@ -374,18 +365,23 @@ function scrollToReducer(state, action) {
       };
     }
     if (deceleration) {
-      nextState.deceleration = createDeceleration(
-        offset,
-        contentVelocity,
+      deceleration = createDeceleration(
         {
           x: deceleration.endOffset.x + offset.x - contentOffset.x,
           y: deceleration.endOffset.y + offset.y - contentOffset.y,
         },
-        deceleration.rate
+        deceleration.rate,
+        offset,
+        contentVelocity
       );
     }
 
-    return nextState;
+    return {
+      ...state,
+      contentOffset: offset,
+      drag,
+      deceleration,
+    };
   }
 
   const decelerationEndOffset = getDecelerationEndOffset(
@@ -398,12 +394,11 @@ function scrollToReducer(state, action) {
 
   return {
     ...state,
-    drag: null,
     deceleration: createDeceleration(
-      contentOffset,
-      contentVelocity,
       decelerationEndOffset,
-      DECELERATION_RATE_STRONG
+      DECELERATION_RATE_STRONG,
+      contentOffset,
+      contentVelocity
     ),
   };
 }
