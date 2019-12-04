@@ -34,11 +34,15 @@ npm install --save react-pannable
 
 [All the examples!](https://n43.github.io/react-pannable/)
 
+Some `Infinite` demos
+
+- [Infinit Scrolling Content](https://n43.github.io/react-pannable/?path=/story/infinite--infinit-scrolling-content)
+
 Some `Carousel` demos
 
-- [Pad with Autoplayer](https://n43.github.io/react-pannable/?path=/story/carousel--pad-with-autoplayer)
 - [Horizontal Carousel](https://n43.github.io/react-pannable/?path=/story/carousel--horizontal-carousel)
 - [Vertical Carousel](https://n43.github.io/react-pannable/?path=/story/carousel--vertical-carousel)
+- [Pad with Autoplayer](https://n43.github.io/react-pannable/?path=/story/carousel--pad-with-autoplayer)
 
 Some `Pad` demos
 
