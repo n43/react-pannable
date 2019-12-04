@@ -5,7 +5,6 @@ import LocatingContentArea from './LocatingContentArea';
 import AutoResizingPad from './AutoResizingPad';
 import GeneralContentLayout from './GeneralContentLayout';
 import GridContentLayout from './GridContentLayout';
-import ListContentLayout from './ListContentLayout';
 import NestedMutipleContent from './NestedMutipleContent';
 import ProductMaster from './ProductMaster';
 
@@ -32,10 +31,6 @@ storiesOf('Pad', module)
   .add('Layout with Grid Content', () => ({
     content: <GridContentLayout />,
     source: basicSourceLink + 'GridContentLayout.js',
-  }))
-  .add('Layout with List Content', () => ({
-    content: <ListContentLayout />,
-    source: basicSourceLink + 'ListContentLayout.js',
   }))
   .add('Layout with Nested Content', () => ({
     content: <NestedMutipleContent />,

@@ -363,19 +363,20 @@ function scrollToReducer(state, action) {
           y: drag.startOffset.y + offset.y - contentOffset.y,
         },
       };
-    }
-    if (deceleration) {
-      deceleration = createDeceleration(
-        {
-          x: deceleration.endOffset.x + offset.x - contentOffset.x,
-          y: deceleration.endOffset.y + offset.y - contentOffset.y,
-        },
-        deceleration.rate,
-        offset,
-        contentVelocity
-      );
     } else {
-      deceleration = createDeceleration(offset);
+      if (deceleration) {
+        deceleration = createDeceleration(
+          {
+            x: deceleration.endOffset.x + offset.x - contentOffset.x,
+            y: deceleration.endOffset.y + offset.y - contentOffset.y,
+          },
+          deceleration.rate,
+          offset,
+          contentVelocity
+        );
+      } else {
+        deceleration = createDeceleration(offset);
+      }
     }
 
     return {

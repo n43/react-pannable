@@ -1,8 +1,8 @@
 import React from 'react';
-import { Infinite, ItemContent } from 'react-pannable';
+import { Infinite } from 'react-pannable';
 import TextField from '../../ui/field/TextField';
-import { getSize } from './sizeGetter';
-import './Pad.css';
+import { getSize } from '../pad/sizeGetter';
+import '../pad/Pad.css';
 
 export default class ListContentLayout extends React.Component {
   state = {
@@ -69,6 +69,7 @@ export default class ListContentLayout extends React.Component {
                 </div>
               );
             }}
+            renderHeader={() => <div>Header</div>}
           />
         </div>
         <div className="pad-optbar">

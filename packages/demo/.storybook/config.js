@@ -24,6 +24,7 @@ addDecorator(story => {
 function loadStories() {
   // req.keys().forEach(filename => req(filename));
   require('../src/stories/carousel/index.stories');
+  require('../src/stories/infinite/index.stories');
   require('../src/stories/pad/index.stories');
   require('../src/stories/pannable/index.stories');
 }
