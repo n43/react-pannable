@@ -3,7 +3,7 @@
 Flexible and Customizable Layouts for Scrolling Content with [`React`](https://facebook.github.io/react/)
 
 [![npm version](https://img.shields.io/npm/v/react-pannable.svg)](https://www.npmjs.com/package/react-pannable)
-![npm license](https://img.shields.io/npm/l/react-pannable.svg?style=flat)
+![npm license](https://img.shields.io/npm/l/react-pannable.svg)
 
 ## Getting Started
 
@@ -14,6 +14,8 @@ npm install --save react-pannable
 ```
 
 ## API Reference
+
+#### [`<Infinite />`](/packages/pannable/docs/infinite.md) - Used to display a long list of data
 
 #### [`<Carousel />`](/packages/pannable/docs/carousel.md) - Used to play a number of looping items in sequence
 

@@ -44,22 +44,22 @@ class Page extends React.Component {
 
 The number of items.
 
-#### `renderItem`: (attrs: [LayoutAttrs](gridcontent.md#LayoutAttrs)) => ReactNode
+#### `renderItem`: (attrs: [GridItemAttrs](gridcontent.md#girditemattrs--itemindex-number-rowindex-number-columnindex-number-rect-rect-visiblerect-rect-needsrender-boolean-item-componentitemprops-any-)) => ReactNode
 
 Returns the React element that corresponds to the specified item.
 
-#### `onActiveIndexChange`?: (attrs: [SlideAttrs](#slideattrs--itemcount-number-activeindex-number-)) => void
+#### `onActiveIndexChange`?: (attrs: [CarouselAttrs](#carouselattrs--itemcount-number-activeindex-number-)) => void
 
-Calls when the active item changes.
+Calls when the active index changes.
 
-#### `scrollToIndex`?: { index?: number | (attrs: [SlideAttrs](#slideattrs--itemcount-number-activeindex-number-)) => number, animated: boolean }
+#### `scrollToIndex`?: { index?: number | (attrs: [CarouselAttrs](#carouselattrs--itemcount-number-activeindex-number-)) => number, animated: boolean }
 
-Slides to the specified index of item.
+Scrolls to the specified index of item.
 
-#### `children`?: ReactNode | (attrs: [SlideAttrs](#slideattrs--itemcount-number-activeindex-number-)) => ReactNode
+#### `children`?: ReactNode | (attrs: [CarouselAttrs](#carouselattrs--itemcount-number-activeindex-number-)) => ReactNode
 
 You can add some controls with active index.
 
 ## Types
 
-#### SlideAttrs { itemCount: number, activeIndex: number };
+#### CarouselAttrs { itemCount: number, activeIndex: number };

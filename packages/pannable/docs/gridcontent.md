@@ -61,7 +61,7 @@ The width of items.
 
 The height of items.
 
-#### `renderItem`: (attrs: [LayoutAttrs](#layoutattrs--itemindex-number-rowindex-number-columnindex-number-rect-rect-visiblerect-rect-needsrender-boolean-item-componentitemprops-any-)) => ReactNode
+#### `renderItem`: (attrs: [GridItemAttrs](#girditemattrs--itemindex-number-rowindex-number-columnindex-number-rect-rect-visiblerect-rect-needsrender-boolean-item-componentitemprops-any-)) => ReactNode
 
 Returns the React element that corresponds to the specified item.
 
@@ -69,4 +69,4 @@ Returns the React element that corresponds to the specified item.
 
 #### `ItemProps` { key?: string, forceRender?: boolean }
 
-#### LayoutAttrs { itemIndex: number, rowIndex: number, columnIndex: number, rect: [Rect](types.md#rect--x-number-y-number-width-number-height-number-), visibleRect: [Rect](types.md#rect--x-number-y-number-width-number-height-number-), needsRender: boolean, Item: Component<[ItemProps](#itemprops--key-string-forcerender-boolean-style-cssproperties-), any> };
+#### GridItemAttrs { itemIndex: number, rowIndex: number, columnIndex: number, rect: [Rect](types.md#rect--x-number-y-number-width-number-height-number-), visibleRect: [Rect](types.md#rect--x-number-y-number-width-number-height-number-), needsRender: boolean, Item: Component<[ItemProps](#itemprops--key-string-forcerender-boolean-style-cssproperties-), any> };

@@ -58,27 +58,27 @@ Determines whether bouncing always occurs when horizontal scrolling reaches the 
 
 Determines whether bouncing always occurs when vertical scrolling reaches the end of the content. The default value is `true`.
 
-#### `onScroll`?: (evt: [PadEvent](#padevent--contentoffset-point-contentvelocity-point-size-size-contentsize-size-dragging-boolean-decelerating-boolean-)) => void
+#### `onScroll`?: (evt: [PadAttrs](#padattrs--contentoffset-point-contentvelocity-point-size-size-contentsize-size-dragging-boolean-decelerating-boolean-)) => void
 
 Calls when scrolls the content.
 
-#### `onDragStart`?: (evt: [PadEvent](#padevent--contentoffset-point-contentvelocity-point-size-size-contentsize-size-dragging-boolean-decelerating-boolean-)) => void
+#### `onDragStart`?: (evt: [PadAttrs](#padattrs--contentoffset-point-contentvelocity-point-size-size-contentsize-size-dragging-boolean-decelerating-boolean-)) => void
 
 Calls when dragging started.
 
-#### `onDragEnd`?: (evt: [PadEvent](#padevent--contentoffset-point-contentvelocity-point-size-size-contentsize-size-dragging-boolean-decelerating-boolean-)) => void
+#### `onDragEnd`?: (evt: [PadAttrs](#padattrs--contentoffset-point-contentvelocity-point-size-size-contentsize-size-dragging-boolean-decelerating-boolean-)) => void
 
 Calls when dragging ended.
 
-#### `onDecelerationStart`?: (evt: [PadEvent](#padevent--contentoffset-point-contentvelocity-point-size-size-contentsize-size-dragging-boolean-decelerating-boolean-)) => void
+#### `onDecelerationStart`?: (evt: [PadAttrs](#padattrs--contentoffset-point-contentvelocity-point-size-size-contentsize-size-dragging-boolean-decelerating-boolean-)) => void
 
 Calls when decelerating started.
 
-#### `onDecelerationEnd`?: (evt: [PadEvent](#padevent--contentoffset-point-contentvelocity-point-size-size-contentsize-size-dragging-boolean-decelerating-boolean-)) => void
+#### `onDecelerationEnd`?: (evt: [PadAttrs](#padattrs--contentoffset-point-contentvelocity-point-size-size-contentsize-size-dragging-boolean-decelerating-boolean-)) => void
 
 Calls when decelerating ended.
 
-#### `onContentResize`?: (evt: [PadEvent](#padevent--contentoffset-point-contentvelocity-point-size-size-contentsize-size-dragging-boolean-decelerating-boolean-)) => void
+#### `onContentResize`?: (evt: [PadAttrs](#padattrs--contentoffset-point-contentvelocity-point-size-size-contentsize-size-dragging-boolean-decelerating-boolean-)) => void
 
 Calls when changes the size of the content.
 
@@ -92,4 +92,4 @@ Scrolls the content until the specified rectangle is visible.
 
 ## Types
 
-#### `PadEvent` { contentOffset: [Point](types.md#point--x-number-y-number-), contentVelocity: [Point](types.md#point--x-number-y-number-), size: [Size](types.md#size--width-number-height-number-), contentSize: [Size](types.md#size--width-number-height-number-), dragging: boolean, decelerating: boolean }
+#### `PadAttrs` { contentOffset: [Point](types.md#point--x-number-y-number-), contentVelocity: [Point](types.md#point--x-number-y-number-), size: [Size](types.md#size--width-number-height-number-), contentSize: [Size](types.md#size--width-number-height-number-), dragging: boolean, decelerating: boolean }

@@ -64,26 +64,26 @@ class Page extends React.Component {
 
 Determines whether the pan gesture recognizer is enabled. The default value is `true`. If set to `false` while the pan gesture recognizer is currently recognizing, it transitions to a cancelled state.
 
-#### `shouldStart`?: (evt: [PanEvent](#panevent--translation-point-velocity-point-interval-number-target-htmlelement-)) => boolean
+#### `shouldStart`?: (evt: [PannableAttrs](#pannableattrs--translation-point-velocity-point-interval-number-target-htmlelement-)) => boolean
 
 Calls whether to recognize a pan.
 
-#### `onStart`?: (evt: [PanEvent](#panevent--translation-point-velocity-point-interval-number-target-htmlelement-)) => void
+#### `onStart`?: (evt: [PannableAttrs](#pannableattrs--translation-point-velocity-point-interval-number-target-htmlelement-)) => void
 
 Calls when the touch/mouse has moved enough to be considered a pan.
 
-#### `onMove`?: (evt: [PanEvent](#panevent--translation-point-velocity-point-interval-number-target-htmlelement-)) => void
+#### `onMove`?: (evt: [PannableAttrs](#pannableattrs--translation-point-velocity-point-interval-number-target-htmlelement-)) => void
 
 Calls when the touch/mouse moves.
 
-#### `onEnd`?: (evt: [PanEvent](#panevent--translation-point-velocity-point-interval-number-target-htmlelement-)) => void
+#### `onEnd`?: (evt: [PannableAttrs](#pannableattrs--translation-point-velocity-point-interval-number-target-htmlelement-)) => void
 
 Calls when the touch/mouse is left.
 
-#### `onCancel`?: (evt: [PanEvent](#panevent--translation-point-velocity-point-interval-number-target-htmlelement-)) => void
+#### `onCancel`?: (evt: [PannableAttrs](#pannableattrs--translation-point-velocity-point-interval-number-target-htmlelement-)) => void
 
 Calls when a system event cancels the recognizing pan.
 
 ## Types
 
-#### `PanEvent` { translation: [Point](types.md#point--x-number-y-number-), velocity: [Point](types.md#point--x-number-y-number-), interval: number, target: HTMLElement }
+#### `PannableAttrs` { translation: [Point](types.md#point--x-number-y-number-), velocity: [Point](types.md#point--x-number-y-number-), interval: number, target: HTMLElement }
