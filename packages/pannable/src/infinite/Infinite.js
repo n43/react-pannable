@@ -1,4 +1,4 @@
-import React, { Fragment, useReducer, useMemo, useRef, useEffect } from 'react';
+import React, { useReducer, useMemo, useRef, useEffect } from 'react';
 import Pad from '../Pad';
 import ListContent from '../ListContent';
 import { useIsomorphicLayoutEffect } from '../hooks/useIsomorphicLayoutEffect';
@@ -36,7 +36,7 @@ function Infinite(props) {
   const { width, height, scrollToRect: padScrollToRect } = padProps;
   const [state, dispatch] = useReducer(reducer, initialState);
   const prevStateRef = usePrevRef(state);
-  const listRef = useRef();
+  const listRef = useRef({});
 
   const { scrollToRect, scrolling, pad } = state;
   const prevState = prevStateRef.current;
@@ -83,48 +83,60 @@ function Infinite(props) {
     padProps.alwaysBounceX = false;
   }
 
-  const element = typeof children === 'function' ? children() : children;
-
   return (
-    <Fragment>
-      <Pad {...padProps}>
-        {nextPad => {
-          if (pad !== nextPad) {
-            dispatch({ type: 'setPad', value: nextPad });
-          }
+    <Pad {...padProps}>
+      {nextPad => {
+        if (pad !== nextPad) {
+          dispatch({ type: 'setPad', value: nextPad });
+        }
 
-          const listProps = {
-            width,
-            height,
-            direction,
-            spacing,
-            itemCount,
-            estimatedItemWidth,
-            estimatedItemHeight,
-            renderItem({ itemIndex, ...attrs }) {
-              if (itemIndex === 0) {
-                return renderHeader(attrs);
-              }
-              if (itemIndex === itemCount + 1) {
-                return renderFooter(attrs);
-              }
+        const listProps = {
+          width,
+          height,
+          direction,
+          itemCount: 3,
+          renderItem(attrs) {
+            const { itemIndex, Item } = attrs;
 
-              attrs.itemIndex = itemIndex - 1;
-              return renderItem(attrs);
-            },
-          };
+            if (itemIndex === 0) {
+              return renderHeader(attrs);
+            }
+            if (itemIndex === 2) {
+              return renderFooter(attrs);
+            }
 
-          return (
-            <ListContent {...listProps}>
-              {layout => {
-                listRef.current = layout;
-              }}
-            </ListContent>
-          );
-        }}
-      </Pad>
-      {element}
-    </Fragment>
+            const listProps = {
+              width,
+              height,
+              direction,
+              spacing,
+              itemCount,
+              estimatedItemWidth,
+              estimatedItemHeight,
+              renderItem,
+            };
+
+            return (
+              <Item forceRender>
+                <ListContent {...listProps}>
+                  {layout => {
+                    listRef.current.body = layout;
+                  }}
+                </ListContent>
+              </Item>
+            );
+          },
+        };
+
+        return (
+          <ListContent {...listProps}>
+            {layout => {
+              listRef.current.box = layout;
+            }}
+          </ListContent>
+        );
+      }}
+    </Pad>
   );
 }
 

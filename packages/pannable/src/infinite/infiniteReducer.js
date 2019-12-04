@@ -37,15 +37,28 @@ function setScrollToRectReducer(state, action) {
 
 function scrollToIndexReducer(state, action) {
   const { list, index = 0, align, animated } = action;
-  const attrs = list.layoutList[index + 1];
+  const { box, body } = list;
+  let rect = { x: 0, y: 0, width: 0, height: 0 };
 
-  if (!attrs) {
-    return state;
+  if (box) {
+    rect = box.layoutList[1].rect;
+  }
+  if (body) {
+    const attrs = body.layoutList[index];
+
+    if (attrs) {
+      rect = {
+        x: rect.x + attrs.rect.x,
+        y: rect.y + attrs.rect.y,
+        width: attrs.rect.width,
+        height: attrs.rect.height,
+      };
+    }
   }
 
   return {
     ...state,
-    scrollToRect: { rect: attrs.rect, align, animated },
+    scrollToRect: { rect, align, animated },
     scrolling: true,
   };
 }

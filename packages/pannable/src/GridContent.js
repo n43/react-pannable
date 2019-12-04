@@ -84,7 +84,7 @@ function GridContent(props) {
     let forceRender = false;
     let element = renderItem(attrs);
 
-    let key = String(itemIndex);
+    let key = 'GridContent_' + itemIndex;
     const itemStyle = {
       position: 'absolute',
       left: rect.x,

@@ -89,7 +89,7 @@ function ListContent(props) {
     let forceRender = false;
     let element = renderItem(attrs);
 
-    let key = String(itemIndex);
+    let key = `ListContent_` + itemIndex;
     let hash;
     const itemStyle = {
       position: 'absolute',
@@ -224,12 +224,14 @@ ListContent.PadContent = true;
 export default ListContent;
 
 function calculateLayout(props, itemHashList, itemSizeDict) {
-  const { direction, spacing, itemCount } = props;
+  const {
+    direction,
+    spacing,
+    itemCount,
+    estimatedItemWidth,
+    estimatedItemHeight,
+  } = props;
   const size = { width: props.width, height: props.height };
-  const estimatedItemSize = {
-    width: props.estimatedItemWidth,
-    height: props.estimatedItemHeight,
-  };
 
   const [x, y, width, height] =
     direction === 'x'
@@ -253,11 +255,17 @@ function calculateLayout(props, itemHashList, itemSizeDict) {
     if (itemSize) {
       Object.assign(rect, itemSize);
     } else {
-      Object.assign(rect, estimatedItemSize);
+      rect[width] =
+        fixed[width] !== undefined
+          ? fixed[width]
+          : typeof estimatedItemWidth === 'function'
+          ? estimatedItemWidth(itemIndex)
+          : estimatedItemWidth;
 
-      if (fixed[width] !== undefined) {
-        rect[width] = fixed[width];
-      }
+      rect[height] =
+        typeof estimatedItemHeight === 'function'
+          ? estimatedItemHeight(itemIndex)
+          : estimatedItemHeight;
     }
 
     layoutList.push({ rect, itemIndex, itemHash, itemSize });
