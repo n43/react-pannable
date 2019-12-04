@@ -5,7 +5,6 @@ import React, {
   useCallback,
   useReducer,
 } from 'react';
-import { reducer, initialState } from './padReducer';
 import Pannable from './Pannable';
 import PadContext from './PadContext';
 import GeneralContent from './GeneralContent';
@@ -17,6 +16,7 @@ import {
   cancelAnimationFrame,
 } from './utils/animationFrame';
 import { isEqualToSize } from './utils/geometry';
+import { reducer, initialState } from './padReducer';
 
 const defaultPadProps = {
   width: 0,

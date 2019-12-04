@@ -1,7 +1,8 @@
 import { initialState as padInitialState } from '../padReducer';
 
 export const initialState = {
-  scrollTo: null,
+  scrollToRect: null,
+  scrolling: false,
   pad: padInitialState,
 };
 
@@ -9,10 +10,12 @@ export function reducer(state, action) {
   switch (action.type) {
     case 'setPad':
       return setPadReducer(state, action);
-    case 'setScrollTo':
-      return setScrollToReducer(state, action);
+    case 'setScrollToRect':
+      return setScrollToRectReducer(state, action);
     case 'scrollToIndex':
       return scrollToIndexReducer(state, action);
+    case 'endScrolling':
+      return endScrollingReducer(state, action);
     default:
       return state;
   }
@@ -25,13 +28,31 @@ function setPadReducer(state, action) {
   };
 }
 
-function setScrollToReducer(state, action) {
+function setScrollToRectReducer(state, action) {
   return {
     ...state,
-    scrollTo: action.value,
+    scrollToRect: action.value,
   };
 }
 
 function scrollToIndexReducer(state, action) {
-  return state;
+  const { index, list, align, animated } = action;
+  const layout = list.layoutList[index];
+
+  if (!layout) {
+    return state;
+  }
+
+  return {
+    ...state,
+    scrollToRect: { rect: layout.rect, align, animated },
+    scrolling: true,
+  };
+}
+
+function endScrollingReducer(state, action) {
+  return {
+    ...state,
+    scrolling: false,
+  };
 }

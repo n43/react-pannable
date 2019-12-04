@@ -6,9 +6,9 @@ import './Pad.css';
 
 export default class ListContentLayout extends React.Component {
   state = {
-    index: 0,
+    index: '0',
     size: getSize(),
-    scrollTo: null,
+    scrollToIndex: null,
   };
 
   handleInputChange = evt => {
@@ -25,18 +25,21 @@ export default class ListContentLayout extends React.Component {
   };
 
   handleScroll = () => {
-    const { index } = this.state;
+    let { index } = this.state;
+
+    index = parseInt(index, 10);
+
+    if (isNaN(index)) {
+      return;
+    }
 
     this.setState({
-      scrollTo: {
-        point: { x: 0, y: index },
-        animated: true,
-      },
+      scrollToIndex: { index, animated: true },
     });
   };
 
   render() {
-    const { index, size, scrollTo } = this.state;
+    const { index, size, scrollToIndex } = this.state;
     const { width, height } = size;
 
     return (
@@ -48,21 +51,22 @@ export default class ListContentLayout extends React.Component {
             height={height}
             spacing={10}
             itemCount={40}
-            scrollTo={scrollTo}
+            estimatedItemHeight={100}
+            scrollToIndex={scrollToIndex}
             renderItem={({ itemIndex }) => {
               return (
-                <ItemContent
-                  height={25 * (itemIndex + 1)}
+                <div
                   style={{
+                    height: `${25 * (itemIndex + 1)}px`,
                     backgroundColor: '#ffffff',
                     fontSize: '18px',
                     color: '#4a4a4a',
                     textAlign: 'center',
-                    lineHeight: 25 * (itemIndex + 1) + 'px',
+                    lineHeight: `${25 * (itemIndex + 1)}px`,
                   }}
                 >
                   {itemIndex}
-                </ItemContent>
+                </div>
               );
             }}
           />

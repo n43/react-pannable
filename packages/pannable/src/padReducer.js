@@ -374,6 +374,8 @@ function scrollToReducer(state, action) {
         offset,
         contentVelocity
       );
+    } else {
+      deceleration = createDeceleration(offset);
     }
 
     return {

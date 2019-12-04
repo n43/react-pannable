@@ -1,6 +1,8 @@
-import React, { Fragment, useReducer, useMemo } from 'react';
+import React, { Fragment, useReducer, useMemo, useRef, useEffect } from 'react';
 import Pad from '../Pad';
 import ListContent from '../ListContent';
+import { useIsomorphicLayoutEffect } from '../hooks/useIsomorphicLayoutEffect';
+import { usePrevRef } from '../hooks/usePrevRef';
 import { reducer, initialState } from './infiniteReducer';
 
 const defaultInfiniteProps = {
@@ -27,22 +29,49 @@ function Infinite(props) {
     children,
     ...padProps
   } = props;
-  const { width, height, scrollTo: padScrollTo } = padProps;
+  const { width, height, scrollToRect: padScrollToRect } = padProps;
   const [state, dispatch] = useReducer(reducer, initialState);
+  const prevStateRef = usePrevRef(state);
+  const listRef = useRef();
 
-  const { scrollTo, pad } = state;
+  const { scrollToRect, scrolling, pad } = state;
+  const prevState = prevStateRef.current;
+
+  useIsomorphicLayoutEffect(() => {
+    if (prevState.pad.contentSize !== pad.contentSize) {
+      if (scrolling && scrollToIndex) {
+        dispatch({
+          type: 'scrollToIndex',
+          ...scrollToIndex,
+          list: listRef.current,
+        });
+      }
+    }
+  });
+
+  useEffect(() => {
+    if (prevState.pad.deceleration !== pad.deceleration) {
+      if (!pad.deceleration && scrolling) {
+        dispatch({ type: 'endScrolling' });
+      }
+    }
+  });
 
   useMemo(() => {
-    dispatch({ type: 'setScrollTo', value: padScrollTo });
-  }, [padScrollTo]);
+    dispatch({ type: 'setScrollToRect', value: padScrollToRect });
+  }, [padScrollToRect]);
 
   useMemo(() => {
     if (scrollToIndex) {
-      dispatch({ type: 'scrollToIndex', ...scrollToIndex });
+      dispatch({
+        type: 'scrollToIndex',
+        ...scrollToIndex,
+        list: listRef.current,
+      });
     }
   }, [scrollToIndex]);
 
-  padProps.scrollTo = scrollTo;
+  padProps.scrollToRect = scrollToRect;
 
   if (direction === 'x') {
     padProps.alwaysBounceY = false;
@@ -71,7 +100,13 @@ function Infinite(props) {
             renderItem,
           };
 
-          return <ListContent {...listProps} />;
+          return (
+            <ListContent {...listProps}>
+              {layout => {
+                listRef.current = layout;
+              }}
+            </ListContent>
+          );
         }}
       </Pad>
       {element}
