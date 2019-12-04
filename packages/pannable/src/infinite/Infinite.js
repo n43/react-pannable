@@ -12,6 +12,8 @@ const defaultInfiniteProps = {
   estimatedItemWidth: 0,
   estimatedItemHeight: 0,
   renderItem: () => null,
+  renderHeader: () => null,
+  renderFooter: () => null,
   scrollToIndex: null,
   ...Pad.defaultProps,
   directionalLockEnabled: true,
@@ -25,6 +27,8 @@ function Infinite(props) {
     estimatedItemWidth,
     estimatedItemHeight,
     renderItem,
+    renderHeader,
+    renderFooter,
     scrollToIndex,
     children,
     ...padProps
@@ -97,7 +101,17 @@ function Infinite(props) {
             itemCount,
             estimatedItemWidth,
             estimatedItemHeight,
-            renderItem,
+            renderItem({ itemIndex, ...attrs }) {
+              if (itemIndex === 0) {
+                return renderHeader(attrs);
+              }
+              if (itemIndex === itemCount + 1) {
+                return renderFooter(attrs);
+              }
+
+              attrs.itemIndex = itemIndex - 1;
+              return renderItem(attrs);
+            },
           };
 
           return (

@@ -36,16 +36,16 @@ function setScrollToRectReducer(state, action) {
 }
 
 function scrollToIndexReducer(state, action) {
-  const { index, list, align, animated } = action;
-  const layout = list.layoutList[index];
+  const { list, index = 0, align, animated } = action;
+  const attrs = list.layoutList[index + 1];
 
-  if (!layout) {
+  if (!attrs) {
     return state;
   }
 
   return {
     ...state,
-    scrollToRect: { rect: layout.rect, align, animated },
+    scrollToRect: { rect: attrs.rect, align, animated },
     scrolling: true,
   };
 }
