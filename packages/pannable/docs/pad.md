@@ -82,6 +82,14 @@ Calls when decelerating ended.
 
 Calls when changes the size of the content.
 
+#### `renderBackground`: (attrs: [PadAttrs](#padattrs--contentoffset-point-contentvelocity-point-size-size-contentsize-size-dragging-boolean-decelerating-boolean-)) => ReactNode
+
+Returns the React element that corresponds to the background.
+
+#### `renderOverlay`: (attrs: [PadAttrs](#padattrs--contentoffset-point-contentvelocity-point-size-size-contentsize-size-dragging-boolean-decelerating-boolean-)) => ReactNode
+
+Returns the React element that corresponds to the overlay.
+
 #### `scrollTo`?: { point?: [Point](types.md#point--x-number-y-number-), offset?: [Point](types.md#point--x-number-y-number-), animated?: boolean }
 
 Scrolls the content to the specified offset.

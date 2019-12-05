@@ -1,6 +1,6 @@
 {
   "name": "react-pannable",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "Flexible and Customizable Layouts for Scrolling Content with React",
   "keywords": [
     "react",
@@ -78,7 +78,7 @@
     "babel-jest": "^24.9.0",
     "coveralls": "^3.0.9",
     "eslint": "^6.7.2",
-    "eslint-config-react-app": "^5.0.2",
+    "eslint-config-react-app": "^5.1.0",
     "eslint-plugin-flowtype": "^3.13.0",
     "eslint-plugin-import": "^2.18.2",
     "eslint-plugin-jsx-a11y": "^6.2.3",

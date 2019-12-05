@@ -25,14 +25,16 @@ const defaultPadProps = {
   directionalLockEnabled: false,
   alwaysBounceX: true,
   alwaysBounceY: true,
-  scrollTo: null,
-  scrollToRect: null,
   onScroll: () => {},
   onDragStart: () => {},
   onDragEnd: () => {},
   onDecelerationStart: () => {},
   onDecelerationEnd: () => {},
   onContentResize: () => {},
+  renderBackground: () => null,
+  renderOverlay: () => null,
+  scrollTo: null,
+  scrollToRect: null,
   ...Pannable.defaultProps,
 };
 
@@ -44,14 +46,16 @@ function Pad(props) {
     directionalLockEnabled,
     alwaysBounceX,
     alwaysBounceY,
-    scrollTo,
-    scrollToRect,
     onScroll,
     onDragStart,
     onDragEnd,
     onDecelerationStart,
     onDecelerationEnd,
     onContentResize,
+    renderBackground,
+    renderOverlay,
+    scrollTo,
+    scrollToRect,
     children,
     ...pannableProps
   } = props;
@@ -182,6 +186,55 @@ function Pad(props) {
     }
   }, [scrollToRect]);
 
+  function buildContent() {
+    const contentStyle = StyleSheet.create({
+      position: 'absolute',
+      width: contentSize.width,
+      height: contentSize.height,
+      transformTranslate: [contentOffset.x, contentOffset.y],
+      willChange: 'transform',
+    });
+
+    let element = typeof children === 'function' ? children(state) : children;
+
+    if (isValidElement(element) && element.type.PadContent) {
+      if (element.props.style) {
+        Object.assign(contentStyle, element.props.style);
+      }
+
+      element = cloneElement(element, {
+        style: contentStyle,
+        ref: element.ref,
+      });
+    } else {
+      element = <GeneralContent style={contentStyle}>{element}</GeneralContent>;
+    }
+
+    return element;
+  }
+
+  function buildBackground() {
+    const element = renderBackground(output);
+
+    if (element === null || element === undefined) {
+      return null;
+    }
+
+    const elemStyle = {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+    };
+
+    return <div style={elemStyle}>{element}</div>;
+  }
+
+  function buildOverlay() {
+    return renderOverlay(output);
+  }
+
   pannableProps.shouldStart = shouldPannableStart;
 
   const elemStyle = {
@@ -197,51 +250,29 @@ function Pad(props) {
 
   pannableProps.style = elemStyle;
 
-  const visibleRect = {
-    x: -contentOffset.x,
-    y: -contentOffset.y,
-    width: size.width,
-    height: size.height,
-  };
-
   return (
-    <PadContext.Provider value={{ visibleRect, resizeContent }}>
-      <Pannable {...pannableProps}>
-        {nextPannable => {
-          if (pannable !== nextPannable) {
-            dispatch({ type: 'setPannable', value: nextPannable });
-          }
+    <Pannable {...pannableProps}>
+      {nextPannable => {
+        if (pannable !== nextPannable) {
+          dispatch({ type: 'setPannable', value: nextPannable });
+        }
 
-          const contentStyle = StyleSheet.create({
-            position: 'relative',
-            width: contentSize.width,
-            height: contentSize.height,
-            transformTranslate: [contentOffset.x, contentOffset.y],
-            willChange: 'transform',
-          });
+        const visibleRect = {
+          x: -contentOffset.x,
+          y: -contentOffset.y,
+          width: size.width,
+          height: size.height,
+        };
 
-          let element =
-            typeof children === 'function' ? children(state) : children;
-
-          if (isValidElement(element) && element.type.PadContent) {
-            if (element.props.style) {
-              Object.assign(contentStyle, element.props.style);
-            }
-
-            element = cloneElement(element, {
-              style: contentStyle,
-              ref: element.ref,
-            });
-          } else {
-            element = (
-              <GeneralContent style={contentStyle}>{element}</GeneralContent>
-            );
-          }
-
-          return element;
-        }}
-      </Pannable>
-    </PadContext.Provider>
+        return (
+          <PadContext.Provider value={{ visibleRect, resizeContent }}>
+            {buildBackground()}
+            {buildContent()}
+            {buildOverlay()}
+          </PadContext.Provider>
+        );
+      }}
+    </Pannable>
   );
 }
 

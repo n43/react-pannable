@@ -22,7 +22,13 @@ function Carousel(props) {
     children,
     ...playerProps
   } = props;
-  const { width, height, direction, scrollTo: playerScrollTo } = playerProps;
+  const {
+    width,
+    height,
+    direction,
+    scrollTo: playerScrollTo,
+    renderOverlay,
+  } = playerProps;
   const [state, dispatch] = useReducer(reducer, initialState);
   const prevStateRef = usePrevRef(state);
 
@@ -47,32 +53,37 @@ function Carousel(props) {
   }, [scrollToIndex]);
 
   playerProps.scrollTo = scrollTo;
+  playerProps.renderOverlay = padAttrs => {
+    const element = typeof children === 'function' ? children(state) : children;
 
-  const element = typeof children === 'function' ? children(output) : children;
+    return (
+      <Fragment>
+        {renderOverlay(padAttrs)}
+        {element}
+      </Fragment>
+    );
+  };
 
   return (
-    <Fragment>
-      <Player {...playerProps}>
-        {nextPlayer => {
-          if (player !== nextPlayer) {
-            dispatch({ type: 'setPlayer', value: nextPlayer });
-          }
+    <Player {...playerProps}>
+      {nextPlayer => {
+        if (player !== nextPlayer) {
+          dispatch({ type: 'setPlayer', value: nextPlayer });
+        }
 
-          const gridProps = {
-            width,
-            height,
-            itemWidth: width,
-            itemHeight: height,
-            direction,
-            itemCount: gridItemCount,
-            renderItem,
-          };
+        const gridProps = {
+          width,
+          height,
+          itemWidth: width,
+          itemHeight: height,
+          direction,
+          itemCount: gridItemCount,
+          renderItem,
+        };
 
-          return <GridContent {...gridProps} />;
-        }}
-      </Player>
-      {element}
-    </Fragment>
+        return <GridContent {...gridProps} />;
+      }}
+    </Player>
   );
 }
 

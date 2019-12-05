@@ -83,6 +83,10 @@ function Infinite(props) {
     padProps.alwaysBounceX = false;
   }
 
+  if (typeof children === 'function') {
+    children(state);
+  }
+
   return (
     <Pad {...padProps}>
       {nextPad => {
