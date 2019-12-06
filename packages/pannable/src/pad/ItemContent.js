@@ -5,11 +5,11 @@ import React, {
   useRef,
   useContext,
 } from 'react';
+import { useIsomorphicLayoutEffect } from '../hooks/useIsomorphicLayoutEffect';
+import { usePrevRef } from '../hooks/usePrevRef';
+import { getElementSize } from '../utils/sizeGetter';
+import { isEqualToSize } from '../utils/geometry';
 import PadContext from './PadContext';
-import { useIsomorphicLayoutEffect } from './hooks/useIsomorphicLayoutEffect';
-import { usePrevRef } from './hooks/usePrevRef';
-import { getElementSize } from './utils/sizeGetter';
-import { isEqualToSize } from './utils/geometry';
 
 const defaultItemContentProps = {
   width: null,

@@ -5,18 +5,18 @@ import React, {
   useCallback,
   useReducer,
 } from 'react';
-import Pannable from './Pannable';
-import PadContext from './PadContext';
-import GeneralContent from './GeneralContent';
-import { useIsomorphicLayoutEffect } from './hooks/useIsomorphicLayoutEffect';
-import { usePrevRef } from './hooks/usePrevRef';
-import StyleSheet from './utils/StyleSheet';
+import Pannable from '../Pannable';
+import { useIsomorphicLayoutEffect } from '../hooks/useIsomorphicLayoutEffect';
+import { usePrevRef } from '../hooks/usePrevRef';
+import StyleSheet from '../utils/StyleSheet';
 import {
   requestAnimationFrame,
   cancelAnimationFrame,
-} from './utils/animationFrame';
-import { isEqualToSize } from './utils/geometry';
+} from '../utils/animationFrame';
+import { isEqualToSize } from '../utils/geometry';
 import { reducer, initialState } from './padReducer';
+import PadContext from './PadContext';
+import GeneralContent from './GeneralContent';
 
 const defaultPadProps = {
   width: 0,

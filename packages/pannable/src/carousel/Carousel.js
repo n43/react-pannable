@@ -1,8 +1,8 @@
 import React, { Fragment, useMemo, useReducer } from 'react';
-import Player from './Player';
-import GridContent from '../GridContent';
 import { useIsomorphicLayoutEffect } from '../hooks/useIsomorphicLayoutEffect';
 import { usePrevRef } from '../hooks/usePrevRef';
+import GridContent from '../pad/GridContent';
+import Player from './Player';
 import { reducer, initialState } from './carouselReducer';
 
 const defaultCarouselProps = {

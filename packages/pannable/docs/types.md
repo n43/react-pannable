@@ -12,7 +12,7 @@ A point in a 2D coordinate system.
 
 A rectangle with the location and dimensions.
 
-#### `Align` 'auto' | 'center' | 'start' | 'end' | number
+#### `Align` number | 'auto' | 'center' | 'start' | 'end'
 
 A position that indicate how to scroll a specific area into the visible portion.
 

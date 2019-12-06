@@ -1,8 +1,8 @@
 import React, { useReducer, useMemo, useRef, useEffect } from 'react';
-import Pad from '../Pad';
-import ListContent from '../ListContent';
 import { useIsomorphicLayoutEffect } from '../hooks/useIsomorphicLayoutEffect';
 import { usePrevRef } from '../hooks/usePrevRef';
+import Pad from '../pad/Pad';
+import ListContent from '../pad/ListContent';
 import { reducer, initialState } from './infiniteReducer';
 
 const defaultInfiniteProps = {

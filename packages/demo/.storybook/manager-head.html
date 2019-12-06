@@ -1,4 +1,32 @@
-<!-- Storybook override -->
 <script>
-  document.title = 'react-pannable';
+  !(function(global) {
+    var doc = global.document;
+    var docEl = doc.documentElement;
+    var resizeEvt =
+      'orientationchange' in global ? 'orientationchange' : 'resize';
+    var recalc = function() {
+      var width = docEl.clientWidth;
+
+      if (width === undefined) {
+        return;
+      }
+
+      var ua = global.navigator.userAgent;
+      /* PC */
+      if (
+        /\b(Windows\sNT|Macintosh|Linux)\b/.test(ua) &&
+        !/mobile|android/i.test(ua)
+      ) {
+        width = Math.min(width, 480);
+      }
+
+      docEl.style.fontSize = width * (10 / 375) + 'px';
+      doc.body.style.fontSize = '16px';
+    };
+
+    global.addEventListener &&
+      global.addEventListener(resizeEvt, recalc, false);
+    doc.addEventListener &&
+      doc.addEventListener('DOMContentLoaded', recalc, false);
+  })(window);
 </script>

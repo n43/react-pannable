@@ -5,11 +5,11 @@ import React, {
   useMemo,
   useCallback,
 } from 'react';
+import { useIsomorphicLayoutEffect } from '../hooks/useIsomorphicLayoutEffect';
+import { usePrevRef } from '../hooks/usePrevRef';
+import { getItemVisibleRect, needsRender } from '../utils/visible';
+import { isEqualToSize } from '../utils/geometry';
 import PadContext from './PadContext';
-import { useIsomorphicLayoutEffect } from './hooks/useIsomorphicLayoutEffect';
-import { usePrevRef } from './hooks/usePrevRef';
-import { getItemVisibleRect, needsRender } from './utils/visible';
-import { isEqualToSize } from './utils/geometry';
 
 function Item() {}
 

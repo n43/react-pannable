@@ -1,7 +1,7 @@
 import React, { useRef } from 'react';
+import { useIsomorphicLayoutEffect } from '../hooks/useIsomorphicLayoutEffect';
+import resizeDetector from '../utils/resizeDetector';
 import ItemContent from './ItemContent';
-import resizeDetector from './utils/resizeDetector';
-import { useIsomorphicLayoutEffect } from './hooks/useIsomorphicLayoutEffect';
 
 const defaultGeneralContentProps = { ...ItemContent.defaultProps };
 

@@ -1,4 +1,4 @@
-import { initialState as pannableInitialState } from './pannableReducer';
+import { initialState as pannableInitialState } from '../pannableReducer';
 import {
   getAdjustedContentVelocity,
   getAdjustedContentOffset,
@@ -6,7 +6,7 @@ import {
   getDecelerationEndOffset,
   createDeceleration,
   calculateDeceleration,
-} from './utils/motion';
+} from '../utils/motion';
 
 const DECELERATION_RATE_STRONG = 0.025;
 const DECELERATION_RATE_WEAK = 0.0025;

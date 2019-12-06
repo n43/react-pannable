@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useReducer, useEffect } from 'react';
-import Pad from '../Pad';
-import ListContent from '../ListContent';
+import Pad from '../pad/Pad';
+import ListContent from '../pad/ListContent';
 import { reducer, initialState } from './playerReducer';
 
 const defaultPlayerProps = {

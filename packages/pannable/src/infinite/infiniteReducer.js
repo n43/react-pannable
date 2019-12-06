@@ -1,4 +1,4 @@
-import { initialState as padInitialState } from '../padReducer';
+import { initialState as padInitialState } from '../pad/padReducer';
 
 export const initialState = {
   scrollToRect: null,

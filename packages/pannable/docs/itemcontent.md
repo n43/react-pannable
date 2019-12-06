@@ -14,6 +14,6 @@ The width of the component. If not specified, it shrinks to fit the space availa
 
 The height of the component. If not specified, it shrinks to fit the space available.
 
-#### `children`: ReactNode | (size: [Size](types.md#size--width-number-height-number-), { getResizeNode: () => ReactElement | null, calculateSize: () => {} }) => ReactNode
+#### `children`: ReactNode | (size: [Size](types.md#size--width-number-height-number-), { getResizeNode: () => ReactElement | null, calculateSize: () => void }) => ReactNode
 
 You can implement render props for the component with current size.

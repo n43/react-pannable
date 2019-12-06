@@ -8,35 +8,11 @@ import GridContentLayout from './GridContentLayout';
 import NestedMutipleContent from './NestedMutipleContent';
 import ProductMaster from './ProductMaster';
 
-const basicSourceLink =
-  'https://github.com/n43/react-pannable/blob/master/packages/demo/src/stories/pad/';
-
 storiesOf('Pad', module)
-  .add('Scrollable Content', () => ({
-    content: <BasicScroll />,
-    source: basicSourceLink + 'BasicScroll.js',
-  }))
-  .add('Locating Specified Content', () => ({
-    content: <LocatingContentArea />,
-    source: basicSourceLink + 'LocatingContentArea.js',
-  }))
-  .add('Auto Resizing with Pad', () => ({
-    content: <AutoResizingPad />,
-    source: basicSourceLink + 'AutoResizingPad.js',
-  }))
-  .add('Layout with General Content', () => ({
-    content: <GeneralContentLayout />,
-    source: basicSourceLink + 'GeneralContentLayout.js',
-  }))
-  .add('Layout with Grid Content', () => ({
-    content: <GridContentLayout />,
-    source: basicSourceLink + 'GridContentLayout.js',
-  }))
-  .add('Layout with Nested Content', () => ({
-    content: <NestedMutipleContent />,
-    source: basicSourceLink + 'NestedMutipleContent.js',
-  }))
-  .add('Use Case with List Content', () => ({
-    content: <ProductMaster />,
-    source: basicSourceLink + 'ProductMaster.js',
-  }));
+  .add('Scrollable Content', () => <BasicScroll />)
+  .add('Locating Specified Content', () => <LocatingContentArea />)
+  .add('Auto Resizing with Pad', () => <AutoResizingPad />)
+  .add('Layout with General Content', () => <GeneralContentLayout />)
+  .add('Layout with Grid Content', () => <GridContentLayout />)
+  .add('Layout with Nested Content', () => <NestedMutipleContent />)
+  .add('Use Case with List Content', () => <ProductMaster />);

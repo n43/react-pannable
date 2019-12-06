@@ -64,6 +64,6 @@ Returns the React element that corresponds to the header.
 
 Returns the React element that corresponds to the footer.
 
-#### `scrollToIndex`?: { index?: number, align: [Align2D](types.md#align2d--x-align-y-align---align), animated: boolean }
+#### `scrollToIndex`?: { index?: number, align?: [Align2D](types.md#align2d--x-align-y-align---align), animated?: boolean }
 
 Scrolls to the specified index of item.
