@@ -1,20 +1,15 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useRef } from 'react';
 import { AutoResizing, Pannable, StyleSheet } from 'react-pannable';
 import { withKnobs, boolean } from '@storybook/addon-knobs';
 import clsx from 'clsx';
 import '../../ui/overview.css';
 import './pan.css';
 import SvgNote from './SvgNote';
-import Note from './Note';
 
 export default {
   title: 'Pannable',
   decorators: [withKnobs],
 };
-
-const noop = () => {};
-
-export const note = () => <Note />;
 
 export const overview = () => {
   const panEnabled = boolean('enabled', true, 'props');
@@ -27,6 +22,8 @@ export const overview = () => {
     note0: useState({ x: 20, y: 20 }),
     note1: useState({ x: 20, y: 240 }),
   };
+  const pointsRef = useRef();
+  pointsRef.current = points;
 
   const onBoxResize = useCallback(size => {
     setBoxSize(size);
@@ -37,15 +34,13 @@ export const overview = () => {
     []
   );
 
-  const onStart = drag
-    ? noop
-    : evt => {
-        const key = getDraggableKey(evt.target);
-        const startPoint = points[key][0];
+  const onStart = useCallback(evt => {
+    const key = getDraggableKey(evt.target);
+    const startPoint = pointsRef.current[key][0];
 
-        setDrag({ key, startPoint });
-        console.log('Pannable onStart', evt);
-      };
+    setDrag({ key, startPoint });
+    console.log('Pannable onStart', evt);
+  }, []);
 
   const onMove = useCallback(
     evt => {
