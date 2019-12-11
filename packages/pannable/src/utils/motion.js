@@ -27,7 +27,7 @@ export function getAdjustedContentVelocity(velocity, size, acc, name) {
     return maxVelocity;
   }
 
-  if (typeof acc === 'number') {
+  if (typeof acc !== 'object') {
     acc = getAcc(acc, velocity);
   }
 
@@ -162,7 +162,7 @@ export function getDecelerationEndOffset(
     return offsetX;
   }
 
-  if (typeof acc === 'number') {
+  if (typeof acc !== 'object') {
     acc = getAcc(acc, velocity);
   }
 

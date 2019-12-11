@@ -1,0 +1,43 @@
+.pan-wrapper {
+  position: relative;
+  background-color: #fff6ea;
+}
+.pan-note {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 200px;
+  height: 200px;
+  transition: transform 0.3s ease;
+}
+.pan-note-dragging {
+  z-index: 10;
+  transition-duration: 0s;
+}
+.pan-note-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+.pan-note-content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 10px;
+}
+.pan-note-desc {
+  font-size: 14px;
+  line-height: 20px;
+}
+.pan-note-trigger {
+  margin-bottom: 10px;
+  padding: 5px;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: bold;
+  text-align: center;
+  background-color: #ecca3e;
+}

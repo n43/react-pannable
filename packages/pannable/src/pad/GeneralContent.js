@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { useIsomorphicLayoutEffect } from '../hooks/useIsomorphicLayoutEffect';
 import resizeDetector from '../utils/resizeDetector';
+import { isNumber } from '../utils/geometry';
 import ItemContent from './ItemContent';
 
 const defaultGeneralContentProps = { ...ItemContent.defaultProps };
@@ -10,7 +11,7 @@ function GeneralContent(props) {
   const itemRef = useRef(null);
 
   useIsomorphicLayoutEffect(() => {
-    if (typeof width === 'number' && typeof height === 'number') {
+    if (isNumber(width) && isNumber(height)) {
       return;
     }
 

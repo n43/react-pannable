@@ -8,7 +8,7 @@ import React, {
 import { useIsomorphicLayoutEffect } from '../hooks/useIsomorphicLayoutEffect';
 import { usePrevRef } from '../hooks/usePrevRef';
 import { getElementSize } from '../utils/sizeGetter';
-import { isEqualToSize } from '../utils/geometry';
+import { isEqualToSize, isNumber } from '../utils/geometry';
 import PadContext from './PadContext';
 
 const defaultItemContentProps = {
@@ -48,7 +48,7 @@ function ItemContent(props) {
   useMemo(() => {
     let nextSize = null;
 
-    if (typeof width === 'number' && typeof height === 'number') {
+    if (isNumber(width) && isNumber(height)) {
       nextSize = { width, height };
     }
 
@@ -58,10 +58,10 @@ function ItemContent(props) {
   const elemStyle = { position: 'relative' };
   const resizeStyle = { position: 'absolute' };
 
-  if (typeof width === 'number') {
+  if (isNumber(width)) {
     resizeStyle.width = width;
   }
-  if (typeof height === 'number') {
+  if (isNumber(height)) {
     resizeStyle.height = height;
   }
   if (size) {

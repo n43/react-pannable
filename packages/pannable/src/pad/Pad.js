@@ -191,7 +191,7 @@ function Pad(props) {
       position: 'absolute',
       width: contentSize.width,
       height: contentSize.height,
-      transformTranslate: [contentOffset.x, contentOffset.y],
+      transformTranslate: contentOffset,
       willChange: 'transform',
     });
 

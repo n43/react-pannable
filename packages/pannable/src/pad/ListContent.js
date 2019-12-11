@@ -8,7 +8,7 @@ import React, {
 import { useIsomorphicLayoutEffect } from '../hooks/useIsomorphicLayoutEffect';
 import { usePrevRef } from '../hooks/usePrevRef';
 import { getItemVisibleRect, needsRender } from '../utils/visible';
-import { isEqualToSize } from '../utils/geometry';
+import { isEqualToSize, isNumber } from '../utils/geometry';
 import PadContext from './PadContext';
 import ItemContent from './ItemContent';
 
@@ -134,10 +134,10 @@ function ListContent(props) {
     if (itemSize) {
       Object.assign(sizeProps, itemSize);
     } else {
-      if (typeof fixed.width === 'number') {
+      if (isNumber(fixed.width)) {
         sizeProps.width = fixed.width;
       }
-      if (typeof fixed.height === 'number') {
+      if (isNumber(fixed.height)) {
         sizeProps.height = fixed.height;
       }
     }
@@ -146,10 +146,10 @@ function ListContent(props) {
       if (element.props.style) {
         Object.assign(itemStyle, element.props.style);
       }
-      if (typeof element.props.width === 'number') {
+      if (isNumber(element.props.width)) {
         sizeProps.width = element.props.width;
       }
-      if (typeof element.props.height === 'number') {
+      if (isNumber(element.props.height)) {
         sizeProps.height = element.props.height;
       }
 
@@ -243,7 +243,7 @@ function calculateLayout(props, itemHashList, itemSizeDict) {
   const layoutList = [];
   const fixed = {};
 
-  if (typeof size[width] === 'number') {
+  if (isNumber(size[width])) {
     fixed[width] = size[width];
   }
 

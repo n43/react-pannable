@@ -11,3 +11,7 @@ export function isEqualToSize(s1, s2) {
 
   return true;
 }
+
+export function isNumber(n) {
+  return !isNaN(parseFloat(n)) && isFinite(n);
+}

@@ -3,7 +3,7 @@ import { useIsomorphicLayoutEffect } from './hooks/useIsomorphicLayoutEffect';
 import { usePrevRef } from './hooks/usePrevRef';
 import resizeDetector from './utils/resizeDetector';
 import { getElementSize } from './utils/sizeGetter';
-import { isEqualToSize } from './utils/geometry';
+import { isEqualToSize, isNumber } from './utils/geometry';
 
 const defaultAutoResizingProps = {
   width: null,
@@ -38,7 +38,7 @@ function AutoResizing(props) {
   });
 
   useIsomorphicLayoutEffect(() => {
-    if (typeof width === 'number' && typeof height === 'number') {
+    if (isNumber(width) && isNumber(height)) {
       return;
     }
 
@@ -53,7 +53,7 @@ function AutoResizing(props) {
   useMemo(() => {
     let nextSize = null;
 
-    if (typeof width === 'number' && typeof height === 'number') {
+    if (isNumber(width) && isNumber(height)) {
       nextSize = { width, height };
     }
 
@@ -61,8 +61,8 @@ function AutoResizing(props) {
   }, [width, height]);
 
   divProps.style = {
-    width: getStyleDimension(width),
-    height: getStyleDimension(height),
+    width: isNumber(width) ? width : '100%',
+    height: isNumber(height) ? height : '100%',
     ...divProps.style,
   };
 
@@ -82,11 +82,3 @@ function AutoResizing(props) {
 AutoResizing.defaultProps = defaultAutoResizingProps;
 
 export default AutoResizing;
-
-function getStyleDimension(value) {
-  if (value === undefined || value === null || value === '') {
-    return '100%';
-  }
-
-  return value;
-}
