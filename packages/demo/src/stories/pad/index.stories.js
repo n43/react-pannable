@@ -29,6 +29,7 @@ export const Overview = () => {
     600,
     'props'
   );
+  const enabled = boolean('enabled', true, 'props');
   const pagingEnabled = boolean('pagingEnabled', false, 'props');
   const directionalLockEnabled = boolean(
     'directionalLockEnabled',
@@ -45,7 +46,7 @@ export const Overview = () => {
     },
     'props'
   );
-  const scrollEnabled = boolean('scroll enabled', true);
+
   const plaidRowCount = number("Plaid's rowCount", 20, {
     range: true,
     min: 1,
@@ -94,7 +95,7 @@ export const Overview = () => {
               directionalLockEnabled={directionalLockEnabled}
               alwaysBounceX={alwaysBounceX}
               alwaysBounceY={alwaysBounceY}
-              enabled={scrollEnabled}
+              enabled={enabled}
               scrollTo={scrollTo}
               onDragStart={onDragStart}
               onDragEnd={onDragEnd}
