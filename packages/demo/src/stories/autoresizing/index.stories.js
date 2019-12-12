@@ -9,7 +9,7 @@ export default {
   decorators: [withKnobs],
 };
 
-export const overview = () => {
+export const Overview = () => {
   const arWidth = select(
     'width',
     { Unspecified: undefined, '400': 400, '600': 600 },
@@ -25,7 +25,7 @@ export const overview = () => {
   const wrapperStyle = object('Wrapper Style', { paddingTop: 20 });
 
   const onResize = useCallback(size => {
-    console.log('AutoResizing onResize', size);
+    console.log('onResize', size);
   }, []);
 
   return (

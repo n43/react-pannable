@@ -11,7 +11,7 @@ export default {
   decorators: [withKnobs],
 };
 
-export const overview = () => {
+export const Overview = () => {
   const panEnabled = boolean('enabled', true, 'props');
   const cancelsOut = boolean('Cancels when Dragged Out the Container', true);
 
@@ -39,7 +39,7 @@ export const overview = () => {
     const startPoint = pointsRef.current[key][0];
 
     setDrag({ key, startPoint });
-    console.log('Pannable onStart', evt);
+    console.log('onStart', evt);
   }, []);
 
   const onMove = useCallback(
@@ -60,7 +60,7 @@ export const overview = () => {
 
   const onEnd = useCallback(evt => {
     setDrag(null);
-    console.log('Pannable onEnd', evt);
+    console.log('onEnd', evt);
   }, []);
 
   const onCancel = useCallback(
@@ -75,7 +75,7 @@ export const overview = () => {
       }
 
       setEnabled(true);
-      console.log('Pannable onCancel', evt);
+      console.log('onCancel', evt);
     },
     [drag]
   );

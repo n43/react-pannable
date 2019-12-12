@@ -1,0 +1,14 @@
+.infocard-wrapper {
+  padding: 20px;
+  background-color: #eeeeee;
+  border-radius: 10px;
+}
+.infocard-line {
+  margin-bottom: 7px;
+  height: 16px;
+  background-color: #ffffff;
+}
+.infocard-line-half {
+  margin-bottom: 0;
+  width: 50%;
+}

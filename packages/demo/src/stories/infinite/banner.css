@@ -1,0 +1,11 @@
+.banner-wrapper {
+  padding: 20px 0;
+}
+.banner-content {
+  padding: 20px;
+  background-color: #fff6ea;
+  border-radius: 10px;
+  font-size: 16px;
+  line-height: 22px;
+  text-align: center;
+}
