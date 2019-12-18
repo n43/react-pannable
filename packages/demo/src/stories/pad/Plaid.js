@@ -2,7 +2,7 @@ import React from 'react';
 import './plaid.css';
 
 export default function Plaid(props) {
-  const { rowCount, columnCount } = props;
+  const { rowCount = 0, columnCount = 0 } = props;
   const rows = [];
 
   for (let ridx = 0; ridx < rowCount; ridx++) {

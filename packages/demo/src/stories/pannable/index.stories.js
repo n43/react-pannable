@@ -15,7 +15,7 @@ export default {
   decorators: [withKnobs],
 };
 
-export const Note = () => {
+export const DraggableNotes = () => {
   const panEnabled = boolean('Drag Enabled', true);
   const cancelsOut = boolean('Cancels when Dragged Out the Container', true);
 
@@ -180,7 +180,7 @@ export const Note = () => {
   );
 };
 
-export const Sticker = () => {
+export const AdjustableSticker = () => {
   const [transform, setTransform] = useState({
     width: 300,
     height: 300,

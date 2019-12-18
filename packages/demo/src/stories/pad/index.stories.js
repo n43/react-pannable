@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from 'react';
-import { AutoResizing, Pad, GeneralContent } from 'react-pannable';
+import { AutoResizing, Pad, GeneralContent, GridContent } from 'react-pannable';
 import {
   withKnobs,
   select,
@@ -12,6 +12,7 @@ import Plaid from './Plaid';
 import DemoText from './DemoText';
 import '../../ui/overview.css';
 import './padc.css';
+import svgCircle from './media/circle.svg';
 
 export default {
   title: 'Pad',
@@ -82,18 +83,8 @@ export const Overview = () => {
     return { rect, align, animated };
   }, [scrollType, rect, align, animated]);
 
-  const plaidRowCount = number("Plaid's rowCount", 20, {
-    range: true,
-    min: 1,
-    max: 50,
-    step: 1,
-  });
-  const plaidColumnCount = number("Plaid's columnCount", 20, {
-    range: true,
-    min: 1,
-    max: 50,
-    step: 1,
-  });
+  const plaidRowCount = number("Plaid's rowCount", 20, {});
+  const plaidColumnCount = number("Plaid's columnCount", 20, {});
 
   const onDragStart = useCallback(evt => {
     console.log('onDragStart', evt);
@@ -185,6 +176,75 @@ export const LayoutWithGeneralContent = () => {
               >
                 <div className="pad-intro">{content}</div>
               </GeneralContent>
+            </Pad>
+          )}
+        </AutoResizing>
+      </div>
+    </div>
+  );
+};
+
+export const LayoutWithGridContent = () => {
+  const contentWidth = select(
+    'width',
+    {
+      "equals To Pad's width": null,
+      undefined: undefined,
+      '1000': 1000,
+    },
+    null,
+    'props'
+  );
+  const contentHeight = select(
+    'height',
+    {
+      "equals To Pad's height": null,
+      undefined: undefined,
+      '1000': 1000,
+    },
+    null,
+    'props'
+  );
+  const direction = select('direction', { y: 'y', x: 'x' }, 'y', 'props');
+  const rowSpacing = number('rowSpacing', 0, {}, 'props');
+  const columnSpacing = number('columnSpacing', 0, {}, 'props');
+  const itemWidth = number('itemWidth', 100, {}, 'props');
+  const itemHeight = number('itemHeight', 100, {}, 'props');
+  const itemCount = number('itemCount', 100, {}, 'props');
+
+  return (
+    <div className="overview-wrapper">
+      <div className="overview-h1">GridContent</div>
+      <div className="overview-desc">
+        GridContent component displays data in grid layout. It provides the
+        items that display the actual content.
+      </div>
+      <div className="overview-content">
+        <AutoResizing height={500}>
+          {({ width, height }) => (
+            <Pad
+              width={width}
+              height={height}
+              alwaysBounceX={false}
+              alwaysBounceY={false}
+            >
+              <GridContent
+                width={contentWidth === null ? width : contentWidth}
+                height={contentHeight === null ? height : contentHeight}
+                direction={direction}
+                rowSpacing={rowSpacing}
+                columnSpacing={columnSpacing}
+                itemWidth={itemWidth}
+                itemHeight={itemHeight}
+                itemCount={itemCount}
+                renderItem={({ itemIndex, Item }) => (
+                  <Item>
+                    <img src={svgCircle} className="pad-circle" />
+                    <div className="pad-griditem">{itemIndex}</div>
+                  </Item>
+                )}
+                className="pad-content"
+              />
             </Pad>
           )}
         </AutoResizing>

@@ -34,31 +34,29 @@ npm install --save react-pannable
 
 [All the examples!](https://n43.github.io/react-pannable/)
 
-Some `Infinite` demos
-
-- [Infinit Scrolling Content](https://n43.github.io/react-pannable/?path=/story/infinite--infinit-scrolling-content)
-
 Some `Carousel` demos
 
 - [Horizontal Carousel](https://n43.github.io/react-pannable/?path=/story/carousel--horizontal-carousel)
 - [Vertical Carousel](https://n43.github.io/react-pannable/?path=/story/carousel--vertical-carousel)
-- [Pad with Autoplayer](https://n43.github.io/react-pannable/?path=/story/carousel--pad-with-autoplayer)
+
+Some `Infinite` demos
+
+- [Overview](https://n43.github.io/react-pannable/?path=/story/infinite--overview)
 
 Some `Pad` demos
 
-- [Scrollable Content](https://n43.github.io/react-pannable/?path=/story/pad--scrollable-content)
-- [Locating Specified Content](https://n43.github.io/react-pannable/?path=/story/pad--locating-specified-content)
-- [Auto Resizing with Pad](https://n43.github.io/react-pannable/?path=/story/pad--auto-resizing-with-pad)
+- [Overview](https://n43.github.io/react-pannable/?path=/story/pad--overview)
 - [Layout with General Content](https://n43.github.io/react-pannable/?path=/story/pad--layout-with-general-content)
 - [Layout with Grid Content](https://n43.github.io/react-pannable/?path=/story/pad--layout-with-grid-content)
-- [Layout with List Content](https://n43.github.io/react-pannable/?path=/story/pad--layout-with-list-content)
-- [Layout with Nested Content](https://n43.github.io/react-pannable/?path=/story/pad--layout-with-nested-content)
-- [Use Case with List Content](https://n43.github.io/react-pannable/?path=/story/pad--use-case-with-list-content)
 
 Some `Pannable` demos
 
-- [Draggable Notes](https://n43.github.io/react-pannable/?path=/story/pannable--note)
-- [Adjustable Sticker](https://n43.github.io/react-pannable/?path=/story/pannable--sticker)
+- [Draggable Notes](https://n43.github.io/react-pannable/?path=/story/pannable--draggable-notes)
+- [Adjustable Sticker](https://n43.github.io/react-pannable/?path=/story/pannable--adjustable-sticker)
+
+Some `AutoResizing` demos
+
+- [Overview](https://n43.github.io/react-pannable/?path=/story/autoresizing--overview)
 
 ## License
 
