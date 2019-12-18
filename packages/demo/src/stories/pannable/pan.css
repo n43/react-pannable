@@ -41,3 +41,45 @@
   text-align: center;
   background-color: #ecca3e;
 }
+
+.pan-sticker {
+  position: relative;
+}
+.pan-sticker-dragging {
+  border: 1px dashed #cccccc;
+}
+.pan-sticker-image {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+.pan-sticker-translate {
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  width: 30px;
+  height: 30px;
+}
+.pan-sticker-scale {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  width: 30px;
+  height: 30px;
+}
+.pan-sticker-rotate {
+  position: absolute;
+  left: 2px;
+  bottom: 2px;
+  width: 30px;
+  height: 30px;
+}
+.pan-sticker-edit {
+  position: absolute;
+  right: 2px;
+  top: 2px;
+  padding: 0 4px;
+  color: #ffffff;
+  font-size: 20px;
+  line-height: 30px;
+}

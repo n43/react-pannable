@@ -1,5 +1,11 @@
-import React, { useCallback } from 'react';
-import { withKnobs, object, number, select } from '@storybook/addon-knobs';
+import React, { useCallback, useMemo } from 'react';
+import {
+  withKnobs,
+  object,
+  number,
+  select,
+  boolean,
+} from '@storybook/addon-knobs';
 import { AutoResizing, Infinite } from 'react-pannable';
 import InfoCard from './Infocard';
 import Banner from './Banner';
@@ -49,15 +55,35 @@ export const Overview = () => {
     undefined,
     'props'
   );
-  const scrollToIndex = object(
-    'scrollToIndex',
-    {
-      index: 0,
-      align: 'auto',
-      animated: false,
-    },
-    'props'
+
+  const scrollType = select(
+    'Scroll Action',
+    { null: '', scrollToIndex: 'scrollToIndex' },
+    '',
+    'Scrolling'
   );
+  let index;
+  let align;
+  let animated;
+
+  if (scrollType === 'scrollToIndex') {
+    index = number('index', 0, {}, 'Scrolling');
+    align = select(
+      'align',
+      { center: 'center', start: 'start', end: 'end', auto: 'auto' },
+      'center',
+      'Scrolling'
+    );
+    animated = boolean('animated', true, 'Scrolling');
+  }
+
+  const scrollToIndex = useMemo(() => {
+    if (scrollType !== 'scrollToIndex') {
+      return null;
+    }
+
+    return { index, align, animated };
+  }, [scrollType, index, align, animated]);
 
   const renderItem = useCallback(
     ({ itemIndex, Item }) => {

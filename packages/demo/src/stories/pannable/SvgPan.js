@@ -1,13 +1,7 @@
 import React from 'react';
 
 const SvgPan = props => (
-  <svg
-    className="prefix__icon"
-    viewBox="0 0 1024 1024"
-    width={30}
-    height={30}
-    {...props}
-  >
+  <svg className="prefix__icon" viewBox="0 0 1024 1024" {...props}>
     <defs>
       <style />
     </defs>

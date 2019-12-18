@@ -1,13 +1,7 @@
 import React from 'react';
 
 const SvgScale = props => (
-  <svg
-    className="prefix__icon"
-    viewBox="0 0 1024 1024"
-    width={25}
-    height={25}
-    {...props}
-  >
+  <svg className="prefix__icon" viewBox="0 0 1024 1024" {...props}>
     <defs>
       <style />
     </defs>

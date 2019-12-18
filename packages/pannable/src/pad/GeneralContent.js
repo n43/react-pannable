@@ -1,5 +1,4 @@
-import React, { useRef } from 'react';
-import { useIsomorphicLayoutEffect } from '../hooks/useIsomorphicLayoutEffect';
+import React, { useRef, useState, useEffect } from 'react';
 import resizeDetector from '../utils/resizeDetector';
 import { isNumber } from '../utils/geometry';
 import ItemContent from './ItemContent';
@@ -8,29 +7,41 @@ const defaultGeneralContentProps = { ...ItemContent.defaultProps };
 
 function GeneralContent(props) {
   const { width, height, children } = props;
-  const itemRef = useRef(null);
+  const [size, setSize] = useState(null);
+  const itemRef = useRef({});
 
-  useIsomorphicLayoutEffect(() => {
+  useEffect(() => {
     if (isNumber(width) && isNumber(height)) {
       return;
     }
 
-    if (resizeDetector) {
-      const resizeNode = itemRef.current.getResizeNode();
-      resizeDetector.listenTo(resizeNode, () =>
-        itemRef.current.calculateSize()
-      );
+    const { getResizeNode, calculateSize } = itemRef.current;
 
-      return () => resizeDetector.uninstall(resizeNode);
+    if (size) {
+      const resizeNode = getResizeNode();
+
+      resizeDetector.listenTo(resizeNode, () => {
+        calculateSize();
+      });
+
+      return () => {
+        resizeDetector.uninstall(resizeNode);
+      };
     }
-  }, [width, height]);
+  }, [width, height, size]);
 
   return (
     <ItemContent {...props}>
-      {(size, apis) => {
+      {(nextSize, apis) => {
         itemRef.current = apis;
 
-        return typeof children === 'function' ? children(size, apis) : children;
+        if (size !== nextSize) {
+          setSize(nextSize);
+        }
+
+        return typeof children === 'function'
+          ? children(nextSize, apis)
+          : children;
       }}
     </ItemContent>
   );

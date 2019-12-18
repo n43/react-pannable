@@ -28,13 +28,13 @@ function ItemContent(props) {
   const resizeContent = useCallback(() => {}, []);
   const getResizeNode = useCallback(() => resizeRef.current, []);
   const calculateSize = useCallback(() => {
-    const nextSize = getElementSize(resizeRef.current);
+    const size = getElementSize(resizeRef.current);
 
-    setSize(nextSize);
+    setSize(prevSize => (isEqualToSize(prevSize, size) ? prevSize : size));
   }, []);
 
   useIsomorphicLayoutEffect(() => {
-    if (!isEqualToSize(prevSize, size)) {
+    if (prevSize !== size) {
       if (size) {
         context.resizeContent(size);
       }
@@ -46,14 +46,19 @@ function ItemContent(props) {
   });
 
   useMemo(() => {
-    let nextSize = null;
+    let size = null;
 
     if (isNumber(width) && isNumber(height)) {
-      nextSize = { width, height };
+      size = { width, height };
     }
 
-    setSize(nextSize);
+    setSize(prevSize => (isEqualToSize(prevSize, size) ? prevSize : size));
   }, [width, height]);
+
+  let element =
+    typeof children === 'function'
+      ? children(size, { getResizeNode, calculateSize })
+      : children;
 
   const elemStyle = { position: 'relative' };
   const resizeStyle = { position: 'absolute' };
@@ -64,9 +69,18 @@ function ItemContent(props) {
   if (isNumber(height)) {
     resizeStyle.height = height;
   }
+
+  element = (
+    <div ref={resizeRef} style={resizeStyle}>
+      {element}
+    </div>
+  );
+
   if (size) {
     elemStyle.width = size.width;
     elemStyle.height = size.height;
+  } else {
+    element = <div style={{ position: 'absolute' }}>{element}</div>;
   }
 
   if (divProps.style) {
@@ -74,18 +88,9 @@ function ItemContent(props) {
   }
   divProps.style = elemStyle;
 
-  const element =
-    typeof children === 'function'
-      ? children(size, { getResizeNode, calculateSize })
-      : children;
-
   return (
     <PadContext.Provider value={{ ...context, resizeContent }}>
-      <div {...divProps}>
-        <div ref={resizeRef} style={resizeStyle}>
-          {element}
-        </div>
-      </div>
+      <div {...divProps}>{element}</div>
     </PadContext.Provider>
   );
 }

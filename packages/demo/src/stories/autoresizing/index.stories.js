@@ -12,13 +12,13 @@ export default {
 export const Overview = () => {
   const arWidth = select(
     'width',
-    { Unspecified: undefined, '400': 400, '600': 600 },
+    { undefined: undefined, '400': 400, '600': 600 },
     undefined,
     'props'
   );
   const arHeight = select(
     'height',
-    { Unspecified: undefined, '400': 400, '600': 600 },
+    { undefined: undefined, '400': 400, '600': 600 },
     undefined,
     'props'
   );

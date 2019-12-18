@@ -1,13 +1,15 @@
-import React, { useCallback } from 'react';
-import { AutoResizing, Pad } from 'react-pannable';
+import React, { useCallback, useMemo } from 'react';
+import { AutoResizing, Pad, GeneralContent } from 'react-pannable';
 import {
   withKnobs,
   select,
   number,
   boolean,
   object,
+  text,
 } from '@storybook/addon-knobs';
 import Plaid from './Plaid';
+import DemoText from './DemoText';
 import '../../ui/overview.css';
 import './padc.css';
 
@@ -38,14 +40,47 @@ export const Overview = () => {
   );
   const alwaysBounceX = boolean('alwaysBounceX', true, 'props');
   const alwaysBounceY = boolean('alwaysBounceY', true, 'props');
-  const scrollTo = object(
-    'scrollTo',
-    {
-      point: { x: 0, y: 0 },
-      animated: false,
-    },
-    'props'
+
+  const scrollType = select(
+    'Scroll Action',
+    { null: '', scrollTo: 'scrollTo', scrollToRect: 'scrollToRect' },
+    '',
+    'Scrolling'
   );
+  let point;
+  let rect;
+  let align;
+  let animated;
+
+  if (scrollType === 'scrollTo') {
+    point = object('point', { x: 0, y: 0 }, 'Scrolling');
+    animated = boolean('animated', true, 'Scrolling');
+  } else if (scrollType === 'scrollToRect') {
+    rect = object('rect', { x: 0, y: 0, width: 0, height: 0 }, 'Scrolling');
+    align = select(
+      'align',
+      { center: 'center', start: 'start', end: 'end', auto: 'auto' },
+      'center',
+      'Scrolling'
+    );
+    animated = boolean('animated ', true, 'Scrolling');
+  }
+
+  const scrollTo = useMemo(() => {
+    if (scrollType !== 'scrollTo') {
+      return null;
+    }
+
+    return { point, animated };
+  }, [scrollType, point, animated]);
+
+  const scrollToRect = useMemo(() => {
+    if (scrollType !== 'scrollToRect') {
+      return null;
+    }
+
+    return { rect, align, animated };
+  }, [scrollType, rect, align, animated]);
 
   const plaidRowCount = number("Plaid's rowCount", 20, {
     range: true,
@@ -97,6 +132,7 @@ export const Overview = () => {
               alwaysBounceY={alwaysBounceY}
               enabled={enabled}
               scrollTo={scrollTo}
+              scrollToRect={scrollToRect}
               onDragStart={onDragStart}
               onDragEnd={onDragEnd}
               onDecelerationStart={onDecelerationStart}
@@ -104,6 +140,51 @@ export const Overview = () => {
               onContentResize={onContentResize}
             >
               <Plaid rowCount={plaidRowCount} columnCount={plaidColumnCount} />
+            </Pad>
+          )}
+        </AutoResizing>
+      </div>
+    </div>
+  );
+};
+
+export const LayoutWithGeneralContent = () => {
+  const contentWidth = select(
+    'width',
+    {
+      "equals To Pad's width": null,
+      undefined: undefined,
+      '1000': 1000,
+    },
+    null,
+    'props'
+  );
+  const contentHeight = select(
+    'height',
+    { undefined: undefined, '1000': 1000 },
+    undefined,
+    'props'
+  );
+  const content = text('content', DemoText);
+
+  return (
+    <div className="overview-wrapper">
+      <div className="overview-h1">GeneralContent</div>
+      <div className="overview-desc">
+        GeneralContent component is similar to ItemContent and automatically
+        resizes when the data change.
+      </div>
+      <div className="overview-content">
+        <AutoResizing height={500}>
+          {({ width, height }) => (
+            <Pad width={width} height={height} alwaysBounceX={false}>
+              <GeneralContent
+                width={contentWidth === null ? width : contentWidth}
+                height={contentHeight}
+                className="pad-content"
+              >
+                <div className="pad-intro">{content}</div>
+              </GeneralContent>
             </Pad>
           )}
         </AutoResizing>

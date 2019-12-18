@@ -20,13 +20,13 @@ function AutoResizing(props) {
   const prevSize = prevSizeRef.current;
 
   const calculateSize = useCallback(() => {
-    const nextSize = getElementSize(resizeRef.current);
+    const size = getElementSize(resizeRef.current);
 
-    setSize(nextSize);
+    setSize(prevSize => (isEqualToSize(prevSize, size) ? prevSize : size));
   }, []);
 
   useIsomorphicLayoutEffect(() => {
-    if (!isEqualToSize(prevSize, size)) {
+    if (prevSize !== size) {
       if (size) {
         onResize(size);
       }
@@ -51,26 +51,30 @@ function AutoResizing(props) {
   }, [width, height]);
 
   useMemo(() => {
-    let nextSize = null;
+    let size = null;
 
     if (isNumber(width) && isNumber(height)) {
-      nextSize = { width, height };
+      size = { width, height };
     }
 
-    setSize(nextSize);
+    setSize(prevSize => (isEqualToSize(prevSize, size) ? prevSize : size));
   }, [width, height]);
-
-  divProps.style = {
-    width: isNumber(width) ? width : '100%',
-    height: isNumber(height) ? height : '100%',
-    ...divProps.style,
-  };
 
   let element = null;
 
   if (size) {
     element = typeof children === 'function' ? children(size) : children;
   }
+
+  const elemStyle = {
+    width: isNumber(width) ? width : '100%',
+    height: isNumber(height) ? height : '100%',
+  };
+
+  if (divProps.style) {
+    Object.assign(elemStyle, divProps.style);
+  }
+  divProps.style = elemStyle;
 
   return (
     <div {...divProps} ref={resizeRef}>
