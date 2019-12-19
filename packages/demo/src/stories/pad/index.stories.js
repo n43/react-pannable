@@ -11,8 +11,8 @@ import {
 import Plaid from './Plaid';
 import DemoText from './DemoText';
 import '../../ui/overview.css';
-import './padc.css';
-import svgCircle from './media/circle.svg';
+import './pad.css';
+import svgCircle from './circle.svg';
 
 export default {
   title: 'Pad',

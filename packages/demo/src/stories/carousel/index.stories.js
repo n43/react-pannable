@@ -4,11 +4,11 @@ import { AutoResizing, Carousel } from 'react-pannable';
 import HorizontalIndicator from './HorizontalIndicator';
 import VerticalIndicator from './VerticalIndicator';
 import '../../ui/overview.css';
-import photo1 from './media/photo1.jpg';
-import photo2 from './media/photo2.jpg';
-import photo3 from './media/photo3.jpg';
-import photo4 from './media/photo4.jpg';
-import photo5 from './media/photo5.jpg';
+import photo1 from './photo1.jpg';
+import photo2 from './photo2.jpg';
+import photo3 from './photo3.jpg';
+import photo4 from './photo4.jpg';
+import photo5 from './photo5.jpg';
 
 export default {
   title: 'Carousel',
