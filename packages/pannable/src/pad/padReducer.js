@@ -64,7 +64,7 @@ function validateReducer(state, action) {
     contentVelocity,
     drag,
     deceleration,
-    options: [pagingEnabled],
+    options: [pagingEnabled, , alwaysBounceX, alwaysBounceY],
   } = state;
 
   const decelerationRate = DECELERATION_RATE_STRONG;
@@ -92,12 +92,20 @@ function validateReducer(state, action) {
     ) {
       let nextContentVelocity = contentVelocity;
 
+      if (!alwaysBounceX) {
+        nextContentVelocity.x = 0;
+      }
+      if (!alwaysBounceY) {
+        nextContentVelocity.y = 0;
+      }
+
       if (deceleration.rate !== decelerationRate) {
         nextContentVelocity = getAdjustedContentVelocity(
           nextContentVelocity,
           size,
           decelerationRate
         );
+
         decelerationEndOffset = getDecelerationEndOffset(
           contentOffset,
           nextContentVelocity,
@@ -234,8 +242,6 @@ function dragMoveReducer(state, action) {
     ...state,
     contentOffset: nextContentOffset,
     contentVelocity: nextContentVelocity,
-    drag,
-    deceleration: null,
   };
 }
 
