@@ -105,7 +105,7 @@ function Player(props) {
             direction={direction}
             itemCount={loopCount}
             renderItem={({ Item, itemIndex }) => (
-              <Item key={itemIndex + loopOffset} hash="loop">
+              <Item key={itemIndex + loopOffset} hash="Player_loop">
                 {element}
               </Item>
             )}

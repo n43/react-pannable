@@ -19,9 +19,9 @@ const defaultGridContentProps = {
   direction: 'y',
   rowSpacing: 0,
   columnSpacing: 0,
-  itemCount: 0,
   itemWidth: 0,
   itemHeight: 0,
+  itemCount: 0,
   renderItem: () => null,
 };
 
@@ -32,9 +32,9 @@ function GridContent(props) {
     direction,
     rowSpacing,
     columnSpacing,
-    itemCount,
     itemWidth,
     itemHeight,
+    itemCount,
     renderItem,
     children,
     ...divProps

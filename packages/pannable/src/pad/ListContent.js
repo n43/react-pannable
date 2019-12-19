@@ -19,9 +19,9 @@ const defaultListContentProps = {
   height: null,
   direction: 'y',
   spacing: 0,
-  itemCount: 0,
   estimatedItemWidth: 0,
   estimatedItemHeight: 0,
+  itemCount: 0,
   renderItem: () => null,
 };
 
@@ -31,13 +31,14 @@ function ListContent(props) {
     height,
     direction,
     spacing,
-    itemCount,
     estimatedItemWidth,
     estimatedItemHeight,
+    itemCount,
     renderItem,
     children,
     ...divProps
   } = props;
+  const context = useContext(PadContext);
   const [itemHashList, setItemHashList] = useState([]);
   const [itemSizeDict, setItemSizeDict] = useState({});
   const layout = useMemo(
@@ -68,19 +69,20 @@ function ListContent(props) {
     ]
   );
   const prevLayoutRef = usePrevRef(layout);
-  const context = useContext(PadContext);
 
-  const { size, fixed, layoutList } = layout;
   const prevLayout = prevLayoutRef.current;
   const nextItemHashList = [];
 
   useIsomorphicLayoutEffect(() => {
-    context.resizeContent(size);
+    context.resizeContent(layout.size);
   }, []);
 
   useIsomorphicLayoutEffect(() => {
-    if (!isEqualToSize(prevLayout.size, size)) {
-      context.resizeContent(size);
+    if (!isEqualToSize(prevLayout.size, layout.size)) {
+      context.resizeContent(layout.size);
+    }
+    if (prevLayout.type !== layout.type) {
+      setItemSizeDict({});
     }
   });
 
@@ -131,15 +133,11 @@ function ListContent(props) {
 
     const sizeProps = {};
 
-    if (itemSize) {
-      Object.assign(sizeProps, itemSize);
-    } else {
-      if (isNumber(fixed.width)) {
-        sizeProps.width = fixed.width;
-      }
-      if (isNumber(fixed.height)) {
-        sizeProps.height = fixed.height;
-      }
+    if (isNumber(layout.fixed.width)) {
+      sizeProps.width = layout.fixed.width;
+    }
+    if (isNumber(layout.fixed.height)) {
+      sizeProps.height = layout.fixed.height;
     }
 
     if (isValidElement(element) && element.type.PadContent) {
@@ -159,6 +157,10 @@ function ListContent(props) {
         ref: element.ref,
       });
     } else {
+      if (itemSize) {
+        Object.assign(sizeProps, itemSize);
+      }
+
       element = (
         <ItemContent {...sizeProps} style={itemStyle}>
           {element}
@@ -188,9 +190,9 @@ function ListContent(props) {
 
   const elemStyle = { position: 'relative' };
 
-  if (size) {
-    elemStyle.width = size.width;
-    elemStyle.height = size.height;
+  if (layout.size) {
+    elemStyle.width = layout.size.width;
+    elemStyle.height = layout.size.height;
   }
 
   if (divProps.style) {
@@ -198,7 +200,7 @@ function ListContent(props) {
   }
   divProps.style = elemStyle;
 
-  const items = layoutList.map(attrs =>
+  const items = layout.layoutList.map(attrs =>
     buildItem({
       ...attrs,
       visibleRect: getItemVisibleRect(attrs.rect, context.visibleRect),
@@ -242,6 +244,7 @@ function calculateLayout(props, itemHashList, itemSizeDict) {
   let sizeHeight = 0;
   const layoutList = [];
   const fixed = {};
+  const type = [direction, size[width]].join();
 
   if (isNumber(size[width])) {
     fixed[width] = size[width];
@@ -286,6 +289,7 @@ function calculateLayout(props, itemHashList, itemSizeDict) {
     size: { [width]: sizeWidth, [height]: sizeHeight },
     fixed,
     layoutList,
+    type,
   };
 }
 

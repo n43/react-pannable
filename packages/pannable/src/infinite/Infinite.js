@@ -121,7 +121,7 @@ function Infinite(props) {
             };
 
             return (
-              <Item forceRender>
+              <Item hash="Infinite_body" forceRender>
                 <ListContent {...listProps}>
                   {layout => {
                     listRef.current.body = layout;

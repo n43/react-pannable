@@ -1,5 +1,5 @@
 .pad-content {
-  background-color: #f5f5f5;
+  background-color: #dddddd;
 }
 .pad-intro {
   padding: 20px;
@@ -7,6 +7,7 @@
   line-height: 28px;
   color: #666666;
   white-space: pre-line;
+  background-color: #eeeeee;
 }
 .pad-circle {
   position: absolute;
@@ -23,4 +24,18 @@
   line-height: 28px;
   color: #333333;
   font-weight: bold;
+}
+.pad-listitem {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding: 0 30px;
+  font-size: 20px;
+  line-height: 28px;
+  color: #ffffff;
+  font-weight: bold;
+  white-space: nowrap;
+  background-color: #333333;
+  border: 3px solid #ffffff;
 }
