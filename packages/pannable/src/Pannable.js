@@ -1,4 +1,4 @@
-import React, { useRef, useMemo, useReducer } from 'react';
+import React, { useCallback, useRef, useMemo, useReducer } from 'react';
 import { initialState, reducer } from './pannableReducer';
 import { useIsomorphicLayoutEffect } from './hooks/useIsomorphicLayoutEffect';
 import { usePrevRef } from './hooks/usePrevRef';
@@ -28,129 +28,120 @@ function Pannable(props) {
   const [state, dispatch] = useReducer(reducer, initialState);
   const prevStateRef = usePrevRef(state);
   const elemRef = useRef(null);
-  const innerRef = useRef({ touchSupported: false });
+  const innerRef = useRef({});
+  const touchSupported =
+    typeof window !== undefined ? 'ontouchstart' in document : true;
 
   innerRef.current.state = state;
   innerRef.current.shouldStart = shouldStart;
   const { target, translation, velocity, interval } = state;
   const prevState = prevStateRef.current;
 
-  useIsomorphicLayoutEffect(() => {
-    function track(target, point) {
-      dispatch({ type: 'track', target, point, now: new Date().getTime() });
-    }
+  const track = useCallback((target, point) => {
+    dispatch({ type: 'track', target, point, now: new Date().getTime() });
+  }, []);
 
-    function onTouchStart(evt) {
-      innerRef.current.touchSupported = true;
+  const move = useCallback((point) => {
+    dispatch({
+      type: 'move',
+      point,
+      now: new Date().getTime(),
+      shouldStart: innerRef.current.shouldStart,
+    });
+  }, []);
 
-      if (evt.touches && evt.touches.length === 1) {
-        const touchEvent = evt.touches[0];
-
-        track(touchEvent.target, { x: touchEvent.pageX, y: touchEvent.pageY });
-      }
-    }
-
-    function onTouchMove(evt) {
-      if (innerRef.current.state.translation) {
-        evt.preventDefault();
-      }
-    }
-
-    function onMouseDown(evt) {
-      if (innerRef.current.touchSupported) {
-        return;
-      }
-
-      track(evt.target, { x: evt.pageX, y: evt.pageY });
-    }
-
-    if (enabled) {
-      const elemNode = elemRef.current;
-
-      if (!elemNode.addEventListener) {
-        return;
-      }
-
-      elemNode.addEventListener('touchstart', onTouchStart, false);
-      elemNode.addEventListener('touchmove', onTouchMove, false);
-      elemNode.addEventListener('mousedown', onMouseDown, false);
-
-      return () => {
-        elemNode.removeEventListener('touchstart', onTouchStart, false);
-        elemNode.removeEventListener('touchmove', onTouchMove, false);
-        elemNode.removeEventListener('mousedown', onMouseDown, false);
-      };
-    }
-  }, [enabled]);
+  const end = useCallback(() => {
+    dispatch({ type: 'end' });
+  }, []);
 
   useIsomorphicLayoutEffect(() => {
-    function move(point) {
-      dispatch({
-        type: 'move',
-        point,
-        now: new Date().getTime(),
-        shouldStart: innerRef.current.shouldStart,
-      });
-    }
-
-    function end() {
-      dispatch({ type: 'end' });
-    }
-
-    function onTargetTouchMove(evt) {
-      const touchEvent = evt.touches[0];
-
-      if (innerRef.current.state.translation) {
-        evt.preventDefault();
-      }
-
-      move({ x: touchEvent.pageX, y: touchEvent.pageY });
-    }
-
-    function onTargetTouchEnd(evt) {
-      if (innerRef.current.state.translation) {
-        evt.preventDefault();
-      }
-
-      end();
-    }
-
-    function onRootMouseMove(evt) {
-      evt.preventDefault();
-
-      move({ x: evt.pageX, y: evt.pageY });
-    }
-
-    function onRootMouseUp(evt) {
-      evt.preventDefault();
-
-      end();
-    }
-
-    if (!target) {
+    if (!enabled) {
       return;
     }
 
-    if (innerRef.current.touchSupported) {
-      target.addEventListener('touchmove', onTargetTouchMove, false);
-      target.addEventListener('touchend', onTargetTouchEnd, false);
-      target.addEventListener('touchcancel', onTargetTouchEnd, false);
+    if (target) {
+      if (touchSupported) {
+        const onTargetTouchMove = (evt) => {
+          if (innerRef.current.state.translation) {
+            evt.preventDefault();
+          }
 
-      return () => {
-        target.removeEventListener('touchmove', onTargetTouchMove, false);
-        target.removeEventListener('touchend', onTargetTouchEnd, false);
-        target.removeEventListener('touchcancel', onTargetTouchEnd, false);
-      };
+          const touchEvent = evt.touches[0];
+
+          move({ x: touchEvent.pageX, y: touchEvent.pageY });
+        };
+        const onTargetTouchEnd = (evt) => {
+          if (innerRef.current.state.translation) {
+            evt.preventDefault();
+          }
+
+          end();
+        };
+
+        addEventListener(target, 'touchmove', onTargetTouchMove, false);
+        addEventListener(target, 'touchend', onTargetTouchEnd, false);
+        addEventListener(target, 'touchcancel', onTargetTouchEnd, false);
+
+        return () => {
+          removeEventListener(target, 'touchmove', onTargetTouchMove, false);
+          removeEventListener(target, 'touchend', onTargetTouchEnd, false);
+          removeEventListener(target, 'touchcancel', onTargetTouchEnd, false);
+        };
+      } else {
+        const onBodyMouseMove = (evt) => {
+          evt.preventDefault();
+
+          move({ x: evt.pageX, y: evt.pageY });
+        };
+        const onBodyMouseUp = (evt) => {
+          evt.preventDefault();
+
+          end();
+        };
+
+        const body = typeof document !== undefined ? document.body : null;
+
+        addEventListener(body, 'mousemove', onBodyMouseMove, false);
+        addEventListener(body, 'mouseup', onBodyMouseUp, false);
+
+        return () => {
+          removeEventListener(body, 'mousemove', onBodyMouseMove, false);
+          removeEventListener(body, 'mouseup', onBodyMouseUp, false);
+        };
+      }
     } else {
-      addEventListener('mousemove', onRootMouseMove, false);
-      addEventListener('mouseup', onRootMouseUp, false);
+      const elemNode = elemRef.current;
 
-      return () => {
-        removeEventListener('mousemove', onRootMouseMove, false);
-        removeEventListener('mouseup', onRootMouseUp, false);
-      };
+      if (touchSupported) {
+        const onTouchStart = (evt) => {
+          if (evt.touches && evt.touches.length === 1) {
+            const touchEvent = evt.touches[0];
+
+            track(touchEvent.target, {
+              x: touchEvent.pageX,
+              y: touchEvent.pageY,
+            });
+          }
+        };
+
+        addEventListener(elemNode, 'touchstart', onTouchStart, false);
+
+        return () => {
+          removeEventListener(elemNode, 'touchstart', onTouchStart, false);
+        };
+      } else {
+        const onMouseDown = (evt) => {
+          track(evt.target, { x: evt.pageX, y: evt.pageY });
+        };
+
+        addEventListener(elemNode, 'mousedown', onMouseDown, false);
+
+        return () => {
+          removeEventListener(elemNode, 'mousedown', onMouseDown, false);
+        };
+      }
     }
-  }, [target]);
+  }, [enabled, target, track, move, end]);
 
   useIsomorphicLayoutEffect(() => {
     if (prevState.translation !== translation) {

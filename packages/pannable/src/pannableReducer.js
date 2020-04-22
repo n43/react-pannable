@@ -27,7 +27,11 @@ export function reducer(state, action) {
 function disableReducer(state, action) {
   const { target } = state;
 
-  return target ? initialState : state;
+  if (!target) {
+    return state;
+  }
+
+  return initialState;
 }
 
 function trackReducer(state, action) {
@@ -59,7 +63,7 @@ function moveReducer(state, action) {
     x: (nextMovePoint.x - movePoint.x) / nextInterval,
     y: (nextMovePoint.y - movePoint.y) / nextInterval,
   };
-
+  /* on moving */
   if (translation) {
     return {
       target,
@@ -75,8 +79,16 @@ function moveReducer(state, action) {
   const dist = Math.sqrt(
     Math.pow(nextTranslation.x, 2) + Math.pow(nextTranslation.y, 2)
   );
-
-  if (dist <= MIN_DISTANCE) {
+  /* not started yet  */
+  if (
+    dist <= MIN_DISTANCE ||
+    !shouldStart({
+      target,
+      translation: nextTranslation,
+      velocity: nextVelocity,
+      interval: nextInterval,
+    })
+  ) {
     return {
       target,
       startPoint,
@@ -88,16 +100,7 @@ function moveReducer(state, action) {
     };
   }
 
-  if (
-    !shouldStart({
-      target,
-      translation: nextTranslation,
-      velocity: nextVelocity,
-      interval: nextInterval,
-    })
-  ) {
-    return initialState;
-  }
+  /* start moving */
 
   return {
     target,

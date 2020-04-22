@@ -3,5 +3,8 @@
   "private": true,
   "workspaces": [
     "packages/*"
-  ]
+  ],
+  "scripts": {
+    "run_install": "yarn install --registry https://registry.yarnpkg.com"
+  }
 }

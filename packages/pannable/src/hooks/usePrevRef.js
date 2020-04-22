@@ -1,11 +1,11 @@
 import { useRef, useEffect } from 'react';
 
-export function usePrevRef(current) {
-  const ref = useRef(current);
+export function usePrevRef(input) {
+  const ref = useRef(input);
 
   useEffect(() => {
-    ref.current = current;
-  });
+    ref.current = input;
+  }, [input]);
 
   return ref;
 }
