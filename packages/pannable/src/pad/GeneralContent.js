@@ -7,7 +7,6 @@ const defaultGeneralContentProps = { ...ItemContent.defaultProps };
 
 function GeneralContent(props) {
   const { width, height, children } = props;
-  const [size, setSize] = useState(null);
   const itemRef = useRef({});
 
   useEffect(() => {
@@ -17,31 +16,23 @@ function GeneralContent(props) {
 
     const { getResizeNode, calculateSize } = itemRef.current;
 
-    if (size) {
-      const resizeNode = getResizeNode();
+    const resizeNode = getResizeNode();
 
-      resizeDetector.listenTo(resizeNode, () => {
-        calculateSize();
-      });
+    resizeDetector.listenTo(resizeNode, () => {
+      calculateSize();
+    });
 
-      return () => {
-        resizeDetector.uninstall(resizeNode);
-      };
-    }
-  }, [width, height, size]);
+    return () => {
+      resizeDetector.uninstall(resizeNode);
+    };
+  }, [width, height]);
 
   return (
     <ItemContent {...props}>
-      {(nextSize, apis) => {
+      {(size, apis) => {
         itemRef.current = apis;
 
-        if (size !== nextSize) {
-          setSize(nextSize);
-        }
-
-        return typeof children === 'function'
-          ? children(nextSize, apis)
-          : children;
+        return typeof children === 'function' ? children(size, apis) : children;
       }}
     </ItemContent>
   );

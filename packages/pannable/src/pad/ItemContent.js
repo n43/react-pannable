@@ -36,6 +36,7 @@ function ItemContent(props) {
   useIsomorphicLayoutEffect(() => {
     if (prevSize !== size) {
       if (size) {
+        console.log('resize', size);
         context.resizeContent(size);
       }
     }
@@ -70,17 +71,9 @@ function ItemContent(props) {
     resizeStyle.height = height;
   }
 
-  element = (
-    <div ref={resizeRef} style={resizeStyle}>
-      {element}
-    </div>
-  );
-
   if (size) {
     elemStyle.width = size.width;
     elemStyle.height = size.height;
-  } else {
-    element = <div style={{ position: 'absolute' }}>{element}</div>;
   }
 
   if (divProps.style) {
@@ -90,7 +83,13 @@ function ItemContent(props) {
 
   return (
     <PadContext.Provider value={{ ...context, resizeContent }}>
-      <div {...divProps}>{element}</div>
+      <div {...divProps}>
+        <div style={{ position: 'absolute', top: 0, left: 0 }}>
+          <div ref={resizeRef} style={resizeStyle}>
+            {element}
+          </div>
+        </div>
+      </div>
     </PadContext.Provider>
   );
 }
