@@ -59,21 +59,23 @@ function Pannable(props) {
       return;
     }
 
+    const preventDefaultIfMoving = (evt) => {
+      if (innerRef.current.state.translation) {
+        evt.preventDefault();
+      }
+    };
+
     if (target) {
       if (touchSupported) {
         const onTargetTouchMove = (evt) => {
-          if (innerRef.current.state.translation) {
-            evt.preventDefault();
-          }
+          preventDefaultIfMoving(evt);
 
           const touchEvent = evt.touches[0];
 
           move({ x: touchEvent.pageX, y: touchEvent.pageY });
         };
         const onTargetTouchEnd = (evt) => {
-          if (innerRef.current.state.translation) {
-            evt.preventDefault();
-          }
+          preventDefaultIfMoving(evt);
 
           end();
         };
@@ -89,12 +91,16 @@ function Pannable(props) {
         };
       } else {
         const onBodyMouseMove = (evt) => {
-          evt.preventDefault();
+          preventDefaultIfMoving(evt);
 
-          move({ x: evt.pageX, y: evt.pageY });
+          if (evt.buttons === 1) {
+            move({ x: evt.pageX, y: evt.pageY });
+          } else {
+            end();
+          }
         };
         const onBodyMouseUp = (evt) => {
-          evt.preventDefault();
+          preventDefaultIfMoving(evt);
 
           end();
         };
@@ -131,7 +137,9 @@ function Pannable(props) {
         };
       } else {
         const onMouseDown = (evt) => {
-          track(evt.target, { x: evt.pageX, y: evt.pageY });
+          if (evt.buttons === 1) {
+            track(evt.target, { x: evt.pageX, y: evt.pageY });
+          }
         };
 
         addEventListener(elemNode, 'mousedown', onMouseDown, false);
