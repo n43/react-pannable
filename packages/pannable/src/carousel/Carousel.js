@@ -1,4 +1,4 @@
-import React, { Fragment, useMemo, useReducer } from 'react';
+import React, { Fragment, useMemo, useCallback, useReducer } from 'react';
 import { useIsomorphicLayoutEffect } from '../hooks/useIsomorphicLayoutEffect';
 import { usePrevRef } from '../hooks/usePrevRef';
 import GridContent from '../pad/GridContent';
@@ -8,6 +8,7 @@ import { reducer, initialState } from './carouselReducer';
 const defaultCarouselProps = {
   itemCount: 0,
   renderItem: () => null,
+  onStateChange: () => {},
   onActiveIndexChange: () => {},
   scrollToIndex: null,
   ...Player.defaultProps,
@@ -17,6 +18,7 @@ function Carousel(props) {
   const {
     itemCount: gridItemCount,
     renderItem,
+    onStateChange,
     onActiveIndexChange,
     scrollToIndex,
     children,
@@ -31,13 +33,23 @@ function Carousel(props) {
   } = playerProps;
   const [state, dispatch] = useReducer(reducer, initialState);
   const prevStateRef = usePrevRef(state);
-
-  const { activeIndex, itemCount, scrollTo, player } = state;
-  const output = { activeIndex, itemCount };
   const prevState = prevStateRef.current;
 
+  const onPlayerStateChange = useCallback(value => {
+    dispatch({ type: 'setPlayer', value });
+  }, []);
+
   useIsomorphicLayoutEffect(() => {
-    if (prevState.activeIndex !== activeIndex) {
+    if (prevState !== state) {
+      onStateChange(state);
+    }
+
+    const output = {
+      activeIndex: state.activeIndex,
+      itemCount: state.itemCount,
+    };
+
+    if (prevState.activeIndex !== state.activeIndex) {
       onActiveIndexChange(output);
     }
   });
@@ -52,37 +64,32 @@ function Carousel(props) {
     }
   }, [scrollToIndex]);
 
-  playerProps.scrollTo = scrollTo;
-  playerProps.renderOverlay = padAttrs => {
+  playerProps.scrollTo = state.scrollTo;
+  playerProps.onStateChange = onPlayerStateChange;
+  playerProps.renderOverlay = pad => {
     const element = typeof children === 'function' ? children(state) : children;
 
     return (
       <Fragment>
-        {renderOverlay(padAttrs)}
+        {renderOverlay(pad)}
         {element}
       </Fragment>
     );
   };
 
+  const gridProps = {
+    width,
+    height,
+    itemWidth: width,
+    itemHeight: height,
+    direction,
+    itemCount: gridItemCount,
+    renderItem,
+  };
+
   return (
     <Player {...playerProps}>
-      {nextPlayer => {
-        if (player !== nextPlayer) {
-          dispatch({ type: 'setPlayer', value: nextPlayer });
-        }
-
-        const gridProps = {
-          width,
-          height,
-          itemWidth: width,
-          itemHeight: height,
-          direction,
-          itemCount: gridItemCount,
-          renderItem,
-        };
-
-        return <GridContent {...gridProps} />;
-      }}
+      <GridContent {...gridProps} />
     </Player>
   );
 }

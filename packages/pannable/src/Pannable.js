@@ -8,6 +8,7 @@ import { addEventListener, removeEventListener } from './utils/eventListener';
 const defaultPannableProps = {
   enabled: true,
   shouldStart: () => true,
+  onStateChange: () => {},
   onStart: () => {},
   onMove: () => {},
   onEnd: () => {},
@@ -18,6 +19,7 @@ function Pannable(props) {
   const {
     enabled,
     shouldStart,
+    onStateChange,
     onStart,
     onMove,
     onEnd,
@@ -27,15 +29,15 @@ function Pannable(props) {
   } = props;
   const [state, dispatch] = useReducer(reducer, initialState);
   const prevStateRef = usePrevRef(state);
+  const prevState = prevStateRef.current;
   const elemRef = useRef(null);
-  const innerRef = useRef({});
-  const touchSupported =
-    typeof window !== undefined ? 'ontouchstart' in document : true;
 
+  const innerRef = useRef({});
   innerRef.current.state = state;
   innerRef.current.shouldStart = shouldStart;
-  const { target, translation, velocity, interval } = state;
-  const prevState = prevStateRef.current;
+
+  const touchSupported =
+    typeof window !== undefined ? 'ontouchstart' in document : true;
 
   const track = useCallback((target, point) => {
     dispatch({ type: 'track', target, point, now: new Date().getTime() });
@@ -65,7 +67,7 @@ function Pannable(props) {
       }
     };
 
-    if (target) {
+    if (state.target) {
       if (touchSupported) {
         const onTargetTouchMove = (evt) => {
           preventDefaultIfMoving(evt);
@@ -80,14 +82,29 @@ function Pannable(props) {
           end();
         };
 
-        addEventListener(target, 'touchmove', onTargetTouchMove, false);
-        addEventListener(target, 'touchend', onTargetTouchEnd, false);
-        addEventListener(target, 'touchcancel', onTargetTouchEnd, false);
+        addEventListener(state.target, 'touchmove', onTargetTouchMove, false);
+        addEventListener(state.target, 'touchend', onTargetTouchEnd, false);
+        addEventListener(state.target, 'touchcancel', onTargetTouchEnd, false);
 
         return () => {
-          removeEventListener(target, 'touchmove', onTargetTouchMove, false);
-          removeEventListener(target, 'touchend', onTargetTouchEnd, false);
-          removeEventListener(target, 'touchcancel', onTargetTouchEnd, false);
+          removeEventListener(
+            state.target,
+            'touchmove',
+            onTargetTouchMove,
+            false
+          );
+          removeEventListener(
+            state.target,
+            'touchend',
+            onTargetTouchEnd,
+            false
+          );
+          removeEventListener(
+            state.target,
+            'touchcancel',
+            onTargetTouchEnd,
+            false
+          );
         };
       } else {
         const onBodyMouseMove = (evt) => {
@@ -149,30 +166,25 @@ function Pannable(props) {
         };
       }
     }
-  }, [enabled, target, track, move, end]);
+  }, [enabled, state.target, track, move, end]);
 
   useIsomorphicLayoutEffect(() => {
-    if (prevState.translation !== translation) {
-      if (translation) {
-        const output = { target, translation, velocity, interval };
+    if (prevState !== state) {
+      onStateChange(state);
+    }
 
+    if (prevState.translation !== state.translation) {
+      if (state.translation) {
         if (prevState.translation) {
-          onMove(output);
+          onMove(state);
         } else {
-          onStart(output);
+          onStart(state);
         }
       } else if (prevState.translation) {
-        const output = {
-          target: prevState.target,
-          translation: prevState.translation,
-          velocity: prevState.velocity,
-          interval: prevState.interval,
-        };
-
         if (enabled) {
-          onEnd(output);
+          onEnd(prevState);
         } else {
-          onCancel(output);
+          onCancel(prevState);
         }
       }
     }
@@ -186,7 +198,7 @@ function Pannable(props) {
 
   const elemStyle = {};
 
-  if (translation) {
+  if (state.translation) {
     Object.assign(
       elemStyle,
       StyleSheet.create({

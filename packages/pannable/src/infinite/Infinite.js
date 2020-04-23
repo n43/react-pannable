@@ -1,4 +1,10 @@
-import React, { useReducer, useMemo, useRef, useEffect } from 'react';
+import React, {
+  useMemo,
+  useRef,
+  useEffect,
+  useCallback,
+  useReducer,
+} from 'react';
 import { useIsomorphicLayoutEffect } from '../hooks/useIsomorphicLayoutEffect';
 import { usePrevRef } from '../hooks/usePrevRef';
 import Pad from '../pad/Pad';
@@ -14,6 +20,7 @@ const defaultInfiniteProps = {
   renderItem: () => null,
   renderHeader: () => null,
   renderFooter: () => null,
+  onStateChange: () => {},
   scrollToIndex: null,
   ...Pad.defaultProps,
   directionalLockEnabled: true,
@@ -29,6 +36,7 @@ function Infinite(props) {
     renderItem,
     renderHeader,
     renderFooter,
+    onStateChange,
     scrollToIndex,
     children,
     ...padProps
@@ -36,14 +44,20 @@ function Infinite(props) {
   const { width, height, scrollToRect: padScrollToRect } = padProps;
   const [state, dispatch] = useReducer(reducer, initialState);
   const prevStateRef = usePrevRef(state);
+  const prevState = prevStateRef.current;
   const listRef = useRef({});
 
-  const { scrollToRect, scrolling, pad } = state;
-  const prevState = prevStateRef.current;
+  const onPadStateChange = useCallback(value => {
+    dispatch({ type: 'setPad', value });
+  }, []);
 
   useIsomorphicLayoutEffect(() => {
-    if (prevState.pad.contentSize !== pad.contentSize) {
-      if (scrolling && scrollToIndex) {
+    if (prevState !== state) {
+      onStateChange(state);
+    }
+
+    if (prevState.pad.contentSize !== state.pad.contentSize) {
+      if (state.scrolling && scrollToIndex) {
         dispatch({
           type: 'scrollToIndex',
           ...scrollToIndex,
@@ -54,8 +68,8 @@ function Infinite(props) {
   });
 
   useEffect(() => {
-    if (prevState.pad.deceleration !== pad.deceleration) {
-      if (!pad.deceleration && scrolling) {
+    if (prevState.pad.deceleration !== state.pad.deceleration) {
+      if (!state.pad.deceleration && state.scrolling) {
         dispatch({ type: 'endScrolling' });
       }
     }
@@ -75,7 +89,8 @@ function Infinite(props) {
     }
   }, [scrollToIndex]);
 
-  padProps.scrollToRect = scrollToRect;
+  padProps.scrollToRect = state.scrollToRect;
+  padProps.onStateChange = onPadStateChange;
 
   if (direction === 'x') {
     padProps.alwaysBounceY = false;
@@ -87,59 +102,51 @@ function Infinite(props) {
     children(state);
   }
 
-  return (
-    <Pad {...padProps}>
-      {nextPad => {
-        if (pad !== nextPad) {
-          dispatch({ type: 'setPad', value: nextPad });
-        }
+  const listProps = {
+    width,
+    height,
+    direction,
+    itemCount: 3,
+    renderItem(attrs) {
+      const { itemIndex, Item } = attrs;
 
-        const listProps = {
-          width,
-          height,
-          direction,
-          itemCount: 3,
-          renderItem(attrs) {
-            const { itemIndex, Item } = attrs;
+      if (itemIndex === 0) {
+        return renderHeader(attrs);
+      }
+      if (itemIndex === 2) {
+        return renderFooter(attrs);
+      }
 
-            if (itemIndex === 0) {
-              return renderHeader(attrs);
-            }
-            if (itemIndex === 2) {
-              return renderFooter(attrs);
-            }
+      const listProps = {
+        width,
+        height,
+        direction,
+        spacing,
+        itemCount,
+        estimatedItemWidth,
+        estimatedItemHeight,
+        renderItem,
+      };
 
-            const listProps = {
-              width,
-              height,
-              direction,
-              spacing,
-              itemCount,
-              estimatedItemWidth,
-              estimatedItemHeight,
-              renderItem,
-            };
-
-            return (
-              <Item hash="Infinite_body" forceRender>
-                <ListContent {...listProps}>
-                  {layout => {
-                    listRef.current.body = layout;
-                  }}
-                </ListContent>
-              </Item>
-            );
-          },
-        };
-
-        return (
+      return (
+        <Item hash="Infinite_body" forceRender>
           <ListContent {...listProps}>
             {layout => {
-              listRef.current.box = layout;
+              listRef.current.body = layout;
             }}
           </ListContent>
-        );
-      }}
+        </Item>
+      );
+    },
+  };
+
+  return (
+    <Pad {...padProps}>
+      <ListContent {...listProps}>
+        {layout => {
+          listRef.current.box = layout;
+        }}
+      </ListContent>
     </Pad>
   );
 }

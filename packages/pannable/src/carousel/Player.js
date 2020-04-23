@@ -1,5 +1,7 @@
 import React, { useCallback, useMemo, useReducer, useEffect } from 'react';
 import Pad from '../pad/Pad';
+import { useIsomorphicLayoutEffect } from '../hooks/useIsomorphicLayoutEffect';
+import { usePrevRef } from '../hooks/usePrevRef';
 import ListContent from '../pad/ListContent';
 import { reducer, initialState } from './playerReducer';
 
@@ -8,6 +10,7 @@ const defaultPlayerProps = {
   loop: true,
   autoplayEnabled: true,
   autoplayInterval: 5000,
+  onStateChange: () => {},
   ...Pad.defaultProps,
   pagingEnabled: true,
   directionalLockEnabled: true,
@@ -19,13 +22,14 @@ function Player(props) {
     loop,
     autoplayEnabled,
     autoplayInterval,
+    onStateChange,
     children,
     ...padProps
   } = props;
   const { scrollTo: padScrollTo, onMouseEnter, onMouseLeave } = padProps;
   const [state, dispatch] = useReducer(reducer, initialState);
-
-  const { mouseEntered, loopCount, loopOffset, scrollTo, pad } = state;
+  const prevStateRef = usePrevRef(state);
+  const prevState = prevStateRef.current;
 
   const onPadMouseEnter = useCallback(
     evt => {
@@ -49,8 +53,23 @@ function Player(props) {
     [onMouseLeave]
   );
 
+  const onPadStateChange = useCallback(value => {
+    dispatch({ type: 'setPad', value });
+  }, []);
+
+  useIsomorphicLayoutEffect(() => {
+    if (prevState !== state) {
+      onStateChange(state);
+    }
+  });
+
   useEffect(() => {
-    if (!autoplayEnabled || mouseEntered || pad.drag || pad.deceleration) {
+    if (
+      !autoplayEnabled ||
+      state.mouseEntered ||
+      state.pad.drag ||
+      state.pad.deceleration
+    ) {
       return;
     }
 
@@ -64,9 +83,9 @@ function Player(props) {
   }, [
     autoplayEnabled,
     autoplayInterval,
-    mouseEntered,
-    pad.drag,
-    pad.deceleration,
+    state.mouseEntered,
+    state.pad.drag,
+    state.pad.deceleration,
   ]);
 
   useMemo(() => {
@@ -77,7 +96,8 @@ function Player(props) {
     dispatch({ type: 'setScrollTo', value: padScrollTo });
   }, [padScrollTo]);
 
-  padProps.scrollTo = scrollTo;
+  padProps.scrollTo = state.scrollTo;
+  padProps.onStateChange = onPadStateChange;
 
   if (direction === 'x') {
     padProps.alwaysBounceY = false;
@@ -90,28 +110,19 @@ function Player(props) {
     padProps.onMouseLeave = onPadMouseLeave;
   }
 
+  const element = typeof children === 'function' ? children(state) : children;
+
   return (
     <Pad {...padProps}>
-      {nextPad => {
-        if (pad !== nextPad) {
-          dispatch({ type: 'setPad', value: nextPad });
-        }
-
-        const element =
-          typeof children === 'function' ? children(state) : children;
-
-        return (
-          <ListContent
-            direction={direction}
-            itemCount={loopCount}
-            renderItem={({ Item, itemIndex }) => (
-              <Item key={itemIndex + loopOffset} hash="Player_loop">
-                {element}
-              </Item>
-            )}
-          />
-        );
-      }}
+      <ListContent
+        direction={direction}
+        itemCount={state.loopCount}
+        renderItem={({ Item, itemIndex }) => (
+          <Item key={itemIndex + state.loopOffset} hash="Player_loop">
+            {element}
+          </Item>
+        )}
+      />
     </Pad>
   );
 }

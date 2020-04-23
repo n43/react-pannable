@@ -25,6 +25,7 @@ const defaultPadProps = {
   directionalLockEnabled: false,
   alwaysBounceX: true,
   alwaysBounceY: true,
+  onStateChange: () => {},
   onScroll: () => {},
   onDragStart: () => {},
   onDragEnd: () => {},
@@ -46,6 +47,7 @@ function Pad(props) {
     directionalLockEnabled,
     alwaysBounceX,
     alwaysBounceY,
+    onStateChange,
     onScroll,
     onDragStart,
     onDragEnd,
@@ -62,52 +64,38 @@ function Pad(props) {
   const { enabled, shouldStart } = pannableProps;
   const [state, dispatch] = useReducer(reducer, initialState);
   const prevStateRef = usePrevRef(state);
-
-  const {
-    size,
-    contentSize,
-    contentOffset,
-    contentVelocity,
-    drag,
-    deceleration,
-    pannable,
-  } = state;
-  const output = {
-    size,
-    contentSize,
-    contentOffset,
-    contentVelocity,
-    dragging: !!drag,
-    decelerating: !!deceleration,
-  };
   const prevState = prevStateRef.current;
 
   const resizeContent = useCallback(
-    nextContentSize => {
-      if (!isEqualToSize(contentSize, nextContentSize)) {
-        dispatch({ type: 'setContentSize', value: nextContentSize });
+    contentSize => {
+      if (!isEqualToSize(state.contentSize, contentSize)) {
+        dispatch({ type: 'setContentSize', value: contentSize });
       }
     },
-    [contentSize]
+    [state.contentSize]
   );
 
   const shouldPannableStart = useCallback(
     evt => {
       if (
         directionalLockEnabled &&
-        !shouldDragStart(evt.velocity, size, contentSize)
+        !shouldDragStart(evt.velocity, state.size, state.contentSize)
       ) {
         return false;
       }
 
       return shouldStart(evt);
     },
-    [shouldStart, directionalLockEnabled, size, contentSize]
+    [shouldStart, directionalLockEnabled, state.size, state.contentSize]
   );
 
+  const onPannableStateChange = useCallback(value => {
+    dispatch({ type: 'setPannable', value });
+  }, []);
+
   useIsomorphicLayoutEffect(() => {
-    if (prevState.pannable.translation !== pannable.translation) {
-      if (pannable.translation) {
+    if (prevState.pannable.translation !== state.pannable.translation) {
+      if (state.pannable.translation) {
         if (prevState.pannable.translation) {
           dispatch({ type: 'dragMove' });
         } else {
@@ -122,23 +110,36 @@ function Pad(props) {
       }
     }
 
-    if (prevState.contentSize !== contentSize) {
-      onContentResize(contentSize);
+    if (prevState !== state) {
+      onStateChange(state);
     }
-    if (prevState.contentOffset !== contentOffset) {
+
+    const output = {
+      size: state.size,
+      contentSize: state.contentSize,
+      contentOffset: state.contentOffset,
+      contentVelocity: state.contentVelocity,
+      dragging: !!state.drag,
+      decelerating: !!state.deceleration,
+    };
+
+    if (prevState.contentSize !== state.contentSize) {
+      onContentResize(state.contentSize);
+    }
+    if (prevState.contentOffset !== state.contentOffset) {
       onScroll(output);
     }
-    if (prevState.drag !== drag) {
+    if (prevState.drag !== state.drag) {
       if (!prevState.drag) {
         onDragStart(output);
-      } else if (!drag) {
+      } else if (!state.drag) {
         onDragEnd(output);
       }
     }
-    if (prevState.deceleration !== deceleration) {
+    if (prevState.deceleration !== state.deceleration) {
       if (!prevState.deceleration) {
         onDecelerationStart(output);
-      } else if (!deceleration) {
+      } else if (!state.deceleration) {
         onDecelerationEnd(output);
       }
     }
@@ -189,9 +190,9 @@ function Pad(props) {
   function buildContent() {
     const contentStyle = StyleSheet.create({
       position: 'absolute',
-      width: contentSize.width,
-      height: contentSize.height,
-      transformTranslate: contentOffset,
+      width: state.contentSize.width,
+      height: state.contentSize.height,
+      transformTranslate: state.contentOffset,
       willChange: 'transform',
     });
 
@@ -214,7 +215,7 @@ function Pad(props) {
   }
 
   function buildBackground() {
-    const element = renderBackground(output);
+    const element = renderBackground(state);
 
     if (element === null || element === undefined) {
       return null;
@@ -232,16 +233,17 @@ function Pad(props) {
   }
 
   function buildOverlay() {
-    return renderOverlay(output);
+    return renderOverlay(state);
   }
 
   pannableProps.shouldStart = shouldPannableStart;
+  pannableProps.onStateChange = onPannableStateChange;
 
   const elemStyle = {
     overflow: 'hidden',
     position: 'relative',
-    width: size.width,
-    height: size.height,
+    width: state.size.width,
+    height: state.size.height,
   };
 
   if (pannableProps.style) {
@@ -250,28 +252,20 @@ function Pad(props) {
 
   pannableProps.style = elemStyle;
 
+  const visibleRect = {
+    x: -state.contentOffset.x,
+    y: -state.contentOffset.y,
+    width: state.size.width,
+    height: state.size.height,
+  };
+
   return (
     <Pannable {...pannableProps}>
-      {nextPannable => {
-        if (pannable !== nextPannable) {
-          dispatch({ type: 'setPannable', value: nextPannable });
-        }
-
-        const visibleRect = {
-          x: -contentOffset.x,
-          y: -contentOffset.y,
-          width: size.width,
-          height: size.height,
-        };
-
-        return (
-          <PadContext.Provider value={{ visibleRect, resizeContent }}>
-            {buildBackground()}
-            {buildContent()}
-            {buildOverlay()}
-          </PadContext.Provider>
-        );
-      }}
+      <PadContext.Provider value={{ visibleRect, resizeContent }}>
+        {buildBackground()}
+        {buildContent()}
+        {buildOverlay()}
+      </PadContext.Provider>
     </Pannable>
   );
 }

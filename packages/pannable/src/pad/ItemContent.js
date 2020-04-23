@@ -36,7 +36,6 @@ function ItemContent(props) {
   useIsomorphicLayoutEffect(() => {
     if (prevSize !== size) {
       if (size) {
-        console.log('resize', size);
         context.resizeContent(size);
       }
     }

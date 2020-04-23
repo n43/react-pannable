@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useEffect } from 'react';
 import resizeDetector from '../utils/resizeDetector';
 import { isNumber } from '../utils/geometry';
 import ItemContent from './ItemContent';
