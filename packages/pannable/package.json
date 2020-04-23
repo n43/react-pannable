@@ -1,6 +1,6 @@
 {
   "name": "react-pannable",
-  "version": "3.3.1",
+  "version": "3.4.0",
   "description": "Flexible and Customizable Layouts for Scrolling Content with React",
   "keywords": [
     "react",
@@ -53,7 +53,7 @@
     "build:umd:min": "NODE_ENV=production rollup -c -o dist/react-pannable.min.js",
     "build": "yarn build:commonjs && yarn build:es && yarn build:umd && yarn build:umd:min",
     "prebuild": "yarn clean",
-    "test": "jest",
+    "test": "jest -v",
     "pretest": "yarn lint && yarn build",
     "prepare": "yarn test",
     "prepublishOnly": "cd ../demo && yarn deploy"
