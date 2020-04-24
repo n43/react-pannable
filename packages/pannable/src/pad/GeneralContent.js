@@ -7,25 +7,23 @@ const defaultGeneralContentProps = { ...ItemContent.defaultProps };
 
 function GeneralContent(props) {
   const { width, height, children } = props;
+  const fixed = isNumber(width) && isNumber(height);
   const itemRef = useRef({});
 
   useEffect(() => {
-    if (isNumber(width) && isNumber(height)) {
+    if (fixed) {
       return;
     }
 
     const { getResizeNode, calculateSize } = itemRef.current;
 
     const resizeNode = getResizeNode();
-
-    resizeDetector.listenTo(resizeNode, () => {
-      calculateSize();
-    });
+    resizeDetector.listenTo(resizeNode, calculateSize);
 
     return () => {
       resizeDetector.uninstall(resizeNode);
     };
-  }, [width, height]);
+  }, [fixed]);
 
   return (
     <ItemContent {...props}>
