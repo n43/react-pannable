@@ -74,12 +74,12 @@ function ListContent(props) {
   const nextItemHashList = [];
 
   useIsomorphicLayoutEffect(() => {
-    context.resizeContent(layout.size);
+    context.onResize(layout.size);
   }, []);
 
   useIsomorphicLayoutEffect(() => {
     if (!isEqualToSize(prevLayout.size, layout.size)) {
-      context.resizeContent(layout.size);
+      context.onResize(layout.size);
     }
     if (prevLayout.type !== layout.type) {
       setItemSizeDict({});
@@ -168,20 +168,18 @@ function ListContent(props) {
       );
     }
 
-    function resizeContent(itemHash) {
-      return function(itemSize) {
-        setItemSizeDict(itemSizeDict =>
-          isEqualToSize(itemSizeDict[itemHash], itemSize)
-            ? itemSizeDict
-            : { ...itemSizeDict, [itemHash]: itemSize }
-        );
-      };
+    function onResize(itemSize) {
+      setItemSizeDict(itemSizeDict =>
+        isEqualToSize(itemSizeDict[hash], itemSize)
+          ? itemSizeDict
+          : { ...itemSizeDict, [hash]: itemSize }
+      );
     }
 
     return (
       <PadContext.Provider
         key={key}
-        value={{ ...context, visibleRect, resizeContent: resizeContent(hash) }}
+        value={{ ...context, visibleRect, onResize }}
       >
         {element}
       </PadContext.Provider>

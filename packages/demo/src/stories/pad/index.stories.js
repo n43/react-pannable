@@ -287,6 +287,10 @@ export const LayoutWithListContent = () => {
   const estimatedItemHeight = number('estimatedItemHeight', 100, {}, 'props');
   const itemCount = number('itemCount', 100, {}, 'props');
 
+  const onContentResize = useCallback(evt => {
+    console.log('onContentResize', evt);
+  }, []);
+
   return (
     <div className="overview-wrapper">
       <div className="overview-h1">ListContent</div>
@@ -302,6 +306,7 @@ export const LayoutWithListContent = () => {
               height={height}
               alwaysBounceX={false}
               alwaysBounceY={false}
+              onContentResize={onContentResize}
             >
               <ListContent
                 width={contentWidth === null ? width : contentWidth}

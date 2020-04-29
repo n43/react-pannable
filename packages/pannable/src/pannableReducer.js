@@ -12,9 +12,8 @@ export const initialState = {
 
 export function reducer(state, action) {
   switch (action.type) {
-    case 'disable':
     case 'end':
-      return disableReducer(state, action);
+      return endReducer(state, action);
     case 'track':
       return trackReducer(state, action);
     case 'move':
@@ -24,14 +23,22 @@ export function reducer(state, action) {
   }
 }
 
-function disableReducer(state, action) {
+function endReducer(state, action) {
   const { target } = state;
 
   if (!target) {
     return state;
   }
 
-  return initialState;
+  return {
+    target: null,
+    startPoint: null,
+    movePoint: null,
+    moveTime: null,
+    translation: null,
+    velocity: null,
+    interval: null,
+  };
 }
 
 function trackReducer(state, action) {
@@ -63,6 +70,7 @@ function moveReducer(state, action) {
     x: (nextMovePoint.x - movePoint.x) / nextInterval,
     y: (nextMovePoint.y - movePoint.y) / nextInterval,
   };
+
   /* on moving */
   if (translation) {
     return {
@@ -79,6 +87,7 @@ function moveReducer(state, action) {
   const dist = Math.sqrt(
     Math.pow(nextTranslation.x, 2) + Math.pow(nextTranslation.y, 2)
   );
+
   /* not started yet  */
   if (
     dist <= MIN_DISTANCE ||
@@ -101,7 +110,6 @@ function moveReducer(state, action) {
   }
 
   /* start moving */
-
   return {
     target,
     startPoint: nextMovePoint,

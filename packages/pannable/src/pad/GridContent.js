@@ -68,14 +68,14 @@ function GridContent(props) {
   const { size, layoutList } = layout;
   const prevLayout = prevLayoutRef.current;
 
-  const resizeContent = useCallback(() => {}, []);
+  const onResize = useCallback(() => {}, []);
 
   useIsomorphicLayoutEffect(() => {
-    context.resizeContent(size);
+    context.onResize(size);
   }, []);
   useIsomorphicLayoutEffect(() => {
     if (!isEqualToSize(prevLayout.size, size)) {
-      context.resizeContent(size);
+      context.onResize(size);
     }
   });
 
@@ -121,7 +121,7 @@ function GridContent(props) {
     return (
       <PadContext.Provider
         key={key}
-        value={{ ...context, visibleRect, resizeContent }}
+        value={{ ...context, visibleRect, onResize }}
       >
         {element}
       </PadContext.Provider>

@@ -25,7 +25,7 @@ function ItemContent(props) {
   const resizeRef = useRef(null);
   const fixed = isNumber(width) && isNumber(height);
 
-  const resizeContent = useCallback(() => {}, []);
+  const onResize = useCallback(() => {}, []);
   const getResizeNode = useCallback(() => resizeRef.current, []);
   const calculateSize = useCallback(node => {
     const size = {
@@ -39,7 +39,7 @@ function ItemContent(props) {
   useIsomorphicLayoutEffect(() => {
     if (prevSize !== size) {
       if (size) {
-        context.resizeContent(size);
+        context.onResize(size);
       }
     }
   });
@@ -96,7 +96,7 @@ function ItemContent(props) {
   }
 
   return (
-    <PadContext.Provider value={{ ...context, resizeContent }}>
+    <PadContext.Provider value={{ ...context, onResize }}>
       <div {...divProps}>{element}</div>
     </PadContext.Provider>
   );
