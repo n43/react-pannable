@@ -133,8 +133,45 @@ function Pad(props) {
               };
 
               const input = { ...pad, contentSize, pannable };
-              let element =
+
+              let backgroundLayer = renderBackground(input);
+
+              if (backgroundLayer !== null) {
+                const layerStyle = {
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                };
+
+                backgroundLayer = (
+                  <div style={layerStyle}>{backgroundLayer}</div>
+                );
+              }
+
+              let overlayLayer = renderOverlay(input);
+
+              if (overlayLayer !== null) {
+                const layerStyle = {
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                };
+
+                overlayLayer = <div style={layerStyle}>{overlayLayer}</div>;
+              }
+
+              let contentLayer =
                 typeof children === 'function' ? children(input) : children;
+
+              if (
+                !React.isValidElement(contentLayer) ||
+                !contentLayer.type.PadContent
+              ) {
+                contentLayer = <GeneralContent>{contentLayer}</GeneralContent>;
+              }
 
               const contentStyle = StyleSheet.create({
                 position: 'absolute',
@@ -144,28 +181,20 @@ function Pad(props) {
                 willChange: 'transform',
               });
 
-              if (React.isValidElement(element) && element.type.PadContent) {
-                if (element.props.style) {
-                  Object.assign(contentStyle, element.props.style);
-                }
-
-                element = React.cloneElement(element, {
-                  style: contentStyle,
-                  ref: element.ref,
-                });
-              } else {
-                element = (
-                  <GeneralContent style={contentStyle}>
-                    {element}
-                  </GeneralContent>
-                );
+              if (contentLayer.props.style) {
+                Object.assign(contentStyle, contentLayer.props.style);
               }
+
+              contentLayer = React.cloneElement(contentLayer, {
+                style: contentStyle,
+                ref: contentLayer.ref,
+              });
 
               return (
                 <PadContext.Provider value={{ visibleRect, onResize }}>
-                  {renderLayer(renderBackground(input))}
-                  {element}
-                  {renderLayer(renderOverlay(input))}
+                  {backgroundLayer}
+                  {contentLayer}
+                  {overlayLayer}
                 </PadContext.Provider>
               );
             }}
@@ -185,20 +214,4 @@ function shouldDragStart(velocity, size, cSize) {
     Math.abs(velocity.y) < Math.abs(velocity.x) ? 'width' : 'height';
 
   return size[height] < cSize[height];
-}
-
-function renderLayer(element) {
-  if (element === null || element === undefined) {
-    return null;
-  }
-
-  const elemStyle = {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  };
-
-  return <div style={elemStyle}>{element}</div>;
 }

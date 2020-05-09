@@ -1,10 +1,4 @@
-import React, {
-  isValidElement,
-  cloneElement,
-  useState,
-  useContext,
-  useMemo,
-} from 'react';
+import React, { useState, useContext, useMemo } from 'react';
 import { useIsomorphicLayoutEffect } from '../hooks/useIsomorphicLayoutEffect';
 import { usePrevRef } from '../hooks/usePrevRef';
 import { getItemVisibleRect, needsRender } from '../utils/visible';
@@ -93,15 +87,8 @@ function ListContent(props) {
 
     let key = `ListContent_` + itemIndex;
     let hash;
-    const itemStyle = {
-      position: 'absolute',
-      left: rect.x,
-      top: rect.y,
-      width: rect.width,
-      height: rect.height,
-    };
 
-    if (isValidElement(element) && element.type === Item) {
+    if (React.isValidElement(element) && element.type === Item) {
       if (element.props.forceRender !== undefined) {
         forceRender = element.props.forceRender;
       }
@@ -131,42 +118,40 @@ function ListContent(props) {
       return null;
     }
 
+    if (!React.isValidElement(element) || !element.type.PadContent) {
+      element = <ItemContent>{element}</ItemContent>;
+    }
+
     const sizeProps = {};
 
-    if (isNumber(layout.fixed.width)) {
-      sizeProps.width = layout.fixed.width;
-    }
-    if (isNumber(layout.fixed.height)) {
-      sizeProps.height = layout.fixed.height;
-    }
-
-    if (isValidElement(element) && element.type.PadContent) {
-      if (element.props.style) {
-        Object.assign(itemStyle, element.props.style);
-      }
-      if (isNumber(element.props.width)) {
-        sizeProps.width = element.props.width;
-      }
-      if (isNumber(element.props.height)) {
-        sizeProps.height = element.props.height;
-      }
-
-      element = cloneElement(element, {
-        ...sizeProps,
-        style: itemStyle,
-        ref: element.ref,
-      });
+    if (itemSize) {
+      Object.assign(sizeProps, itemSize);
     } else {
-      if (itemSize) {
-        Object.assign(sizeProps, itemSize);
+      if (isNumber(layout.fixed.width)) {
+        sizeProps.width = layout.fixed.width;
       }
-
-      element = (
-        <ItemContent {...sizeProps} style={itemStyle}>
-          {element}
-        </ItemContent>
-      );
+      if (isNumber(layout.fixed.height)) {
+        sizeProps.height = layout.fixed.height;
+      }
     }
+
+    const itemStyle = {
+      position: 'absolute',
+      left: rect.x,
+      top: rect.y,
+      width: rect.width,
+      height: rect.height,
+    };
+
+    if (element.props.style) {
+      Object.assign(itemStyle, element.props.style);
+    }
+
+    element = React.cloneElement(element, {
+      ...sizeProps,
+      style: itemStyle,
+      ref: element.ref,
+    });
 
     function onResize(itemSize) {
       setItemSizeDict(itemSizeDict =>
