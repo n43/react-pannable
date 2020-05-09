@@ -121,8 +121,8 @@ export default function PadInner(props) {
   useMemo(() => {
     if (scrollTo) {
       dispatch({
-        ...scrollTo,
         type: 'scrollTo',
+        value: scrollTo,
         options: innerRef.current.options,
         now: new Date().getTime(),
       });
@@ -132,8 +132,8 @@ export default function PadInner(props) {
   useMemo(() => {
     if (scrollToRect) {
       dispatch({
-        ...scrollToRect,
         type: 'scrollToRect',
+        value: scrollToRect,
         options: innerRef.current.options,
         now: new Date().getTime(),
       });

@@ -1,12 +1,4 @@
-import React, {
-  useMemo,
-  useRef,
-  useEffect,
-  useCallback,
-  useReducer,
-} from 'react';
-import { useIsomorphicLayoutEffect } from '../hooks/useIsomorphicLayoutEffect';
-import { usePrevRef } from '../hooks/usePrevRef';
+import React, { useMemo, useRef, useCallback, useReducer } from 'react';
 import Pad from '../pad/Pad';
 import ListContent from '../pad/ListContent';
 import { reducer, initialState } from './infiniteReducer';
@@ -41,39 +33,37 @@ function Infinite(props) {
     children,
     ...padProps
   } = props;
-  const { width, height, scrollToRect: padScrollToRect } = padProps;
+  const {
+    width,
+    height,
+    scrollToRect: padScrollToRect,
+    onContentResize: onPadContentResize,
+    onDecelerationEnd: onPadDecelerationEnd,
+  } = padProps;
   const [state, dispatch] = useReducer(reducer, initialState);
-  const prevStateRef = usePrevRef(state);
-  const prevState = prevStateRef.current;
   const listRef = useRef({});
 
-  const onPadStateChange = useCallback(value => {
-    dispatch({ type: 'setPad', value });
-  }, []);
-
-  useIsomorphicLayoutEffect(() => {
-    if (prevState !== state) {
-      onStateChange(state);
-    }
-
-    if (prevState.pad.contentSize !== state.pad.contentSize) {
-      if (state.scrolling && scrollToIndex) {
-        dispatch({
-          type: 'scrollToIndex',
-          ...scrollToIndex,
-          list: listRef.current,
-        });
+  const onContentResize = useCallback(
+    contentSize => {
+      if (state.scroll) {
+        dispatch({ type: 'scrollRecalculate', list: listRef.current });
       }
-    }
-  });
 
-  useEffect(() => {
-    if (prevState.pad.deceleration !== state.pad.deceleration) {
-      if (!state.pad.deceleration && state.scrolling) {
-        dispatch({ type: 'endScrolling' });
+      onPadContentResize(contentSize);
+    },
+    [onPadContentResize, state.scroll]
+  );
+
+  const onDecelerationEnd = useCallback(
+    evt => {
+      if (state.scroll) {
+        dispatch({ type: 'scrollEnd' });
       }
-    }
-  });
+
+      onPadDecelerationEnd(evt);
+    },
+    [onPadDecelerationEnd, state.scroll]
+  );
 
   useMemo(() => {
     dispatch({ type: 'setScrollToRect', value: padScrollToRect });
@@ -83,14 +73,15 @@ function Infinite(props) {
     if (scrollToIndex) {
       dispatch({
         type: 'scrollToIndex',
-        ...scrollToIndex,
+        value: scrollToIndex,
         list: listRef.current,
       });
     }
   }, [scrollToIndex]);
 
   padProps.scrollToRect = state.scrollToRect;
-  padProps.onStateChange = onPadStateChange;
+  padProps.onContentResize = onContentResize;
+  padProps.onDecelerationEnd = onDecelerationEnd;
 
   if (direction === 'x') {
     padProps.alwaysBounceY = false;
@@ -117,7 +108,7 @@ function Infinite(props) {
         return renderFooter(attrs);
       }
 
-      const listProps = {
+      const bodyProps = {
         width,
         height,
         direction,
@@ -130,7 +121,7 @@ function Infinite(props) {
 
       return (
         <Item hash="Infinite_body" forceRender>
-          <ListContent {...listProps}>
+          <ListContent {...bodyProps}>
             {layout => {
               listRef.current.body = layout;
             }}

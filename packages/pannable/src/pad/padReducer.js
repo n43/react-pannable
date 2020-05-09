@@ -291,21 +291,23 @@ function decelerateReducer(state, action) {
 
 function scrollToReducer(state, action) {
   const { contentOffset, contentVelocity, drag, deceleration } = state;
+  const { now } = action;
+  const { offset = { x: 0, y: 0 }, point, animated } = action.value;
   const { size, pagingEnabled } = action.options;
-  const { point, now } = action;
-  let { offset = { x: 0, y: 0 }, animated } = action;
+  let nextOffset = offset;
+  let nextAnimated = animated;
 
   if (point) {
-    offset = { x: -point.x, y: -point.y };
+    nextOffset = { x: -point.x, y: -point.y };
   }
-  if (offset.x === contentOffset.x && offset.y === contentOffset.y) {
+  if (nextOffset.x === contentOffset.x && nextOffset.y === contentOffset.y) {
     return state;
   }
   if (drag) {
-    animated = false;
+    nextAnimated = false;
   }
 
-  if (!animated) {
+  if (!nextAnimated) {
     let nextDrag = drag;
     let nextDeceleration = deceleration;
 
@@ -313,16 +315,16 @@ function scrollToReducer(state, action) {
       nextDrag = {
         ...drag,
         startOffset: {
-          x: drag.startOffset.x + offset.x - contentOffset.x,
-          y: drag.startOffset.y + offset.y - contentOffset.y,
+          x: drag.startOffset.x + nextOffset.x - contentOffset.x,
+          y: drag.startOffset.y + nextOffset.y - contentOffset.y,
         },
       };
     }
     if (deceleration) {
       const decelerationEndOffset = getDecelerationEndOffset(
         {
-          x: deceleration.endOffset.x + offset.x - contentOffset.x,
-          y: deceleration.endOffset.y + offset.y - contentOffset.y,
+          x: deceleration.endOffset.x + nextOffset.x - contentOffset.x,
+          y: deceleration.endOffset.y + nextOffset.y - contentOffset.y,
         },
         { x: 0, y: 0 },
         size,
@@ -333,7 +335,7 @@ function scrollToReducer(state, action) {
       nextDeceleration = createDeceleration(
         decelerationEndOffset,
         deceleration.rate,
-        offset,
+        nextOffset,
         contentVelocity,
         now
       );
@@ -341,14 +343,14 @@ function scrollToReducer(state, action) {
 
     return {
       ...state,
-      contentOffset: offset,
+      contentOffset: nextOffset,
       drag: nextDrag,
       deceleration: nextDeceleration,
     };
   }
 
   const decelerationEndOffset = getDecelerationEndOffset(
-    offset,
+    nextOffset,
     { x: 0, y: 0 },
     size,
     pagingEnabled,
@@ -369,14 +371,14 @@ function scrollToReducer(state, action) {
 
 function scrollToRectReducer(state, action) {
   const { contentOffset } = state;
+  const { rect, align } = action.value;
   const { size } = action.options;
-  const { rect, align } = action;
-  const offset = getContentOffsetForRect(rect, align, contentOffset, size);
+  const offset = calculateOffsetForRect(rect, align, contentOffset, size);
 
   return scrollToReducer(state, { ...action, offset });
 }
 
-function getContentOffsetForRect(rect, align, cOffset, size, name) {
+function calculateOffsetForRect(rect, align, cOffset, size, name) {
   if (name) {
     const [x, width] = name === 'y' ? ['y', 'height'] : ['x', 'width'];
 
@@ -413,7 +415,7 @@ function getContentOffsetForRect(rect, align, cOffset, size, name) {
   }
 
   return {
-    x: getContentOffsetForRect(rect, align, cOffset, size, 'x'),
-    y: getContentOffsetForRect(rect, align, cOffset, size, 'y'),
+    x: calculateOffsetForRect(rect, align, cOffset, size, 'x'),
+    y: calculateOffsetForRect(rect, align, cOffset, size, 'y'),
   };
 }

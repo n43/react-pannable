@@ -1,31 +1,21 @@
-import { initialState as padInitialState } from '../pad/padReducer';
-
 export const initialState = {
   scrollToRect: null,
-  scrolling: false,
-  pad: padInitialState,
+  scroll: null,
 };
 
 export function reducer(state, action) {
   switch (action.type) {
-    case 'setPad':
-      return setPadReducer(state, action);
     case 'setScrollToRect':
       return setScrollToRectReducer(state, action);
     case 'scrollToIndex':
       return scrollToIndexReducer(state, action);
-    case 'endScrolling':
-      return endScrollingReducer(state, action);
+    case 'scrollEnd':
+      return scrollEndReducer(state, action);
+    case 'scrollRecalculate':
+      return scrollRecalculateReducer(state, action);
     default:
       return state;
   }
-}
-
-function setPadReducer(state, action) {
-  return {
-    ...state,
-    pad: action.value,
-  };
 }
 
 function setScrollToRectReducer(state, action) {
@@ -36,7 +26,42 @@ function setScrollToRectReducer(state, action) {
 }
 
 function scrollToIndexReducer(state, action) {
-  const { list, index = 0, align, animated } = action;
+  const { list } = action;
+  const { index = 0, align, animated } = action.value;
+  const rect = calculateRectForIndex(index, list);
+
+  return {
+    ...state,
+    scrollToRect: { rect, align, animated },
+    scroll: animated ? { index, align } : null,
+  };
+}
+
+function scrollEndReducer(state, action) {
+  return {
+    ...state,
+    scroll: null,
+  };
+}
+
+function scrollRecalculateReducer(state, action) {
+  const { list } = action;
+  const { scroll } = state;
+
+  if (!scroll) {
+    return state;
+  }
+
+  const { index, align } = scroll;
+  const rect = calculateRectForIndex(index, list);
+
+  return {
+    ...state,
+    scrollToRect: { rect, align, animated: true },
+  };
+}
+
+function calculateRectForIndex(index, list) {
   const { box, body } = list;
   let rect = { x: 0, y: 0, width: 0, height: 0 };
 
@@ -56,16 +81,5 @@ function scrollToIndexReducer(state, action) {
     }
   }
 
-  return {
-    ...state,
-    scrollToRect: { rect, align, animated },
-    scrolling: true,
-  };
-}
-
-function endScrollingReducer(state, action) {
-  return {
-    ...state,
-    scrolling: false,
-  };
+  return rect;
 }
