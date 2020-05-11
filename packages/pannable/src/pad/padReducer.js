@@ -34,7 +34,7 @@ export function reducer(state, action) {
     case 'scrollTo':
       return validateReducer(scrollToReducer(state, action), action);
     case 'scrollToRect':
-      return validateReducer(scrollToRectReducer(state, action));
+      return validateReducer(scrollToRectReducer(state, action), action);
     default:
       return state;
   }
@@ -375,7 +375,10 @@ function scrollToRectReducer(state, action) {
   const { size } = action.options;
   const offset = calculateOffsetForRect(rect, align, contentOffset, size);
 
-  return scrollToReducer(state, { ...action, offset });
+  return scrollToReducer(state, {
+    ...action,
+    value: { ...action.value, offset },
+  });
 }
 
 function calculateOffsetForRect(rect, align, cOffset, size, name) {

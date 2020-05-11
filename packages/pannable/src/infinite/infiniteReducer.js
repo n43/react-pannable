@@ -29,7 +29,7 @@ function scrollToIndexReducer(state, action) {
   const { list } = action;
   const { index = 0, align, animated } = action.value;
   const rect = calculateRectForIndex(index, list);
-
+  
   return {
     ...state,
     scrollToRect: { rect, align, animated },
