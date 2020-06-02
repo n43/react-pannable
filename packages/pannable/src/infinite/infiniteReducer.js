@@ -27,9 +27,9 @@ function setScrollToRectReducer(state, action) {
 
 function scrollToIndexReducer(state, action) {
   const { list } = action;
-  const { index = 0, align, animated } = action.value;
+  const { index, align, animated } = action.value;
   const rect = calculateRectForIndex(index, list);
-  
+
   return {
     ...state,
     scrollToRect: { rect, align, animated },
@@ -69,16 +69,19 @@ function calculateRectForIndex(index, list) {
     rect = box.layoutList[1].rect;
   }
   if (body) {
+    if (isNaN(index)) {
+      index = 0;
+    }
+    index = Math.max(0, Math.min(index, body.layoutList.length - 1));
+
     const attrs = body.layoutList[index];
 
-    if (attrs) {
-      rect = {
-        x: rect.x + attrs.rect.x,
-        y: rect.y + attrs.rect.y,
-        width: attrs.rect.width,
-        height: attrs.rect.height,
-      };
-    }
+    rect = {
+      x: rect.x + attrs.rect.x,
+      y: rect.y + attrs.rect.y,
+      width: attrs.rect.width,
+      height: attrs.rect.height,
+    };
   }
 
   return rect;
