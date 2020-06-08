@@ -1,4 +1,4 @@
-import Player from './Player';
+import Loop from './Loop';
 import Carousel from './Carousel';
 
-export { Player, Carousel };
+export { Loop, Carousel };
