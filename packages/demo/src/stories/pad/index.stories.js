@@ -48,27 +48,25 @@ export const Overview = () => {
   );
   const alwaysBounceX = boolean('alwaysBounceX', true, 'props');
   const alwaysBounceY = boolean('alwaysBounceY', true, 'props');
-
   const scrollType = select(
     'Scroll Action',
-    { null: '', scrollTo: 'scrollTo', scrollToRect: 'scrollToRect' },
+    { null: '', scrollTo: 'scrollTo' },
     '',
     'Scrolling'
   );
+
   let point;
   let rect;
   let align;
   let animated;
 
   if (scrollType === 'scrollTo') {
-    point = object('point', { x: 0, y: 0 }, 'Scrolling');
-    animated = boolean('animated', true, 'Scrolling');
-  } else if (scrollType === 'scrollToRect') {
-    rect = object('rect', { x: 0, y: 0, width: 0, height: 0 }, 'Scrolling');
+    point = object('point', undefined, 'Scrolling');
+    rect = object('rect', undefined, 'Scrolling');
     align = select(
       'align',
-      { center: 'center', start: 'start', end: 'end', auto: 'auto' },
-      'center',
+      { auto: 'auto', center: 'center', end: 'end', start: 'start' },
+      'start',
       'Scrolling'
     );
     animated = boolean('animated ', true, 'Scrolling');
@@ -79,16 +77,8 @@ export const Overview = () => {
       return null;
     }
 
-    return { point, animated };
-  }, [scrollType, point, animated]);
-
-  const scrollToRect = useMemo(() => {
-    if (scrollType !== 'scrollToRect') {
-      return null;
-    }
-
-    return { rect, align, animated };
-  }, [scrollType, rect, align, animated]);
+    return { point, rect, align, animated };
+  }, [scrollType, point, rect, align, animated]);
 
   const plaidRowCount = number("Plaid's rowCount", 20, {});
   const plaidColumnCount = number("Plaid's columnCount", 20, {});
@@ -130,7 +120,6 @@ export const Overview = () => {
               alwaysBounceY={alwaysBounceY}
               enabled={enabled}
               scrollTo={scrollTo}
-              scrollToRect={scrollToRect}
               onDragStart={onDragStart}
               onDragEnd={onDragEnd}
               onDecelerationStart={onDecelerationStart}

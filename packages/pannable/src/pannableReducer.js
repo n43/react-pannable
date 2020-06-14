@@ -1,6 +1,7 @@
 const MIN_DISTANCE = 0;
 
-export const initialState = {
+export const initialPannableState = {
+  enabled: false,
   target: null,
   startPoint: null,
   movePoint: null,
@@ -12,6 +13,8 @@ export const initialState = {
 
 export function reducer(state, action) {
   switch (action.type) {
+    case 'syncEnabled':
+      return syncEnabledReducer(state, action);
     case 'end':
       return endReducer(state, action);
     case 'track':
@@ -23,6 +26,17 @@ export function reducer(state, action) {
   }
 }
 
+function syncEnabledReducer(state, action) {
+  if (!action.enabled) {
+    return initialPannableState;
+  }
+
+  return {
+    ...state,
+    enabled: action.enabled,
+  };
+}
+
 function endReducer(state, action) {
   const { target } = state;
 
@@ -31,6 +45,7 @@ function endReducer(state, action) {
   }
 
   return {
+    ...state,
     target: null,
     startPoint: null,
     movePoint: null,
@@ -43,6 +58,7 @@ function endReducer(state, action) {
 
 function trackReducer(state, action) {
   return {
+    ...state,
     target: action.target,
     startPoint: action.point,
     movePoint: action.point,
@@ -74,6 +90,7 @@ function moveReducer(state, action) {
   /* on moving */
   if (translation) {
     return {
+      ...state,
       target,
       startPoint,
       movePoint: nextMovePoint,
@@ -99,6 +116,7 @@ function moveReducer(state, action) {
     })
   ) {
     return {
+      ...state,
       target,
       startPoint,
       movePoint: nextMovePoint,
@@ -111,6 +129,7 @@ function moveReducer(state, action) {
 
   /* start moving */
   return {
+    ...state,
     target,
     startPoint: nextMovePoint,
     movePoint: nextMovePoint,

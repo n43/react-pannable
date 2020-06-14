@@ -70,8 +70,8 @@ export const Overview = () => {
     index = number('index', 0, {}, 'Scrolling');
     align = select(
       'align',
-      { center: 'center', start: 'start', end: 'end', auto: 'auto' },
-      'center',
+      { auto: 'auto', center: 'center', end: 'end', start: 'start' },
+      'start',
       'Scrolling'
     );
     animated = boolean('animated', true, 'Scrolling');

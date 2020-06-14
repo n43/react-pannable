@@ -1,17 +1,23 @@
-import React, { Fragment, useMemo, useCallback, useReducer } from 'react';
+import React, { useMemo, useCallback, useReducer } from 'react';
 import { useIsomorphicLayoutEffect } from '../hooks/useIsomorphicLayoutEffect';
 import { usePrevRef } from '../hooks/usePrevRef';
 import GridContent from '../pad/GridContent';
+import Pad from '../pad/Pad';
 import Player from './Player';
 import { reducer, initialState } from './carouselReducer';
 
 const defaultCarouselProps = {
+  direction: 'x',
+  loop: true,
+  autoplayEnabled: true,
+  autoplayInterval: 5000,
   itemCount: 0,
   renderItem: () => null,
-  onStateChange: () => {},
   onActiveIndexChange: () => {},
   scrollToIndex: null,
-  ...Player.defaultProps,
+  ...Pad.defaultProps,
+  pagingEnabled: true,
+  directionalLockEnabled: true,
 };
 
 function Carousel(props) {
@@ -70,10 +76,10 @@ function Carousel(props) {
     const element = typeof children === 'function' ? children(state) : children;
 
     return (
-      <Fragment>
+      <React.Fragment>
         {renderOverlay(pad)}
         {element}
-      </Fragment>
+      </React.Fragment>
     );
   };
 

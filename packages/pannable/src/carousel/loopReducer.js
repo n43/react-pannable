@@ -1,57 +1,49 @@
-export const initialState = {
+import { initialPadState } from '../pad/padReducer';
+
+export const initialLoopState = {
   loopCount: 2,
   loopOffset: 0,
   loopWidth: 0,
   scrollTo: null,
+  pad: initialPadState,
+  direction: 'x',
 };
 
 export function reducer(state, action) {
   switch (action.type) {
-    case 'setScrollTo':
-      return setScrollToReducer(state, action);
-    case 'calculateLoop':
-      return calculateLoopReducer(state, action);
-    case 'validate':
-      return validateReducer(state, action);
+    case 'syncProps':
+      return validateReducer(syncPropsReducer(state, action), action);
     default:
       return state;
   }
 }
 
-function setScrollToReducer(state, action) {
-  return { ...state, scrollTo: action.value };
+function syncPropsReducer(state, action) {
+  return {
+    ...state,
+    ...action.props,
+  };
 }
 
-function calculateLoopReducer(state, action) {
-  const { loopCount, loopWidth } = state;
-  const { direction, size, contentSize } = action;
+function validateReducer(state, action) {
+  const { loopCount, loopWidth, loopOffset, direction } = state;
+  const { size, contentSize, contentOffset } = state.pad;
 
   const width = direction === 'y' ? 'height' : 'width';
-  let nextLoopWidth = loopWidth;
+  let nextLoopWidth = contentSize[width] / loopCount;
   let nextLoopCount = 2;
-
-  if (contentSize) {
-    nextLoopWidth = contentSize[width] / loopCount;
-  }
 
   if (nextLoopWidth !== 0) {
     nextLoopCount += Math.floor(size[width] / nextLoopWidth);
   }
 
-  if (loopWidth === nextLoopWidth && loopCount === nextLoopCount) {
-    return state;
+  if (loopWidth !== nextLoopWidth || loopCount !== nextLoopCount) {
+    return {
+      ...state,
+      loopCount: nextLoopCount,
+      loopWidth: nextLoopWidth,
+    };
   }
-
-  return {
-    ...state,
-    loopCount: nextLoopCount,
-    loopWidth: nextLoopWidth,
-  };
-}
-
-function validateReducer(state, action) {
-  const { loopCount, loopWidth, loopOffset } = state;
-  const { direction, size, contentOffset } = action;
 
   const [adjustedContentOffset, delta] = getAdjustedContentOffsetForLoop(
     contentOffset,
@@ -79,7 +71,7 @@ function getAdjustedContentOffsetForLoop(
   loopCount,
   direction
 ) {
-  if (loopCount === 1) {
+  if (loopCount === 1 || loopWidth === 0) {
     return [offset, 0];
   }
 

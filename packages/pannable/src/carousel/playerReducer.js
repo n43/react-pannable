@@ -1,4 +1,4 @@
-import { initialState as padInitialState } from '../pad/padReducer';
+import { initialPadState } from '../pad/padReducer';
 
 export const initialState = {
   mouseEntered: false,
@@ -8,7 +8,7 @@ export const initialState = {
   scrollTo: null,
   /* direction, loop */
   options: ['x', true],
-  pad: padInitialState,
+  pad: initialPadState,
 };
 
 export function reducer(state, action) {

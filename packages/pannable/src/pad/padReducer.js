@@ -1,3 +1,4 @@
+import { initialPannableState } from '../pannableReducer';
 import {
   getAdjustedContentVelocity,
   getAdjustedContentOffset,
@@ -10,17 +11,23 @@ import {
 const DECELERATION_RATE_STRONG = 0.025;
 const DECELERATION_RATE_WEAK = 0.0025;
 
-export const initialState = {
+export const initialPadState = {
   contentOffset: { x: 0, y: 0 },
   contentVelocity: { x: 0, y: 0 },
   drag: null,
   deceleration: null,
+  size: { width: 0, height: 0 },
+  contentSize: { width: 0, height: 0 },
+  pannable: initialPannableState,
+  alwaysBounce: { x: true, y: true },
+  pagingEnabled: false,
+  directionalLockEnabled: false,
 };
 
 export function reducer(state, action) {
   switch (action.type) {
-    case 'validate':
-      return validateReducer(state, action);
+    case 'syncProps':
+      return validateReducer(syncPropsReducer(state, action), action);
     case 'dragStart':
       return dragStartReducer(state, action);
     case 'dragMove':
@@ -33,17 +40,29 @@ export function reducer(state, action) {
       return validateReducer(decelerateReducer(state, action), action);
     case 'scrollTo':
       return validateReducer(scrollToReducer(state, action), action);
-    case 'scrollToRect':
-      return validateReducer(scrollToRectReducer(state, action), action);
     default:
       return state;
   }
 }
 
+function syncPropsReducer(state, action) {
+  return {
+    ...state,
+    ...action.props,
+  };
+}
+
 function validateReducer(state, action) {
-  const { contentOffset, contentVelocity, drag, deceleration } = state;
-  const { size, contentSize, pagingEnabled, alwaysBounce } = action.options;
-  const { now } = action;
+  const {
+    contentOffset,
+    contentVelocity,
+    drag,
+    deceleration,
+    size,
+    contentSize,
+    pagingEnabled,
+    alwaysBounce,
+  } = state;
 
   const decelerationRate = DECELERATION_RATE_STRONG;
 
@@ -110,8 +129,7 @@ function validateReducer(state, action) {
           decelerationEndOffset,
           decelerationRate,
           nextContentOffset,
-          nextContentVelocity,
-          now
+          nextContentVelocity
         ),
       };
     }
@@ -142,8 +160,7 @@ function validateReducer(state, action) {
           decelerationEndOffset,
           decelerationRate,
           contentOffset,
-          contentVelocity,
-          now
+          contentVelocity
         ),
       };
     }
@@ -153,9 +170,8 @@ function validateReducer(state, action) {
 }
 
 function dragStartReducer(state, action) {
-  const { contentOffset } = state;
-  const { velocity } = action.pannable;
-  const { directionalLockEnabled } = action;
+  const { contentOffset, directionalLockEnabled } = state;
+  const { velocity } = state.pannable;
 
   const dragDirection = { x: 1, y: 1 };
 
@@ -181,9 +197,8 @@ function dragStartReducer(state, action) {
 }
 
 function dragMoveReducer(state, action) {
-  const { contentOffset, drag } = state;
-  const { size, contentSize, alwaysBounce } = action.options;
-  const { translation, interval } = action.pannable;
+  const { contentOffset, drag, size, contentSize, alwaysBounce } = state;
+  const { translation, interval } = state.pannable;
 
   let nextContentOffset = {
     x: drag.startOffset.x + drag.direction.x * translation.x,
@@ -210,9 +225,7 @@ function dragMoveReducer(state, action) {
 }
 
 function dragEndReducer(state, action) {
-  const { contentOffset, contentVelocity } = state;
-  const { size, pagingEnabled } = action.options;
-  const { now } = action;
+  const { contentOffset, contentVelocity, size, pagingEnabled } = state;
 
   const decelerationRate = pagingEnabled
     ? DECELERATION_RATE_STRONG
@@ -235,16 +248,13 @@ function dragEndReducer(state, action) {
       decelerationEndOffset,
       decelerationRate,
       contentOffset,
-      nextContentVelocity,
-      now
+      nextContentVelocity
     ),
   };
 }
 
 function dragCancelReducer(state, action) {
-  const { contentOffset, contentVelocity, drag } = state;
-  const { size, pagingEnabled } = action.options;
-  const { now } = action;
+  const { contentOffset, contentVelocity, drag, size, pagingEnabled } = state;
 
   const decelerationRate = DECELERATION_RATE_STRONG;
   const nextContentVelocity = getAdjustedContentVelocity(contentVelocity);
@@ -264,21 +274,19 @@ function dragCancelReducer(state, action) {
       decelerationEndOffset,
       decelerationRate,
       contentOffset,
-      nextContentVelocity,
-      now
+      nextContentVelocity
     ),
   };
 }
 
 function decelerateReducer(state, action) {
   const { deceleration } = state;
-  const { now } = action;
 
   if (!deceleration) {
     return state;
   }
 
-  const { offset, velocity, didEnd } = calculateDeceleration(deceleration, now);
+  const { offset, velocity, didEnd } = calculateDeceleration(deceleration);
 
   return {
     ...state,
@@ -290,41 +298,70 @@ function decelerateReducer(state, action) {
 }
 
 function scrollToReducer(state, action) {
-  const { contentOffset, contentVelocity, drag, deceleration } = state;
-  const { now } = action;
-  const { offset = { x: 0, y: 0 }, point, animated } = action.value;
-  const { size, pagingEnabled } = action.options;
-  let nextOffset = offset;
-  let nextAnimated = animated;
+  const { drag, contentOffset, size } = state;
+  const {
+    offset = { x: 0, y: 0 },
+    point,
+    rect,
+    align,
+    animated,
+  } = action.value;
+  let nextRect = rect;
+  const nextAnimated = drag ? false : animated;
 
-  if (point) {
-    nextOffset = { x: -point.x, y: -point.y };
-  }
-  if (nextOffset.x === contentOffset.x && nextOffset.y === contentOffset.y) {
-    return state;
-  }
-  if (drag) {
-    nextAnimated = false;
+  if (!nextRect) {
+    if (point) {
+      nextRect = { ...point, width: 0, height: 0 };
+    } else {
+      nextRect = { x: -offset.x, y: -offset.y, width: 0, height: 0 };
+    }
   }
 
-  if (!nextAnimated) {
-    let nextDrag = drag;
-    let nextDeceleration = deceleration;
+  const nextOffset = calculateOffsetForRect(
+    nextRect,
+    align,
+    contentOffset,
+    size
+  );
 
+  return setContentOffsetReducer(state, {
+    type: 'setContentOffset',
+    offset: nextOffset,
+    animated: nextAnimated,
+  });
+}
+
+function setContentOffsetReducer(state, action) {
+  const {
+    contentOffset,
+    contentVelocity,
+    drag,
+    deceleration,
+    size,
+    pagingEnabled,
+  } = state;
+  const { offset, animated } = action;
+
+  if (!animated) {
     if (drag) {
-      nextDrag = {
-        ...drag,
-        startOffset: {
-          x: drag.startOffset.x + nextOffset.x - contentOffset.x,
-          y: drag.startOffset.y + nextOffset.y - contentOffset.y,
+      return {
+        ...state,
+        contentOffset: offset,
+        drag: {
+          ...drag,
+          startOffset: {
+            x: drag.startOffset.x + offset.x - contentOffset.x,
+            y: drag.startOffset.y + offset.y - contentOffset.y,
+          },
         },
+        deceleration: null,
       };
     }
     if (deceleration) {
       const decelerationEndOffset = getDecelerationEndOffset(
         {
-          x: deceleration.endOffset.x + nextOffset.x - contentOffset.x,
-          y: deceleration.endOffset.y + nextOffset.y - contentOffset.y,
+          x: deceleration.endOffset.x + offset.x - contentOffset.x,
+          y: deceleration.endOffset.y + offset.y - contentOffset.y,
         },
         { x: 0, y: 0 },
         size,
@@ -332,25 +369,27 @@ function scrollToReducer(state, action) {
         deceleration.rate
       );
 
-      nextDeceleration = createDeceleration(
-        decelerationEndOffset,
-        deceleration.rate,
-        nextOffset,
-        contentVelocity,
-        now
-      );
+      return {
+        ...state,
+        contentOffset: offset,
+        drag: null,
+        deceleration: createDeceleration(
+          decelerationEndOffset,
+          deceleration.rate,
+          offset,
+          contentVelocity
+        ),
+      };
     }
 
     return {
       ...state,
-      contentOffset: nextOffset,
-      drag: nextDrag,
-      deceleration: nextDeceleration,
+      contentOffset: offset,
     };
   }
 
   const decelerationEndOffset = getDecelerationEndOffset(
-    nextOffset,
+    offset,
     { x: 0, y: 0 },
     size,
     pagingEnabled,
@@ -359,26 +398,14 @@ function scrollToReducer(state, action) {
 
   return {
     ...state,
+    drag: null,
     deceleration: createDeceleration(
       decelerationEndOffset,
       DECELERATION_RATE_STRONG,
       contentOffset,
-      contentVelocity,
-      now
+      contentVelocity
     ),
   };
-}
-
-function scrollToRectReducer(state, action) {
-  const { contentOffset } = state;
-  const { rect, align } = action.value;
-  const { size } = action.options;
-  const offset = calculateOffsetForRect(rect, align, contentOffset, size);
-
-  return scrollToReducer(state, {
-    ...action,
-    value: { ...action.value, offset },
-  });
 }
 
 function calculateOffsetForRect(rect, align, cOffset, size, name) {
@@ -386,9 +413,10 @@ function calculateOffsetForRect(rect, align, cOffset, size, name) {
     const [x, width] = name === 'y' ? ['y', 'height'] : ['x', 'width'];
 
     let offsetX = -rect[x];
+    let alignX = align[x];
     const delta = size[width] - rect[width];
 
-    if (align[x] === 'auto') {
+    if (alignX === 'auto') {
       const direction = delta < 0 ? -1 : 1;
       const dOffsetX = cOffset[x] - offsetX;
 
@@ -396,18 +424,17 @@ function calculateOffsetForRect(rect, align, cOffset, size, name) {
         direction *
         Math.max(0, Math.min(direction * dOffsetX, direction * delta));
     } else {
-      if (align[x] === 'start') {
-        align[x] = 0;
-      } else if (align[x] === 'center') {
-        align[x] = 0.5;
-      } else if (align[x] === 'end') {
-        align[x] = 1;
-      }
-      if (typeof align[x] !== 'number' || isNaN(align[x])) {
-        align[x] = 0.5;
+      if (alignX === 'start') {
+        alignX = 0;
+      } else if (alignX === 'center') {
+        alignX = 0.5;
+      } else if (alignX === 'end') {
+        alignX = 1;
+      } else if (typeof alignX !== 'number' || isNaN(alignX)) {
+        alignX = 0;
       }
 
-      offsetX += align[x] * delta;
+      offsetX += alignX * delta;
     }
 
     return offsetX;

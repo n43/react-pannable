@@ -90,13 +90,9 @@ Returns the React element that corresponds to the background.
 
 Returns the React element that corresponds to the overlay.
 
-#### `scrollTo`?: { point?: [Point](types.md#point--x-number-y-number-), offset?: [Point](types.md#point--x-number-y-number-), animated?: boolean }
+#### `scrollTo`?: { point?: [Point](types.md#point--x-number-y-number-), offset?: [Point](types.md#point--x-number-y-number-), rect?: [Rect](types.md#rect--x-number-y-number-width-number-height-number-), align?: [Align2D](types.md#align2d--x-align-y-align---align), animated?: boolean }
 
 Scrolls the content to the specified offset.
-
-#### `scrollToRect`?: { rect?: [Rect](types.md#rect--x-number-y-number-width-number-height-number-), align?: [Align2D](types.md#align2d--x-align-y-align---align), animated?: boolean }
-
-Scrolls the content until the specified rectangle is visible.
 
 ## Types
 

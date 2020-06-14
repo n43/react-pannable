@@ -140,13 +140,8 @@ export function getDecelerationEndOffset(
   };
 }
 
-export function calculateDeceleration(deceleration, moveTime, name) {
+export function calculateDeceleration(deceleration, t, name) {
   const { points, duration, startTime, endOffset } = deceleration;
-  let t = 1;
-
-  if (duration > 0) {
-    t = (moveTime - startTime) / duration;
-  }
 
   if (name) {
     const [x] = name === 'y' ? ['y'] : ['x'];
@@ -165,6 +160,13 @@ export function calculateDeceleration(deceleration, moveTime, name) {
     return { [x + 'Offset']: offsetX, [x + 'Velocity']: velocityX };
   }
 
+  const moveTime = new Date().getTime();
+  t = 1;
+
+  if (duration > 0) {
+    t = (moveTime - startTime) / duration;
+  }
+
   if (t < 0 || 1 <= t) {
     return {
       offset: endOffset,
@@ -174,8 +176,8 @@ export function calculateDeceleration(deceleration, moveTime, name) {
   }
 
   const { xOffset, yOffset, xVelocity, yVelocity } = {
-    ...calculateDeceleration(deceleration, moveTime, 'x'),
-    ...calculateDeceleration(deceleration, moveTime, 'y'),
+    ...calculateDeceleration(deceleration, t, 'x'),
+    ...calculateDeceleration(deceleration, t, 'y'),
   };
 
   return {
@@ -189,9 +191,9 @@ export function createDeceleration(
   endOffset,
   rate,
   startOffset,
-  startVelocity,
-  startTime
+  startVelocity
 ) {
+  const startTime = new Date().getTime();
   let duration = 0;
 
   if (!rate) {

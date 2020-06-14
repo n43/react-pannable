@@ -1,12 +1,12 @@
-export const initialState = {
-  scrollToRect: null,
+export const initialInfiniteState = {
+  scrollTo: null,
   scroll: null,
 };
 
 export function reducer(state, action) {
   switch (action.type) {
-    case 'setScrollToRect':
-      return setScrollToRectReducer(state, action);
+    case 'setScrollTo':
+      return setScrollToReducer(state, action);
     case 'scrollToIndex':
       return scrollToIndexReducer(state, action);
     case 'scrollEnd':
@@ -18,10 +18,10 @@ export function reducer(state, action) {
   }
 }
 
-function setScrollToRectReducer(state, action) {
+function setScrollToReducer(state, action) {
   return {
     ...state,
-    scrollToRect: action.value,
+    scrollTo: action.value,
   };
 }
 
@@ -32,7 +32,7 @@ function scrollToIndexReducer(state, action) {
 
   return {
     ...state,
-    scrollToRect: { rect, align, animated },
+    scrollTo: { rect, align, animated },
     scroll: animated ? { index, align } : null,
   };
 }
@@ -57,7 +57,7 @@ function scrollRecalculateReducer(state, action) {
 
   return {
     ...state,
-    scrollToRect: { rect, align, animated: true },
+    scrollTo: { rect, align, animated: true },
   };
 }
 

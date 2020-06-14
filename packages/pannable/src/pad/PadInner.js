@@ -1,18 +1,19 @@
-import { useMemo, useRef, useReducer } from 'react';
-import { reducer, initialState } from './padReducer';
+import React, { useEffect, useMemo, useReducer, useCallback } from 'react';
+import { reducer, initialPadState } from './padReducer';
+import PadContext from './PadContext';
+import GeneralContent from './GeneralContent';
 import { useIsomorphicLayoutEffect } from '../hooks/useIsomorphicLayoutEffect';
 import { usePrevRef } from '../hooks/usePrevRef';
 import {
   requestAnimationFrame,
   cancelAnimationFrame,
 } from '../utils/animationFrame';
+import StyleSheet from '../utils/StyleSheet';
 
-export default function PadInner(props) {
+function PadInner(props) {
   const {
-    enabled,
     pannable,
     size,
-    contentSize,
     pagingEnabled,
     directionalLockEnabled,
     alwaysBounce,
@@ -21,56 +22,61 @@ export default function PadInner(props) {
     onDragEnd,
     onDecelerationStart,
     onDecelerationEnd,
+    onContentResize,
+    renderBackground,
+    renderOverlay,
     scrollTo,
-    scrollToRect,
     children,
   } = props;
-  const prevPannableRef = usePrevRef(pannable);
-  const prevPannable = prevPannableRef.current;
-  const [state, dispatch] = useReducer(reducer, initialState);
+  const [state, dispatch] = useReducer(reducer, initialPadState);
   const prevStateRef = usePrevRef(state);
   const prevState = prevStateRef.current;
-  const options = useMemo(
-    () => ({
-      size,
-      contentSize,
-      pagingEnabled,
-      alwaysBounce,
-    }),
-    [size, contentSize, pagingEnabled, alwaysBounce]
-  );
 
-  const innerRef = useRef({});
-  innerRef.current.options = options;
+  useMemo(() => {
+    dispatch({
+      type: 'syncProps',
+      props: {
+        size,
+        pannable,
+        alwaysBounce,
+        pagingEnabled,
+        directionalLockEnabled,
+      },
+    });
+  }, [size, pannable, alwaysBounce, pagingEnabled, directionalLockEnabled]);
+
+  const onResize = useCallback(contentSize => {
+    dispatch({ type: 'syncProps', props: { contentSize } });
+  }, []);
+
+  const _scrollTo = useCallback(value => {
+    dispatch({ type: 'scrollTo', value });
+  }, []);
 
   useIsomorphicLayoutEffect(() => {
-    if (prevPannable.translation !== pannable.translation) {
-      const now = new Date().getTime();
-
-      if (pannable.translation) {
-        if (prevPannable.translation) {
-          dispatch({ type: 'dragMove', pannable, options, now });
+    if (prevState.pannable.translation !== state.pannable.translation) {
+      if (state.pannable.translation) {
+        if (prevState.pannable.translation) {
+          dispatch({ type: 'dragMove' });
         } else {
-          dispatch({
-            type: 'dragStart',
-            pannable,
-            options,
-            now,
-            directionalLockEnabled,
-          });
+          dispatch({ type: 'dragStart' });
         }
       } else {
-        if (enabled) {
-          dispatch({ type: 'dragEnd', pannable, options, now });
+        if (state.pannable.enabled) {
+          dispatch({ type: 'dragEnd' });
         } else {
-          dispatch({ type: 'dragCancel', pannable, options, now });
+          dispatch({ type: 'dragCancel' });
         }
       }
     }
 
+    if (prevState.contentSize !== state.contentSize) {
+      onContentResize(state.contentSize);
+    }
+
     const input = {
-      size,
-      contentSize,
+      size: state.size,
+      contentSize: state.contentSize,
       contentOffset: state.contentOffset,
       contentVelocity: state.contentVelocity,
       dragging: !!state.drag,
@@ -102,11 +108,7 @@ export default function PadInner(props) {
     }
 
     const timer = requestAnimationFrame(() => {
-      dispatch({
-        type: 'decelerate',
-        options: innerRef.current.options,
-        now: new Date().getTime(),
-      });
+      dispatch({ type: 'decelerate' });
     });
 
     return () => {
@@ -114,31 +116,87 @@ export default function PadInner(props) {
     };
   }, [state]);
 
-  useMemo(() => {
-    dispatch({ type: 'validate', options, now: new Date().getTime() });
-  }, [options]);
-
-  useMemo(() => {
+  useEffect(() => {
     if (scrollTo) {
-      dispatch({
-        type: 'scrollTo',
-        value: scrollTo,
-        options: innerRef.current.options,
-        now: new Date().getTime(),
-      });
+      _scrollTo(scrollTo);
     }
-  }, [scrollTo]);
+  }, [scrollTo, _scrollTo]);
 
-  useMemo(() => {
-    if (scrollToRect) {
-      dispatch({
-        type: 'scrollToRect',
-        value: scrollToRect,
-        options: innerRef.current.options,
-        now: new Date().getTime(),
-      });
-    }
-  }, [scrollToRect]);
+  const methods = { _scrollTo };
 
-  return children(state);
+  let backgroundLayer = renderBackground(state, methods);
+
+  if (backgroundLayer !== null) {
+    const layerStyle = {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+    };
+
+    backgroundLayer = <div style={layerStyle}>{backgroundLayer}</div>;
+  }
+
+  let overlayLayer = renderOverlay(state, methods);
+
+  if (overlayLayer !== null) {
+    const layerStyle = {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+    };
+
+    overlayLayer = <div style={layerStyle}>{overlayLayer}</div>;
+  }
+
+  let contentLayer =
+    typeof children === 'function' ? children(state, methods) : children;
+
+  if (!React.isValidElement(contentLayer) || !contentLayer.type.PadContent) {
+    contentLayer = <GeneralContent>{contentLayer}</GeneralContent>;
+  }
+
+  const contentStyle = StyleSheet.create({
+    position: 'absolute',
+    width: state.contentSize.width,
+    height: state.contentSize.height,
+    transformTranslate: state.contentOffset,
+    willChange: 'transform',
+  });
+
+  if (contentLayer.props.style) {
+    Object.assign(contentStyle, contentLayer.props.style);
+  }
+
+  contentLayer = React.cloneElement(contentLayer, {
+    style: contentStyle,
+    ref: contentLayer.ref,
+  });
+
+  const contextValue = useMemo(
+    () => ({
+      visibleRect: {
+        x: -state.contentOffset.x,
+        y: -state.contentOffset.y,
+        width: state.size.width,
+        height: state.size.height,
+      },
+      onResize,
+    }),
+    [state.contentOffset, state.size, onResize]
+  );
+
+  return (
+    <>
+      {backgroundLayer}
+      <PadContext.Provider value={contextValue}>
+        {contentLayer}
+      </PadContext.Provider>
+      {overlayLayer}
+    </>
+  );
 }
+
+export default PadInner;

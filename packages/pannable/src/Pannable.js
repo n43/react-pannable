@@ -1,5 +1,5 @@
 import React, { useMemo, useCallback, useRef, useReducer } from 'react';
-import { initialState, reducer } from './pannableReducer';
+import { reducer, initialPannableState } from './pannableReducer';
 import { useIsomorphicLayoutEffect } from './hooks/useIsomorphicLayoutEffect';
 import { usePrevRef } from './hooks/usePrevRef';
 import StyleSheet from './utils/StyleSheet';
@@ -25,7 +25,7 @@ function Pannable(props) {
     children,
     ...divProps
   } = props;
-  const [state, dispatch] = useReducer(reducer, initialState);
+  const [state, dispatch] = useReducer(reducer, initialPannableState);
   const prevStateRef = usePrevRef(state);
   const prevState = prevStateRef.current;
   const elemRef = useRef(null);
@@ -40,7 +40,7 @@ function Pannable(props) {
     dispatch({ type: 'track', target, point, now: new Date().getTime() });
   }, []);
 
-  const move = useCallback((point) => {
+  const move = useCallback(point => {
     dispatch({
       type: 'move',
       point,
@@ -53,6 +53,10 @@ function Pannable(props) {
     dispatch({ type: 'end' });
   }, []);
 
+  useMemo(() => {
+    dispatch({ type: 'syncEnabled', enabled });
+  }, [enabled]);
+
   useIsomorphicLayoutEffect(() => {
     if (prevState.translation !== state.translation) {
       if (state.translation) {
@@ -62,7 +66,7 @@ function Pannable(props) {
           onStart(state);
         }
       } else if (prevState.translation) {
-        if (enabled) {
+        if (state.enabled) {
           onEnd(prevState);
         } else {
           onCancel(prevState);
@@ -74,13 +78,13 @@ function Pannable(props) {
   const isMoving = !!state.translation;
 
   useIsomorphicLayoutEffect(() => {
-    if (!enabled) {
+    if (!state.enabled) {
       return;
     }
 
     if (state.target) {
       if (touchSupported) {
-        const onTargetTouchMove = (evt) => {
+        const onTargetTouchMove = evt => {
           if (isMoving && evt.cancelable) {
             evt.preventDefault();
           }
@@ -93,10 +97,8 @@ function Pannable(props) {
             end();
           }
         };
-        const onTargetTouchEnd = (evt) => {
-          if (isMoving && evt.cancelable) {
-            evt.preventDefault();
-          }
+        const onTargetTouchEnd = evt => {
+          evt.preventDefault();
 
           end();
         };
@@ -126,7 +128,7 @@ function Pannable(props) {
           );
         };
       } else {
-        const onBodyMouseMove = (evt) => {
+        const onBodyMouseMove = evt => {
           if (isMoving) {
             evt.preventDefault();
           }
@@ -137,10 +139,8 @@ function Pannable(props) {
             end();
           }
         };
-        const onBodyMouseUp = (evt) => {
-          if (isMoving) {
-            evt.preventDefault();
-          }
+        const onBodyMouseUp = evt => {
+          evt.preventDefault();
 
           end();
         };
@@ -159,7 +159,7 @@ function Pannable(props) {
       const elemNode = elemRef.current;
 
       if (touchSupported) {
-        const onTouchStart = (evt) => {
+        const onTouchStart = evt => {
           if (evt.touches.length === 1) {
             const touchEvent = evt.touches[0];
 
@@ -176,7 +176,7 @@ function Pannable(props) {
           removeEventListener(elemNode, 'touchstart', onTouchStart, false);
         };
       } else {
-        const onMouseDown = (evt) => {
+        const onMouseDown = evt => {
           if (evt.buttons === 1) {
             track(evt.target, { x: evt.pageX, y: evt.pageY });
           }
@@ -189,32 +189,30 @@ function Pannable(props) {
         };
       }
     }
-  }, [enabled, state.target, isMoving, track, move, end]);
+  }, [state.enabled, state.target, isMoving, track, move, end]);
 
-  useMemo(() => {
-    if (!enabled) {
-      end();
+  const divStyle = useMemo(() => {
+    const style = {};
+
+    if (isMoving) {
+      Object.assign(
+        style,
+        StyleSheet.create({
+          touchAction: 'none',
+          pointerEvents: 'none',
+          userSelect: 'none',
+        })
+      );
     }
-  }, [enabled, end]);
 
-  const elemStyle = {};
+    if (divProps.style) {
+      Object.assign(style, divProps.style);
+    }
 
-  if (isMoving) {
-    Object.assign(
-      elemStyle,
-      StyleSheet.create({
-        touchAction: 'none',
-        pointerEvents: 'none',
-        userSelect: 'none',
-      })
-    );
-  }
+    return style;
+  }, [isMoving, divProps.style]);
 
-  if (divProps.style) {
-    Object.assign(elemStyle, divProps.style);
-  }
-
-  divProps.style = elemStyle;
+  divProps.style = divStyle;
 
   const element = typeof children === 'function' ? children(state) : children;
 

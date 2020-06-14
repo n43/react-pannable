@@ -24,16 +24,7 @@ const data = [
 ];
 
 export const LoopDemo = () => {
-  const list = object('Data List', data);
-
-  const renderItem = useCallback(
-    ({ itemIndex }) => {
-      const item = list[itemIndex];
-
-      return <img src={item.url} width="100%" height="100%" />;
-    },
-    [list]
-  );
+  const direction = select('direction', { x: 'x', y: 'y' }, 'x', 'props');
 
   return (
     <div className="overview-wrapper">
@@ -47,8 +38,13 @@ export const LoopDemo = () => {
             const height = Math.ceil((width * 8) / 15.0);
 
             return (
-              <Loop width={width} height={height} direction="x">
-                <img src={photo1} width={width} height={height} />
+              <Loop width={width} height={height} direction={direction}>
+                <img
+                  src={photo1}
+                  width={width}
+                  height={height}
+                  style={{ display: 'block' }}
+                />
               </Loop>
             );
           }}
