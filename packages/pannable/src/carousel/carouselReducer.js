@@ -1,18 +1,18 @@
-import { initialState as playerInitialState } from './playerReducer';
+import { initialPadState } from '../pad/padReducer';
 
-export const initialState = {
+export const initialCarouselState = {
   activeIndex: 0,
-  itemCount: 0,
   scrollTo: null,
-  player: playerInitialState,
+  pad: initialPadState,
+  direction: 'x',
+  loop: true,
+  itemCount: 0,
 };
 
 export function reducer(state, action) {
   switch (action.type) {
-    case 'setPlayer':
-      return setPlayerReducer(state, action);
-    case 'setScrollTo':
-      return setScrollToReducer(state, action);
+    case 'syncProps':
+      return syncPropsReducer(state, action);
     case 'scrollToIndex':
       return scrollToIndexReducer(state, action);
     default:
@@ -20,33 +20,10 @@ export function reducer(state, action) {
   }
 }
 
-function setPlayerReducer(state, action) {
-  const player = action.value;
-
-  const { loopWidth } = player;
-  const [direction] = player.options;
-  const { contentOffset, size, contentSize } = player.pad;
-  const itemCount = calculateItemCount(size, loopWidth, direction);
-  let activeIndex = 0;
-
-  if (itemCount > 0) {
-    const pageIndex = calculatePageIndex(
-      contentOffset,
-      size,
-      contentSize,
-      direction
-    );
-
-    activeIndex = pageIndex % itemCount;
-  }
-
-  return { ...state, player, itemCount, activeIndex };
-}
-
-function setScrollToReducer(state, action) {
+function syncPropsReducer(state, action) {
   return {
     ...state,
-    scrollTo: action.value,
+    ...action.props,
   };
 }
 

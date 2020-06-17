@@ -1,10 +1,7 @@
-import React, { useMemo, useCallback, useReducer } from 'react';
-import { useIsomorphicLayoutEffect } from '../hooks/useIsomorphicLayoutEffect';
-import { usePrevRef } from '../hooks/usePrevRef';
-import GridContent from '../pad/GridContent';
+import React from 'react';
+import CarouselInner from './CarouselInner';
+import Loop from './Loop';
 import Pad from '../pad/Pad';
-import Player from './Player';
-import { reducer, initialState } from './carouselReducer';
 
 const defaultCarouselProps = {
   direction: 'x',
@@ -22,82 +19,59 @@ const defaultCarouselProps = {
 
 function Carousel(props) {
   const {
-    itemCount: gridItemCount,
+    direction,
+    loop,
+    autoplayEnabled,
+    autoplayInterval,
+    itemCount,
     renderItem,
-    onStateChange,
     onActiveIndexChange,
     scrollToIndex,
     children,
-    ...playerProps
+    ...padProps
   } = props;
-  const {
-    width,
-    height,
-    direction,
-    scrollTo: playerScrollTo,
-    renderOverlay,
-  } = playerProps;
-  const [state, dispatch] = useReducer(reducer, initialState);
-  const prevStateRef = usePrevRef(state);
-  const prevState = prevStateRef.current;
 
-  const onPlayerStateChange = useCallback(value => {
-    dispatch({ type: 'setPlayer', value });
-  }, []);
-
-  useIsomorphicLayoutEffect(() => {
-    if (prevState !== state) {
-      onStateChange(state);
-    }
-
-    const output = {
-      activeIndex: state.activeIndex,
-      itemCount: state.itemCount,
+  const renderInner = (pad, methods) => {
+    const carouselProps = {
+      pad,
+      onAdjust: methods._scrollTo,
+      onChildrenRender: methods._renderOverlay,
+      direction,
+      loop,
+      autoplayEnabled,
+      autoplayInterval,
+      itemCount,
+      renderItem,
+      onActiveIndexChange,
+      scrollToIndex,
     };
 
-    if (prevState.activeIndex !== state.activeIndex) {
-      onActiveIndexChange(output);
-    }
-  });
-
-  useMemo(() => {
-    dispatch({ type: 'setScrollTo', value: playerScrollTo });
-  }, [playerScrollTo]);
-
-  useMemo(() => {
-    if (scrollToIndex) {
-      dispatch({ type: 'scrollToIndex', ...scrollToIndex });
-    }
-  }, [scrollToIndex]);
-
-  playerProps.scrollTo = state.scrollTo;
-  playerProps.onStateChange = onPlayerStateChange;
-  playerProps.renderOverlay = pad => {
-    const element = typeof children === 'function' ? children(state) : children;
-
     return (
-      <React.Fragment>
-        {renderOverlay(pad)}
-        {element}
-      </React.Fragment>
+      <CarouselInner {...carouselProps}>
+        {state => {
+          return typeof children === 'function'
+            ? children(state, methods)
+            : children;
+        }}
+      </CarouselInner>
     );
   };
 
-  const gridProps = {
-    width,
-    height,
-    itemWidth: width,
-    itemHeight: height,
-    direction,
-    itemCount: gridItemCount,
-    renderItem,
-  };
+  if (loop) {
+    return (
+      <Loop direction={direction} {...padProps}>
+        {(loop, methods) => renderInner(loop.pad, methods)}
+      </Loop>
+    );
+  }
 
-  return (
-    <Player {...playerProps}>
-      <GridContent {...gridProps} />
-    </Player>
-  );
+  if (direction === 'x') {
+    padProps.alwaysBounceY = false;
+  } else {
+    padProps.alwaysBounceX = false;
+  }
+
+  return <Pad {...padProps}>{(pad, methods) => renderInner(pad, methods)}</Pad>;
 }
 
 Carousel.defaultProps = defaultCarouselProps;

@@ -61,13 +61,16 @@ function Pad(props) {
     }),
     [isBoundlessX, isBoundlessY]
   );
-  const innerRef = useRef();
+  const stateRef = useRef();
 
   const shouldPannableStart = useCallback(
     evt => {
-      const state = innerRef.current;
+      const state = stateRef.current;
 
-      if (!shouldDragStart(evt.velocity, state.size, state.contentSize)) {
+      if (
+        state &&
+        !shouldDragStart(evt.velocity, state.size, state.contentSize)
+      ) {
         return false;
       }
 
@@ -119,7 +122,7 @@ function Pad(props) {
         return (
           <PadInner {...padProps}>
             {(state, methods) => {
-              innerRef.current = state;
+              stateRef.current = state;
 
               return typeof children === 'function'
                 ? children(state, methods)

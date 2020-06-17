@@ -85,55 +85,6 @@ export const Overview = () => {
     return { index, align, animated };
   }, [scrollType, index, align, animated]);
 
-  const renderItem = useCallback(
-    ({ itemIndex, Item }) => {
-      const info = list[itemIndex];
-
-      return (
-        <Item hash={`${info.id}-${info.linesOfDesc}`}>
-          <ItemContent>
-            <InfoCard info={info} />
-          </ItemContent>
-        </Item>
-      );
-    },
-    [list]
-  );
-
-  const renderHeader = useCallback(
-    ({ Item }) => {
-      if (header) {
-        return (
-          <Item hash={header}>
-            <ItemContent>
-              <Banner>{header}</Banner>
-            </ItemContent>
-          </Item>
-        );
-      }
-
-      return null;
-    },
-    [header]
-  );
-
-  const renderFooter = useCallback(
-    ({ Item }) => {
-      if (footer) {
-        return (
-          <Item hash={footer}>
-            <ItemContent>
-              <Banner>{footer}</Banner>
-            </ItemContent>
-          </Item>
-        );
-      }
-
-      return null;
-    },
-    [footer]
-  );
-
   return (
     <div className="overview-wrapper">
       <div className="overview-h1">Infinite</div>
@@ -150,9 +101,41 @@ export const Overview = () => {
               spacing={spacing}
               itemCount={list.length}
               estimatedItemHeight={500}
-              renderItem={renderItem}
-              renderHeader={renderHeader}
-              renderFooter={renderFooter}
+              renderItem={({ itemIndex, Item }) => {
+                const info = list[itemIndex];
+
+                return (
+                  <Item hash={`${info.id}-${info.linesOfDesc}`}>
+                    <ItemContent width={width}>
+                      <InfoCard info={info} />
+                    </ItemContent>
+                  </Item>
+                );
+              }}
+              renderHeader={({ Item }) => {
+                if (!header) {
+                  return null;
+                }
+                return (
+                  <Item hash={header}>
+                    <ItemContent width={width}>
+                      <Banner>{header}</Banner>
+                    </ItemContent>
+                  </Item>
+                );
+              }}
+              renderFooter={({ Item }) => {
+                if (!footer) {
+                  return null;
+                }
+                return (
+                  <Item hash={footer}>
+                    <ItemContent width={width}>
+                      <Banner>{footer}</Banner>
+                    </ItemContent>
+                  </Item>
+                );
+              }}
               scrollToIndex={scrollToIndex}
             />
           )}

@@ -317,7 +317,7 @@ export const LayoutWithListContent = () => {
                   renderItem={({ itemIndex, Item }) => (
                     <Item hash={String(itemIndex)}>
                       {direction === 'x' ? (
-                        <ItemContent>
+                        <ItemContent height={listHeight}>
                           <div
                             style={{
                               height: '100%',
@@ -329,7 +329,7 @@ export const LayoutWithListContent = () => {
                           </div>
                         </ItemContent>
                       ) : (
-                        <ItemContent>
+                        <ItemContent width={listWidth}>
                           <div
                             style={{
                               width: '100%',
@@ -381,7 +381,7 @@ export const LayoutWithMultipleNestedContent = () => {
                   if (itemIndex === 0) {
                     return (
                       <Item hash="ItemContent">
-                        <ItemContent height={heightForIC}>
+                        <ItemContent width={width} height={heightForIC}>
                           <div className="pad-intro">Try React</div>
                         </ItemContent>
                       </Item>
@@ -391,7 +391,7 @@ export const LayoutWithMultipleNestedContent = () => {
                   if (itemIndex === 1) {
                     return (
                       <Item hash="GeneralContent">
-                        <ItemContent autoResizing>
+                        <ItemContent width={width} autoResizing>
                           <div className="pad-intro">{contentForGEC}</div>
                         </ItemContent>
                       </Item>
@@ -402,6 +402,7 @@ export const LayoutWithMultipleNestedContent = () => {
                     return (
                       <Item hash="GridContent">
                         <GridContent
+                          width={width}
                           direction="y"
                           itemWidth={100}
                           itemHeight={100}
@@ -421,6 +422,7 @@ export const LayoutWithMultipleNestedContent = () => {
                     return (
                       <Item hash="ListContent">
                         <ListContent
+                          width={width}
                           direction="y"
                           itemCount={itemCountForLC}
                           renderItem={({ itemIndex, Item }) => (

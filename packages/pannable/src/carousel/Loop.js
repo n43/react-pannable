@@ -21,10 +21,10 @@ function Loop(props) {
 
   return (
     <Pad {...padProps}>
-      {(pad, { _scrollTo }) => {
+      {(pad, methods) => {
         const loopProps = {
           pad,
-          onAdjust: _scrollTo,
+          onAdjust: methods._scrollTo,
           direction,
         };
 
@@ -32,7 +32,7 @@ function Loop(props) {
           <LoopInner {...loopProps}>
             {state => {
               return typeof children === 'function'
-                ? children(state)
+                ? children(state, methods)
                 : children;
             }}
           </LoopInner>

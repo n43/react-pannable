@@ -43,12 +43,16 @@ function ListContent(props) {
       calculateLayout(
         {
           direction,
-          width: fixedWidth,
-          height: fixedHeight,
+          size: {
+            width: fixedWidth,
+            height: fixedHeight,
+          },
           spacing,
           itemCount,
-          estimatedItemWidth,
-          estimatedItemHeight,
+          estimatedItemSize: {
+            width: estimatedItemWidth,
+            height: estimatedItemHeight,
+          },
         },
         itemHashList,
         itemSizeDict
@@ -76,9 +80,6 @@ function ListContent(props) {
   useIsomorphicLayoutEffect(() => {
     if (!isEqualToSize(prevLayout.size, layout.size)) {
       context.onResize(layout.size);
-    }
-    if (prevLayout.type !== layout.type) {
-      setItemSizeDict({});
     }
   });
 
@@ -123,7 +124,6 @@ function ListContent(props) {
     const sizeProps = {
       width: null,
       height: null,
-      ...layout.fixed,
       ...itemSize,
     };
 
@@ -187,14 +187,7 @@ ListContent.PadContent = true;
 export default ListContent;
 
 function calculateLayout(props, itemHashList, itemSizeDict) {
-  const {
-    direction,
-    spacing,
-    itemCount,
-    estimatedItemWidth,
-    estimatedItemHeight,
-  } = props;
-  const size = { width: props.width, height: props.height };
+  const { direction, size, spacing, itemCount, estimatedItemSize } = props;
 
   const [x, y, width, height] =
     direction === 'x'
@@ -205,7 +198,6 @@ function calculateLayout(props, itemHashList, itemSizeDict) {
   let sizeHeight = 0;
   const layoutList = [];
   const fixed = {};
-  const type = [direction, size[width]].join();
 
   if (isNumber(size[width])) {
     fixed[width] = size[width];
@@ -222,14 +214,14 @@ function calculateLayout(props, itemHashList, itemSizeDict) {
       rect[width] =
         fixed[width] !== undefined
           ? fixed[width]
-          : typeof estimatedItemWidth === 'function'
-          ? estimatedItemWidth(itemIndex)
-          : estimatedItemWidth;
+          : typeof estimatedItemSize[width] === 'function'
+          ? estimatedItemSize[width](itemIndex)
+          : estimatedItemSize[width];
 
       rect[height] =
-        typeof estimatedItemHeight === 'function'
-          ? estimatedItemHeight(itemIndex)
-          : estimatedItemHeight;
+        typeof estimatedItemSize[height] === 'function'
+          ? estimatedItemSize[height](itemIndex)
+          : estimatedItemSize[height];
     }
 
     layoutList.push({ rect, itemIndex, itemHash, itemSize });
@@ -253,7 +245,6 @@ function calculateLayout(props, itemHashList, itemSizeDict) {
     },
     fixed,
     layoutList,
-    type,
   };
 }
 

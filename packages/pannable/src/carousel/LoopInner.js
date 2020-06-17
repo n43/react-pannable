@@ -15,19 +15,19 @@ function LoopInner(props) {
     if (state.scrollTo) {
       onAdjust(state.scrollTo);
     }
-  }, [state.scrollTo, onAdjust]);
+  }, [state.scrollTo]);
 
   const element = typeof children === 'function' ? children(state) : children;
 
   return (
     <ListContent
       direction={direction}
-      width={pad.size.width}
-      height={pad.size.height}
+      width={state.pad.size.width}
+      height={state.pad.size.height}
       itemCount={state.loopCount}
       renderItem={({ Item, itemIndex }) => {
         return (
-          <Item key={itemIndex + state.loopOffset} hash="Loop">
+          <Item key={itemIndex + state.loopOffset} hash="Loop" forceRender>
             {element}
           </Item>
         );

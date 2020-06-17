@@ -1,4 +1,10 @@
-import React, { useEffect, useMemo, useReducer, useCallback } from 'react';
+import React, {
+  useEffect,
+  useMemo,
+  useReducer,
+  useCallback,
+  useState,
+} from 'react';
 import { reducer, initialPadState } from './padReducer';
 import PadContext from './PadContext';
 import { useIsomorphicLayoutEffect } from '../hooks/useIsomorphicLayoutEffect';
@@ -22,6 +28,7 @@ const overlayStyle = {
   top: 0,
   left: 0,
   right: 0,
+  height: 0,
 };
 
 function PadInner(props) {
@@ -43,6 +50,7 @@ function PadInner(props) {
     scrollTo,
     children,
   } = props;
+  const [overlay, setOverlay] = useState(null);
   const [state, dispatch] = useReducer(reducer, initialPadState);
   const prevStateRef = usePrevRef(state);
   const prevState = prevStateRef.current;
@@ -76,6 +84,10 @@ function PadInner(props) {
     dispatch({ type: 'scrollTo', value });
   }, []);
 
+  const _renderOverlay = useCallback(elem => {
+    setOverlay(elem);
+  }, []);
+
   useIsomorphicLayoutEffect(() => {
     if (prevState.pannable.translation !== state.pannable.translation) {
       if (state.pannable.translation) {
@@ -94,7 +106,6 @@ function PadInner(props) {
     }
 
     if (prevState.contentSize !== state.contentSize) {
-      console.log('onContentResize');
       onContentResize(state.contentSize);
     }
 
@@ -141,13 +152,12 @@ function PadInner(props) {
   }, [state]);
 
   useEffect(() => {
-    console.log('scrollTo');
     if (scrollTo) {
       _scrollTo(scrollTo);
     }
   }, [scrollTo, _scrollTo]);
 
-  const methods = { _scrollTo };
+  const methods = { _scrollTo, _renderOverlay };
 
   let backgroundLayer = renderBackground(state, methods);
 
@@ -157,8 +167,13 @@ function PadInner(props) {
 
   let overlayLayer = renderOverlay(state, methods);
 
-  if (overlayLayer !== null) {
-    overlayLayer = <div style={overlayStyle}>{overlayLayer}</div>;
+  if (overlayLayer !== null || overlay !== null) {
+    overlayLayer = (
+      <div style={overlayStyle}>
+        {overlayLayer}
+        {overlay}
+      </div>
+    );
   }
 
   let contentLayer =
