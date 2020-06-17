@@ -20,6 +20,7 @@ export const initialPadState = {
   contentSize: { width: 0, height: 0 },
   pannable: initialPannableState,
   alwaysBounce: { x: true, y: true },
+  isBoundless: { x: false, y: false },
   pagingEnabled: false,
   directionalLockEnabled: false,
 };
@@ -62,6 +63,7 @@ function validateReducer(state, action) {
     contentSize,
     pagingEnabled,
     alwaysBounce,
+    isBoundless,
   } = state;
 
   const decelerationRate = DECELERATION_RATE_STRONG;
@@ -72,12 +74,14 @@ function validateReducer(state, action) {
       contentOffset,
       size,
       contentSize,
+      isBoundless,
       pagingEnabled
     );
     const adjustedDecelerationEndOffset = getAdjustedContentOffset(
       decelerationEndOffset,
       size,
       contentSize,
+      isBoundless,
       pagingEnabled
     );
 
@@ -117,6 +121,7 @@ function validateReducer(state, action) {
         decelerationEndOffset,
         size,
         contentSize,
+        isBoundless,
         pagingEnabled
       );
 
@@ -146,6 +151,7 @@ function validateReducer(state, action) {
       decelerationEndOffset,
       size,
       contentSize,
+      isBoundless,
       pagingEnabled
     );
 
@@ -197,7 +203,14 @@ function dragStartReducer(state, action) {
 }
 
 function dragMoveReducer(state, action) {
-  const { contentOffset, drag, size, contentSize, alwaysBounce } = state;
+  const {
+    contentOffset,
+    drag,
+    size,
+    contentSize,
+    alwaysBounce,
+    isBoundless,
+  } = state;
   const { translation, interval } = state.pannable;
 
   let nextContentOffset = {
@@ -208,6 +221,7 @@ function dragMoveReducer(state, action) {
   nextContentOffset = getAdjustedBounceOffset(
     nextContentOffset,
     alwaysBounce,
+    isBoundless,
     size,
     contentSize
   );

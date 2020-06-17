@@ -6,7 +6,7 @@ import {
   select,
   boolean,
 } from '@storybook/addon-knobs';
-import { AutoResizing, Infinite } from 'react-pannable';
+import { AutoResizing, Infinite, ItemContent } from 'react-pannable';
 import InfoCard from './Infocard';
 import Banner from './Banner';
 import '../../ui/overview.css';
@@ -91,7 +91,9 @@ export const Overview = () => {
 
       return (
         <Item hash={`${info.id}-${info.linesOfDesc}`}>
-          <InfoCard info={info} />
+          <ItemContent>
+            <InfoCard info={info} />
+          </ItemContent>
         </Item>
       );
     },
@@ -103,7 +105,9 @@ export const Overview = () => {
       if (header) {
         return (
           <Item hash={header}>
-            <Banner>{header}</Banner>
+            <ItemContent>
+              <Banner>{header}</Banner>
+            </ItemContent>
           </Item>
         );
       }
@@ -118,7 +122,9 @@ export const Overview = () => {
       if (footer) {
         return (
           <Item hash={footer}>
-            <Banner>{footer}</Banner>
+            <ItemContent>
+              <Banner>{footer}</Banner>
+            </ItemContent>
           </Item>
         );
       }

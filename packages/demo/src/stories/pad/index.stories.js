@@ -2,7 +2,6 @@ import React, { useCallback, useMemo } from 'react';
 import {
   AutoResizing,
   Pad,
-  GeneralContent,
   GridContent,
   ListContent,
   ItemContent,
@@ -126,7 +125,12 @@ export const Overview = () => {
               onDecelerationEnd={onDecelerationEnd}
               onContentResize={onContentResize}
             >
-              <Plaid rowCount={plaidRowCount} columnCount={plaidColumnCount} />
+              <ItemContent autoResizing>
+                <Plaid
+                  rowCount={plaidRowCount}
+                  columnCount={plaidColumnCount}
+                />
+              </ItemContent>
             </Pad>
           )}
         </AutoResizing>
@@ -165,13 +169,14 @@ export const LayoutWithGeneralContent = () => {
         <AutoResizing height={500}>
           {({ width, height }) => (
             <Pad width={width} height={height} alwaysBounceX={false}>
-              <GeneralContent
+              <ItemContent
+                autoResizing
                 width={contentWidth === null ? width : contentWidth}
                 height={contentHeight}
                 className="pad-content"
               >
                 <div className="pad-intro">{content}</div>
-              </GeneralContent>
+              </ItemContent>
             </Pad>
           )}
         </AutoResizing>
@@ -289,46 +294,60 @@ export const LayoutWithListContent = () => {
       </div>
       <div className="overview-content">
         <AutoResizing height={500}>
-          {({ width, height }) => (
-            <Pad
-              width={width}
-              height={height}
-              alwaysBounceX={false}
-              alwaysBounceY={false}
-              onContentResize={onContentResize}
-            >
-              <ListContent
-                width={contentWidth === null ? width : contentWidth}
-                height={contentHeight === null ? height : contentHeight}
-                direction={direction}
-                spacing={spacing}
-                estimatedItemWidth={estimatedItemWidth}
-                estimatedItemHeight={estimatedItemHeight}
-                itemCount={itemCount}
-                renderItem={({ itemIndex, Item }) => {
-                  const [width, height] =
-                    direction === 'x'
-                      ? ['height', 'width']
-                      : ['width', 'height'];
+          {({ width, height }) => {
+            const listWidth = contentWidth === null ? width : contentWidth;
+            const listHeight = contentHeight === null ? height : contentHeight;
 
-                  return (
+            return (
+              <Pad
+                width={width}
+                height={height}
+                alwaysBounceX={false}
+                alwaysBounceY={false}
+                onContentResize={onContentResize}
+              >
+                <ListContent
+                  width={listWidth}
+                  height={listHeight}
+                  direction={direction}
+                  spacing={spacing}
+                  estimatedItemWidth={estimatedItemWidth}
+                  estimatedItemHeight={estimatedItemHeight}
+                  itemCount={itemCount}
+                  renderItem={({ itemIndex, Item }) => (
                     <Item hash={String(itemIndex)}>
-                      <div
-                        style={{
-                          [width]: '100%',
-                          [height]: `${itemIndex + 3}em`,
-                        }}
-                        className="pad-listitem"
-                      >
-                        {itemIndex + 1} kg
-                      </div>
+                      {direction === 'x' ? (
+                        <ItemContent>
+                          <div
+                            style={{
+                              height: '100%',
+                              width: `${itemIndex + 3}em`,
+                            }}
+                            className="pad-listitem"
+                          >
+                            {itemIndex + 1} kg
+                          </div>
+                        </ItemContent>
+                      ) : (
+                        <ItemContent>
+                          <div
+                            style={{
+                              width: '100%',
+                              height: `${itemIndex + 3}em`,
+                            }}
+                            className="pad-listitem"
+                          >
+                            {itemIndex + 1} kg
+                          </div>
+                        </ItemContent>
+                      )}
                     </Item>
-                  );
-                }}
-                className="pad-content"
-              />
-            </Pad>
-          )}
+                  )}
+                  className="pad-content"
+                />
+              </Pad>
+            );
+          }}
         </AutoResizing>
       </div>
     </div>
@@ -372,9 +391,9 @@ export const LayoutWithMultipleNestedContent = () => {
                   if (itemIndex === 1) {
                     return (
                       <Item hash="GeneralContent">
-                        <GeneralContent>
+                        <ItemContent autoResizing>
                           <div className="pad-intro">{contentForGEC}</div>
-                        </GeneralContent>
+                        </ItemContent>
                       </Item>
                     );
                   }
@@ -406,15 +425,17 @@ export const LayoutWithMultipleNestedContent = () => {
                           itemCount={itemCountForLC}
                           renderItem={({ itemIndex, Item }) => (
                             <Item hash={String(itemIndex)}>
-                              <div
-                                style={{
-                                  width: '100%',
-                                  height: `${itemIndex + 3}em`,
-                                }}
-                                className="pad-listitem"
-                              >
-                                {itemIndex + 1} kg
-                              </div>
+                              <ItemContent>
+                                <div
+                                  style={{
+                                    width: '100%',
+                                    height: `${itemIndex + 3}em`,
+                                  }}
+                                  className="pad-listitem"
+                                >
+                                  {itemIndex + 1} kg
+                                </div>
+                              </ItemContent>
                             </Item>
                           )}
                         />

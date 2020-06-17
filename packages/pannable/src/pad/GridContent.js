@@ -1,14 +1,8 @@
-import React, {
-  isValidElement,
-  cloneElement,
-  useContext,
-  useMemo,
-  useCallback,
-} from 'react';
+import React, { useContext, useMemo, useCallback } from 'react';
 import { useIsomorphicLayoutEffect } from '../hooks/useIsomorphicLayoutEffect';
 import { usePrevRef } from '../hooks/usePrevRef';
 import { getItemVisibleRect, needsRender } from '../utils/visible';
-import { isEqualToSize } from '../utils/geometry';
+import { isEqualToSize, isNumber } from '../utils/geometry';
 import PadContext from './PadContext';
 
 function Item() {}
@@ -26,6 +20,7 @@ const defaultGridContentProps = {
 };
 
 function GridContent(props) {
+  const context = useContext(PadContext);
   const {
     width,
     height,
@@ -39,12 +34,16 @@ function GridContent(props) {
     children,
     ...divProps
   } = props;
+
+  const fixedWidth = isNumber(width) ? width : context.width;
+  const fixedHeight = isNumber(height) ? height : context.height;
+
   const layout = useMemo(
     () =>
       calculateLayout({
         direction,
-        width,
-        height,
+        width: fixedWidth,
+        height: fixedHeight,
         rowSpacing,
         columnSpacing,
         itemCount,
@@ -53,8 +52,8 @@ function GridContent(props) {
       }),
     [
       direction,
-      width,
-      height,
+      fixedWidth,
+      fixedHeight,
       rowSpacing,
       columnSpacing,
       itemCount,
@@ -63,7 +62,6 @@ function GridContent(props) {
     ]
   );
   const prevLayoutRef = usePrevRef(layout);
-  const context = useContext(PadContext);
 
   const { size, layoutList } = layout;
   const prevLayout = prevLayoutRef.current;
@@ -85,15 +83,8 @@ function GridContent(props) {
     let element = renderItem(attrs);
 
     let key = 'GridContent_' + itemIndex;
-    const itemStyle = {
-      position: 'absolute',
-      left: rect.x,
-      top: rect.y,
-      width: rect.width,
-      height: rect.height,
-    };
 
-    if (isValidElement(element) && element.type === Item) {
+    if (React.isValidElement(element) && element.type === Item) {
       if (element.props.forceRender !== undefined) {
         forceRender = element.props.forceRender;
       }
@@ -108,22 +99,20 @@ function GridContent(props) {
       return null;
     }
 
-    if (isValidElement(element)) {
-      if (element.props.style) {
-        Object.assign(itemStyle, element.props.style);
-      }
-
-      element = cloneElement(element, { style: itemStyle, ref: element.ref });
-    } else {
-      element = <div style={itemStyle}>{element}</div>;
-    }
+    const itemStyle = {
+      position: 'absolute',
+      left: rect.x,
+      top: rect.y,
+      width: rect.width,
+      height: rect.height,
+    };
 
     return (
       <PadContext.Provider
         key={key}
-        value={{ ...context, visibleRect, onResize }}
+        value={{ ...context, width: null, height: null, visibleRect, onResize }}
       >
-        {element}
+        <div style={itemStyle}>{element}</div>
       </PadContext.Provider>
     );
   }

@@ -4,7 +4,6 @@ import { usePrevRef } from '../hooks/usePrevRef';
 import { getItemVisibleRect, needsRender } from '../utils/visible';
 import { isEqualToSize, isNumber } from '../utils/geometry';
 import PadContext from './PadContext';
-import ItemContent from './ItemContent';
 
 function Item() {}
 
@@ -20,6 +19,7 @@ const defaultListContentProps = {
 };
 
 function ListContent(props) {
+  const context = useContext(PadContext);
   const {
     width,
     height,
@@ -32,16 +32,19 @@ function ListContent(props) {
     children,
     ...divProps
   } = props;
-  const context = useContext(PadContext);
   const [itemHashList, setItemHashList] = useState([]);
   const [itemSizeDict, setItemSizeDict] = useState({});
+
+  const fixedWidth = isNumber(width) ? width : context.width;
+  const fixedHeight = isNumber(height) ? height : context.height;
+
   const layout = useMemo(
     () =>
       calculateLayout(
         {
-          width,
-          height,
           direction,
+          width: fixedWidth,
+          height: fixedHeight,
           spacing,
           itemCount,
           estimatedItemWidth,
@@ -51,8 +54,8 @@ function ListContent(props) {
         itemSizeDict
       ),
     [
-      width,
-      height,
+      fixedWidth,
+      fixedHeight,
       direction,
       spacing,
       itemCount,
@@ -63,7 +66,6 @@ function ListContent(props) {
     ]
   );
   const prevLayoutRef = usePrevRef(layout);
-
   const prevLayout = prevLayoutRef.current;
   const nextItemHashList = [];
 
@@ -118,22 +120,12 @@ function ListContent(props) {
       return null;
     }
 
-    if (!React.isValidElement(element) || !element.type.PadContent) {
-      element = <ItemContent>{element}</ItemContent>;
-    }
-
-    const sizeProps = {};
-
-    if (itemSize) {
-      Object.assign(sizeProps, itemSize);
-    } else {
-      if (isNumber(layout.fixed.width)) {
-        sizeProps.width = layout.fixed.width;
-      }
-      if (isNumber(layout.fixed.height)) {
-        sizeProps.height = layout.fixed.height;
-      }
-    }
+    const sizeProps = {
+      width: null,
+      height: null,
+      ...layout.fixed,
+      ...itemSize,
+    };
 
     const itemStyle = {
       position: 'absolute',
@@ -143,35 +135,21 @@ function ListContent(props) {
       height: rect.height,
     };
 
-    if (element.props.style) {
-      Object.assign(itemStyle, element.props.style);
-    }
-
-    element = React.cloneElement(element, {
-      ...sizeProps,
-      style: itemStyle,
-      ref: element.ref,
-    });
-
     function onResize(itemSize) {
-      setItemSizeDict(itemSizeDict =>
-        isEqualToSize(itemSizeDict[hash], itemSize)
-          ? itemSizeDict
-          : { ...itemSizeDict, [hash]: itemSize }
-      );
+      setItemSizeDict(itemSizeDict => ({ ...itemSizeDict, [hash]: itemSize }));
     }
 
     return (
       <PadContext.Provider
         key={key}
-        value={{ ...context, visibleRect, onResize }}
+        value={{ ...context, ...sizeProps, visibleRect, onResize }}
       >
-        {element}
+        <div style={itemStyle}>{element}</div>
       </PadContext.Provider>
     );
   }
 
-  const elemStyle = { position: 'relative' };
+  const elemStyle = { position: 'relative', overflow: 'hidden' };
 
   if (layout.size) {
     elemStyle.width = layout.size.width;
@@ -269,7 +247,10 @@ function calculateLayout(props, itemHashList, itemSizeDict) {
   }
 
   return {
-    size: { [width]: sizeWidth, [height]: sizeHeight },
+    size: {
+      [width]: fixed[width] || sizeWidth,
+      [height]: fixed[height] || sizeHeight,
+    },
     fixed,
     layoutList,
     type,

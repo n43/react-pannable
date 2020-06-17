@@ -5,7 +5,6 @@
 `Pad` component must know the size of the content so it knows when to stop scrolling. You should specify the content by defining one of the following components. These components can be nested to achieve some complex layouts.
 
 - [`<ItemContent />`](itemcontent.md) - Displays data with the size best fits the specified size
-- [`<GeneralContent />`](generalcontent.md) - Similar to `ItemContent` and automatically resizes when the data change
 - [`<ListContent />`](listcontent.md) - Displays data in a single column/row
 - [`<GridContent />`](gridcontent.md) - Displays data in grid layout
 
@@ -13,15 +12,15 @@
 
 ```js
 import React from 'react';
-import { Pad, GeneralContent } from 'react-pannable';
+import { Pad, ItemContent } from 'react-pannable';
 
 class Page extends React.Component {
   render() {
     return (
       <Pad width={500} height={350}>
-        <GeneralContent width={1000}>
+        <ItemContent width={1000}>
           <img src="beautiful.jpg" width="1000" />
-        </GeneralContent>
+        </ItemContent>
       </Pad>
     );
   }

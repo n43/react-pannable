@@ -1,6 +1,6 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { withKnobs, object, boolean, select } from '@storybook/addon-knobs';
-import { AutoResizing, Loop } from 'react-pannable';
+import { AutoResizing, Loop, ItemContent } from 'react-pannable';
 import HorizontalIndicator from './HorizontalIndicator';
 import VerticalIndicator from './VerticalIndicator';
 import '../../ui/overview.css';
@@ -25,6 +25,37 @@ const data = [
 
 export const LoopDemo = () => {
   const direction = select('direction', { x: 'x', y: 'y' }, 'x', 'props');
+  const scrollType = select(
+    'Scroll Action',
+    { null: '', scrollTo: 'scrollTo' },
+    '',
+    'Scrolling'
+  );
+
+  let point;
+  let rect;
+  let align;
+  let animated;
+
+  if (scrollType === 'scrollTo') {
+    point = object('point', undefined, 'Scrolling');
+    rect = object('rect', undefined, 'Scrolling');
+    align = select(
+      'align',
+      { auto: 'auto', center: 'center', end: 'end', start: 'start' },
+      'start',
+      'Scrolling'
+    );
+    animated = boolean('animated ', true, 'Scrolling');
+  }
+
+  const scrollTo = useMemo(() => {
+    if (scrollType !== 'scrollTo') {
+      return null;
+    }
+
+    return { point, rect, align, animated };
+  }, [scrollType, point, rect, align, animated]);
 
   return (
     <div className="overview-wrapper">
@@ -38,13 +69,20 @@ export const LoopDemo = () => {
             const height = Math.ceil((width * 8) / 15.0);
 
             return (
-              <Loop width={width} height={height} direction={direction}>
-                <img
-                  src={photo1}
-                  width={width}
-                  height={height}
-                  style={{ display: 'block' }}
-                />
+              <Loop
+                width={width}
+                height={height}
+                direction={direction}
+                scrollTo={scrollTo}
+              >
+                <ItemContent width={width} height={height}>
+                  <img
+                    src={photo1}
+                    width={width}
+                    height={height}
+                    style={{ display: 'block' }}
+                  />
+                </ItemContent>
               </Loop>
             );
           }}

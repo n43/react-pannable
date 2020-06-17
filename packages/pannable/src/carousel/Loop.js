@@ -12,8 +12,10 @@ function Loop(props) {
   const { direction, children, ...padProps } = props;
 
   if (direction === 'x') {
+    padProps.isBoundlessX = true;
     padProps.alwaysBounceY = false;
   } else {
+    padProps.isBoundlessY = true;
     padProps.alwaysBounceX = false;
   }
 

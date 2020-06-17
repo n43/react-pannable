@@ -22,9 +22,10 @@ function LoopInner(props) {
   return (
     <ListContent
       direction={direction}
+      width={pad.size.width}
+      height={pad.size.height}
       itemCount={state.loopCount}
       renderItem={({ Item, itemIndex }) => {
-        console.log('item', itemIndex, state.loopOffset);
         return (
           <Item key={itemIndex + state.loopOffset} hash="Loop">
             {element}

@@ -8,6 +8,7 @@
   line-height: 28px;
   color: #888888;
   font-weight: bold;
+  flex: 0 0 100px;
 }
 .plaid-row {
   display: flex;

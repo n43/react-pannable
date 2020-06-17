@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useReducer, useCallback } from 'react';
 import { reducer, initialPadState } from './padReducer';
 import PadContext from './PadContext';
-import GeneralContent from './GeneralContent';
 import { useIsomorphicLayoutEffect } from '../hooks/useIsomorphicLayoutEffect';
 import { usePrevRef } from '../hooks/usePrevRef';
 import {
@@ -10,6 +9,21 @@ import {
 } from '../utils/animationFrame';
 import StyleSheet from '../utils/StyleSheet';
 
+const backgroundStyle = {
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+};
+
+const overlayStyle = {
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  right: 0,
+};
+
 function PadInner(props) {
   const {
     pannable,
@@ -17,6 +31,7 @@ function PadInner(props) {
     pagingEnabled,
     directionalLockEnabled,
     alwaysBounce,
+    isBoundless,
     onScroll,
     onDragStart,
     onDragEnd,
@@ -39,11 +54,19 @@ function PadInner(props) {
         size,
         pannable,
         alwaysBounce,
+        isBoundless,
         pagingEnabled,
         directionalLockEnabled,
       },
     });
-  }, [size, pannable, alwaysBounce, pagingEnabled, directionalLockEnabled]);
+  }, [
+    size,
+    pannable,
+    alwaysBounce,
+    isBoundless,
+    pagingEnabled,
+    directionalLockEnabled,
+  ]);
 
   const onResize = useCallback(contentSize => {
     dispatch({ type: 'syncProps', props: { contentSize } });
@@ -71,6 +94,7 @@ function PadInner(props) {
     }
 
     if (prevState.contentSize !== state.contentSize) {
+      console.log('onContentResize');
       onContentResize(state.contentSize);
     }
 
@@ -117,6 +141,7 @@ function PadInner(props) {
   }, [state]);
 
   useEffect(() => {
+    console.log('scrollTo');
     if (scrollTo) {
       _scrollTo(scrollTo);
     }
@@ -127,52 +152,25 @@ function PadInner(props) {
   let backgroundLayer = renderBackground(state, methods);
 
   if (backgroundLayer !== null) {
-    const layerStyle = {
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-    };
-
-    backgroundLayer = <div style={layerStyle}>{backgroundLayer}</div>;
+    backgroundLayer = <div style={backgroundStyle}>{backgroundLayer}</div>;
   }
 
   let overlayLayer = renderOverlay(state, methods);
 
   if (overlayLayer !== null) {
-    const layerStyle = {
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-    };
-
-    overlayLayer = <div style={layerStyle}>{overlayLayer}</div>;
+    overlayLayer = <div style={overlayStyle}>{overlayLayer}</div>;
   }
 
   let contentLayer =
     typeof children === 'function' ? children(state, methods) : children;
 
-  if (!React.isValidElement(contentLayer) || !contentLayer.type.PadContent) {
-    contentLayer = <GeneralContent>{contentLayer}</GeneralContent>;
-  }
-
   const contentStyle = StyleSheet.create({
     position: 'absolute',
+    overflow: 'hidden',
     width: state.contentSize.width,
     height: state.contentSize.height,
     transformTranslate: state.contentOffset,
     willChange: 'transform',
-  });
-
-  if (contentLayer.props.style) {
-    Object.assign(contentStyle, contentLayer.props.style);
-  }
-
-  contentLayer = React.cloneElement(contentLayer, {
-    style: contentStyle,
-    ref: contentLayer.ref,
   });
 
   const contextValue = useMemo(
@@ -191,9 +189,11 @@ function PadInner(props) {
   return (
     <>
       {backgroundLayer}
-      <PadContext.Provider value={contextValue}>
-        {contentLayer}
-      </PadContext.Provider>
+      <div style={contentStyle}>
+        <PadContext.Provider value={contextValue}>
+          {contentLayer}
+        </PadContext.Provider>
+      </div>
       {overlayLayer}
     </>
   );

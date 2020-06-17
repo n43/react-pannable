@@ -9,6 +9,8 @@ const defaultPadProps = {
   directionalLockEnabled: false,
   alwaysBounceX: true,
   alwaysBounceY: true,
+  isBoundlessX: false,
+  isBoundlessY: false,
   onScroll: () => {},
   onDragStart: () => {},
   onDragEnd: () => {},
@@ -29,6 +31,8 @@ function Pad(props) {
     directionalLockEnabled,
     alwaysBounceX,
     alwaysBounceY,
+    isBoundlessX,
+    isBoundlessY,
     onScroll,
     onDragStart,
     onDragEnd,
@@ -49,6 +53,13 @@ function Pad(props) {
       y: alwaysBounceY,
     }),
     [alwaysBounceX, alwaysBounceY]
+  );
+  const isBoundless = useMemo(
+    () => ({
+      x: isBoundlessX,
+      y: isBoundlessY,
+    }),
+    [isBoundlessX, isBoundlessY]
   );
   const innerRef = useRef();
 
@@ -93,6 +104,7 @@ function Pad(props) {
           pagingEnabled,
           directionalLockEnabled,
           alwaysBounce,
+          isBoundless,
           onScroll,
           onDragStart,
           onDragEnd,
