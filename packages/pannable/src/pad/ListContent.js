@@ -240,10 +240,9 @@ function calculateLayout(props, itemHashList, itemSizeDict) {
 
   return {
     size: {
-      [width]: fixed[width] || sizeWidth,
-      [height]: fixed[height] || sizeHeight,
+      [width]: fixed[width] !== undefined ? fixed[width] : sizeWidth,
+      [height]: fixed[height] !== undefined ? fixed[height] : sizeHeight,
     },
-    fixed,
     layoutList,
   };
 }

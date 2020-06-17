@@ -427,7 +427,7 @@ export const LayoutWithMultipleNestedContent = () => {
                           itemCount={itemCountForLC}
                           renderItem={({ itemIndex, Item }) => (
                             <Item hash={String(itemIndex)}>
-                              <ItemContent>
+                              <ItemContent width={width}>
                                 <div
                                   style={{
                                     width: '100%',
