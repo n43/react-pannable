@@ -21,23 +21,14 @@ function Loop(props) {
 
   return (
     <Pad {...padProps}>
-      {(pad, methods) => {
-        const loopProps = {
-          pad,
-          onAdjust: methods._scrollTo,
-          direction,
-        };
-
-        return (
-          <LoopInner {...loopProps}>
-            {state => {
-              return typeof children === 'function'
-                ? children(state, methods)
-                : children;
-            }}
-          </LoopInner>
-        );
-      }}
+      {(pad, methods) => (
+        <LoopInner
+          pad={pad}
+          onAdjust={methods._scrollTo}
+          direction={direction}
+          children={children}
+        />
+      )}
     </Pad>
   );
 }

@@ -1,12 +1,15 @@
+import { initialPadState } from '../pad/padReducer';
+
 export const initialInfiniteState = {
-  scrollTo: null,
   scroll: null,
+  scrollTo: null,
+  pad: initialPadState,
 };
 
 export function reducer(state, action) {
   switch (action.type) {
-    case 'setScrollTo':
-      return setScrollToReducer(state, action);
+    case 'syncProps':
+      return syncPropsReducer(state, action);
     case 'scrollToIndex':
       return scrollToIndexReducer(state, action);
     case 'scrollEnd':
@@ -18,10 +21,10 @@ export function reducer(state, action) {
   }
 }
 
-function setScrollToReducer(state, action) {
+function syncPropsReducer(state, action) {
   return {
     ...state,
-    scrollTo: action.value,
+    ...action.props,
   };
 }
 
@@ -33,7 +36,7 @@ function scrollToIndexReducer(state, action) {
   return {
     ...state,
     scrollTo: { rect, align, animated },
-    scroll: animated ? { index, align } : null,
+    scroll: animated ? { index, align, animated } : null,
   };
 }
 
@@ -52,13 +55,7 @@ function scrollRecalculateReducer(state, action) {
     return state;
   }
 
-  const { index, align } = scroll;
-  const rect = calculateRectForIndex(index, list);
-
-  return {
-    ...state,
-    scrollTo: { rect, align, animated: true },
-  };
+  return scrollToIndexReducer(state, { value: scroll, list });
 }
 
 function calculateRectForIndex(index, list) {
@@ -69,11 +66,7 @@ function calculateRectForIndex(index, list) {
     rect = box.layoutList[1].rect;
   }
   if (body) {
-    if (isNaN(index)) {
-      index = 0;
-    }
     index = Math.max(0, Math.min(index, body.layoutList.length - 1));
-
     const attrs = body.layoutList[index];
 
     rect = {

@@ -1,16 +1,13 @@
-import React, {
-  useState,
-  useMemo,
-  useCallback,
-  useRef,
-  useContext,
-  useEffect,
-} from 'react';
+import React, { useState, useMemo, useRef, useContext, useEffect } from 'react';
 import { useIsomorphicLayoutEffect } from '../hooks/useIsomorphicLayoutEffect';
 import { usePrevRef } from '../hooks/usePrevRef';
 import { isEqualToSize, isNumber } from '../utils/geometry';
 import resizeDetector from '../utils/resizeDetector';
 import PadContext from './PadContext';
+
+function onPadContentResize() {}
+
+const wrapperStyle = { position: 'absolute', top: 0, left: 0 };
 
 const defaultItemContentProps = {
   width: null,
@@ -21,50 +18,36 @@ const defaultItemContentProps = {
 function ItemContent(props) {
   const context = useContext(PadContext);
   const { width, height, autoResizing, children, ...divProps } = props;
+  const fixedWidth = isNumber(width)
+    ? width
+    : !autoResizing
+    ? context.width
+    : null;
+  const fixedHeight = isNumber(height)
+    ? height
+    : !autoResizing
+    ? context.height
+    : null;
+  const isFixed = isNumber(fixedWidth) && isNumber(fixedHeight);
+
   const [size, setSize] = useState(null);
   const prevSizeRef = usePrevRef(size);
   const prevSize = prevSizeRef.current;
   const resizeRef = useRef(null);
+  const methodsRef = useRef({
+    calculateSize() {
+      const node = resizeRef.current;
+      const nextSize = {
+        width: node.offsetWidth,
+        height: node.offsetHeight,
+      };
 
-  const fixedWidth = isNumber(width) ? width : context.width;
-  const fixedHeight = isNumber(height) ? height : context.height;
-  const isFixed = isNumber(fixedWidth) && isNumber(fixedHeight);
-
-  const calculateSize = useCallback(node => {
-    const size = {
-      width: node.offsetWidth,
-      height: node.offsetHeight,
-    };
-
-    setSize(size);
-  }, []);
-
-  const onResize = useCallback(() => {}, []);
-
-  useIsomorphicLayoutEffect(() => {
-    if (size && !isEqualToSize(prevSize, size)) {
-      context.onResize(size);
-    }
+      setSize(size => (isEqualToSize(size, nextSize) ? size : nextSize));
+    },
   });
+  const responseRef = useRef({});
 
-  useEffect(() => {
-    if (!size) {
-      calculateSize(resizeRef.current);
-    }
-  }, [size, calculateSize]);
-
-  useEffect(() => {
-    if (isFixed || !autoResizing) {
-      return;
-    }
-
-    const resizeNode = resizeRef.current;
-    resizeDetector.listenTo(resizeNode, calculateSize);
-
-    return () => {
-      resizeDetector.uninstall(resizeNode);
-    };
-  }, [isFixed, autoResizing, calculateSize]);
+  responseRef.current.onResize = context.onResize;
 
   useMemo(() => {
     let nextSize = null;
@@ -73,34 +56,55 @@ function ItemContent(props) {
       nextSize = { width: fixedWidth, height: fixedHeight };
     }
 
-    setSize(nextSize);
+    setSize(size => (isEqualToSize(size, nextSize) ? size : nextSize));
   }, [isFixed, fixedWidth, fixedHeight]);
 
-  const resizeStyle = { position: 'absolute' };
+  useIsomorphicLayoutEffect(() => {
+    if (prevSize !== size) {
+      if (size) {
+        responseRef.current.onResize(size);
+      }
+    }
+  }, [size]);
 
-  if (isNumber(fixedWidth)) {
-    resizeStyle.width = fixedWidth;
-  }
-  if (isNumber(fixedHeight)) {
-    resizeStyle.height = fixedHeight;
-  }
+  useEffect(() => {
+    if (isFixed) {
+      return;
+    }
 
-  const divStyle = { position: 'relative' };
+    methodsRef.current.calculateSize();
 
-  if (size) {
-    divStyle.width = size.width;
-    divStyle.height = size.height;
-  }
-  if (divProps.style) {
-    Object.assign(divStyle, divProps.style);
-  }
-  divProps.style = divStyle;
+    if (autoResizing && resizeDetector) {
+      const node = resizeRef.current;
+
+      resizeDetector.listenTo(node, () => {
+        methodsRef.current.calculateSize();
+      });
+
+      return () => {
+        resizeDetector.uninstall(node);
+      };
+    }
+  }, [isFixed, autoResizing]);
+
+  const resizeStyle = useMemo(() => {
+    const style = { position: 'absolute' };
+
+    if (isNumber(fixedWidth)) {
+      style.width = fixedWidth;
+    }
+    if (isNumber(fixedHeight)) {
+      style.height = fixedHeight;
+    }
+
+    return style;
+  }, [fixedWidth, fixedHeight]);
 
   let element = typeof children === 'function' ? children(size) : children;
 
   if (!isFixed) {
     element = (
-      <div style={{ position: 'absolute', top: 0, left: 0 }}>
+      <div style={wrapperStyle}>
         <div style={resizeStyle} ref={resizeRef}>
           {element}
         </div>
@@ -108,10 +112,31 @@ function ItemContent(props) {
     );
   }
 
+  const divStyle = useMemo(() => {
+    const style = { position: 'relative' };
+
+    if (size) {
+      style.width = size.width;
+      style.height = size.height;
+    }
+    if (divProps.style) {
+      Object.assign(style, divProps.style);
+    }
+
+    return style;
+  }, [size, divProps.style]);
+
+  divProps.style = divStyle;
+
   return (
     <div {...divProps}>
       <PadContext.Provider
-        value={{ ...context, width: null, height: null, onResize }}
+        value={{
+          ...context,
+          width: null,
+          height: null,
+          onResize: onPadContentResize,
+        }}
       >
         {element}
       </PadContext.Provider>
@@ -120,6 +145,5 @@ function ItemContent(props) {
 }
 
 ItemContent.defaultProps = defaultItemContentProps;
-ItemContent.PadContent = true;
 
 export default ItemContent;

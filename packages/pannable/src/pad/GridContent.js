@@ -1,4 +1,4 @@
-import React, { useContext, useMemo, useCallback } from 'react';
+import React, { useContext, useMemo, useRef } from 'react';
 import { useIsomorphicLayoutEffect } from '../hooks/useIsomorphicLayoutEffect';
 import { usePrevRef } from '../hooks/usePrevRef';
 import { getItemVisibleRect, needsRender } from '../utils/visible';
@@ -6,6 +6,7 @@ import { isEqualToSize, isNumber } from '../utils/geometry';
 import PadContext from './PadContext';
 
 function Item() {}
+function onPadContentResize() {}
 
 const defaultGridContentProps = {
   width: null,
@@ -34,21 +35,25 @@ function GridContent(props) {
     children,
     ...divProps
   } = props;
-
   const fixedWidth = isNumber(width) ? width : context.width;
   const fixedHeight = isNumber(height) ? height : context.height;
-
   const layout = useMemo(
     () =>
       calculateLayout({
         direction,
-        width: fixedWidth,
-        height: fixedHeight,
-        rowSpacing,
-        columnSpacing,
+        size: {
+          width: fixedWidth,
+          height: fixedHeight,
+        },
+        spacing: {
+          row: rowSpacing,
+          column: columnSpacing,
+        },
+        itemSize: {
+          width: itemWidth,
+          height: itemHeight,
+        },
         itemCount,
-        itemWidth,
-        itemHeight,
       }),
     [
       direction,
@@ -56,26 +61,25 @@ function GridContent(props) {
       fixedHeight,
       rowSpacing,
       columnSpacing,
-      itemCount,
       itemWidth,
       itemHeight,
+      itemCount,
     ]
   );
   const prevLayoutRef = usePrevRef(layout);
-
-  const { size, layoutList } = layout;
   const prevLayout = prevLayoutRef.current;
+  const responseRef = useRef({});
 
-  const onResize = useCallback(() => {}, []);
+  responseRef.current.onResize = context.onResize;
 
   useIsomorphicLayoutEffect(() => {
-    context.onResize(size);
-  }, []);
-  useIsomorphicLayoutEffect(() => {
-    if (!isEqualToSize(prevLayout.size, size)) {
-      context.onResize(size);
+    if (
+      prevLayout.size === layout.size ||
+      !isEqualToSize(prevLayout.size, layout.size)
+    ) {
+      responseRef.current.onResize(layout.size);
     }
-  });
+  }, [layout.size]);
 
   function buildItem(attrs) {
     const { rect, itemIndex, visibleRect, needsRender, Item } = attrs;
@@ -110,26 +114,20 @@ function GridContent(props) {
     return (
       <PadContext.Provider
         key={key}
-        value={{ ...context, width: null, height: null, visibleRect, onResize }}
+        value={{
+          ...context,
+          width: null,
+          height: null,
+          visibleRect,
+          onResize: onPadContentResize,
+        }}
       >
         <div style={itemStyle}>{element}</div>
       </PadContext.Provider>
     );
   }
 
-  const elemStyle = { position: 'relative' };
-
-  if (size) {
-    elemStyle.width = size.width;
-    elemStyle.height = size.height;
-  }
-
-  if (divProps.style) {
-    Object.assign(elemStyle, divProps.style);
-  }
-  divProps.style = elemStyle;
-
-  const items = layoutList.map(attrs =>
+  const items = layout.layoutList.map(attrs =>
     buildItem({
       ...attrs,
       visibleRect: getItemVisibleRect(attrs.rect, context.visibleRect),
@@ -142,21 +140,28 @@ function GridContent(props) {
     children(layout);
   }
 
+  const divStyle = useMemo(() => {
+    const style = { position: 'relative', overflow: 'hidden' };
+
+    if (layout.size) {
+      style.width = layout.size.width;
+      style.height = layout.size.height;
+    }
+
+    if (divProps.style) {
+      Object.assign(style, divProps.style);
+    }
+
+    return style;
+  }, [layout.size, divProps.style]);
+
+  divProps.style = divStyle;
+
   return <div {...divProps}>{items}</div>;
 }
 
 function calculateLayout(props) {
-  const {
-    direction,
-    rowSpacing,
-    columnSpacing,
-    itemCount,
-    itemWidth,
-    itemHeight,
-  } = props;
-  const size = { width: props.width, height: props.height };
-  const itemSize = { width: itemWidth, height: itemHeight };
-  const spacing = { row: rowSpacing, column: columnSpacing };
+  const { direction, size, spacing, itemSize, itemCount } = props;
 
   const [x, y, width, height, row, column] =
     direction === 'x'
@@ -242,6 +247,5 @@ function calculateLayout(props) {
 }
 
 GridContent.defaultProps = defaultGridContentProps;
-GridContent.PadContent = true;
 
 export default GridContent;

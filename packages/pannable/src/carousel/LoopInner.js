@@ -1,4 +1,4 @@
-import React, { useMemo, useReducer } from 'react';
+import React, { useMemo, useReducer, useRef } from 'react';
 import ListContent from '../pad/ListContent';
 import { reducer, initialLoopState } from './loopReducer';
 import { useIsomorphicLayoutEffect } from '../hooks/useIsomorphicLayoutEffect';
@@ -6,6 +6,9 @@ import { useIsomorphicLayoutEffect } from '../hooks/useIsomorphicLayoutEffect';
 function LoopInner(props) {
   const { pad, onAdjust, direction, children } = props;
   const [state, dispatch] = useReducer(reducer, initialLoopState);
+  const responseRef = useRef({});
+
+  responseRef.current.onAdjust = onAdjust;
 
   useMemo(() => {
     dispatch({ type: 'syncProps', props: { pad, direction } });
@@ -13,11 +16,9 @@ function LoopInner(props) {
 
   useIsomorphicLayoutEffect(() => {
     if (state.scrollTo) {
-      onAdjust(state.scrollTo);
+      responseRef.current.onAdjust(state.scrollTo);
     }
   }, [state.scrollTo]);
-
-  const element = typeof children === 'function' ? children(state) : children;
 
   return (
     <ListContent
@@ -28,7 +29,7 @@ function LoopInner(props) {
       renderItem={({ Item, itemIndex }) => {
         return (
           <Item key={itemIndex + state.loopOffset} hash="Loop" forceRender>
-            {element}
+            {typeof children === 'function' ? children(state) : children}
           </Item>
         );
       }}

@@ -12,9 +12,11 @@ export const initialCarouselState = {
 export function reducer(state, action) {
   switch (action.type) {
     case 'syncProps':
-      return syncPropsReducer(state, action);
+      return validateReducer(syncPropsReducer(state, action), action);
     case 'scrollToIndex':
       return scrollToIndexReducer(state, action);
+    case 'next':
+      return nextReducer(state, action);
     default:
       return state;
   }
@@ -27,19 +29,38 @@ function syncPropsReducer(state, action) {
   };
 }
 
-function scrollToIndexReducer(state, action) {
-  const { activeIndex, itemCount } = state;
-  const [direction] = state.player.options;
-  const { contentOffset, size } = state.player.pad;
-  const { animated } = action;
-  let { index } = action;
+function validateReducer(state, action) {
+  const { direction, itemCount, activeIndex } = state;
+  const { contentOffset, size } = state.pad;
+  const nextActiveIndex = calculateActiveIndex(
+    contentOffset,
+    size,
+    itemCount,
+    direction
+  );
 
-  if (itemCount === 0) {
-    return state;
+  if (activeIndex !== nextActiveIndex) {
+    return {
+      ...state,
+      activeIndex: nextActiveIndex,
+    };
   }
 
+  return state;
+}
+
+function scrollToIndexReducer(state, action) {
+  const { activeIndex, itemCount, direction, loop } = state;
+  const { contentOffset, size } = state.pad;
+  const { animated } = action.value;
+  let { index } = action.value;
+
   if (typeof index === 'function') {
-    index = index(state);
+    index = index({ activeIndex, itemCount });
+  }
+
+  if (!loop) {
+    index = Math.max(0, Math.min(index, itemCount - 1));
   }
 
   if (index === activeIndex) {
@@ -56,31 +77,30 @@ function scrollToIndexReducer(state, action) {
   return { ...state, scrollTo: { offset, animated } };
 }
 
-function calculatePageIndex(offset, size, cSize, direction) {
+function nextReducer(state, action) {
+  const { activeIndex, itemCount, loop } = state;
+  const { animated } = action;
+  let nextActiveIndex = activeIndex + 1;
+
+  if (!loop) {
+    nextActiveIndex = nextActiveIndex % itemCount;
+  }
+
+  return scrollToIndexReducer(state, {
+    value: { index: nextActiveIndex, animated },
+  });
+}
+
+function calculateActiveIndex(offset, size, itemCount, direction) {
   const [width, x] = direction === 'y' ? ['height', 'y'] : ['width', 'x'];
   const sizeWidth = size[width];
   let index = 0;
 
   if (sizeWidth > 0) {
-    const minOffsetX = Math.min(sizeWidth - cSize[width], 0);
-    const offsetX = Math.max(minOffsetX, Math.min(offset[x], 0));
-
-    index = Math.round(-offsetX / sizeWidth);
+    index = Math.round(-offset[x] / sizeWidth);
   }
 
-  return index;
-}
-
-function calculateItemCount(size, loopWidth, direction) {
-  const width = direction === 'y' ? 'height' : 'width';
-  const sizeWidth = size[width];
-  let count = 0;
-
-  if (sizeWidth > 0) {
-    count = Math.ceil(loopWidth / sizeWidth);
-  }
-
-  return count;
+  return index % itemCount;
 }
 
 function getContentOffsetForIndexOffset(indexOffset, offset, size, direction) {

@@ -139,7 +139,7 @@ export const Overview = () => {
   );
 };
 
-export const LayoutWithGeneralContent = () => {
+export const LayoutWithAutoResizingContent = () => {
   const contentWidth = select(
     'width',
     {
@@ -160,10 +160,10 @@ export const LayoutWithGeneralContent = () => {
 
   return (
     <div className="overview-wrapper">
-      <div className="overview-h1">GeneralContent</div>
+      <div className="overview-h1">AutoResizingContent</div>
       <div className="overview-desc">
-        GeneralContent component is similar to ItemContent and automatically
-        resizes when the data change.
+        AutoResizingContent component is similar to ItemContent and
+        automatically resizes when the data change.
       </div>
       <div className="overview-content">
         <AutoResizing height={500}>
@@ -355,9 +355,9 @@ export const LayoutWithListContent = () => {
 };
 
 export const LayoutWithMultipleNestedContent = () => {
-  const heightForIC = number("ItemContent's height", 68, {});
+  const contentForIC = text("ItemContent's content", 'Try React');
   const contentForGEC = text(
-    "GeneralContent's content",
+    "AutoResizingContent's content",
     ' React has been designed from the start for gradual adoption, and you can use as little or as much React as you need. Whether you want to get a taste of React, add some interactivity to a simple HTML page, or start a complex React-powered app, the links in this section will help you get started.'
   );
   const itemCountForGC = number("GridContent's itemCount", 10, {});
@@ -380,9 +380,9 @@ export const LayoutWithMultipleNestedContent = () => {
                 renderItem={({ itemIndex, Item }) => {
                   if (itemIndex === 0) {
                     return (
-                      <Item hash="ItemContent">
-                        <ItemContent width={width} height={heightForIC}>
-                          <div className="pad-intro">Try React</div>
+                      <Item hash={contentForIC}>
+                        <ItemContent width={width}>
+                          <div className="pad-intro">{contentForIC}</div>
                         </ItemContent>
                       </Item>
                     );
@@ -390,7 +390,7 @@ export const LayoutWithMultipleNestedContent = () => {
 
                   if (itemIndex === 1) {
                     return (
-                      <Item hash="GeneralContent">
+                      <Item hash="AutoResizingContent">
                         <ItemContent width={width} autoResizing>
                           <div className="pad-intro">{contentForGEC}</div>
                         </ItemContent>

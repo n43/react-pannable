@@ -1,10 +1,4 @@
-import React, {
-  useState,
-  useRef,
-  useMemo,
-  useEffect,
-  useCallback,
-} from 'react';
+import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { useIsomorphicLayoutEffect } from './hooks/useIsomorphicLayoutEffect';
 import { usePrevRef } from './hooks/usePrevRef';
 import resizeDetector from './utils/resizeDetector';
@@ -23,90 +17,87 @@ function AutoResizing(props) {
   const prevSize = prevSizeRef.current;
   const resizeRef = useRef();
   const fixed = isNumber(width) && isNumber(height);
+  const responseRef = useRef({});
+  const methodsRef = useRef({
+    calculateSize() {
+      const node = resizeRef.current;
+      const nextSize = {
+        width: node.offsetWidth,
+        height: node.offsetHeight,
+      };
 
-  const calculateSize = useCallback(node => {
-    const size = {
-      width: node.offsetWidth,
-      height: node.offsetHeight,
-    };
+      setSize(size => (isEqualToSize(size, nextSize) ? size : nextSize));
+    },
+  });
 
-    setSize(prevSize => (isEqualToSize(prevSize, size) ? prevSize : size));
-  }, []);
+  responseRef.current.onResize = onResize;
+
+  useMemo(() => {
+    let nextSize = null;
+
+    if (fixed) {
+      nextSize = { width, height };
+    }
+
+    setSize(size => (isEqualToSize(size, nextSize) ? size : nextSize));
+  }, [fixed, width, height]);
 
   useIsomorphicLayoutEffect(() => {
     if (prevSize !== size) {
       if (size) {
-        onResize(size);
+        responseRef.current.onResize(size);
       }
     }
-  });
-
-  useEffect(() => {
-    if (!size) {
-      calculateSize(resizeRef.current);
-    }
-  }, [size, calculateSize]);
+  }, [size]);
 
   useEffect(() => {
     if (fixed) {
       return;
     }
 
+    methodsRef.current.calculateSize();
+
     if (resizeDetector) {
-      const resizeNode = resizeRef.current;
-      resizeDetector.listenTo(resizeNode, calculateSize);
+      const node = resizeRef.current;
+
+      resizeDetector.listenTo(node, () => {
+        methodsRef.current.calculateSize();
+      });
 
       return () => {
-        resizeDetector.uninstall(resizeNode);
+        resizeDetector.uninstall(node);
       };
     }
-  }, [fixed, calculateSize]);
+  }, [fixed]);
 
-  useMemo(() => {
-    let size = null;
+  const divStyle = useMemo(() => {
+    const style = { width: '100%', height: '100%' };
 
-    if (fixed) {
-      size = { width, height };
+    if (isNumber(width)) {
+      style.width = width;
+    }
+    if (isNumber(height)) {
+      style.height = height;
     }
 
-    setSize(prevSize => (isEqualToSize(prevSize, size) ? prevSize : size));
-  }, [fixed, width, height]);
+    if (divProps.style) {
+      Object.assign(style, divProps.style);
+    }
 
-  const resizeStyle = { width: '100%', height: '100%' };
+    return style;
+  }, [width, height, divProps.style]);
 
-  if (isNumber(width)) {
-    resizeStyle.width = width;
-  }
-  if (isNumber(height)) {
-    resizeStyle.height = height;
-  }
-
-  if (!size) {
-    return <div style={resizeStyle} ref={resizeRef}></div>;
-  }
-
-  const divStyle = {
-    width: size.width,
-    height: size.height,
-  };
-  if (divProps.style) {
-    Object.assign(divStyle, divProps.style);
-  }
   divProps.style = divStyle;
 
-  let element = typeof children === 'function' ? children(size) : children;
-
-  element = <div {...divProps}>{element}</div>;
-
-  if (!fixed) {
-    element = (
-      <div style={resizeStyle} ref={resizeRef}>
-        {element}
-      </div>
-    );
-  }
-
-  return element;
+  return (
+    <div {...divProps} ref={resizeRef}>
+      {!size
+        ? null
+        : typeof children === 'function'
+        ? children(size)
+        : children}
+    </div>
+  );
 }
 
 AutoResizing.defaultProps = defaultAutoResizingProps;

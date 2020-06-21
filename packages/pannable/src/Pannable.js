@@ -1,9 +1,12 @@
 import React, { useMemo, useCallback, useRef, useReducer } from 'react';
-import { reducer, initialPannableState } from './pannableReducer';
+import reducer, { initialPannableState } from './pannableReducer';
 import { useIsomorphicLayoutEffect } from './hooks/useIsomorphicLayoutEffect';
 import { usePrevRef } from './hooks/usePrevRef';
 import StyleSheet from './utils/StyleSheet';
-import { addEventListener, removeEventListener } from './utils/eventListener';
+import subscribeEvent from './utils/subscribeEvent';
+
+const supportsTouch =
+  typeof window !== undefined ? 'ontouchstart' in window : false;
 
 const defaultPannableProps = {
   enabled: true,
@@ -29,23 +32,19 @@ function Pannable(props) {
   const prevStateRef = usePrevRef(state);
   const prevState = prevStateRef.current;
   const elemRef = useRef(null);
+  const responseRef = useRef({});
 
-  const innerRef = useRef({});
-  innerRef.current.shouldStart = shouldStart;
-
-  const touchSupported =
-    typeof window !== undefined ? 'ontouchstart' in document : true;
+  responseRef.current = { shouldStart, onStart, onMove, onEnd, onCancel };
 
   const track = useCallback((target, point) => {
-    dispatch({ type: 'track', target, point, now: new Date().getTime() });
+    dispatch({ type: 'track', target, point });
   }, []);
 
   const move = useCallback(point => {
     dispatch({
       type: 'move',
       point,
-      now: new Date().getTime(),
-      shouldStart: innerRef.current.shouldStart,
+      shouldStart: responseRef.current.shouldStart,
     });
   }, []);
 
@@ -61,19 +60,19 @@ function Pannable(props) {
     if (prevState.translation !== state.translation) {
       if (state.translation) {
         if (prevState.translation) {
-          onMove(state);
+          responseRef.current.onMove(state);
         } else {
-          onStart(state);
+          responseRef.current.onStart(state);
         }
       } else if (prevState.translation) {
         if (state.enabled) {
-          onEnd(prevState);
+          responseRef.current.onEnd(prevState);
         } else {
-          onCancel(prevState);
+          responseRef.current.onCancel(prevState);
         }
       }
     }
-  });
+  }, [state]);
 
   const isMoving = !!state.translation;
 
@@ -83,8 +82,8 @@ function Pannable(props) {
     }
 
     if (state.target) {
-      if (touchSupported) {
-        const onTargetTouchMove = evt => {
+      if (supportsTouch) {
+        const onTouchMove = evt => {
           if (isMoving && evt.cancelable) {
             evt.preventDefault();
           }
@@ -97,38 +96,35 @@ function Pannable(props) {
             end();
           }
         };
-        const onTargetTouchEnd = evt => {
+        const onTouchEnd = evt => {
           evt.preventDefault();
 
           end();
         };
 
-        addEventListener(state.target, 'touchmove', onTargetTouchMove, false);
-        addEventListener(state.target, 'touchend', onTargetTouchEnd, false);
-        addEventListener(state.target, 'touchcancel', onTargetTouchEnd, false);
+        const unsubscribeTouchMove = subscribeEvent(
+          state.target,
+          'touchmove',
+          onTouchMove
+        );
+        const unsubscribeTouchEnd = subscribeEvent(
+          state.target,
+          'touchend',
+          onTouchEnd
+        );
+        const unsubscribeTouchCancel = subscribeEvent(
+          state.target,
+          'touchcancel',
+          onTouchEnd
+        );
 
         return () => {
-          removeEventListener(
-            state.target,
-            'touchmove',
-            onTargetTouchMove,
-            false
-          );
-          removeEventListener(
-            state.target,
-            'touchend',
-            onTargetTouchEnd,
-            false
-          );
-          removeEventListener(
-            state.target,
-            'touchcancel',
-            onTargetTouchEnd,
-            false
-          );
+          unsubscribeTouchMove();
+          unsubscribeTouchEnd();
+          unsubscribeTouchCancel();
         };
       } else {
-        const onBodyMouseMove = evt => {
+        const onMouseMove = evt => {
           if (isMoving) {
             evt.preventDefault();
           }
@@ -139,7 +135,7 @@ function Pannable(props) {
             end();
           }
         };
-        const onBodyMouseUp = evt => {
+        const onMouseUp = evt => {
           evt.preventDefault();
 
           end();
@@ -147,18 +143,22 @@ function Pannable(props) {
 
         const body = typeof document !== undefined ? document.body : null;
 
-        addEventListener(body, 'mousemove', onBodyMouseMove, false);
-        addEventListener(body, 'mouseup', onBodyMouseUp, false);
+        const unsubscribeMouseMove = subscribeEvent(
+          body,
+          'mousemove',
+          onMouseMove
+        );
+        const unsubscribeMouseUp = subscribeEvent(body, 'mouseup', onMouseUp);
 
         return () => {
-          removeEventListener(body, 'mousemove', onBodyMouseMove, false);
-          removeEventListener(body, 'mouseup', onBodyMouseUp, false);
+          unsubscribeMouseMove();
+          unsubscribeMouseUp();
         };
       }
     } else {
       const elemNode = elemRef.current;
 
-      if (touchSupported) {
+      if (supportsTouch) {
         const onTouchStart = evt => {
           if (evt.touches.length === 1) {
             const touchEvent = evt.touches[0];
@@ -170,10 +170,14 @@ function Pannable(props) {
           }
         };
 
-        addEventListener(elemNode, 'touchstart', onTouchStart, false);
+        const unsubscribeTouchStart = subscribeEvent(
+          elemNode,
+          'touchstart',
+          onTouchStart
+        );
 
         return () => {
-          removeEventListener(elemNode, 'touchstart', onTouchStart, false);
+          unsubscribeTouchStart();
         };
       } else {
         const onMouseDown = evt => {
@@ -182,10 +186,14 @@ function Pannable(props) {
           }
         };
 
-        addEventListener(elemNode, 'mousedown', onMouseDown, false);
+        const unsubscribeMouseDown = subscribeEvent(
+          elemNode,
+          'mousedown',
+          onMouseDown
+        );
 
         return () => {
-          removeEventListener(elemNode, 'mousedown', onMouseDown, false);
+          unsubscribeMouseDown();
         };
       }
     }

@@ -45,7 +45,7 @@ Some `Infinite` demos
 Some `Pad` demos
 
 - [Overview](https://n43.github.io/react-pannable/?path=/story/pad--overview)
-- [Layout with General Content](https://n43.github.io/react-pannable/?path=/story/pad--layout-with-general-content)
+- [Layout with Auto Resizing Content](https://n43.github.io/react-pannable/?path=/story/pad--layout-with-auto-resizing-content)
 - [Layout with Grid Content](https://n43.github.io/react-pannable/?path=/story/pad--layout-with-grid-content)
 - [Layout with List Content](https://n43.github.io/react-pannable/?path=/story/pad--layout-with-list-content)
 - [Layout with Multiple Nested Content](https://n43.github.io/react-pannable/?path=/story/pad--layout-with-multiple-nested-content)

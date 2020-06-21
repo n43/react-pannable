@@ -1,13 +1,7 @@
-import React, {
-  useEffect,
-  useMemo,
-  useRef,
-  useCallback,
-  useReducer,
-} from 'react';
+import React, { useRef } from 'react';
 import Pad from '../pad/Pad';
+import InfiniteInner from './InfiniteInner';
 import ListContent from '../pad/ListContent';
-import { reducer, initialInfiniteState } from './infiniteReducer';
 
 const defaultInfiniteProps = {
   direction: 'y',
@@ -37,55 +31,21 @@ function Infinite(props) {
     children,
     ...padProps
   } = props;
-  const {
-    width,
-    height,
-    scrollTo: padScrollTo,
-    onContentResize: onPadContentResize,
-    onDecelerationEnd: onPadDecelerationEnd,
-  } = padProps;
-  const [state, dispatch] = useReducer(reducer, initialInfiniteState);
+  const { width, height, renderOverlay } = padProps;
   const listRef = useRef({});
 
-  const onContentResize = useCallback(
-    contentSize => {
-      if (state.scroll) {
-        dispatch({ type: 'scrollRecalculate', list: listRef.current });
-      }
-
-      onPadContentResize(contentSize);
-    },
-    [onPadContentResize, state.scroll]
+  padProps.renderOverlay = (pad, methods) => (
+    <>
+      <InfiniteInner
+        pad={pad}
+        scrollToIndex={scrollToIndex}
+        listRef={listRef}
+        onAdjust={methods._scrollTo}
+        children={children}
+      />
+      {renderOverlay(pad, methods)}
+    </>
   );
-
-  const onDecelerationEnd = useCallback(
-    evt => {
-      if (state.scroll) {
-        dispatch({ type: 'scrollEnd' });
-      }
-
-      onPadDecelerationEnd(evt);
-    },
-    [onPadDecelerationEnd, state.scroll]
-  );
-
-  useMemo(() => {
-    dispatch({ type: 'setScrollTo', value: padScrollTo });
-  }, [padScrollTo]);
-
-  useEffect(() => {
-    if (scrollToIndex) {
-      dispatch({
-        type: 'scrollToIndex',
-        value: scrollToIndex,
-        list: listRef.current,
-      });
-    }
-  }, [scrollToIndex]);
-
-  padProps.scrollTo = state.scrollTo;
-  padProps.onContentResize = onContentResize;
-  padProps.onDecelerationEnd = onDecelerationEnd;
 
   if (direction === 'x') {
     padProps.alwaysBounceY = false;
@@ -95,57 +55,45 @@ function Infinite(props) {
 
   return (
     <Pad {...padProps}>
-      {pad => {
-        const listProps = {
-          width,
-          height,
-          direction,
-          itemCount: 3,
-          renderItem(attrs) {
-            const { itemIndex, Item } = attrs;
+      <ListContent
+        width={width}
+        height={height}
+        direction={direction}
+        itemCount={3}
+        renderItem={attrs => {
+          const { itemIndex, Item } = attrs;
 
-            if (itemIndex === 0) {
-              return renderHeader(attrs);
-            }
-            if (itemIndex === 2) {
-              return renderFooter(attrs);
-            }
+          if (itemIndex === 0) {
+            return renderHeader(attrs);
+          }
+          if (itemIndex === 2) {
+            return renderFooter(attrs);
+          }
 
-            const bodyProps = {
-              width,
-              height,
-              direction,
-              spacing,
-              itemCount,
-              estimatedItemWidth,
-              estimatedItemHeight,
-              renderItem,
-            };
-
-            return (
-              <Item forceRender>
-                <ListContent {...bodyProps}>
-                  {layout => {
-                    listRef.current.body = layout;
-                  }}
-                </ListContent>
-              </Item>
-            );
-          },
-        };
-
-        if (typeof children === 'function') {
-          children({ ...state, pad });
-        }
-
-        return (
-          <ListContent {...listProps}>
-            {layout => {
-              listRef.current.box = layout;
-            }}
-          </ListContent>
-        );
-      }}
+          return (
+            <Item forceRender>
+              <ListContent
+                width={width}
+                height={height}
+                direction={direction}
+                spacing={spacing}
+                itemCount={itemCount}
+                estimatedItemWidth={estimatedItemWidth}
+                estimatedItemHeight={estimatedItemHeight}
+                renderItem={renderItem}
+              >
+                {layout => {
+                  listRef.current.body = layout;
+                }}
+              </ListContent>
+            </Item>
+          );
+        }}
+      >
+        {layout => {
+          listRef.current.box = layout;
+        }}
+      </ListContent>
     </Pad>
   );
 }

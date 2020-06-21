@@ -11,7 +11,7 @@ export const initialPannableState = {
   interval: null,
 };
 
-export function reducer(state, action) {
+export default function reducer(state, action) {
   switch (action.type) {
     case 'syncEnabled':
       return syncEnabledReducer(state, action);
@@ -27,13 +27,15 @@ export function reducer(state, action) {
 }
 
 function syncEnabledReducer(state, action) {
-  if (!action.enabled) {
+  const { enabled } = action;
+
+  if (!enabled) {
     return initialPannableState;
   }
 
   return {
     ...state,
-    enabled: action.enabled,
+    enabled,
   };
 }
 
@@ -57,12 +59,14 @@ function endReducer(state, action) {
 }
 
 function trackReducer(state, action) {
+  const moveTime = new Date().getTime();
+
   return {
     ...state,
     target: action.target,
     startPoint: action.point,
     movePoint: action.point,
-    moveTime: action.now,
+    moveTime,
     translation: null,
     velocity: null,
     interval: null,
@@ -71,12 +75,13 @@ function trackReducer(state, action) {
 
 function moveReducer(state, action) {
   const { target, startPoint, movePoint, moveTime, translation } = state;
-  const { point: nextMovePoint, now: nextMoveTime, shouldStart } = action;
+  const { point: nextMovePoint, shouldStart } = action;
 
   if (!target) {
     return state;
   }
 
+  const nextMoveTime = new Date().getTime();
   const nextInterval = nextMoveTime - moveTime;
   const nextTranslation = {
     x: nextMovePoint.x - startPoint.x,
