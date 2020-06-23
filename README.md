@@ -19,8 +19,6 @@ npm install --save react-pannable
 
 #### [`<Carousel />`](/packages/pannable/docs/carousel.md) - Used to play a number of looping items in sequence
 
-- [`<Player />`](/packages/pannable/docs/player.md) - Used to manage the playback of the paging content
-
 #### [`<Pad />`](/packages/pannable/docs/pad.md) - Handles scrolling of content
 
 - [`<ItemContent />`](/packages/pannable/docs/itemcontent.md) - Displays data with the size best fits the specified size.

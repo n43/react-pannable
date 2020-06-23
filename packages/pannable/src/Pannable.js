@@ -97,7 +97,9 @@ function Pannable(props) {
           }
         };
         const onTouchEnd = evt => {
-          evt.preventDefault();
+          if (isMoving && evt.cancelable) {
+            evt.preventDefault();
+          }
 
           end();
         };
@@ -136,7 +138,9 @@ function Pannable(props) {
           }
         };
         const onMouseUp = evt => {
-          evt.preventDefault();
+          if (isMoving) {
+            evt.preventDefault();
+          }
 
           end();
         };

@@ -38,8 +38,6 @@ class Page extends React.Component {
 
 ## Props
 
-... [`Player`](player.md#props) props
-
 #### `itemCount`: number
 
 The number of items.
