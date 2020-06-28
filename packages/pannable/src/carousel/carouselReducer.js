@@ -63,10 +63,6 @@ function scrollToIndexReducer(state, action) {
     index = Math.max(0, Math.min(index, itemCount - 1));
   }
 
-  if (index === activeIndex) {
-    return state;
-  }
-
   const offset = getContentOffsetForIndexOffset(
     index - activeIndex,
     contentOffset,
