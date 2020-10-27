@@ -1,33 +1,55 @@
 import nodeResolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
-import babel from 'rollup-plugin-babel';
 import replace from '@rollup/plugin-replace';
 import { terser } from 'rollup-plugin-terser';
 
-const env = process.env.NODE_ENV;
+const inputFile = {
+  index: 'es/index.js',
+};
 
-export default {
-  input: 'src/index.js',
-  output: {
-    format: 'umd',
-    name: 'ReactPannable',
-    globals: {
-      react: 'React',
-      'react-dom': 'ReactDOM',
+export default [
+  // UMD Development
+  {
+    input: inputFile,
+    output: {
+      dir: 'dist',
+      entryFileNames: '[name].js',
+      format: 'umd',
+      name: 'ReactPannable',
+      globals: {
+        react: 'React',
+        'react-dom': 'ReactDOM',
+      },
     },
+    external: ['react', 'react-dom'],
+    plugins: [
+      nodeResolve({ browser: true }),
+      commonjs(),
+      replace({
+        'process.env.NODE_ENV': JSON.stringify('development'),
+      }),
+    ],
   },
-  external: ['react', 'react-dom'],
-  plugins: [
-    nodeResolve(),
-    babel({
-      exclude: '**/node_modules/**',
-      runtimeHelpers: true,
-    }),
-    replace({
-      'process.env.NODE_ENV': JSON.stringify(env),
-    }),
-    commonjs(),
-    env === 'production' &&
+  // UMD Production
+  {
+    input: inputFile,
+    output: {
+      dir: 'dist',
+      entryFileNames: '[name].min.js',
+      format: 'umd',
+      name: 'ReactPannable',
+      globals: {
+        react: 'React',
+        'react-dom': 'ReactDOM',
+      },
+    },
+    external: ['react', 'react-dom'],
+    plugins: [
+      nodeResolve({ browser: true }),
+      commonjs(),
+      replace({
+        'process.env.NODE_ENV': JSON.stringify('production'),
+      }),
       terser({
         compress: {
           pure_getters: true,
@@ -36,5 +58,6 @@ export default {
           warnings: false,
         },
       }),
-  ].filter(Boolean),
-};
+    ],
+  },
+];

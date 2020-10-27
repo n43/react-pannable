@@ -23,4 +23,6 @@ function create(styles) {
   return style;
 }
 
-export default { create };
+const StyleSheet = { create };
+
+export default StyleSheet;

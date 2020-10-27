@@ -5,8 +5,8 @@
   "dependencies": {
     "clsx": "^1.1.1",
     "normalize.css": "^8.0.1",
-    "react": "^16.8.3",
-    "react-dom": "^16.8.3",
+    "react": "^16.8.4",
+    "react-dom": "^16.8.4",
     "react-pannable": "^4.0.0"
   },
   "devDependencies": {
