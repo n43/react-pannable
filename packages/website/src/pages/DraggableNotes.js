@@ -6,7 +6,7 @@ import SvgNote from './SvgNote';
 
 const DraggableNotes = () => {
   const panEnabled = true;
-  const cancelsOut = true;
+  const cancelsOut = false;
 
   const [enabled, setEnabled] = useState(true);
   const [drag, setDrag] = useState(null);

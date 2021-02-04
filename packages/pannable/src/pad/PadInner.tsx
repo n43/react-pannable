@@ -1,15 +1,28 @@
-import React, { useEffect, useMemo, useReducer, useRef } from 'react';
-import { reducer, initialPadState } from './padReducer';
 import PadContext from './PadContext';
-import { useIsomorphicLayoutEffect } from '../hooks/useIsomorphicLayoutEffect';
-import { usePrevRef } from '../hooks/usePrevRef';
+import reducer, {
+  initialPadState,
+  PadState,
+  PadEvent,
+  PadMethods,
+  PadScrollTo,
+} from './padReducer';
+import { PannableState } from '../pannableReducer';
+import { XY, Size } from '../interfaces';
 import {
   requestAnimationFrame,
   cancelAnimationFrame,
 } from '../utils/animationFrame';
 import StyleSheet from '../utils/StyleSheet';
+import { useIsomorphicLayoutEffect, usePrevious } from '../utils/hooks';
+import React, {
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useCallback,
+} from 'react';
 
-const backgroundStyle = {
+const backgroundStyle: React.CSSProperties = {
   position: 'absolute',
   top: 0,
   left: 0,
@@ -17,7 +30,25 @@ const backgroundStyle = {
   bottom: 0,
 };
 
-function PadInner(props) {
+export type PadInnerProps = {
+  pannable: PannableState;
+  size: Size;
+  pagingEnabled: boolean;
+  directionalLockEnabled: boolean;
+  alwaysBounce: Record<XY, boolean>;
+  isBoundless: Record<XY, boolean>;
+  onScroll: (evt: PadEvent) => void;
+  dragOnStart: (evt: PadEvent) => void;
+  dragOnEnd: (evt: PadEvent) => void;
+  decelerationOnStart: (evt: PadEvent) => void;
+  decelerationOnEnd: (evt: PadEvent) => void;
+  contentOnResize: (evt: Size) => void;
+  renderBackground: (state: PadState, methods: PadMethods) => React.ReactNode;
+  renderOverlay: (state: PadState, methods: PadMethods) => React.ReactNode;
+  scrollTo: PadScrollTo | null;
+};
+
+const PadInner: React.FC<PadInnerProps> = React.memo(props => {
   const {
     pannable,
     size,
@@ -26,47 +57,50 @@ function PadInner(props) {
     alwaysBounce,
     isBoundless,
     onScroll,
-    onDragStart,
-    onDragEnd,
-    onDecelerationStart,
-    onDecelerationEnd,
-    onContentResize,
+    dragOnStart,
+    dragOnEnd,
+    decelerationOnStart,
+    decelerationOnEnd,
+    contentOnResize,
     renderBackground,
     renderOverlay,
     scrollTo,
     children,
   } = props;
   const [state, dispatch] = useReducer(reducer, initialPadState);
-  const prevStateRef = usePrevRef(state);
-  const prevState = prevStateRef.current;
-  const methodsRef = useRef({
-    _scrollTo(value) {
-      dispatch({ type: 'scrollTo', value });
+  const prevState = usePrevious(state);
+  const methodsRef = useRef<PadMethods>({
+    _scrollTo(value: PadScrollTo) {
+      dispatch({ type: 'scrollTo', payload: { value } });
     },
   });
-  const responseRef = useRef({
-    onPadContentResize(contentSize) {
-      dispatch({ type: 'syncProps', props: { contentSize } });
-    },
-  });
+  const response = {
+    onScroll,
+    dragOnStart,
+    dragOnEnd,
+    decelerationOnStart,
+    decelerationOnEnd,
+    contentOnResize,
+  };
+  const responseRef = useRef(response);
+  responseRef.current = response;
 
-  responseRef.current.onScroll = onScroll;
-  responseRef.current.onDragStart = onDragStart;
-  responseRef.current.onDragEnd = onDragEnd;
-  responseRef.current.onDecelerationStart = onDecelerationStart;
-  responseRef.current.onDecelerationEnd = onDecelerationEnd;
-  responseRef.current.onContentResize = onContentResize;
+  const contextOnResize = useCallback((contentSize: Size) => {
+    dispatch({ type: 'syncProps', payload: { props: { contentSize } } });
+  }, []);
 
   useMemo(() => {
     dispatch({
       type: 'syncProps',
-      props: {
-        size,
-        pannable,
-        alwaysBounce,
-        isBoundless,
-        pagingEnabled,
-        directionalLockEnabled,
+      payload: {
+        props: {
+          size,
+          pannable,
+          alwaysBounce,
+          isBoundless,
+          pagingEnabled,
+          directionalLockEnabled,
+        },
       },
     });
   }, [
@@ -96,10 +130,10 @@ function PadInner(props) {
     }
 
     if (prevState.contentSize !== state.contentSize) {
-      responseRef.current.onContentResize(state.contentSize);
+      responseRef.current.contentOnResize(state.contentSize);
     }
 
-    const output = {
+    const evt: PadEvent = {
       size: state.size,
       contentSize: state.contentSize,
       contentOffset: state.contentOffset,
@@ -109,20 +143,20 @@ function PadInner(props) {
     };
 
     if (prevState.contentOffset !== state.contentOffset) {
-      responseRef.current.onScroll(output);
+      responseRef.current.onScroll(evt);
     }
     if (prevState.drag !== state.drag) {
       if (!prevState.drag) {
-        responseRef.current.onDragStart(output);
+        responseRef.current.dragOnStart(evt);
       } else if (!state.drag) {
-        responseRef.current.onDragEnd(output);
+        responseRef.current.dragOnEnd(evt);
       }
     }
     if (prevState.deceleration !== state.deceleration) {
       if (!prevState.deceleration) {
-        responseRef.current.onDecelerationStart(output);
+        responseRef.current.decelerationOnStart(evt);
       } else if (!state.deceleration) {
-        responseRef.current.onDecelerationEnd(output);
+        responseRef.current.decelerationOnEnd(evt);
       }
     }
 
@@ -173,15 +207,17 @@ function PadInner(props) {
 
   const contextValue = useMemo(
     () => ({
+      width: null,
+      height: null,
       visibleRect: {
         x: -state.contentOffset.x,
         y: -state.contentOffset.y,
         width: state.size.width,
         height: state.size.height,
       },
-      onResize: responseRef.current.onPadContentResize,
+      onResize: contextOnResize,
     }),
-    [state.contentOffset, state.size]
+    [state.contentOffset, state.size, contextOnResize]
   );
 
   return (
@@ -195,6 +231,6 @@ function PadInner(props) {
       {overlayLayer}
     </>
   );
-}
+});
 
 export default PadInner;

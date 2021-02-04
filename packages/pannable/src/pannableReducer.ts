@@ -1,20 +1,41 @@
+import { Action, Point, Time } from './interfaces';
+import { Reducer } from 'react';
+
 const MIN_DISTANCE = 0;
 
-export const initialPannableState = {
+export type PannableState = {
+  enabled: boolean;
+  target: null | EventTarget;
+  translation: null | Point;
+  velocity: null | Point;
+  interval: null | number;
+  startPoint: Point;
+  movePoint: Point;
+  moveTime: Time;
+};
+
+export type PannableEvent = {
+  target: EventTarget;
+  translation: Point;
+  velocity: Point;
+  interval: number;
+};
+
+export const initialPannableState: PannableState = {
   enabled: false,
   target: null,
-  startPoint: null,
-  movePoint: null,
-  moveTime: null,
   translation: null,
   velocity: null,
   interval: null,
+  startPoint: { x: 0, y: 0 },
+  movePoint: { x: 0, y: 0 },
+  moveTime: 0,
 };
 
-export default function reducer(state, action) {
+const reducer: Reducer<PannableState, Action> = (state, action) => {
   switch (action.type) {
-    case 'syncEnabled':
-      return syncEnabledReducer(state, action);
+    case 'setEnabled':
+      return setEnabledReducer(state, action);
     case 'end':
       return endReducer(state, action);
     case 'track':
@@ -24,10 +45,12 @@ export default function reducer(state, action) {
     default:
       return state;
   }
-}
+};
 
-function syncEnabledReducer(state, action) {
-  const { enabled } = action;
+export default reducer;
+
+const setEnabledReducer: Reducer<PannableState, Action> = (state, action) => {
+  const { enabled } = action.payload;
 
   if (!enabled) {
     return initialPannableState;
@@ -37,9 +60,9 @@ function syncEnabledReducer(state, action) {
     ...state,
     enabled,
   };
-}
+};
 
-function endReducer(state, action) {
+const endReducer: Reducer<PannableState, Action<any>> = (state, action) => {
   const { target } = state;
 
   if (!target) {
@@ -49,33 +72,31 @@ function endReducer(state, action) {
   return {
     ...state,
     target: null,
-    startPoint: null,
-    movePoint: null,
-    moveTime: null,
     translation: null,
     velocity: null,
     interval: null,
   };
-}
+};
 
-function trackReducer(state, action) {
+const trackReducer: Reducer<PannableState, Action> = (state, action) => {
+  const { target, point } = action.payload;
   const moveTime = new Date().getTime();
 
   return {
     ...state,
-    target: action.target,
-    startPoint: action.point,
-    movePoint: action.point,
+    target,
+    startPoint: point,
+    movePoint: point,
     moveTime,
     translation: null,
     velocity: null,
     interval: null,
   };
-}
+};
 
-function moveReducer(state, action) {
+const moveReducer: Reducer<PannableState, Action> = (state, action) => {
+  const { point: nextMovePoint, shouldStart } = action.payload;
   const { target, startPoint, movePoint, moveTime, translation } = state;
-  const { point: nextMovePoint, shouldStart } = action;
 
   if (!target) {
     return state;
@@ -97,12 +118,12 @@ function moveReducer(state, action) {
     return {
       ...state,
       target,
-      startPoint,
-      movePoint: nextMovePoint,
-      moveTime: nextMoveTime,
       translation: nextTranslation,
       velocity: nextVelocity,
       interval: nextInterval,
+      startPoint,
+      movePoint: nextMovePoint,
+      moveTime: nextMoveTime,
     };
   }
 
@@ -123,12 +144,12 @@ function moveReducer(state, action) {
     return {
       ...state,
       target,
-      startPoint,
-      movePoint: nextMovePoint,
-      moveTime: nextMoveTime,
       translation: null,
       velocity: null,
       interval: null,
+      startPoint,
+      movePoint: nextMovePoint,
+      moveTime: nextMoveTime,
     };
   }
 
@@ -136,11 +157,11 @@ function moveReducer(state, action) {
   return {
     ...state,
     target,
-    startPoint: nextMovePoint,
-    movePoint: nextMovePoint,
-    moveTime: nextMoveTime,
     translation: { x: 0, y: 0 },
     velocity: nextVelocity,
     interval: nextInterval,
+    startPoint: nextMovePoint,
+    movePoint: nextMovePoint,
+    moveTime: nextMoveTime,
   };
-}
+};

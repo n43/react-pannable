@@ -1,10 +1,23 @@
-import React, { useMemo, useRef, useState } from 'react';
+import { CarouselScrollTo, CarouselEvent } from './carouselReducer';
 import CarouselInner from './CarouselInner';
 import Loop from './Loop';
-import Pad from '../pad/Pad';
-import GridContent from '../pad/GridContent';
+import Pad, { defaultPadProps, PadProps } from '../pad/Pad';
+import GridContent, { GridLayoutAttrs } from '../pad/GridContent';
+import { XY } from '../interfaces';
+import React, { useMemo, useRef, useState, useCallback } from 'react';
 
-const defaultCarouselProps = {
+export interface CarouselProps extends PadProps {
+  direction: XY;
+  itemCount: number;
+  renderItem: (attrs: GridLayoutAttrs) => React.ReactNode;
+  loop?: boolean;
+  autoplayEnabled?: boolean;
+  autoplayInterval?: number;
+  onActiveIndexChange?: (evt: CarouselEvent) => void;
+  scrollToIndex?: CarouselScrollTo | null;
+}
+
+const defaultCarouselProps: CarouselProps = {
   direction: 'x',
   loop: true,
   autoplayEnabled: true,
@@ -13,12 +26,13 @@ const defaultCarouselProps = {
   renderItem: () => null,
   onActiveIndexChange: () => {},
   scrollToIndex: null,
-  ...Pad.defaultProps,
+  ...defaultPadProps,
   pagingEnabled: true,
   directionalLockEnabled: true,
 };
 
-function Carousel(props) {
+const Carousel: React.FC<CarouselProps &
+  React.HTMLAttributes<HTMLDivElement>> = React.memo(props => {
   const {
     direction,
     loop,
@@ -30,36 +44,35 @@ function Carousel(props) {
     scrollToIndex,
     children,
     ...padProps
-  } = props;
+  } = props as Required<CarouselProps> & React.HTMLAttributes<HTMLDivElement>;
   const { width, height, renderOverlay, onMouseEnter, onMouseLeave } = padProps;
   const [autoplay, setAutoplay] = useState(false);
-  const responseRef = useRef({
-    onPadMouseEnter(evt) {
-      setAutoplay(false);
+  const response = { onMouseEnter, onMouseLeave };
+  const responseRef = useRef(response);
+  responseRef.current = response;
 
-      if (responseRef.current.onMouseEnter) {
-        responseRef.current.onMouseEnter(evt);
-      }
-    },
-    onPadMouseLeave(evt) {
-      setAutoplay(true);
+  const padOnMouseEnter = useCallback(evt => {
+    setAutoplay(false);
 
-      if (responseRef.current.onMouseLeave) {
-        responseRef.current.onMouseLeave(evt);
-      }
-    },
-  });
+    if (responseRef.current.onMouseEnter) {
+      responseRef.current.onMouseEnter(evt);
+    }
+  }, []);
+  const padOnMouseLeave = useCallback(evt => {
+    setAutoplay(true);
 
-  responseRef.current.onMouseEnter = onMouseEnter;
-  responseRef.current.onMouseLeave = onMouseLeave;
+    if (responseRef.current.onMouseLeave) {
+      responseRef.current.onMouseLeave(evt);
+    }
+  }, []);
 
   useMemo(() => {
     setAutoplay(autoplayEnabled);
   }, [autoplayEnabled]);
 
   if (autoplayEnabled) {
-    padProps.onMouseEnter = responseRef.current.onPadMouseEnter;
-    padProps.onMouseLeave = responseRef.current.onPadMouseLeave;
+    padProps.onMouseEnter = padOnMouseEnter;
+    padProps.onMouseLeave = padOnMouseLeave;
   }
 
   padProps.renderOverlay = (pad, methods) => (
@@ -107,7 +120,7 @@ function Carousel(props) {
   }
 
   return <Pad {...padProps}>{content}</Pad>;
-}
+});
 
 Carousel.defaultProps = defaultCarouselProps;
 

@@ -1,22 +1,7 @@
-import {
-  useRef,
-  useEffect,
-  useLayoutEffect,
-  EffectCallback,
-  DependencyList,
-} from 'react';
+import { useRef, useEffect, useLayoutEffect } from 'react';
 
-export function useIsomorphicLayoutEffect(
-  effect: EffectCallback,
-  deps?: DependencyList
-) {
-  if (typeof window === 'undefined') {
-    useEffect(effect, deps);
-    return;
-  }
-
-  useLayoutEffect(effect, deps);
-}
+export const useIsomorphicLayoutEffect =
+  typeof window === 'undefined' ? useEffect : useLayoutEffect;
 
 export function usePrevious<T = any>(input: T) {
   const ref = useRef(input);

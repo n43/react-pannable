@@ -1,14 +1,26 @@
-import React, { useMemo, useCallback, useRef, useReducer } from 'react';
-import reducer, { initialPannableState } from './pannableReducer';
-import { useIsomorphicLayoutEffect } from './hooks/useIsomorphicLayoutEffect';
-import { usePrevRef } from './hooks/usePrevRef';
+import reducer, {
+  initialPannableState,
+  PannableEvent,
+} from './pannableReducer';
+import { Point } from './interfaces';
+import { useIsomorphicLayoutEffect, usePrevious } from './utils/hooks';
 import StyleSheet from './utils/StyleSheet';
 import subscribeEvent from './utils/subscribeEvent';
+import React, { useMemo, useRef, useReducer } from 'react';
 
 const supportsTouch =
   typeof window !== undefined ? 'ontouchstart' in window : false;
 
-const defaultPannableProps = {
+export interface PannableProps {
+  enabled?: boolean;
+  shouldStart?: (evt: PannableEvent) => boolean;
+  onStart?: (evt: PannableEvent) => void;
+  onMove?: (evt: PannableEvent) => void;
+  onEnd?: (evt: PannableEvent) => void;
+  onCancel?: (evt: PannableEvent) => void;
+}
+
+export const defaultPannableProps: PannableProps = {
   enabled: true,
   shouldStart: () => true,
   onStart: () => {},
@@ -17,7 +29,8 @@ const defaultPannableProps = {
   onCancel: () => {},
 };
 
-function Pannable(props) {
+const Pannable: React.FC<PannableProps &
+  React.HTMLAttributes<HTMLDivElement>> = React.memo(props => {
   const {
     enabled,
     shouldStart,
@@ -27,63 +40,86 @@ function Pannable(props) {
     onCancel,
     children,
     ...divProps
-  } = props;
+  } = props as Required<PannableProps> & React.HTMLAttributes<HTMLDivElement>;
   const [state, dispatch] = useReducer(reducer, initialPannableState);
-  const prevStateRef = usePrevRef(state);
-  const prevState = prevStateRef.current;
-  const elemRef = useRef(null);
-  const responseRef = useRef({});
+  const prevState = usePrevious(state);
+  const elemRef = useRef<HTMLDivElement>(null);
+  const response = { shouldStart, onStart, onMove, onEnd, onCancel };
+  const responseRef = useRef(response);
+  responseRef.current = response;
 
-  responseRef.current = { shouldStart, onStart, onMove, onEnd, onCancel };
-
-  const track = useCallback((target, point) => {
-    dispatch({ type: 'track', target, point });
-  }, []);
-
-  const move = useCallback(point => {
-    dispatch({
-      type: 'move',
-      point,
-      shouldStart: responseRef.current.shouldStart,
-    });
-  }, []);
-
-  const end = useCallback(() => {
-    dispatch({ type: 'end' });
-  }, []);
+  const isMoving = !!state.translation;
 
   useMemo(() => {
-    dispatch({ type: 'syncEnabled', enabled });
+    dispatch({
+      type: 'setEnabled',
+      payload: { enabled },
+    });
   }, [enabled]);
 
   useIsomorphicLayoutEffect(() => {
     if (prevState.translation !== state.translation) {
       if (state.translation) {
+        const evt: PannableEvent = {
+          translation: state.translation,
+          velocity: state.velocity!,
+          interval: state.interval!,
+          target: state.target!,
+        };
+
         if (prevState.translation) {
-          responseRef.current.onMove(state);
+          responseRef.current.onMove(evt);
         } else {
-          responseRef.current.onStart(state);
+          responseRef.current.onStart(evt);
         }
       } else if (prevState.translation) {
+        const evt: PannableEvent = {
+          translation: prevState.translation,
+          velocity: prevState.velocity!,
+          interval: prevState.interval!,
+          target: prevState.target!,
+        };
+
         if (state.enabled) {
-          responseRef.current.onEnd(prevState);
+          responseRef.current.onEnd(evt);
         } else {
-          responseRef.current.onCancel(prevState);
+          responseRef.current.onCancel(evt);
         }
       }
     }
   }, [state]);
-
-  const isMoving = !!state.translation;
 
   useIsomorphicLayoutEffect(() => {
     if (!state.enabled) {
       return;
     }
 
+    const elemNode = elemRef.current;
+
+    if (!elemNode) {
+      return;
+    }
+
+    const track = (target: EventTarget, point: Point) =>
+      dispatch({
+        type: 'track',
+        payload: { target, point },
+      });
+
+    const move = (point: Point) =>
+      dispatch({
+        type: 'move',
+        payload: {
+          point,
+          shouldStart: responseRef.current.shouldStart,
+        },
+      });
+
+    const end = () => dispatch({ type: 'end', payload: null });
+
     if (state.target) {
       if (supportsTouch) {
-        const onTouchMove = evt => {
+        const onTouchMove = (evt: TouchEvent) => {
           if (isMoving && evt.cancelable) {
             evt.preventDefault();
           }
@@ -96,7 +132,7 @@ function Pannable(props) {
             end();
           }
         };
-        const onTouchEnd = evt => {
+        const onTouchEnd = (evt: TouchEvent) => {
           if (isMoving && evt.cancelable) {
             evt.preventDefault();
           }
@@ -105,17 +141,17 @@ function Pannable(props) {
         };
 
         const unsubscribeTouchMove = subscribeEvent(
-          state.target,
+          elemNode,
           'touchmove',
           onTouchMove
         );
         const unsubscribeTouchEnd = subscribeEvent(
-          state.target,
+          elemNode,
           'touchend',
           onTouchEnd
         );
         const unsubscribeTouchCancel = subscribeEvent(
-          state.target,
+          elemNode,
           'touchcancel',
           onTouchEnd
         );
@@ -126,7 +162,7 @@ function Pannable(props) {
           unsubscribeTouchCancel();
         };
       } else {
-        const onMouseMove = evt => {
+        const onMouseMove = (evt: MouseEvent) => {
           if (isMoving) {
             evt.preventDefault();
           }
@@ -137,7 +173,7 @@ function Pannable(props) {
             end();
           }
         };
-        const onMouseUp = evt => {
+        const onMouseUp = (evt: MouseEvent) => {
           if (isMoving) {
             evt.preventDefault();
           }
@@ -145,7 +181,7 @@ function Pannable(props) {
           end();
         };
 
-        const body = typeof document !== undefined ? document.body : null;
+        const body = document.body;
 
         const unsubscribeMouseMove = subscribeEvent(
           body,
@@ -160,10 +196,8 @@ function Pannable(props) {
         };
       }
     } else {
-      const elemNode = elemRef.current;
-
       if (supportsTouch) {
-        const onTouchStart = evt => {
+        const onTouchStart = (evt: TouchEvent) => {
           if (evt.touches.length === 1) {
             const touchEvent = evt.touches[0];
 
@@ -184,8 +218,8 @@ function Pannable(props) {
           unsubscribeTouchStart();
         };
       } else {
-        const onMouseDown = evt => {
-          if (evt.buttons === 1) {
+        const onMouseDown = (evt: MouseEvent) => {
+          if (evt.buttons === 1 && evt.target) {
             track(evt.target, { x: evt.pageX, y: evt.pageY });
           }
         };
@@ -201,10 +235,10 @@ function Pannable(props) {
         };
       }
     }
-  }, [state.enabled, state.target, isMoving, track, move, end]);
+  }, [state.enabled, state.target, isMoving, dispatch]);
 
   const divStyle = useMemo(() => {
-    const style = {};
+    const style: React.CSSProperties = {};
 
     if (isMoving) {
       Object.assign(
@@ -212,7 +246,7 @@ function Pannable(props) {
         StyleSheet.create({
           touchAction: 'none',
           pointerEvents: 'none',
-          userSelect: 'none',
+          userSelectNone: true,
         })
       );
     }
@@ -226,14 +260,15 @@ function Pannable(props) {
 
   divProps.style = divStyle;
 
-  const element = typeof children === 'function' ? children(state) : children;
+  const element: React.ReactNode =
+    typeof children === 'function' ? children(state) : children;
 
   return (
     <div {...divProps} ref={elemRef}>
       {element}
     </div>
   );
-}
+});
 
 Pannable.defaultProps = defaultPannableProps;
 

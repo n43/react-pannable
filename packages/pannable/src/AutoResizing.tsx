@@ -1,14 +1,14 @@
-import React, { useState, useRef, useMemo, useEffect } from 'react';
+import { Size } from './interfaces';
 import { useIsomorphicLayoutEffect } from './utils/hooks';
 import { getResizeDetector } from './utils/resizeDetector';
-import { isEqualToSize, isNumber, Size } from './utils/geometry';
+import { isEqualToSize, isNumber } from './utils/geometry';
+import React, { useState, useRef, useMemo, useEffect } from 'react';
 
-export type AutoResizingProps = React.HTMLAttributes<HTMLDivElement> & {
-  width: number | null;
-  height: number | null;
-  onResize: (size: Size) => void;
-  children?: (size: Size) => React.ReactNode;
-};
+export interface AutoResizingProps {
+  width?: number | null;
+  height?: number | null;
+  onResize?: (size: Size) => void;
+}
 
 const defaultAutoResizingProps: AutoResizingProps = {
   width: null,
@@ -16,39 +16,33 @@ const defaultAutoResizingProps: AutoResizingProps = {
   onResize: () => {},
 };
 
-const AutoResizing: React.VFC<AutoResizingProps> = props => {
-  const { width, height, onResize, children, ...divProps } = props;
+const AutoResizing: React.FC<AutoResizingProps &
+  React.HTMLAttributes<HTMLDivElement>> = React.memo(props => {
+  const { width, height, onResize, children, ...divProps } = props as Required<
+    AutoResizingProps
+  > &
+    React.HTMLAttributes<HTMLDivElement>;
   const [size, setSize] = useState<Size | null>(null);
   const fixedSize = useMemo(() => {
-    if (isNumber(width) && isNumber(height)) {
-      return {
-        width: width as number,
-        height: height as number,
-      };
+    if (!isNumber(width) || !isNumber(height)) {
+      return null;
     }
 
-    return null;
+    return { width, height } as Size;
   }, [width, height]);
-  const resizeRef = useRef<React.ElementRef<'div'>>(null);
-  const propsRef = useRef(props);
-
-  propsRef.current = props;
+  const resizeRef = useRef<HTMLDivElement>(null);
+  const response = { onResize };
+  const responseRef = useRef(response);
+  responseRef.current = response;
 
   useIsomorphicLayoutEffect(() => {
     if (size) {
-      propsRef.current.onResize(size);
+      responseRef.current.onResize(size);
     }
   }, [size]);
 
   useEffect(() => {
     if (fixedSize) {
-      return;
-    }
-
-    const detector = getResizeDetector();
-    const node = resizeRef.current;
-
-    if (!detector || !node) {
       return;
     }
 
@@ -69,11 +63,18 @@ const AutoResizing: React.VFC<AutoResizingProps> = props => {
 
     calculateSize();
 
-    detector.listenTo(node, calculateSize);
+    const detector = getResizeDetector();
+    const node = resizeRef.current;
 
-    return () => {
-      detector.uninstall(node);
-    };
+    if (detector && node) {
+      detector.listenTo(node, calculateSize);
+
+      return () => {
+        detector.uninstall(node);
+      };
+    }
+
+    return;
   }, [fixedSize]);
 
   useMemo(() => {
@@ -101,16 +102,18 @@ const AutoResizing: React.VFC<AutoResizingProps> = props => {
 
   divProps.style = divStyle;
 
+  let element: React.ReactNode = null;
+
+  if (size) {
+    element = typeof children === 'function' ? children(size) : children;
+  }
+
   return (
     <div {...divProps} ref={resizeRef}>
-      {!size
-        ? null
-        : typeof children === 'function'
-        ? children(size)
-        : children}
+      {element}
     </div>
   );
-};
+});
 
 AutoResizing.defaultProps = defaultAutoResizingProps;
 

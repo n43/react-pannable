@@ -1,41 +1,87 @@
-import React, { useContext, useMemo, useRef, useState } from 'react';
-import { useIsomorphicLayoutEffect } from '../hooks/useIsomorphicLayoutEffect';
-import { usePrevRef } from '../hooks/usePrevRef';
+import PadContext from './PadContext';
+import { XY, WH, Rect, Size } from '../interfaces';
+import { useIsomorphicLayoutEffect, usePrevious } from '../utils/hooks';
 import { getItemVisibleRect, needsRender } from '../utils/visible';
 import { isEqualToSize, isNumber } from '../utils/geometry';
-import PadContext from './PadContext';
+import React, { useContext, useMemo, useRef, useState } from 'react';
 
-function Item() {}
+type Hash = React.ReactText;
 
-const defaultListContentProps = {
+export interface ListItemProps {
+  forceRender?: boolean;
+  hash?: Hash;
+}
+
+type ListLayoutOptions = {
+  direction: XY;
+  size: Record<WH, number | null>;
+  spacing: number;
+  estimatedItemSize: Record<WH, number | ((itemIndex: number) => number)>;
+  itemCount: number;
+};
+
+type ListLayoutItem = {
+  rect: Rect;
+  itemIndex: number;
+  itemHash: Hash;
+  itemSize: Size | null;
+};
+
+export type ListLayoutAttrs = ListLayoutItem & {
+  visibleRect: Rect;
+  needsRender: boolean;
+  Item: React.FC<ListItemProps>;
+};
+
+export type ListLayoutResult = {
+  size: Size;
+  layoutList: ListLayoutItem[];
+};
+
+export interface ListContentProps {
+  direction: XY;
+  itemCount: number;
+  renderItem: (attrs: ListLayoutAttrs) => React.ReactNode;
+  width?: number | null;
+  height?: number | null;
+  spacing?: number;
+  estimatedItemWidth?: number | ((itemIndex: number) => number);
+  estimatedItemHeight?: number | ((itemIndex: number) => number);
+}
+
+const Item: React.FC<ListItemProps> = React.memo(() => null);
+
+const defaultListContentProps: ListContentProps = {
+  direction: 'y',
+  itemCount: 0,
+  renderItem: () => null,
   width: null,
   height: null,
-  direction: 'y',
   spacing: 0,
   estimatedItemWidth: 0,
   estimatedItemHeight: 0,
-  itemCount: 0,
-  renderItem: () => null,
 };
 
-function ListContent(props) {
+const ListContent: React.FC<ListContentProps &
+  React.HTMLAttributes<HTMLDivElement>> = React.memo(props => {
   const context = useContext(PadContext);
   const {
+    direction,
+    itemCount,
+    renderItem,
     width,
     height,
-    direction,
     spacing,
     estimatedItemWidth,
     estimatedItemHeight,
-    itemCount,
-    renderItem,
     children,
     ...divProps
-  } = props;
-  const fixedWidth = isNumber(width) ? width : context.width;
-  const fixedHeight = isNumber(height) ? height : context.height;
-  const [itemHashList, setItemHashList] = useState([]);
-  const [itemSizeDict, setItemSizeDict] = useState({});
+  } = props as Required<ListContentProps> &
+    React.HTMLAttributes<HTMLDivElement>;
+  const fixedWidth = isNumber(width) ? (width as number) : context.width;
+  const fixedHeight = isNumber(height) ? (height as number) : context.height;
+  const [itemHashList, setItemHashList] = useState<Hash[]>([]);
+  const [itemSizeDict, setItemSizeDict] = useState<Record<Hash, Size>>({});
   const layout = useMemo(
     () =>
       calculateLayout(
@@ -67,11 +113,10 @@ function ListContent(props) {
       itemSizeDict,
     ]
   );
-  const prevLayoutRef = usePrevRef(layout);
-  const prevLayout = prevLayoutRef.current;
-  const responseRef = useRef({});
-
-  responseRef.current.onResize = context.onResize;
+  const prevLayout = usePrevious(layout);
+  const response = { onResize: context.onResize };
+  const responseRef = useRef(response);
+  responseRef.current = response;
 
   useIsomorphicLayoutEffect(() => {
     if (
@@ -82,31 +127,33 @@ function ListContent(props) {
     }
   }, [layout.size]);
 
-  const nextItemHashList = [];
+  const nextItemHashList: Hash[] = [];
 
-  function buildItem(attrs) {
+  function buildItem(attrs: ListLayoutAttrs): React.ReactNode {
     const { rect, itemIndex, itemSize, visibleRect, needsRender, Item } = attrs;
     let forceRender = false;
     let element = renderItem(attrs);
 
-    let key = `ListContent_` + itemIndex;
-    let hash;
+    let key: React.ReactText = `ListContent_` + itemIndex;
+    let hash: Hash = '';
 
     if (React.isValidElement(element) && element.type === Item) {
-      if (element.props.forceRender !== undefined) {
-        forceRender = element.props.forceRender;
+      const itemProps: ListItemProps = element.props;
+
+      if (itemProps.forceRender !== undefined) {
+        forceRender = itemProps.forceRender;
       }
       if (element.key) {
         key = element.key;
       }
-      if (element.props.hash !== undefined) {
-        hash = element.props.hash;
+      if (itemProps.hash !== undefined) {
+        hash = itemProps.hash;
       }
 
       element = element.props.children;
     }
 
-    if (hash === undefined) {
+    if (hash === '') {
       hash = key;
     }
 
@@ -122,7 +169,7 @@ function ListContent(props) {
       return null;
     }
 
-    const itemStyle = {
+    const itemStyle: React.CSSProperties = {
       position: 'absolute',
       left: rect.x,
       top: rect.y,
@@ -170,7 +217,10 @@ function ListContent(props) {
   }
 
   const divStyle = useMemo(() => {
-    const style = { position: 'relative', overflow: 'hidden' };
+    const style: React.CSSProperties = {
+      position: 'relative',
+      overflow: 'hidden',
+    };
 
     if (layout.size) {
       style.width = layout.size.width;
@@ -187,16 +237,20 @@ function ListContent(props) {
   divProps.style = divStyle;
 
   return <div {...divProps}>{items}</div>;
-}
+});
 
 ListContent.defaultProps = defaultListContentProps;
 
 export default ListContent;
 
-function calculateLayout(props, itemHashList, itemSizeDict) {
-  const { direction, size, spacing, estimatedItemSize, itemCount } = props;
+function calculateLayout(
+  options: ListLayoutOptions,
+  itemHashList: Hash[],
+  itemSizeDict: Record<Hash, Size>
+): ListLayoutResult {
+  const { direction, size, spacing, estimatedItemSize, itemCount } = options;
 
-  const [x, y, width, height] =
+  const [x, y, width, height]: [XY, XY, WH, WH] =
     direction === 'x'
       ? ['y', 'x', 'height', 'width']
       : ['x', 'y', 'width', 'height'];
@@ -204,31 +258,32 @@ function calculateLayout(props, itemHashList, itemSizeDict) {
   let sizeWidth = 0;
   let sizeHeight = 0;
   const layoutList = [];
-  const fixed = {};
+  const fixed: any = {};
 
   if (isNumber(size[width])) {
-    fixed[width] = size[width];
+    fixed[width] = size[width] as number;
   }
 
   for (let itemIndex = 0; itemIndex < itemCount; itemIndex++) {
     const itemHash = itemHashList[itemIndex] || null;
-    const itemSize = itemSizeDict[itemHash] || null;
+    const itemSize = (itemHash && itemSizeDict[itemHash]) || null;
     const rect = { [x]: 0, [y]: sizeHeight };
 
     if (itemSize) {
       Object.assign(rect, itemSize);
     } else {
+      const eisWidth = estimatedItemSize[width];
+      const eisHeight = estimatedItemSize[height];
+
       rect[width] =
         fixed[width] !== undefined
           ? fixed[width]
-          : typeof estimatedItemSize[width] === 'function'
-          ? estimatedItemSize[width](itemIndex)
-          : estimatedItemSize[width];
+          : typeof eisWidth === 'function'
+          ? eisWidth(itemIndex)
+          : eisWidth;
 
       rect[height] =
-        typeof estimatedItemSize[height] === 'function'
-          ? estimatedItemSize[height](itemIndex)
-          : estimatedItemSize[height];
+        typeof eisHeight === 'function' ? eisHeight(itemIndex) : eisHeight;
     }
 
     layoutList.push({ rect, itemIndex, itemHash, itemSize });
@@ -251,15 +306,15 @@ function calculateLayout(props, itemHashList, itemSizeDict) {
       [height]: fixed[height] !== undefined ? fixed[height] : sizeHeight,
     },
     layoutList,
-  };
+  } as ListLayoutResult;
 }
 
-function isEqualToArray(a1, a2) {
-  if (a1 === a2) {
-    return true;
-  }
+function isEqualToArray(a1: any[], a2: any[]): boolean {
   if (!a1 || !a2) {
     return false;
+  }
+  if (a1 === a2) {
+    return true;
   }
   if (a1.length !== a2.length) {
     return false;

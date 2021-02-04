@@ -1,6 +1,27 @@
-import { initialPadState } from '../pad/padReducer';
+import { XY, WH, Point, Size, Action } from '../interfaces';
+import { initialPadState, PadState, PadScrollTo } from '../pad/padReducer';
+import { Reducer } from 'react';
 
-export const initialCarouselState = {
+export type CarouselEvent = {
+  activeIndex: number;
+  itemCount: number;
+};
+
+export type CarouselScrollTo = {
+  index: number | ((evt: CarouselEvent) => number);
+  animated: boolean;
+};
+
+export type CarouselState = {
+  activeIndex: number;
+  scrollTo: PadScrollTo | null;
+  pad: PadState;
+  direction: XY;
+  loop: boolean;
+  itemCount: number;
+};
+
+export const initialCarouselState: CarouselState = {
   activeIndex: 0,
   scrollTo: null,
   pad: initialPadState,
@@ -9,7 +30,7 @@ export const initialCarouselState = {
   itemCount: 0,
 };
 
-export function reducer(state, action) {
+const reducer: Reducer<CarouselState, Action> = (state, action) => {
   switch (action.type) {
     case 'syncProps':
       return validateReducer(syncPropsReducer(state, action), action);
@@ -20,16 +41,18 @@ export function reducer(state, action) {
     default:
       return state;
   }
-}
+};
 
-function syncPropsReducer(state, action) {
+export default reducer;
+
+const syncPropsReducer: Reducer<CarouselState, Action> = (state, action) => {
   return {
     ...state,
-    ...action.props,
+    ...action.payload.props,
   };
-}
+};
 
-function validateReducer(state, action) {
+const validateReducer: Reducer<CarouselState, Action> = (state, action) => {
   const { direction, itemCount, activeIndex } = state;
   const { contentOffset, size } = state.pad;
   const nextActiveIndex = calculateActiveIndex(
@@ -47,13 +70,16 @@ function validateReducer(state, action) {
   }
 
   return state;
-}
+};
 
-function scrollToIndexReducer(state, action) {
+const scrollToIndexReducer: Reducer<CarouselState, Action> = (
+  state,
+  action
+) => {
   const { activeIndex, itemCount, direction, loop } = state;
   const { contentOffset, size } = state.pad;
-  const { animated } = action.value;
-  let { index } = action.value;
+  const { animated } = action.payload.value;
+  let { index } = action.payload.value;
 
   if (typeof index === 'function') {
     index = index({ activeIndex, itemCount });
@@ -71,11 +97,11 @@ function scrollToIndexReducer(state, action) {
   );
 
   return { ...state, scrollTo: { offset, animated } };
-}
+};
 
-function nextReducer(state, action) {
+const nextReducer: Reducer<CarouselState, Action> = (state, action) => {
   const { activeIndex, itemCount, loop } = state;
-  const { animated } = action;
+  const { animated } = action.payload;
   let nextActiveIndex = activeIndex + 1;
 
   if (!loop) {
@@ -83,12 +109,19 @@ function nextReducer(state, action) {
   }
 
   return scrollToIndexReducer(state, {
-    value: { index: nextActiveIndex, animated },
+    type: 'scrollToIndex',
+    payload: { value: { index: nextActiveIndex, animated } },
   });
-}
+};
 
-function calculateActiveIndex(offset, size, itemCount, direction) {
-  const [width, x] = direction === 'y' ? ['height', 'y'] : ['width', 'x'];
+function calculateActiveIndex(
+  offset: Point,
+  size: Size,
+  itemCount: number,
+  direction: XY
+): number {
+  const [width, x]: [WH, XY] =
+    direction === 'y' ? ['height', 'y'] : ['width', 'x'];
   const sizeWidth = size[width];
   let index = 0;
 
@@ -99,10 +132,15 @@ function calculateActiveIndex(offset, size, itemCount, direction) {
   return index % itemCount;
 }
 
-function getContentOffsetForIndexOffset(indexOffset, offset, size, direction) {
-  const [width, x, y] =
+function getContentOffsetForIndexOffset(
+  indexOffset: number,
+  offset: Point,
+  size: Size,
+  direction: XY
+): Point {
+  const [width, x, y]: [WH, XY, XY] =
     direction === 'y' ? ['height', 'y', 'x'] : ['width', 'x', 'y'];
   const sizeWidth = size[width];
 
-  return { [x]: offset[x] - indexOffset * sizeWidth, [y]: offset[y] };
+  return { [x]: offset[x] - indexOffset * sizeWidth, [y]: offset[y] } as Point;
 }

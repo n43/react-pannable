@@ -1,9 +1,31 @@
-import React, { useRef } from 'react';
-import Pad from '../pad/Pad';
+import { InfiniteScrollTo } from './infiniteReducer';
 import InfiniteInner from './InfiniteInner';
-import ListContent from '../pad/ListContent';
+import { XY, Rect } from '../interfaces';
+import Pad, { defaultPadProps, PadProps } from '../pad/Pad';
+import ListContent, {
+  ListLayoutAttrs,
+  ListLayoutResult,
+} from '../pad/ListContent';
+import React, { useRef, useCallback } from 'react';
 
-const defaultInfiniteProps = {
+type InfiniteLayout = {
+  box?: ListLayoutResult;
+  body?: ListLayoutResult;
+};
+
+export interface InfiniteProps extends PadProps {
+  direction: XY;
+  itemCount: number;
+  renderItem: (attrs: ListLayoutAttrs) => React.ReactNode;
+  spacing?: number;
+  estimatedItemWidth?: 0;
+  estimatedItemHeight?: 0;
+  renderHeader?: (attrs: ListLayoutAttrs) => React.ReactNode;
+  renderFooter?: (attrs: ListLayoutAttrs) => React.ReactNode;
+  scrollToIndex: InfiniteScrollTo | null;
+}
+
+const defaultInfiniteProps: InfiniteProps = {
   direction: 'y',
   spacing: 0,
   itemCount: 0,
@@ -13,11 +35,12 @@ const defaultInfiniteProps = {
   renderHeader: () => null,
   renderFooter: () => null,
   scrollToIndex: null,
-  ...Pad.defaultProps,
+  ...defaultPadProps,
   directionalLockEnabled: true,
 };
 
-function Infinite(props) {
+const Infinite: React.FC<InfiniteProps &
+  React.HTMLAttributes<HTMLDivElement>> = React.memo(props => {
   const {
     direction,
     spacing,
@@ -30,16 +53,38 @@ function Infinite(props) {
     scrollToIndex,
     children,
     ...padProps
-  } = props;
+  } = props as Required<InfiniteProps> & React.HTMLAttributes<HTMLDivElement>;
   const { width, height, renderOverlay } = padProps;
-  const listRef = useRef({});
+  const listRef = useRef<InfiniteLayout>({});
+
+  const calculateRectForIndex = useCallback((index: number): Rect => {
+    const { box, body } = listRef.current;
+    let rect: Rect = { x: 0, y: 0, width: 0, height: 0 };
+
+    if (box) {
+      rect = box.layoutList[1].rect;
+    }
+    if (body) {
+      index = Math.max(0, Math.min(index, body.layoutList.length - 1));
+      const attrs = body.layoutList[index];
+
+      rect = {
+        x: rect.x + attrs.rect.x,
+        y: rect.y + attrs.rect.y,
+        width: attrs.rect.width,
+        height: attrs.rect.height,
+      };
+    }
+
+    return rect;
+  }, []);
 
   padProps.renderOverlay = (pad, methods) => (
     <>
       <InfiniteInner
         pad={pad}
         scrollToIndex={scrollToIndex}
-        listRef={listRef}
+        calculateRectForIndex={calculateRectForIndex}
         onAdjust={methods._scrollTo}
         children={children}
       />
@@ -82,7 +127,7 @@ function Infinite(props) {
                 estimatedItemHeight={estimatedItemHeight}
                 renderItem={renderItem}
               >
-                {layout => {
+                {(layout: ListLayoutResult) => {
                   listRef.current.body = layout;
                 }}
               </ListContent>
@@ -90,13 +135,13 @@ function Infinite(props) {
           );
         }}
       >
-        {layout => {
+        {(layout: ListLayoutResult) => {
           listRef.current.box = layout;
         }}
       </ListContent>
     </Pad>
   );
-}
+});
 
 Infinite.defaultProps = defaultInfiniteProps;
 export default Infinite;

@@ -1,4 +1,4 @@
-export type Size = { width: number; height: number };
+import { Size } from '../interfaces';
 
 export function isEqualToSize(
   s1: Size | undefined | null,
@@ -7,15 +7,14 @@ export function isEqualToSize(
   if (!s1 || !s2) {
     return false;
   }
-
   if (s1 === s2) {
     return true;
   }
-  if (s1.width === s2.width && s1.height === s2.height) {
-    return true;
+  if (s1.width !== s2.width || s1.height !== s2.height) {
+    return false;
   }
 
-  return false;
+  return true;
 }
 
 export function isNumber(n: number | null | undefined) {

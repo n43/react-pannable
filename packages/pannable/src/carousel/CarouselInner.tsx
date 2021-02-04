@@ -1,9 +1,26 @@
+import reducer, {
+  initialCarouselState,
+  CarouselScrollTo,
+  CarouselEvent,
+} from './carouselReducer';
+import { PadState, PadScrollTo } from '../pad/padReducer';
+import { XY } from '../interfaces';
+import { useIsomorphicLayoutEffect, usePrevious } from '../utils/hooks';
 import React, { useMemo, useEffect, useReducer, useRef } from 'react';
-import { reducer, initialCarouselState } from './carouselReducer';
-import { useIsomorphicLayoutEffect } from '../hooks/useIsomorphicLayoutEffect';
-import { usePrevRef } from '../hooks/usePrevRef';
 
-function CarouselInner(props) {
+export interface CarouselInnerProps {
+  pad: PadState;
+  direction: XY;
+  loop: boolean;
+  autoplayEnabled: boolean;
+  autoplayInterval: number;
+  itemCount: number;
+  onActiveIndexChange: (evt: CarouselEvent) => void;
+  onAdjust: (scrollTo: PadScrollTo) => void;
+  scrollToIndex: CarouselScrollTo | null;
+}
+
+const CarouselInner: React.FC<CarouselInnerProps> = React.memo(props => {
   const {
     pad,
     direction,
@@ -17,33 +34,26 @@ function CarouselInner(props) {
     children,
   } = props;
   const [state, dispatch] = useReducer(reducer, initialCarouselState);
-  const prevStateRef = usePrevRef(state);
-  const prevState = prevStateRef.current;
-  const responseRef = useRef({});
-
-  responseRef.current.onActiveIndexChange = onActiveIndexChange;
-  responseRef.current.onAdjust = onAdjust;
+  const prevState = usePrevious(state);
+  const response = { onActiveIndexChange, onAdjust };
+  const responseRef = useRef(response);
+  responseRef.current = response;
 
   useMemo(() => {
     dispatch({
       type: 'syncProps',
-      props: {
-        pad,
-        direction,
-        loop,
-        itemCount,
-      },
+      payload: { props: { pad, direction, loop, itemCount } },
     });
   }, [pad, direction, loop, itemCount]);
 
   useIsomorphicLayoutEffect(() => {
     if (prevState.activeIndex !== state.activeIndex) {
-      const output = {
+      const evt: CarouselEvent = {
         activeIndex: state.activeIndex,
         itemCount: state.itemCount,
       };
 
-      responseRef.current.onActiveIndexChange(output);
+      responseRef.current.onActiveIndexChange(evt);
     }
   }, [state]);
 
@@ -55,7 +65,7 @@ function CarouselInner(props) {
 
   useEffect(() => {
     if (scrollToIndex) {
-      dispatch({ type: 'scrollToIndex', value: scrollToIndex });
+      dispatch({ type: 'scrollToIndex', payload: { value: scrollToIndex } });
     }
   }, [scrollToIndex]);
 
@@ -65,7 +75,7 @@ function CarouselInner(props) {
     }
 
     const timer = setTimeout(() => {
-      dispatch({ type: 'next', animated: true });
+      dispatch({ type: 'next', payload: { animated: true } });
     }, autoplayInterval);
 
     return () => {
@@ -79,6 +89,6 @@ function CarouselInner(props) {
   ]);
 
   return <>{typeof children === 'function' ? children(state) : children}</>;
-}
+});
 
 export default CarouselInner;

@@ -48,7 +48,7 @@
   ],
   "scripts": {
     "clean": "rimraf lib es cjs types dist coverage",
-    "lint": "eslint src",
+    "lint": "eslint --ext ts,tsx src",
     "coverage": "yarn lint",
     "tsc": "tsc",
     "build:es": "babel lib -d es",

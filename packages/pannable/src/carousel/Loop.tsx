@@ -1,0 +1,45 @@
+import LoopInner from './LoopInner';
+import { XY } from '../interfaces';
+import { PadState, PadMethods } from '../pad/padReducer';
+import Pad, { defaultPadProps, PadProps } from '../pad/Pad';
+import React from 'react';
+
+export interface LoopProps extends PadProps {
+  direction: XY;
+}
+
+const defaultLoopProps: LoopProps = {
+  direction: 'x',
+  ...defaultPadProps,
+  directionalLockEnabled: true,
+};
+
+const Loop: React.FC<LoopProps &
+  React.HTMLAttributes<HTMLDivElement>> = React.memo(props => {
+  const { direction, children, ...padProps } = props as Required<LoopProps> &
+    React.HTMLAttributes<HTMLDivElement>;
+
+  if (direction === 'x') {
+    padProps.isBoundlessX = true;
+    padProps.alwaysBounceY = false;
+  } else {
+    padProps.isBoundlessY = true;
+    padProps.alwaysBounceX = false;
+  }
+
+  return (
+    <Pad {...padProps}>
+      {(pad: PadState, methods: PadMethods) => (
+        <LoopInner
+          pad={pad}
+          onAdjust={methods._scrollTo}
+          direction={direction}
+          children={children}
+        />
+      )}
+    </Pad>
+  );
+});
+
+Loop.defaultProps = defaultLoopProps;
+export default Loop;

@@ -1,6 +1,17 @@
-import { initialPadState } from '../pad/padReducer';
+import { XY, WH, Point, Size, Action } from '../interfaces';
+import { initialPadState, PadState, PadScrollTo } from '../pad/padReducer';
+import { Reducer } from 'react';
 
-export const initialLoopState = {
+export type LoopState = {
+  loopCount: number;
+  loopOffset: number;
+  loopWidth: number;
+  scrollTo: PadScrollTo | null;
+  pad: PadState;
+  direction: XY;
+};
+
+export const initialLoopState: LoopState = {
   loopCount: 2,
   loopOffset: 0,
   loopWidth: 0,
@@ -9,23 +20,25 @@ export const initialLoopState = {
   direction: 'x',
 };
 
-export function reducer(state, action) {
+const reducer: Reducer<LoopState, Action> = (state, action) => {
   switch (action.type) {
     case 'syncProps':
       return validateReducer(syncPropsReducer(state, action), action);
     default:
       return state;
   }
-}
+};
 
-function syncPropsReducer(state, action) {
+export default reducer;
+
+const syncPropsReducer: Reducer<LoopState, Action> = (state, action) => {
   return {
     ...state,
-    ...action.props,
+    ...action.payload.props,
   };
-}
+};
 
-function validateReducer(state, action) {
+const validateReducer: Reducer<LoopState, Action> = (state, action) => {
   const { loopCount, loopWidth, loopOffset, direction } = state;
   const { size, contentSize, contentOffset } = state.pad;
 
@@ -62,20 +75,20 @@ function validateReducer(state, action) {
   }
 
   return state;
-}
+};
 
 function getAdjustedContentOffsetForLoop(
-  offset,
-  size,
-  loopWidth,
-  loopCount,
-  direction
-) {
+  offset: Point,
+  size: Size,
+  loopWidth: number,
+  loopCount: number,
+  direction: XY
+): [Point, number] {
   if (loopCount === 1 || loopWidth === 0) {
     return [offset, 0];
   }
 
-  const [width, x, y] =
+  const [width, x, y]: [WH, XY, XY] =
     direction === 'y' ? ['height', 'y', 'x'] : ['width', 'x', 'y'];
 
   const sizeWidth = size[width];
@@ -94,5 +107,5 @@ function getAdjustedContentOffsetForLoop(
   }
   offsetX += loopWidth * delta;
 
-  return [{ [x]: offsetX, [y]: offset[y] }, delta];
+  return [{ [x]: offsetX, [y]: offset[y] } as Point, delta];
 }

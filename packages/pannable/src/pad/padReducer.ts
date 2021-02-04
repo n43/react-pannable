@@ -1,17 +1,66 @@
-import { initialPannableState } from '../pannableReducer';
+import { XY, Point, Size, Rect, Align, Time, Action } from '../interfaces';
+import { initialPannableState, PannableState } from '../pannableReducer';
 import {
   getAdjustedContentVelocity,
   getAdjustedContentOffset,
   getAdjustedBounceOffset,
   getDecelerationEndOffset,
-  createDeceleration,
-  calculateDeceleration,
+  calculateOffsetForRect,
 } from '../utils/motion';
+import { Reducer } from 'react';
 
 const DECELERATION_RATE_STRONG = 0.025;
 const DECELERATION_RATE_WEAK = 0.0025;
 
-export const initialPadState = {
+export type Deceleration = {
+  endOffset: Point;
+  rate: number;
+  duration: number;
+  startTime: Time;
+  points: Record<XY, number[]>;
+};
+
+export type Drag = {
+  startOffset: Point;
+  direction: Point;
+};
+
+export type PadScrollTo = {
+  offset?: Point;
+  point?: Point;
+  rect?: Rect;
+  align?: Record<XY, Align> | Align;
+  animated?: boolean;
+};
+
+export type PadEvent = {
+  size: Size;
+  contentSize: Size;
+  contentOffset: Point;
+  contentVelocity: Point;
+  dragging: boolean;
+  decelerating: boolean;
+};
+
+export type PadMethods = {
+  _scrollTo: (params: PadScrollTo) => void;
+};
+
+export type PadState = {
+  contentOffset: Point;
+  contentVelocity: Point;
+  drag: Drag | null;
+  deceleration: Deceleration | null;
+  size: Size;
+  contentSize: Size;
+  pannable: PannableState;
+  alwaysBounce: Record<XY, boolean>;
+  isBoundless: Record<XY, boolean>;
+  pagingEnabled: boolean;
+  directionalLockEnabled: boolean;
+};
+
+export const initialPadState: PadState = {
   contentOffset: { x: 0, y: 0 },
   contentVelocity: { x: 0, y: 0 },
   drag: null,
@@ -25,7 +74,7 @@ export const initialPadState = {
   directionalLockEnabled: false,
 };
 
-export function reducer(state, action) {
+const reducer: Reducer<PadState, Action> = (state, action) => {
   switch (action.type) {
     case 'syncProps':
       return validateReducer(syncPropsReducer(state, action), action);
@@ -44,16 +93,18 @@ export function reducer(state, action) {
     default:
       return state;
   }
-}
+};
 
-function syncPropsReducer(state, action) {
+export default reducer;
+
+const syncPropsReducer: Reducer<PadState, Action> = (state, action) => {
   return {
     ...state,
-    ...action.props,
+    ...action.payload.props,
   };
-}
+};
 
-function validateReducer(state, action) {
+const validateReducer: Reducer<PadState, Action> = (state, action) => {
   const {
     contentOffset,
     contentVelocity,
@@ -173,13 +224,17 @@ function validateReducer(state, action) {
   }
 
   return state;
-}
+};
 
-function dragStartReducer(state, action) {
+const dragStartReducer: Reducer<PadState, Action> = (state, action) => {
   const { contentOffset, directionalLockEnabled } = state;
   const { velocity } = state.pannable;
 
-  const dragDirection = { x: 1, y: 1 };
+  if (!velocity) {
+    return state;
+  }
+
+  const dragDirection: Point = { x: 1, y: 1 };
 
   if (directionalLockEnabled) {
     if (Math.abs(velocity.x) > Math.abs(velocity.y)) {
@@ -189,7 +244,7 @@ function dragStartReducer(state, action) {
     }
   }
 
-  const nextContentVelocity = {
+  const nextContentVelocity: Point = {
     x: dragDirection.x * velocity.x,
     y: dragDirection.y * velocity.y,
   };
@@ -200,9 +255,9 @@ function dragStartReducer(state, action) {
     drag: { direction: dragDirection, startOffset: contentOffset },
     deceleration: null,
   };
-}
+};
 
-function dragMoveReducer(state, action) {
+const dragMoveReducer: Reducer<PadState, Action> = (state, action) => {
   const {
     contentOffset,
     drag,
@@ -213,7 +268,11 @@ function dragMoveReducer(state, action) {
   } = state;
   const { translation, interval } = state.pannable;
 
-  let nextContentOffset = {
+  if (!drag || !translation || !interval) {
+    return state;
+  }
+
+  let nextContentOffset: Point = {
     x: drag.startOffset.x + drag.direction.x * translation.x,
     y: drag.startOffset.y + drag.direction.y * translation.y,
   };
@@ -226,7 +285,7 @@ function dragMoveReducer(state, action) {
     contentSize
   );
 
-  const nextContentVelocity = {
+  const nextContentVelocity: Point = {
     x: (nextContentOffset.x - contentOffset.x) / interval,
     y: (nextContentOffset.y - contentOffset.y) / interval,
   };
@@ -236,9 +295,9 @@ function dragMoveReducer(state, action) {
     contentOffset: nextContentOffset,
     contentVelocity: nextContentVelocity,
   };
-}
+};
 
-function dragEndReducer(state, action) {
+const dragEndReducer: Reducer<PadState, Action> = (state, action) => {
   const { contentOffset, contentVelocity, size, pagingEnabled } = state;
 
   const decelerationRate = pagingEnabled
@@ -265,10 +324,14 @@ function dragEndReducer(state, action) {
       nextContentVelocity
     ),
   };
-}
+};
 
-function dragCancelReducer(state, action) {
+const dragCancelReducer: Reducer<PadState, Action> = (state, action) => {
   const { contentOffset, contentVelocity, drag, size, pagingEnabled } = state;
+
+  if (!drag) {
+    return state;
+  }
 
   const decelerationRate = DECELERATION_RATE_STRONG;
   const nextContentVelocity = getAdjustedContentVelocity(contentVelocity);
@@ -291,9 +354,9 @@ function dragCancelReducer(state, action) {
       nextContentVelocity
     ),
   };
-}
+};
 
-function decelerateReducer(state, action) {
+const decelerateReducer: Reducer<PadState, Action> = (state, action) => {
   const { deceleration } = state;
 
   if (!deceleration) {
@@ -309,9 +372,9 @@ function decelerateReducer(state, action) {
     drag: null,
     deceleration: didEnd ? null : deceleration,
   };
-}
+};
 
-function scrollToReducer(state, action) {
+const scrollToReducer: Reducer<PadState, Action> = (state, action) => {
   const { drag, contentOffset, size } = state;
   const {
     offset = { x: 0, y: 0 },
@@ -319,7 +382,7 @@ function scrollToReducer(state, action) {
     rect,
     align,
     animated,
-  } = action.value;
+  } = action.payload.value;
   let nextRect = rect;
   const nextAnimated = drag ? false : animated;
 
@@ -340,12 +403,14 @@ function scrollToReducer(state, action) {
 
   return setContentOffsetReducer(state, {
     type: 'setContentOffset',
-    offset: nextOffset,
-    animated: nextAnimated,
+    payload: {
+      offset: nextOffset,
+      animated: nextAnimated,
+    },
   });
-}
+};
 
-function setContentOffsetReducer(state, action) {
+const setContentOffsetReducer: Reducer<PadState, Action> = (state, action) => {
   const {
     contentOffset,
     contentVelocity,
@@ -354,7 +419,7 @@ function setContentOffsetReducer(state, action) {
     size,
     pagingEnabled,
   } = state;
-  const { offset, animated } = action;
+  const { offset, animated } = action.payload;
 
   if (!animated) {
     if (drag) {
@@ -420,46 +485,110 @@ function setContentOffsetReducer(state, action) {
       contentVelocity
     ),
   };
-}
+};
 
-function calculateOffsetForRect(rect, align, cOffset, size, name) {
-  if (name) {
-    const [x, width] = name === 'y' ? ['y', 'height'] : ['x', 'width'];
+export function calculateDeceleration(
+  deceleration: Deceleration
+): {
+  offset: Point;
+  velocity: Point;
+  didEnd: boolean;
+} {
+  const { points, duration, startTime, endOffset } = deceleration;
 
-    let offsetX = -rect[x];
-    let alignX = align[x];
-    const delta = size[width] - rect[width];
+  function calculate(x: XY, t: number): [number, number] {
+    const [p0, p1, p2, p3] = points[x];
+    const offsetX =
+      p0 -
+      3 * (p0 - p1) * t +
+      3 * (p0 - 2 * p1 + p2) * Math.pow(t, 2) -
+      (p0 - 3 * p1 + 3 * p2 - p3) * Math.pow(t, 3);
+    const velocityX =
+      (-3 * (p0 - p1) +
+        6 * (p0 - 2 * p1 + p2) * t -
+        3 * (p0 - 3 * p1 + 3 * p2 - p3) * Math.pow(t, 2)) /
+      duration;
 
-    if (alignX === 'auto') {
-      const direction = delta < 0 ? -1 : 1;
-      const dOffsetX = cOffset[x] - offsetX;
-
-      offsetX +=
-        direction *
-        Math.max(0, Math.min(direction * dOffsetX, direction * delta));
-    } else {
-      if (alignX === 'start') {
-        alignX = 0;
-      } else if (alignX === 'center') {
-        alignX = 0.5;
-      } else if (alignX === 'end') {
-        alignX = 1;
-      } else if (typeof alignX !== 'number' || isNaN(alignX)) {
-        alignX = 0;
-      }
-
-      offsetX += alignX * delta;
-    }
-
-    return offsetX;
+    return [offsetX, velocityX];
   }
 
-  if (typeof align !== 'object') {
-    align = { x: align, y: align };
+  const moveTime = new Date().getTime();
+  let time = 1;
+
+  if (duration > 0) {
+    time = (moveTime - startTime) / duration;
   }
+
+  if (time < 0 || 1 <= time) {
+    return {
+      offset: endOffset,
+      velocity: { x: 0, y: 0 },
+      didEnd: true,
+    };
+  }
+
+  const [xOffset, xVelocity] = calculate('x', time);
+  const [yOffset, yVelocity] = calculate('y', time);
 
   return {
-    x: calculateOffsetForRect(rect, align, cOffset, size, 'x'),
-    y: calculateOffsetForRect(rect, align, cOffset, size, 'y'),
+    offset: { x: xOffset, y: yOffset },
+    velocity: { x: xVelocity, y: yVelocity },
+    didEnd: false,
   };
+}
+
+export function createDeceleration(
+  endOffset: Point,
+  rate: number,
+  startOffset: Point,
+  startVelocity: Point
+): Deceleration {
+  const startTime = new Date().getTime();
+  let duration = 0;
+
+  if (rate <= 0) {
+    throw new Error('Rate needs more than 0.');
+  }
+
+  const s = {
+    x: endOffset.x - startOffset.x,
+    y: endOffset.y - startOffset.y,
+  };
+
+  const sm = Math.sqrt(Math.pow(s.x, 2) + Math.pow(s.y, 2));
+  let vm;
+
+  if (sm) {
+    vm = (startVelocity.x * s.x + startVelocity.y * s.y) / sm;
+
+    let vh = Math.sqrt(0.5 * Math.pow(vm, 2) + rate * sm);
+    let th = (vh - vm) / rate;
+
+    if (th < 0) {
+      vh = vm;
+      th = 0;
+    }
+
+    duration = th + vh / rate;
+  } else {
+    vm = Math.sqrt(Math.pow(startVelocity.x, 2) + Math.pow(startVelocity.y, 2));
+    duration = ((Math.sqrt(2) + 1) * vm) / rate;
+  }
+
+  const points = {
+    x: [
+      startOffset.x,
+      startOffset.x + startVelocity.x * (duration / 3.0),
+      endOffset.x,
+      endOffset.x,
+    ],
+    y: [
+      startOffset.y,
+      startOffset.y + startVelocity.y * (duration / 3.0),
+      endOffset.y,
+      endOffset.y,
+    ],
+  };
+
+  return { endOffset, rate, duration, startTime, points };
 }
