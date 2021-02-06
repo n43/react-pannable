@@ -14,10 +14,11 @@ const defaultLoopProps: LoopProps = {
   directionalLockEnabled: true,
 };
 
-const Loop: React.FC<LoopProps &
-  React.HTMLAttributes<HTMLDivElement>> = React.memo(props => {
+const Loop: React.FC<
+  LoopProps & Omit<React.HTMLAttributes<HTMLDivElement>, 'onScroll'>
+> = React.memo((props) => {
   const { direction, children, ...padProps } = props as Required<LoopProps> &
-    React.HTMLAttributes<HTMLDivElement>;
+    Omit<React.HTMLAttributes<HTMLDivElement>, 'onScroll'>;
 
   if (direction === 'x') {
     padProps.isBoundlessX = true;

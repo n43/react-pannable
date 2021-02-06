@@ -39,8 +39,9 @@ const defaultInfiniteProps: InfiniteProps = {
   directionalLockEnabled: true,
 };
 
-const Infinite: React.FC<InfiniteProps &
-  React.HTMLAttributes<HTMLDivElement>> = React.memo(props => {
+const Infinite: React.FC<
+  InfiniteProps & Omit<React.HTMLAttributes<HTMLDivElement>, 'onScroll'>
+> = React.memo((props) => {
   const {
     direction,
     spacing,
@@ -53,7 +54,8 @@ const Infinite: React.FC<InfiniteProps &
     scrollToIndex,
     children,
     ...padProps
-  } = props as Required<InfiniteProps> & React.HTMLAttributes<HTMLDivElement>;
+  } = props as Required<InfiniteProps> &
+    Omit<React.HTMLAttributes<HTMLDivElement>, 'onScroll'>;
   const { width, height, renderOverlay } = padProps;
   const listRef = useRef<InfiniteLayout>({});
 
@@ -105,7 +107,7 @@ const Infinite: React.FC<InfiniteProps &
         height={height}
         direction={direction}
         itemCount={3}
-        renderItem={attrs => {
+        renderItem={(attrs) => {
           const { itemIndex, Item } = attrs;
 
           if (itemIndex === 0) {

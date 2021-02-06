@@ -19,7 +19,7 @@ export interface PadProps extends PannableProps {
   onEndDragging?: (evt: PadEvent) => void;
   onStartDecelerating?: (evt: PadEvent) => void;
   onEndDecelerating?: (evt: PadEvent) => void;
-  OnResizeContent?: (evt: Size) => void;
+  onResizeContent?: (evt: Size) => void;
   renderBackground?: (state: PadState, methods: PadMethods) => React.ReactNode;
   renderOverlay?: (state: PadState, methods: PadMethods) => React.ReactNode;
   scrollTo?: PadScrollTo | null;
@@ -39,122 +39,121 @@ export const defaultPadProps: PadProps = {
   onEndDragging: () => {},
   onStartDecelerating: () => {},
   onEndDecelerating: () => {},
-  OnResizeContent: () => {},
+  onResizeContent: () => {},
   renderBackground: () => null,
   renderOverlay: () => null,
   scrollTo: null,
   ...defaultPannableProps,
 };
 
-const Pad: React.FC<PadProps &
-  Omit<React.HTMLAttributes<HTMLDivElement>, 'onScroll'>> = React.memo(
-  props => {
-    const {
-      width,
-      height,
-      pagingEnabled,
-      directionalLockEnabled,
-      alwaysBounceX,
-      alwaysBounceY,
-      isBoundlessX,
-      isBoundlessY,
-      onScroll,
-      onStartDragging,
-      onEndDragging,
-      onStartDecelerating,
-      onEndDecelerating,
-      OnResizeContent,
-      renderBackground,
-      renderOverlay,
-      scrollTo,
-      children,
-      ...pannableProps
-    } = props as Required<PadProps> &
-      Omit<React.HTMLAttributes<HTMLDivElement>, 'onScroll'>;
-    const size = useMemo(() => ({ width, height }), [width, height]);
-    const alwaysBounce = useMemo(
-      () => ({
-        x: alwaysBounceX,
-        y: alwaysBounceY,
-      }),
-      [alwaysBounceX, alwaysBounceY]
-    );
-    const isBoundless = useMemo(
-      () => ({
-        x: isBoundlessX,
-        y: isBoundlessY,
-      }),
-      [isBoundlessX, isBoundlessY]
-    );
-    const stateRef = useRef<PadState>();
-    const delegate = { shouldStart: pannableProps.shouldStart };
-    const delegateRef = useRef(delegate);
-    delegateRef.current = delegate;
+const Pad: React.FC<
+  PadProps & Omit<React.HTMLAttributes<HTMLDivElement>, 'onScroll'>
+> = React.memo((props) => {
+  const {
+    width,
+    height,
+    pagingEnabled,
+    directionalLockEnabled,
+    alwaysBounceX,
+    alwaysBounceY,
+    isBoundlessX,
+    isBoundlessY,
+    onScroll,
+    onStartDragging,
+    onEndDragging,
+    onStartDecelerating,
+    onEndDecelerating,
+    onResizeContent,
+    renderBackground,
+    renderOverlay,
+    scrollTo,
+    children,
+    ...pannableProps
+  } = props as Required<PadProps> &
+    Omit<React.HTMLAttributes<HTMLDivElement>, 'onScroll'>;
+  const size = useMemo(() => ({ width, height }), [width, height]);
+  const alwaysBounce = useMemo(
+    () => ({
+      x: alwaysBounceX,
+      y: alwaysBounceY,
+    }),
+    [alwaysBounceX, alwaysBounceY]
+  );
+  const isBoundless = useMemo(
+    () => ({
+      x: isBoundlessX,
+      y: isBoundlessY,
+    }),
+    [isBoundlessX, isBoundlessY]
+  );
+  const stateRef = useRef<PadState>();
+  const delegate = { shouldStart: pannableProps.shouldStart };
+  const delegateRef = useRef(delegate);
+  delegateRef.current = delegate;
 
-    const pannableShouldStart = useCallback(evt => {
-      const state = stateRef.current;
+  const pannableShouldStart = useCallback((evt) => {
+    const state = stateRef.current;
 
-      if (!state) {
-        return false;
-      }
-      if (!shouldStartDrag(evt.velocity, state.size, state.contentSize)) {
-        return false;
-      }
+    if (!state) {
+      return false;
+    }
+    if (!shouldStartDrag(evt.velocity, state.size, state.contentSize)) {
+      return false;
+    }
 
-      return delegateRef.current.shouldStart(evt);
-    }, []);
+    return delegateRef.current.shouldStart(evt);
+  }, []);
 
-    const pannableStyle = useMemo(() => {
-      const style: React.CSSProperties = {
-        overflow: 'hidden',
-        position: 'relative',
-        width: size.width,
-        height: size.height,
-      };
+  const pannableStyle = useMemo(() => {
+    const style: React.CSSProperties = {
+      overflow: 'hidden',
+      position: 'relative',
+      width: size.width,
+      height: size.height,
+    };
 
-      if (pannableProps.style) {
-        Object.assign(style, pannableProps.style);
-      }
+    if (pannableProps.style) {
+      Object.assign(style, pannableProps.style);
+    }
 
-      return style;
-    }, [size, pannableProps.style]);
+    return style;
+  }, [size, pannableProps.style]);
 
-    pannableProps.shouldStart = pannableShouldStart;
-    pannableProps.style = pannableStyle;
+  pannableProps.shouldStart = pannableShouldStart;
+  pannableProps.style = pannableStyle;
 
-    return (
-      <Pannable {...pannableProps}>
-        {(pannable: PannableState) => (
-          <PadInner
-            pannable={pannable}
-            size={size}
-            pagingEnabled={pagingEnabled}
-            directionalLockEnabled={directionalLockEnabled}
-            alwaysBounce={alwaysBounce}
-            isBoundless={isBoundless}
-            onScroll={onScroll}
-            onStartDragging={onStartDragging}
-            onEndDragging={onEndDragging}
-            onStartDecelerating={onStartDecelerating}
-            onEndDecelerating={onEndDecelerating}
-            OnResizeContent={OnResizeContent}
-            renderBackground={renderBackground}
-            renderOverlay={renderOverlay}
-            scrollTo={scrollTo}
-          >
-            {(state: PadState, methods: PadMethods) => {
-              stateRef.current = state;
+  return (
+    <Pannable {...pannableProps}>
+      {(pannable: PannableState) => (
+        <PadInner
+          pannable={pannable}
+          size={size}
+          pagingEnabled={pagingEnabled}
+          directionalLockEnabled={directionalLockEnabled}
+          alwaysBounce={alwaysBounce}
+          isBoundless={isBoundless}
+          onScroll={onScroll}
+          onStartDragging={onStartDragging}
+          onEndDragging={onEndDragging}
+          onStartDecelerating={onStartDecelerating}
+          onEndDecelerating={onEndDecelerating}
+          onResizeContent={onResizeContent}
+          renderBackground={renderBackground}
+          renderOverlay={renderOverlay}
+          scrollTo={scrollTo}
+        >
+          {(state: PadState, methods: PadMethods) => {
+            stateRef.current = state;
 
-              return typeof children === 'function'
-                ? children(state, methods)
-                : children;
-            }}
-          </PadInner>
-        )}
-      </Pannable>
-    );
-  }
-);
+            return typeof children === 'function'
+              ? children(state, methods)
+              : children;
+          }}
+        </PadInner>
+      )}
+    </Pannable>
+  );
+});
 
 Pad.defaultProps = defaultPadProps;
 

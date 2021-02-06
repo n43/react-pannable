@@ -31,8 +31,9 @@ const defaultCarouselProps: CarouselProps = {
   directionalLockEnabled: true,
 };
 
-const Carousel: React.FC<CarouselProps &
-  React.HTMLAttributes<HTMLDivElement>> = React.memo(props => {
+const Carousel: React.FC<
+  CarouselProps & Omit<React.HTMLAttributes<HTMLDivElement>, 'onScroll'>
+> = React.memo((props) => {
   const {
     direction,
     loop,
@@ -44,21 +45,22 @@ const Carousel: React.FC<CarouselProps &
     scrollToIndex,
     children,
     ...padProps
-  } = props as Required<CarouselProps> & React.HTMLAttributes<HTMLDivElement>;
+  } = props as Required<CarouselProps> &
+    Omit<React.HTMLAttributes<HTMLDivElement>, 'onScroll'>;
   const { width, height, renderOverlay, onMouseEnter, onMouseLeave } = padProps;
   const [autoplay, setAutoplay] = useState(false);
   const delegate = { onMouseEnter, onMouseLeave };
   const delegateRef = useRef(delegate);
   delegateRef.current = delegate;
 
-  const padOnMouseEnter = useCallback(evt => {
+  const padOnMouseEnter = useCallback((evt) => {
     setAutoplay(false);
 
     if (delegateRef.current.onMouseEnter) {
       delegateRef.current.onMouseEnter(evt);
     }
   }, []);
-  const padOnMouseLeave = useCallback(evt => {
+  const padOnMouseLeave = useCallback((evt) => {
     setAutoplay(true);
 
     if (delegateRef.current.onMouseLeave) {

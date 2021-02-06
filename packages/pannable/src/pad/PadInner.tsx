@@ -42,13 +42,13 @@ export type PadInnerProps = {
   onEndDragging: (evt: PadEvent) => void;
   onStartDecelerating: (evt: PadEvent) => void;
   onEndDecelerating: (evt: PadEvent) => void;
-  OnResizeContent: (evt: Size) => void;
+  onResizeContent: (evt: Size) => void;
   renderBackground: (state: PadState, methods: PadMethods) => React.ReactNode;
   renderOverlay: (state: PadState, methods: PadMethods) => React.ReactNode;
   scrollTo: PadScrollTo | null;
 };
 
-const PadInner: React.FC<PadInnerProps> = React.memo(props => {
+const PadInner: React.FC<PadInnerProps> = React.memo((props) => {
   const {
     pannable,
     size,
@@ -61,7 +61,7 @@ const PadInner: React.FC<PadInnerProps> = React.memo(props => {
     onEndDragging,
     onStartDecelerating,
     onEndDecelerating,
-    OnResizeContent,
+    onResizeContent,
     renderBackground,
     renderOverlay,
     scrollTo,
@@ -80,7 +80,7 @@ const PadInner: React.FC<PadInnerProps> = React.memo(props => {
     onEndDragging,
     onStartDecelerating,
     onEndDecelerating,
-    OnResizeContent,
+    onResizeContent,
   };
   const delegateRef = useRef(delegate);
   delegateRef.current = delegate;
@@ -130,7 +130,7 @@ const PadInner: React.FC<PadInnerProps> = React.memo(props => {
     }
 
     if (prevState.contentSize !== state.contentSize) {
-      delegateRef.current.OnResizeContent(state.contentSize);
+      delegateRef.current.onResizeContent(state.contentSize);
     }
 
     const evt: PadEvent = {
