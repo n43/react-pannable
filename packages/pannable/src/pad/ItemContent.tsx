@@ -58,14 +58,14 @@ const ItemContent: React.FC<ItemContentProps &
   const [size, setSize] = useState<Size | null>(null);
   const prevSize = usePrevious(size);
   const resizeRef = useRef<HTMLDivElement>(null);
-  const response = { onResize: context.onResize };
-  const responseRef = useRef(response);
-  responseRef.current = response;
+  const delegate = { onResize: context.onResize };
+  const delegateRef = useRef(delegate);
+  delegateRef.current = delegate;
 
   useIsomorphicLayoutEffect(() => {
     if (prevSize !== size) {
       if (size) {
-        responseRef.current.onResize(size);
+        delegateRef.current.onResize(size);
       }
     }
   }, [size]);

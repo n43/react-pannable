@@ -38,11 +38,11 @@ export type PadInnerProps = {
   alwaysBounce: Record<XY, boolean>;
   isBoundless: Record<XY, boolean>;
   onScroll: (evt: PadEvent) => void;
-  dragOnStart: (evt: PadEvent) => void;
-  dragOnEnd: (evt: PadEvent) => void;
-  decelerationOnStart: (evt: PadEvent) => void;
-  decelerationOnEnd: (evt: PadEvent) => void;
-  contentOnResize: (evt: Size) => void;
+  onStartDragging: (evt: PadEvent) => void;
+  onEndDragging: (evt: PadEvent) => void;
+  onStartDecelerating: (evt: PadEvent) => void;
+  onEndDecelerating: (evt: PadEvent) => void;
+  OnResizeContent: (evt: Size) => void;
   renderBackground: (state: PadState, methods: PadMethods) => React.ReactNode;
   renderOverlay: (state: PadState, methods: PadMethods) => React.ReactNode;
   scrollTo: PadScrollTo | null;
@@ -57,11 +57,11 @@ const PadInner: React.FC<PadInnerProps> = React.memo(props => {
     alwaysBounce,
     isBoundless,
     onScroll,
-    dragOnStart,
-    dragOnEnd,
-    decelerationOnStart,
-    decelerationOnEnd,
-    contentOnResize,
+    onStartDragging,
+    onEndDragging,
+    onStartDecelerating,
+    onEndDecelerating,
+    OnResizeContent,
     renderBackground,
     renderOverlay,
     scrollTo,
@@ -74,18 +74,18 @@ const PadInner: React.FC<PadInnerProps> = React.memo(props => {
       dispatch({ type: 'scrollTo', payload: { value } });
     },
   });
-  const response = {
+  const delegate = {
     onScroll,
-    dragOnStart,
-    dragOnEnd,
-    decelerationOnStart,
-    decelerationOnEnd,
-    contentOnResize,
+    onStartDragging,
+    onEndDragging,
+    onStartDecelerating,
+    onEndDecelerating,
+    OnResizeContent,
   };
-  const responseRef = useRef(response);
-  responseRef.current = response;
+  const delegateRef = useRef(delegate);
+  delegateRef.current = delegate;
 
-  const contextOnResize = useCallback((contentSize: Size) => {
+  const contentOnResize = useCallback((contentSize: Size) => {
     dispatch({ type: 'syncProps', payload: { props: { contentSize } } });
   }, []);
 
@@ -130,7 +130,7 @@ const PadInner: React.FC<PadInnerProps> = React.memo(props => {
     }
 
     if (prevState.contentSize !== state.contentSize) {
-      responseRef.current.contentOnResize(state.contentSize);
+      delegateRef.current.OnResizeContent(state.contentSize);
     }
 
     const evt: PadEvent = {
@@ -143,20 +143,20 @@ const PadInner: React.FC<PadInnerProps> = React.memo(props => {
     };
 
     if (prevState.contentOffset !== state.contentOffset) {
-      responseRef.current.onScroll(evt);
+      delegateRef.current.onScroll(evt);
     }
     if (prevState.drag !== state.drag) {
       if (!prevState.drag) {
-        responseRef.current.dragOnStart(evt);
+        delegateRef.current.onStartDragging(evt);
       } else if (!state.drag) {
-        responseRef.current.dragOnEnd(evt);
+        delegateRef.current.onEndDragging(evt);
       }
     }
     if (prevState.deceleration !== state.deceleration) {
       if (!prevState.deceleration) {
-        responseRef.current.decelerationOnStart(evt);
+        delegateRef.current.onStartDecelerating(evt);
       } else if (!state.deceleration) {
-        responseRef.current.decelerationOnEnd(evt);
+        delegateRef.current.onEndDecelerating(evt);
       }
     }
 
@@ -215,9 +215,9 @@ const PadInner: React.FC<PadInnerProps> = React.memo(props => {
         width: state.size.width,
         height: state.size.height,
       },
-      onResize: contextOnResize,
+      onResize: contentOnResize,
     }),
-    [state.contentOffset, state.size, contextOnResize]
+    [state.contentOffset, state.size, contentOnResize]
   );
 
   return (

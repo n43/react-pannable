@@ -35,9 +35,9 @@ const CarouselInner: React.FC<CarouselInnerProps> = React.memo(props => {
   } = props;
   const [state, dispatch] = useReducer(reducer, initialCarouselState);
   const prevState = usePrevious(state);
-  const response = { onActiveIndexChange, onAdjust };
-  const responseRef = useRef(response);
-  responseRef.current = response;
+  const delegate = { onActiveIndexChange, onAdjust };
+  const delegateRef = useRef(delegate);
+  delegateRef.current = delegate;
 
   useMemo(() => {
     dispatch({
@@ -53,13 +53,13 @@ const CarouselInner: React.FC<CarouselInnerProps> = React.memo(props => {
         itemCount: state.itemCount,
       };
 
-      responseRef.current.onActiveIndexChange(evt);
+      delegateRef.current.onActiveIndexChange(evt);
     }
   }, [state]);
 
   useIsomorphicLayoutEffect(() => {
     if (state.scrollTo) {
-      responseRef.current.onAdjust(state.scrollTo);
+      delegateRef.current.onAdjust(state.scrollTo);
     }
   }, [state.scrollTo]);
 

@@ -44,9 +44,9 @@ const Pannable: React.FC<PannableProps &
   const [state, dispatch] = useReducer(reducer, initialPannableState);
   const prevState = usePrevious(state);
   const elemRef = useRef<HTMLDivElement>(null);
-  const response = { shouldStart, onStart, onMove, onEnd, onCancel };
-  const responseRef = useRef(response);
-  responseRef.current = response;
+  const delegate = { shouldStart, onStart, onMove, onEnd, onCancel };
+  const delegateRef = useRef(delegate);
+  delegateRef.current = delegate;
 
   const isMoving = !!state.translation;
 
@@ -68,9 +68,9 @@ const Pannable: React.FC<PannableProps &
         };
 
         if (prevState.translation) {
-          responseRef.current.onMove(evt);
+          delegateRef.current.onMove(evt);
         } else {
-          responseRef.current.onStart(evt);
+          delegateRef.current.onStart(evt);
         }
       } else if (prevState.translation) {
         const evt: PannableEvent = {
@@ -81,9 +81,9 @@ const Pannable: React.FC<PannableProps &
         };
 
         if (state.enabled) {
-          responseRef.current.onEnd(evt);
+          delegateRef.current.onEnd(evt);
         } else {
-          responseRef.current.onCancel(evt);
+          delegateRef.current.onCancel(evt);
         }
       }
     }
@@ -111,7 +111,7 @@ const Pannable: React.FC<PannableProps &
         type: 'move',
         payload: {
           point,
-          shouldStart: responseRef.current.shouldStart,
+          shouldStart: delegateRef.current.shouldStart,
         },
       });
 

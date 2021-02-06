@@ -47,22 +47,22 @@ const Carousel: React.FC<CarouselProps &
   } = props as Required<CarouselProps> & React.HTMLAttributes<HTMLDivElement>;
   const { width, height, renderOverlay, onMouseEnter, onMouseLeave } = padProps;
   const [autoplay, setAutoplay] = useState(false);
-  const response = { onMouseEnter, onMouseLeave };
-  const responseRef = useRef(response);
-  responseRef.current = response;
+  const delegate = { onMouseEnter, onMouseLeave };
+  const delegateRef = useRef(delegate);
+  delegateRef.current = delegate;
 
   const padOnMouseEnter = useCallback(evt => {
     setAutoplay(false);
 
-    if (responseRef.current.onMouseEnter) {
-      responseRef.current.onMouseEnter(evt);
+    if (delegateRef.current.onMouseEnter) {
+      delegateRef.current.onMouseEnter(evt);
     }
   }, []);
   const padOnMouseLeave = useCallback(evt => {
     setAutoplay(true);
 
-    if (responseRef.current.onMouseLeave) {
-      responseRef.current.onMouseLeave(evt);
+    if (delegateRef.current.onMouseLeave) {
+      delegateRef.current.onMouseLeave(evt);
     }
   }, []);
 

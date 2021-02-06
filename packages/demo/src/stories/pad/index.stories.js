@@ -82,20 +82,20 @@ export const Overview = () => {
   const plaidRowCount = number("Plaid's rowCount", 20, {});
   const plaidColumnCount = number("Plaid's columnCount", 20, {});
 
-  const onDragStart = useCallback(evt => {
-    console.log('onDragStart', evt);
+  const onStartDragging = useCallback(evt => {
+    console.log('onStartDragging', evt);
   }, []);
-  const onDragEnd = useCallback(evt => {
-    console.log('onDragEnd', evt);
+  const onEndDragging = useCallback(evt => {
+    console.log('onEndDragging', evt);
   }, []);
-  const onDecelerationStart = useCallback(evt => {
-    console.log('onDecelerationStart', evt);
+  const onStartDecelerating = useCallback(evt => {
+    console.log('onStartDecelerating', evt);
   }, []);
-  const onDecelerationEnd = useCallback(evt => {
-    console.log('onDecelerationEnd', evt);
+  const onEndDecelerating = useCallback(evt => {
+    console.log('onEndDecelerating', evt);
   }, []);
-  const onContentResize = useCallback(evt => {
-    console.log('onContentResize', evt);
+  const onResizeContent = useCallback(evt => {
+    console.log('onResizeContent', evt);
   }, []);
 
   return (
@@ -119,11 +119,11 @@ export const Overview = () => {
               alwaysBounceY={alwaysBounceY}
               enabled={enabled}
               scrollTo={scrollTo}
-              onDragStart={onDragStart}
-              onDragEnd={onDragEnd}
-              onDecelerationStart={onDecelerationStart}
-              onDecelerationEnd={onDecelerationEnd}
-              onContentResize={onContentResize}
+              onStartDragging={onStartDragging}
+              onEndDragging={onEndDragging}
+              onStartDecelerating={onStartDecelerating}
+              onEndDecelerating={onEndDecelerating}
+              onResizeContent={onResizeContent}
             >
               <ItemContent autoResizing>
                 <Plaid
@@ -281,8 +281,8 @@ export const LayoutWithListContent = () => {
   const estimatedItemHeight = number('estimatedItemHeight', 100, {}, 'props');
   const itemCount = number('itemCount', 100, {}, 'props');
 
-  const onContentResize = useCallback(evt => {
-    console.log('onContentResize', evt);
+  const onResizeContent = useCallback(evt => {
+    console.log('onResizeContent', evt);
   }, []);
 
   return (
@@ -304,7 +304,7 @@ export const LayoutWithListContent = () => {
                 height={height}
                 alwaysBounceX={false}
                 alwaysBounceY={false}
-                onContentResize={onContentResize}
+                onResizeContent={onResizeContent}
               >
                 <ListContent
                   width={listWidth}

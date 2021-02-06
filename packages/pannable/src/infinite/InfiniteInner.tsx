@@ -24,9 +24,9 @@ const InfiniteInner: React.FC<InfiniteInnerProps> = React.memo(props => {
   } = props;
   const [state, dispatch] = useReducer(reducer, initialInfiniteState);
   const prevState = usePrevious(state);
-  const response = { onAdjust, calculateRectForIndex };
-  const responseRef = useRef(response);
-  responseRef.current = response;
+  const delegate = { onAdjust, calculateRectForIndex };
+  const delegateRef = useRef(delegate);
+  delegateRef.current = delegate;
 
   useMemo(() => {
     dispatch({ type: 'syncProps', payload: { props: { pad } } });
@@ -35,7 +35,7 @@ const InfiniteInner: React.FC<InfiniteInnerProps> = React.memo(props => {
   useIsomorphicLayoutEffect(() => {
     if (state.scroll) {
       if (prevState.pad.contentSize !== state.pad.contentSize) {
-        const rect = responseRef.current.calculateRectForIndex(
+        const rect = delegateRef.current.calculateRectForIndex(
           state.scroll.index
         );
 
@@ -51,13 +51,13 @@ const InfiniteInner: React.FC<InfiniteInnerProps> = React.memo(props => {
 
   useIsomorphicLayoutEffect(() => {
     if (state.scrollTo) {
-      responseRef.current.onAdjust(state.scrollTo);
+      delegateRef.current.onAdjust(state.scrollTo);
     }
   }, [state.scrollTo]);
 
   useEffect(() => {
     if (scrollToIndex) {
-      const rect = responseRef.current.calculateRectForIndex(
+      const rect = delegateRef.current.calculateRectForIndex(
         scrollToIndex.index
       );
 

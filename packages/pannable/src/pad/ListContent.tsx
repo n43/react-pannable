@@ -114,16 +114,16 @@ const ListContent: React.FC<ListContentProps &
     ]
   );
   const prevLayout = usePrevious(layout);
-  const response = { onResize: context.onResize };
-  const responseRef = useRef(response);
-  responseRef.current = response;
+  const delegate = { onResize: context.onResize };
+  const delegateRef = useRef(delegate);
+  delegateRef.current = delegate;
 
   useIsomorphicLayoutEffect(() => {
     if (
       prevLayout.size === layout.size ||
       !isEqualToSize(prevLayout.size, layout.size)
     ) {
-      responseRef.current.onResize(layout.size);
+      delegateRef.current.onResize(layout.size);
     }
   }, [layout.size]);
 

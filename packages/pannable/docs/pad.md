@@ -61,7 +61,7 @@ Determines whether bouncing always occurs when vertical scrolling reaches the en
 
 Calls when scrolls the content.
 
-#### `onDragStart`?: (evt: [PadAttrs](#padattrs--contentoffset-point-contentvelocity-point-size-size-contentsize-size-dragging-boolean-decelerating-boolean-)) => void
+#### `onStartDragging`?: (evt: [PadAttrs](#padattrs--contentoffset-point-contentvelocity-point-size-size-contentsize-size-dragging-boolean-decelerating-boolean-)) => void
 
 Calls when dragging started.
 
@@ -69,15 +69,15 @@ Calls when dragging started.
 
 Calls when dragging ended.
 
-#### `onDecelerationStart`?: (evt: [PadAttrs](#padattrs--contentoffset-point-contentvelocity-point-size-size-contentsize-size-dragging-boolean-decelerating-boolean-)) => void
+#### `onStartDecelerating`?: (evt: [PadAttrs](#padattrs--contentoffset-point-contentvelocity-point-size-size-contentsize-size-dragging-boolean-decelerating-boolean-)) => void
 
 Calls when decelerating started.
 
-#### `onDecelerationEnd`?: (evt: [PadAttrs](#padattrs--contentoffset-point-contentvelocity-point-size-size-contentsize-size-dragging-boolean-decelerating-boolean-)) => void
+#### `onEndDecelerating`?: (evt: [PadAttrs](#padattrs--contentoffset-point-contentvelocity-point-size-size-contentsize-size-dragging-boolean-decelerating-boolean-)) => void
 
 Calls when decelerating ended.
 
-#### `onContentResize`?: (evt: [PadAttrs](#padattrs--contentoffset-point-contentvelocity-point-size-size-contentsize-size-dragging-boolean-decelerating-boolean-)) => void
+#### `onResizeContent`?: (evt: [PadAttrs](#padattrs--contentoffset-point-contentvelocity-point-size-size-contentsize-size-dragging-boolean-decelerating-boolean-)) => void
 
 Calls when changes the size of the content.
 

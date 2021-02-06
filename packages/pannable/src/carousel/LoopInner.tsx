@@ -14,9 +14,9 @@ export interface LoopInnerProps {
 const LoopInner: React.FC<LoopInnerProps> = React.memo(props => {
   const { pad, onAdjust, direction, children } = props;
   const [state, dispatch] = useReducer(reducer, initialLoopState);
-  const response = { onAdjust };
-  const responseRef = useRef(response);
-  responseRef.current = response;
+  const delegate = { onAdjust };
+  const delegateRef = useRef(delegate);
+  delegateRef.current = delegate;
 
   useMemo(() => {
     dispatch({ type: 'syncProps', payload: { props: { pad, direction } } });
@@ -24,7 +24,7 @@ const LoopInner: React.FC<LoopInnerProps> = React.memo(props => {
 
   useIsomorphicLayoutEffect(() => {
     if (state.scrollTo) {
-      responseRef.current.onAdjust(state.scrollTo);
+      delegateRef.current.onAdjust(state.scrollTo);
     }
   }, [state.scrollTo]);
 
