@@ -1,6 +1,6 @@
 import PadContext from './PadContext';
 import { XY, RC, WH, Rect, Size } from '../interfaces';
-import { useIsomorphicLayoutEffect, usePrevious } from '../utils/hooks';
+import { useIsomorphicLayoutEffect } from '../utils/hooks';
 import { getItemVisibleRect, needsRender } from '../utils/visible';
 import { isEqualToSize, isNumber } from '../utils/geometry';
 import React, { useContext, useMemo, useRef } from 'react';
@@ -63,8 +63,9 @@ const defaultGridContentProps: GridContentProps = {
   columnSpacing: 0,
 };
 
-const GridContent: React.FC<GridContentProps &
-  React.HTMLAttributes<HTMLDivElement>> = React.memo(props => {
+const GridContent: React.FC<
+  GridContentProps & React.ComponentProps<'div'>
+> = React.memo((props) => {
   const context = useContext(PadContext);
   const {
     direction,
@@ -78,8 +79,7 @@ const GridContent: React.FC<GridContentProps &
     columnSpacing,
     children,
     ...divProps
-  } = props as Required<GridContentProps> &
-    React.HTMLAttributes<HTMLDivElement>;
+  } = props as Required<GridContentProps> & React.ComponentProps<'div'>;
   const fixedWidth = isNumber(width) ? width : context.width;
   const fixedHeight = isNumber(height) ? height : context.height;
   const layout = useMemo(
@@ -111,16 +111,16 @@ const GridContent: React.FC<GridContentProps &
       itemCount,
     ]
   );
-  const prevLayout = usePrevious(layout);
+  const sizeRef = useRef<Size | null>(null);
   const delegate = { onResize: context.onResize };
   const delegateRef = useRef(delegate);
   delegateRef.current = delegate;
 
   useIsomorphicLayoutEffect(() => {
-    if (
-      prevLayout.size === layout.size ||
-      !isEqualToSize(prevLayout.size, layout.size)
-    ) {
+    const size = sizeRef.current;
+    sizeRef.current = layout.size;
+
+    if (!isEqualToSize(size, layout.size)) {
       delegateRef.current.onResize(layout.size);
     }
   }, [layout.size]);
@@ -173,7 +173,7 @@ const GridContent: React.FC<GridContentProps &
     );
   }
 
-  const items = layout.layoutList.map(attrs =>
+  const items = layout.layoutList.map((attrs) =>
     buildItem({
       ...attrs,
       visibleRect: getItemVisibleRect(attrs.rect, context.visibleRect),

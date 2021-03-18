@@ -47,7 +47,7 @@ export const defaultPadProps: PadProps = {
 };
 
 const Pad: React.FC<
-  PadProps & Omit<React.HTMLAttributes<HTMLDivElement>, 'onScroll'>
+  PadProps & Omit<React.ComponentProps<'div'>, 'onScroll'>
 > = React.memo((props) => {
   const {
     width,
@@ -70,7 +70,7 @@ const Pad: React.FC<
     children,
     ...pannableProps
   } = props as Required<PadProps> &
-    Omit<React.HTMLAttributes<HTMLDivElement>, 'onScroll'>;
+    Omit<React.ComponentProps<'div'>, 'onScroll'>;
   const size = useMemo(() => ({ width, height }), [width, height]);
   const alwaysBounce = useMemo(
     () => ({

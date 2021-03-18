@@ -14,15 +14,15 @@ type InfiniteLayout = {
 };
 
 export interface InfiniteProps extends PadProps {
-  direction: XY;
+  direction?: XY;
   itemCount: number;
   renderItem: (attrs: ListLayoutAttrs) => React.ReactNode;
   spacing?: number;
-  estimatedItemWidth?: 0;
-  estimatedItemHeight?: 0;
+  estimatedItemWidth?: number | ((itemIndex: number) => number);
+  estimatedItemHeight?: number | ((itemIndex: number) => number);
   renderHeader?: (attrs: ListLayoutAttrs) => React.ReactNode;
   renderFooter?: (attrs: ListLayoutAttrs) => React.ReactNode;
-  scrollToIndex: InfiniteScrollTo | null;
+  scrollToIndex?: InfiniteScrollTo | null;
 }
 
 const defaultInfiniteProps: InfiniteProps = {
@@ -40,7 +40,7 @@ const defaultInfiniteProps: InfiniteProps = {
 };
 
 const Infinite: React.FC<
-  InfiniteProps & Omit<React.HTMLAttributes<HTMLDivElement>, 'onScroll'>
+  InfiniteProps & Omit<React.ComponentProps<'div'>, 'onScroll'>
 > = React.memo((props) => {
   const {
     direction,
@@ -55,7 +55,7 @@ const Infinite: React.FC<
     children,
     ...padProps
   } = props as Required<InfiniteProps> &
-    Omit<React.HTMLAttributes<HTMLDivElement>, 'onScroll'>;
+    Omit<React.ComponentProps<'div'>, 'onScroll'>;
   const { width, height, renderOverlay } = padProps;
   const listRef = useRef<InfiniteLayout>({});
 

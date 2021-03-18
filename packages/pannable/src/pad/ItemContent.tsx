@@ -25,16 +25,16 @@ const defaultItemContentProps = {
   autoResizing: false,
 };
 
-const ItemContent: React.FC<ItemContentProps &
-  React.HTMLAttributes<HTMLDivElement>> = React.memo(props => {
+const ItemContent: React.FC<
+  ItemContentProps & React.ComponentProps<'div'>
+> = React.memo((props) => {
   const {
     width,
     height,
     autoResizing,
     children,
     ...divProps
-  } = props as Required<ItemContentProps> &
-    React.HTMLAttributes<HTMLDivElement>;
+  } = props as Required<ItemContentProps> & React.ComponentProps<'div'>;
   const context = useContext(PadContext);
 
   const fixedWidth = isNumber(width)
@@ -87,7 +87,7 @@ const ItemContent: React.FC<ItemContentProps &
         height: node.offsetHeight,
       };
 
-      setSize(size => (isEqualToSize(size, nextSize) ? size : nextSize));
+      setSize((size) => (isEqualToSize(size, nextSize) ? size : nextSize));
     }
 
     calculateSize();
@@ -110,7 +110,7 @@ const ItemContent: React.FC<ItemContentProps &
 
   useMemo(() => {
     if (fixedSize) {
-      setSize(size => (isEqualToSize(size, fixedSize) ? size : fixedSize));
+      setSize((size) => (isEqualToSize(size, fixedSize) ? size : fixedSize));
     }
   }, [fixedSize]);
 

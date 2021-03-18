@@ -29,8 +29,9 @@ export const defaultPannableProps: PannableProps = {
   onCancel: () => {},
 };
 
-const Pannable: React.FC<PannableProps &
-  React.HTMLAttributes<HTMLDivElement>> = React.memo(props => {
+const Pannable: React.FC<
+  PannableProps & React.ComponentProps<'div'>
+> = React.memo((props) => {
   const {
     enabled,
     shouldStart,
@@ -40,7 +41,7 @@ const Pannable: React.FC<PannableProps &
     onCancel,
     children,
     ...divProps
-  } = props as Required<PannableProps> & React.HTMLAttributes<HTMLDivElement>;
+  } = props as Required<PannableProps> & React.ComponentProps<'div'>;
   const [state, dispatch] = useReducer(reducer, initialPannableState);
   const prevState = usePrevious(state);
   const elemRef = useRef<HTMLDivElement>(null);
@@ -122,6 +123,7 @@ const Pannable: React.FC<PannableProps &
         const onTouchMove = (evt: TouchEvent) => {
           if (isMoving && evt.cancelable) {
             evt.preventDefault();
+            evt.stopImmediatePropagation();
           }
 
           if (evt.touches.length === 1) {
@@ -135,6 +137,7 @@ const Pannable: React.FC<PannableProps &
         const onTouchEnd = (evt: TouchEvent) => {
           if (isMoving && evt.cancelable) {
             evt.preventDefault();
+            evt.stopImmediatePropagation();
           }
 
           end();
@@ -165,6 +168,7 @@ const Pannable: React.FC<PannableProps &
         const onMouseMove = (evt: MouseEvent) => {
           if (isMoving) {
             evt.preventDefault();
+            evt.stopImmediatePropagation();
           }
 
           if (evt.buttons === 1) {
@@ -176,6 +180,7 @@ const Pannable: React.FC<PannableProps &
         const onMouseUp = (evt: MouseEvent) => {
           if (isMoving) {
             evt.preventDefault();
+            evt.stopImmediatePropagation();
           }
 
           end();

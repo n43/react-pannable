@@ -15,10 +15,10 @@ const defaultLoopProps: LoopProps = {
 };
 
 const Loop: React.FC<
-  LoopProps & Omit<React.HTMLAttributes<HTMLDivElement>, 'onScroll'>
+  LoopProps & Omit<React.ComponentProps<'div'>, 'onScroll'>
 > = React.memo((props) => {
   const { direction, children, ...padProps } = props as Required<LoopProps> &
-    Omit<React.HTMLAttributes<HTMLDivElement>, 'onScroll'>;
+    Omit<React.ComponentProps<'div'>, 'onScroll'>;
 
   if (direction === 'x') {
     padProps.isBoundlessX = true;

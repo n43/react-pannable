@@ -1,6 +1,6 @@
 import PadContext from './PadContext';
 import { XY, WH, Rect, Size } from '../interfaces';
-import { useIsomorphicLayoutEffect, usePrevious } from '../utils/hooks';
+import { useIsomorphicLayoutEffect } from '../utils/hooks';
 import { getItemVisibleRect, needsRender } from '../utils/visible';
 import { isEqualToSize, isNumber } from '../utils/geometry';
 import React, { useContext, useMemo, useRef, useState } from 'react';
@@ -62,8 +62,9 @@ const defaultListContentProps: ListContentProps = {
   estimatedItemHeight: 0,
 };
 
-const ListContent: React.FC<ListContentProps &
-  React.HTMLAttributes<HTMLDivElement>> = React.memo(props => {
+const ListContent: React.FC<
+  ListContentProps & React.ComponentProps<'div'>
+> = React.memo((props) => {
   const context = useContext(PadContext);
   const {
     direction,
@@ -76,8 +77,7 @@ const ListContent: React.FC<ListContentProps &
     estimatedItemHeight,
     children,
     ...divProps
-  } = props as Required<ListContentProps> &
-    React.HTMLAttributes<HTMLDivElement>;
+  } = props as Required<ListContentProps> & React.ComponentProps<'div'>;
   const fixedWidth = isNumber(width) ? (width as number) : context.width;
   const fixedHeight = isNumber(height) ? (height as number) : context.height;
   const [itemHashList, setItemHashList] = useState<Hash[]>([]);
@@ -113,16 +113,16 @@ const ListContent: React.FC<ListContentProps &
       itemSizeDict,
     ]
   );
-  const prevLayout = usePrevious(layout);
+  const sizeRef = useRef<Size | null>(null);
   const delegate = { onResize: context.onResize };
   const delegateRef = useRef(delegate);
   delegateRef.current = delegate;
 
   useIsomorphicLayoutEffect(() => {
-    if (
-      prevLayout.size === layout.size ||
-      !isEqualToSize(prevLayout.size, layout.size)
-    ) {
+    const size = sizeRef.current;
+    sizeRef.current = layout.size;
+
+    if (!isEqualToSize(size, layout.size)) {
       delegateRef.current.onResize(layout.size);
     }
   }, [layout.size]);
@@ -186,8 +186,8 @@ const ListContent: React.FC<ListContentProps &
           height: null,
           ...itemSize,
           visibleRect,
-          onResize: itemSize => {
-            setItemSizeDict(itemSizeDict => ({
+          onResize: (itemSize) => {
+            setItemSizeDict((itemSizeDict) => ({
               ...itemSizeDict,
               [hash]: itemSize,
             }));
@@ -199,7 +199,7 @@ const ListContent: React.FC<ListContentProps &
     );
   }
 
-  const items = layout.layoutList.map(attrs =>
+  const items = layout.layoutList.map((attrs) =>
     buildItem({
       ...attrs,
       visibleRect: getItemVisibleRect(attrs.rect, context.visibleRect),

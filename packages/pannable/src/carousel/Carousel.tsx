@@ -7,7 +7,7 @@ import { XY } from '../interfaces';
 import React, { useMemo, useRef, useState, useCallback } from 'react';
 
 export interface CarouselProps extends PadProps {
-  direction: XY;
+  direction?: XY;
   itemCount: number;
   renderItem: (attrs: GridLayoutAttrs) => React.ReactNode;
   loop?: boolean;
@@ -32,7 +32,7 @@ const defaultCarouselProps: CarouselProps = {
 };
 
 const Carousel: React.FC<
-  CarouselProps & Omit<React.HTMLAttributes<HTMLDivElement>, 'onScroll'>
+  CarouselProps & Omit<React.ComponentProps<'div'>, 'onScroll'>
 > = React.memo((props) => {
   const {
     direction,
@@ -46,7 +46,7 @@ const Carousel: React.FC<
     children,
     ...padProps
   } = props as Required<CarouselProps> &
-    Omit<React.HTMLAttributes<HTMLDivElement>, 'onScroll'>;
+    Omit<React.ComponentProps<'div'>, 'onScroll'>;
   const { width, height, renderOverlay, onMouseEnter, onMouseLeave } = padProps;
   const [autoplay, setAutoplay] = useState(false);
   const delegate = { onMouseEnter, onMouseLeave };

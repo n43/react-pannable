@@ -1,6 +1,6 @@
 {
   "name": "react-pannable",
-  "version": "5.0.0",
+  "version": "5.0.6",
   "description": "Flexible and Customizable Layouts for Scrolling Content with React",
   "keywords": [
     "react",
@@ -60,8 +60,8 @@
     "prepublishOnly": "cd ../demo && yarn deploy"
   },
   "peerDependencies": {
-    "react": "^16.8.4",
-    "react-dom": "^16.8.4"
+    "react": "^16.8.4 || ^17.0.0",
+    "react-dom": "^16.8.4 || ^17.0.0"
   },
   "dependencies": {
     "@types/element-resize-detector": "^1.1.2",

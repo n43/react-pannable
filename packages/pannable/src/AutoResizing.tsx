@@ -16,12 +16,13 @@ const defaultAutoResizingProps: AutoResizingProps = {
   onResize: () => {},
 };
 
-const AutoResizing: React.FC<AutoResizingProps &
-  React.HTMLAttributes<HTMLDivElement>> = React.memo(props => {
+const AutoResizing: React.FC<
+  AutoResizingProps & React.ComponentProps<'div'>
+> = React.memo((props) => {
   const { width, height, onResize, children, ...divProps } = props as Required<
     AutoResizingProps
   > &
-    React.HTMLAttributes<HTMLDivElement>;
+    React.ComponentProps<'div'>;
   const [size, setSize] = useState<Size | null>(null);
   const fixedSize = useMemo(() => {
     if (!isNumber(width) || !isNumber(height)) {
@@ -58,7 +59,7 @@ const AutoResizing: React.FC<AutoResizingProps &
         height: node.offsetHeight,
       };
 
-      setSize(size => (isEqualToSize(size, nextSize) ? size : nextSize));
+      setSize((size) => (isEqualToSize(size, nextSize) ? size : nextSize));
     }
 
     calculateSize();
@@ -79,7 +80,7 @@ const AutoResizing: React.FC<AutoResizingProps &
 
   useMemo(() => {
     if (fixedSize) {
-      setSize(size => (isEqualToSize(size, fixedSize) ? size : fixedSize));
+      setSize((size) => (isEqualToSize(size, fixedSize) ? size : fixedSize));
     }
   }, [fixedSize]);
 
