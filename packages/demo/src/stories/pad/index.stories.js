@@ -45,8 +45,8 @@ export const Overview = () => {
     false,
     'props'
   );
-  const alwaysBounceX = boolean('alwaysBounceX', true, 'props');
-  const alwaysBounceY = boolean('alwaysBounceY', true, 'props');
+  const boundX = number('boundX', 1, 'props');
+  const boundY = number('boundY', 1, 'props');
   const scrollType = select(
     'Scroll Action',
     { null: '', scrollTo: 'scrollTo' },
@@ -79,22 +79,22 @@ export const Overview = () => {
     return { point, rect, align, animated };
   }, [scrollType, point, rect, align, animated]);
 
-  const plaidRowCount = number("Plaid's rowCount", 20, {});
-  const plaidColumnCount = number("Plaid's columnCount", 20, {});
+  const plaidRowCount = number("Plaid's rowCount", 2, {});
+  const plaidColumnCount = number("Plaid's columnCount", 2, {});
 
-  const onStartDragging = useCallback(evt => {
+  const onStartDragging = useCallback((evt) => {
     console.log('onStartDragging', evt);
   }, []);
-  const onEndDragging = useCallback(evt => {
+  const onEndDragging = useCallback((evt) => {
     console.log('onEndDragging', evt);
   }, []);
-  const onStartDecelerating = useCallback(evt => {
+  const onStartDecelerating = useCallback((evt) => {
     console.log('onStartDecelerating', evt);
   }, []);
-  const onEndDecelerating = useCallback(evt => {
+  const onEndDecelerating = useCallback((evt) => {
     console.log('onEndDecelerating', evt);
   }, []);
-  const onResizeContent = useCallback(evt => {
+  const onResizeContent = useCallback((evt) => {
     console.log('onResizeContent', evt);
   }, []);
 
@@ -115,8 +115,8 @@ export const Overview = () => {
               height={height}
               pagingEnabled={pagingEnabled}
               directionalLockEnabled={directionalLockEnabled}
-              alwaysBounceX={alwaysBounceX}
-              alwaysBounceY={alwaysBounceY}
+              boundX={boundX}
+              boundY={boundY}
               enabled={enabled}
               scrollTo={scrollTo}
               onStartDragging={onStartDragging}
@@ -168,7 +168,7 @@ export const LayoutWithAutoResizingContent = () => {
       <div className="overview-content">
         <AutoResizing height={500}>
           {({ width, height }) => (
-            <Pad width={width} height={height} alwaysBounceX={false}>
+            <Pad width={width} height={height} boundX={0}>
               <ItemContent
                 autoResizing
                 width={contentWidth === null ? width : contentWidth}
@@ -223,12 +223,7 @@ export const LayoutWithGridContent = () => {
       <div className="overview-content">
         <AutoResizing height={500}>
           {({ width, height }) => (
-            <Pad
-              width={width}
-              height={height}
-              alwaysBounceX={false}
-              alwaysBounceY={false}
-            >
+            <Pad width={width} height={height} boundX={0} boundY={0}>
               <GridContent
                 width={contentWidth === null ? width : contentWidth}
                 height={contentHeight === null ? height : contentHeight}
@@ -281,7 +276,7 @@ export const LayoutWithListContent = () => {
   const estimatedItemHeight = number('estimatedItemHeight', 100, {}, 'props');
   const itemCount = number('itemCount', 100, {}, 'props');
 
-  const onResizeContent = useCallback(evt => {
+  const onResizeContent = useCallback((evt) => {
     console.log('onResizeContent', evt);
   }, []);
 
@@ -302,8 +297,8 @@ export const LayoutWithListContent = () => {
               <Pad
                 width={width}
                 height={height}
-                alwaysBounceX={false}
-                alwaysBounceY={false}
+                boundX={0}
+                boundY={0}
                 onResizeContent={onResizeContent}
               >
                 <ListContent
@@ -370,7 +365,7 @@ export const LayoutWithMultipleNestedContent = () => {
       <div className="overview-content">
         <AutoResizing height={500}>
           {({ width, height }) => (
-            <Pad width={width} height={height} alwaysBounceX={false}>
+            <Pad width={width} height={height} boundX={0}>
               <ListContent
                 width={width}
                 height={height}

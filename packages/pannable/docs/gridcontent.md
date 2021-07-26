@@ -11,7 +11,7 @@ import { Pad, GridContent } from 'react-pannable';
 class Page extends React.Component {
   render() {
     return (
-      <Pad width={300} height={400} alwaysBounceX={false}>
+      <Pad width={300} height={400} boundX={0}>
         <GridContent
           width={300}
           itemWidth={80}

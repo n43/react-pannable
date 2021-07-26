@@ -77,6 +77,12 @@ const Carousel: React.FC<
     padProps.onMouseLeave = padOnMouseLeave;
   }
 
+  if (direction === 'x') {
+    padProps.boundY = 0;
+  } else {
+    padProps.boundX = 0;
+  }
+
   padProps.renderOverlay = (pad, methods) => (
     <>
       <CarouselInner
@@ -113,12 +119,6 @@ const Carousel: React.FC<
         {content}
       </Loop>
     );
-  }
-
-  if (direction === 'x') {
-    padProps.alwaysBounceY = false;
-  } else {
-    padProps.alwaysBounceX = false;
   }
 
   return <Pad {...padProps}>{content}</Pad>;

@@ -1,4 +1,4 @@
-import { XY, Point, Size, Rect, Align } from '../interfaces';
+import { XY, Point, Size, Rect, Align, Bound, WH } from '../interfaces';
 
 function getAcc(rate: number, vel: Point): Point {
   const r = Math.sqrt(vel.x * vel.x + vel.y * vel.y);
@@ -29,7 +29,7 @@ export function getAdjustedContentOffset(
   offset: Point,
   size: Size,
   cSize: Size,
-  boundless: Record<XY, boolean>,
+  bound: Record<XY, Bound>,
   paging: boolean
 ): Point {
   function calculate(x: XY) {
@@ -37,7 +37,7 @@ export function getAdjustedContentOffset(
     const sizeWidth = size[width];
     const offsetX = offset[x];
 
-    if (boundless[x]) {
+    if (bound[x] === -1) {
       return offsetX;
     }
 
@@ -64,18 +64,17 @@ export function getAdjustedContentOffset(
 
 export function getAdjustedBounceOffset(
   offset: Point,
-  bounce: Record<XY, boolean>,
-  boundless: Record<XY, boolean>,
+  bound: Record<XY, Bound>,
   size: Size,
   cSize: Size
 ): Point {
   function calculate(x: XY) {
-    const width = x === 'x' ? 'width' : 'height';
-    const height = x === 'x' ? 'height' : 'width';
+    const [width, height]: [WH, WH] =
+      x === 'x' ? ['width', 'height'] : ['height', 'width'];
     const offsetX = offset[x];
-    const bounceX = bounce[x];
+    const boundX = bound[x];
 
-    if (boundless[x]) {
+    if (boundX === -1) {
       return offsetX;
     }
 
@@ -83,13 +82,13 @@ export function getAdjustedBounceOffset(
     const maxDist = 0.5 * Math.min(size[width], size[height]);
 
     if (0 < offsetX) {
-      if (!bounceX) {
+      if (boundX === 0) {
         return 0;
       }
       return maxDist * (1 - maxDist / (maxDist + offsetX));
     }
     if (offsetX < minOffsetX) {
-      if (!bounceX) {
+      if (boundX === 0) {
         return minOffsetX;
       }
       return (

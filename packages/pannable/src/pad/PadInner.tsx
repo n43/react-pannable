@@ -7,7 +7,7 @@ import reducer, {
   PadScrollTo,
 } from './padReducer';
 import { PannableState } from '../pannableReducer';
-import { XY, Size } from '../interfaces';
+import { XY, Size, Bound } from '../interfaces';
 import {
   requestAnimationFrame,
   cancelAnimationFrame,
@@ -35,8 +35,7 @@ export type PadInnerProps = {
   size: Size;
   pagingEnabled: boolean;
   directionalLockEnabled: boolean;
-  alwaysBounce: Record<XY, boolean>;
-  isBoundless: Record<XY, boolean>;
+  bound: Record<XY, Bound>;
   onScroll: (evt: PadEvent) => void;
   onStartDragging: (evt: PadEvent) => void;
   onEndDragging: (evt: PadEvent) => void;
@@ -54,8 +53,7 @@ const PadInner: React.FC<PadInnerProps> = React.memo((props) => {
     size,
     pagingEnabled,
     directionalLockEnabled,
-    alwaysBounce,
-    isBoundless,
+    bound,
     onScroll,
     onStartDragging,
     onEndDragging,
@@ -96,21 +94,13 @@ const PadInner: React.FC<PadInnerProps> = React.memo((props) => {
         props: {
           size,
           pannable,
-          alwaysBounce,
-          isBoundless,
+          bound,
           pagingEnabled,
           directionalLockEnabled,
         },
       },
     });
-  }, [
-    size,
-    pannable,
-    alwaysBounce,
-    isBoundless,
-    pagingEnabled,
-    directionalLockEnabled,
-  ]);
+  }, [size, pannable, bound, pagingEnabled, directionalLockEnabled]);
 
   useIsomorphicLayoutEffect(() => {
     if (prevState.pannable.translation !== state.pannable.translation) {

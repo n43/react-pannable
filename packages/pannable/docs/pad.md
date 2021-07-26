@@ -49,13 +49,13 @@ Determines whether paging is enabled for the component.
 
 Determines whether scrolling is disabled in a particular direction.
 
-#### `alwaysBounceX`?: boolean
+#### `boundX`?: boolean
 
-Determines whether bouncing always occurs when horizontal scrolling reaches the end of the content. The default value is `true`.
+Determines whether bouncing always occurs when horizontal scrolling reaches the end of the content. The default value is `1`.
 
-#### `alwaysBounceY`?: boolean
+#### `boundY`?: boolean
 
-Determines whether bouncing always occurs when vertical scrolling reaches the end of the content. The default value is `true`.
+Determines whether bouncing always occurs when vertical scrolling reaches the end of the content. The default value is `1`.
 
 #### `onScroll`?: (evt: [PadAttrs](#padattrs--contentoffset-point-contentvelocity-point-size-size-contentsize-size-dragging-boolean-decelerating-boolean-)) => void
 

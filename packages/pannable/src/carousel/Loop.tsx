@@ -21,11 +21,9 @@ const Loop: React.FC<
     Omit<React.ComponentProps<'div'>, 'onScroll'>;
 
   if (direction === 'x') {
-    padProps.isBoundlessX = true;
-    padProps.alwaysBounceY = false;
+    padProps.boundX = -1;
   } else {
-    padProps.isBoundlessY = true;
-    padProps.alwaysBounceX = false;
+    padProps.boundY = -1;
   }
 
   return (

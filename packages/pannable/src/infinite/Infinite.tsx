@@ -81,6 +81,12 @@ const Infinite: React.FC<
     return rect;
   }, []);
 
+  if (direction === 'x') {
+    padProps.boundY = 0;
+  } else {
+    padProps.boundX = 0;
+  }
+
   padProps.renderOverlay = (pad, methods) => (
     <>
       <InfiniteInner
@@ -93,12 +99,6 @@ const Infinite: React.FC<
       {renderOverlay(pad, methods)}
     </>
   );
-
-  if (direction === 'x') {
-    padProps.alwaysBounceY = false;
-  } else {
-    padProps.alwaysBounceX = false;
-  }
 
   return (
     <Pad {...padProps}>

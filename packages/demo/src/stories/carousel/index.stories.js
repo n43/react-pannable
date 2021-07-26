@@ -132,7 +132,7 @@ export const HorizontalCarousel = () => {
     });
   }, []);
 
-  const onIndicatorGoto = useCallback(index => {
+  const onIndicatorGoto = useCallback((index) => {
     setScrollToIndex({ index, animated: true });
   }, []);
 

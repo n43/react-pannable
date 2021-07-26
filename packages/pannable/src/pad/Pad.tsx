@@ -1,6 +1,6 @@
 import { PadState, PadEvent, PadMethods, PadScrollTo } from './padReducer';
 import PadInner from './PadInner';
-import { Point, Size } from '../interfaces';
+import { Point, Size, Bound, XY, WH } from '../interfaces';
 import Pannable, { defaultPannableProps, PannableProps } from '../Pannable';
 import React, { useMemo, useCallback, useRef } from 'react';
 import { PannableState } from 'pannableReducer';
@@ -10,10 +10,8 @@ export interface PadProps extends PannableProps {
   height: number;
   pagingEnabled?: boolean;
   directionalLockEnabled?: boolean;
-  alwaysBounceX?: boolean;
-  alwaysBounceY?: boolean;
-  isBoundlessX?: boolean;
-  isBoundlessY?: boolean;
+  boundX?: Bound;
+  boundY?: Bound;
   onScroll?: (evt: PadEvent) => void;
   onStartDragging?: (evt: PadEvent) => void;
   onEndDragging?: (evt: PadEvent) => void;
@@ -30,10 +28,8 @@ export const defaultPadProps: PadProps = {
   height: 0,
   pagingEnabled: false,
   directionalLockEnabled: false,
-  alwaysBounceX: true,
-  alwaysBounceY: true,
-  isBoundlessX: false,
-  isBoundlessY: false,
+  boundX: 1,
+  boundY: 1,
   onScroll: () => {},
   onStartDragging: () => {},
   onEndDragging: () => {},
@@ -54,10 +50,8 @@ const Pad: React.FC<
     height,
     pagingEnabled,
     directionalLockEnabled,
-    alwaysBounceX,
-    alwaysBounceY,
-    isBoundlessX,
-    isBoundlessY,
+    boundX,
+    boundY,
     onScroll,
     onStartDragging,
     onEndDragging,
@@ -72,20 +66,7 @@ const Pad: React.FC<
   } = props as Required<PadProps> &
     Omit<React.ComponentProps<'div'>, 'onScroll'>;
   const size = useMemo(() => ({ width, height }), [width, height]);
-  const alwaysBounce = useMemo(
-    () => ({
-      x: alwaysBounceX,
-      y: alwaysBounceY,
-    }),
-    [alwaysBounceX, alwaysBounceY]
-  );
-  const isBoundless = useMemo(
-    () => ({
-      x: isBoundlessX,
-      y: isBoundlessY,
-    }),
-    [isBoundlessX, isBoundlessY]
-  );
+  const bound = useMemo(() => ({ x: boundX, y: boundY }), [boundX, boundY]);
   const stateRef = useRef<PadState>();
   const delegate = { shouldStart: pannableProps.shouldStart };
   const delegateRef = useRef(delegate);
@@ -97,7 +78,9 @@ const Pad: React.FC<
     if (!state) {
       return false;
     }
-    if (!shouldStartDrag(evt.velocity, state.size, state.contentSize)) {
+    if (
+      !shouldStartDrag(evt.velocity, state.size, state.contentSize, state.bound)
+    ) {
       return false;
     }
 
@@ -130,8 +113,7 @@ const Pad: React.FC<
           size={size}
           pagingEnabled={pagingEnabled}
           directionalLockEnabled={directionalLockEnabled}
-          alwaysBounce={alwaysBounce}
-          isBoundless={isBoundless}
+          bound={bound}
           onScroll={onScroll}
           onStartDragging={onStartDragging}
           onEndDragging={onEndDragging}
@@ -159,9 +141,20 @@ Pad.defaultProps = defaultPadProps;
 
 export default Pad;
 
-function shouldStartDrag(velocity: Point, size: Size, cSize: Size): boolean {
-  const height =
-    Math.abs(velocity.y) < Math.abs(velocity.x) ? 'width' : 'height';
+function shouldStartDrag(
+  velocity: Point,
+  size: Size,
+  cSize: Size,
+  bound: Record<XY, Bound>
+): boolean {
+  const [x, width]: [XY, WH] =
+    Math.abs(velocity.y) < Math.abs(velocity.x)
+      ? ['x', 'width']
+      : ['y', 'height'];
 
-  return size[height] < cSize[height];
+  if (bound[x] !== 0) {
+    return true;
+  }
+
+  return size[width] < cSize[width];
 }
