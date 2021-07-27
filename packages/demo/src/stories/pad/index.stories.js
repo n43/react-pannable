@@ -45,8 +45,27 @@ export const Overview = () => {
     false,
     'props'
   );
-  const boundX = number('boundX', 1, 'props');
-  const boundY = number('boundY', 1, 'props');
+  const boundX = select(
+    'boundX',
+    { bounce: 1, hard: 0, boundless: -1 },
+    undefined,
+    'props'
+  );
+  const boundY = select(
+    'boundY',
+    { bounce: 1, hard: 0, boundless: -1 },
+    undefined,
+    'props'
+  );
+  const contentInsetTop = number('contentInsetTop', 0, undefined, 'props');
+  const contentInsetRight = number('contentInsetRight', 0, undefined, 'props');
+  const contentInsetBottom = number(
+    'contentInsetBottom',
+    0,
+    undefined,
+    'props'
+  );
+  const contentInsetLeft = number('contentInsetLeft', 0, undefined, 'props');
   const scrollType = select(
     'Scroll Action',
     { null: '', scrollTo: 'scrollTo' },
@@ -79,8 +98,8 @@ export const Overview = () => {
     return { point, rect, align, animated };
   }, [scrollType, point, rect, align, animated]);
 
-  const plaidRowCount = number("Plaid's rowCount", 2, {});
-  const plaidColumnCount = number("Plaid's columnCount", 2, {});
+  const plaidRowCount = number("Plaid's rowCount", 20, {});
+  const plaidColumnCount = number("Plaid's columnCount", 20, {});
 
   const onStartDragging = useCallback((evt) => {
     console.log('onStartDragging', evt);
@@ -113,10 +132,14 @@ export const Overview = () => {
             <Pad
               width={width}
               height={height}
-              pagingEnabled={pagingEnabled}
-              directionalLockEnabled={directionalLockEnabled}
               boundX={boundX}
               boundY={boundY}
+              contentInsetTop={contentInsetTop}
+              contentInsetRight={contentInsetRight}
+              contentInsetBottom={contentInsetBottom}
+              contentInsetLeft={contentInsetLeft}
+              pagingEnabled={pagingEnabled}
+              directionalLockEnabled={directionalLockEnabled}
               enabled={enabled}
               scrollTo={scrollTo}
               onStartDragging={onStartDragging}

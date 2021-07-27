@@ -46,6 +46,7 @@ export type PadScrollTo = {
 export type PadEvent = {
   size: Size;
   contentSize: Size;
+  contentInset: Inset;
   contentOffset: Point;
   contentVelocity: Point;
   dragging: boolean;
@@ -57,13 +58,13 @@ export type PadMethods = {
 };
 
 export type PadState = {
+  size: Size;
+  contentSize: Size;
   contentInset: Inset;
   contentOffset: Point;
   contentVelocity: Point;
   drag: Drag | null;
   deceleration: Deceleration | null;
-  size: Size;
-  contentSize: Size;
   bound: Record<XY, Bound>;
   pagingEnabled: boolean;
   directionalLockEnabled: boolean;
@@ -71,13 +72,13 @@ export type PadState = {
 };
 
 export const initialPadState: PadState = {
+  size: { width: 0, height: 0 },
+  contentSize: { width: 0, height: 0 },
   contentInset: { top: 0, right: 0, bottom: 0, left: 0 },
   contentOffset: { x: 0, y: 0 },
   contentVelocity: { x: 0, y: 0 },
   drag: null,
   deceleration: null,
-  size: { width: 0, height: 0 },
-  contentSize: { width: 0, height: 0 },
   bound: { x: 1, y: 1 },
   pagingEnabled: false,
   directionalLockEnabled: false,
@@ -116,12 +117,13 @@ const syncPropsReducer: Reducer<PadState, Action> = (state, action) => {
 
 const validateReducer: Reducer<PadState, Action> = (state, action) => {
   const {
+    size,
+    contentSize,
+    contentInset,
     contentOffset,
     contentVelocity,
     drag,
     deceleration,
-    size,
-    contentSize,
     pagingEnabled,
     bound,
   } = state;
@@ -134,6 +136,7 @@ const validateReducer: Reducer<PadState, Action> = (state, action) => {
       contentOffset,
       size,
       contentSize,
+      contentInset,
       bound,
       pagingEnabled
     );
@@ -141,6 +144,7 @@ const validateReducer: Reducer<PadState, Action> = (state, action) => {
       decelerationEndOffset,
       size,
       contentSize,
+      contentInset,
       bound,
       pagingEnabled
     );
@@ -181,6 +185,7 @@ const validateReducer: Reducer<PadState, Action> = (state, action) => {
         decelerationEndOffset,
         size,
         contentSize,
+        contentInset,
         bound,
         pagingEnabled
       );
@@ -211,6 +216,7 @@ const validateReducer: Reducer<PadState, Action> = (state, action) => {
       decelerationEndOffset,
       size,
       contentSize,
+      contentInset,
       bound,
       pagingEnabled
     );
@@ -267,7 +273,7 @@ const dragStartReducer: Reducer<PadState, Action> = (state, action) => {
 };
 
 const dragMoveReducer: Reducer<PadState, Action> = (state, action) => {
-  const { contentOffset, drag, size, contentSize, bound } = state;
+  const { contentOffset, drag, size, contentSize, contentInset, bound } = state;
   const { translation, interval } = state.pannable;
 
   if (!drag || !translation || !interval) {
@@ -281,9 +287,10 @@ const dragMoveReducer: Reducer<PadState, Action> = (state, action) => {
 
   nextContentOffset = getAdjustedBounceOffset(
     nextContentOffset,
-    bound,
     size,
-    contentSize
+    contentSize,
+    contentInset,
+    bound
   );
 
   const nextContentVelocity: Point = {

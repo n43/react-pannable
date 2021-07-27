@@ -7,7 +7,7 @@ import reducer, {
   PadScrollTo,
 } from './padReducer';
 import { PannableState } from '../pannableReducer';
-import { XY, Size, Bound } from '../interfaces';
+import { XY, Size, Bound, Inset } from '../interfaces';
 import {
   requestAnimationFrame,
   cancelAnimationFrame,
@@ -33,9 +33,10 @@ const backgroundStyle: React.CSSProperties = {
 export type PadInnerProps = {
   pannable: PannableState;
   size: Size;
+  bound: Record<XY, Bound>;
+  contentInset: Inset;
   pagingEnabled: boolean;
   directionalLockEnabled: boolean;
-  bound: Record<XY, Bound>;
   onScroll: (evt: PadEvent) => void;
   onStartDragging: (evt: PadEvent) => void;
   onEndDragging: (evt: PadEvent) => void;
@@ -51,9 +52,10 @@ const PadInner: React.FC<PadInnerProps> = React.memo((props) => {
   const {
     pannable,
     size,
+    bound,
+    contentInset,
     pagingEnabled,
     directionalLockEnabled,
-    bound,
     onScroll,
     onStartDragging,
     onEndDragging,
@@ -92,15 +94,23 @@ const PadInner: React.FC<PadInnerProps> = React.memo((props) => {
       type: 'syncProps',
       payload: {
         props: {
-          size,
           pannable,
+          size,
           bound,
+          contentInset,
           pagingEnabled,
           directionalLockEnabled,
         },
       },
     });
-  }, [size, pannable, bound, pagingEnabled, directionalLockEnabled]);
+  }, [
+    pannable,
+    size,
+    bound,
+    contentInset,
+    pagingEnabled,
+    directionalLockEnabled,
+  ]);
 
   useIsomorphicLayoutEffect(() => {
     if (prevState.pannable.translation !== state.pannable.translation) {
@@ -126,6 +136,7 @@ const PadInner: React.FC<PadInnerProps> = React.memo((props) => {
     const evt: PadEvent = {
       size: state.size,
       contentSize: state.contentSize,
+      contentInset: state.contentInset,
       contentOffset: state.contentOffset,
       contentVelocity: state.contentVelocity,
       dragging: !!state.drag,
@@ -186,13 +197,15 @@ const PadInner: React.FC<PadInnerProps> = React.memo((props) => {
     () =>
       StyleSheet.create({
         position: 'absolute',
-        overflow: 'hidden',
-        willChange: 'transform',
-        transformTranslate: state.contentOffset,
+        left: state.contentInset.left,
+        top: state.contentInset.top,
         width: state.contentSize.width,
         height: state.contentSize.height,
+        transformTranslate: state.contentOffset,
+        willChange: 'transform',
+        overflow: 'hidden',
       }),
-    [state.contentSize, state.contentOffset]
+    [state.contentOffset, state.contentSize, state.contentInset]
   );
 
   const contextValue = useMemo(

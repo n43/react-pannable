@@ -1,6 +1,6 @@
 import { PadState, PadEvent, PadMethods, PadScrollTo } from './padReducer';
 import PadInner from './PadInner';
-import { Point, Size, Bound, XY, WH } from '../interfaces';
+import { XY, WH, LT, RB, Point, Size, Bound, Inset } from '../interfaces';
 import Pannable, { defaultPannableProps, PannableProps } from '../Pannable';
 import React, { useMemo, useCallback, useRef } from 'react';
 import { PannableState } from 'pannableReducer';
@@ -12,6 +12,10 @@ export interface PadProps extends PannableProps {
   directionalLockEnabled?: boolean;
   boundX?: Bound;
   boundY?: Bound;
+  contentInsetTop?: number;
+  contentInsetRight?: number;
+  contentInsetBottom?: number;
+  contentInsetLeft?: number;
   onScroll?: (evt: PadEvent) => void;
   onStartDragging?: (evt: PadEvent) => void;
   onEndDragging?: (evt: PadEvent) => void;
@@ -26,10 +30,14 @@ export interface PadProps extends PannableProps {
 export const defaultPadProps: PadProps = {
   width: 0,
   height: 0,
-  pagingEnabled: false,
-  directionalLockEnabled: false,
   boundX: 1,
   boundY: 1,
+  contentInsetTop: 0,
+  contentInsetRight: 0,
+  contentInsetBottom: 0,
+  contentInsetLeft: 0,
+  pagingEnabled: false,
+  directionalLockEnabled: false,
   onScroll: () => {},
   onStartDragging: () => {},
   onEndDragging: () => {},
@@ -48,10 +56,14 @@ const Pad: React.FC<
   const {
     width,
     height,
-    pagingEnabled,
-    directionalLockEnabled,
     boundX,
     boundY,
+    contentInsetTop,
+    contentInsetRight,
+    contentInsetBottom,
+    contentInsetLeft,
+    pagingEnabled,
+    directionalLockEnabled,
     onScroll,
     onStartDragging,
     onEndDragging,
@@ -67,6 +79,15 @@ const Pad: React.FC<
     Omit<React.ComponentProps<'div'>, 'onScroll'>;
   const size = useMemo(() => ({ width, height }), [width, height]);
   const bound = useMemo(() => ({ x: boundX, y: boundY }), [boundX, boundY]);
+  const contentInset = useMemo(
+    () => ({
+      top: contentInsetTop,
+      right: contentInsetRight,
+      bottom: contentInsetBottom,
+      left: contentInsetLeft,
+    }),
+    [contentInsetTop, contentInsetRight, contentInsetBottom, contentInsetLeft]
+  );
   const stateRef = useRef<PadState>();
   const delegate = { shouldStart: pannableProps.shouldStart };
   const delegateRef = useRef(delegate);
@@ -79,7 +100,13 @@ const Pad: React.FC<
       return false;
     }
     if (
-      !shouldStartDrag(evt.velocity, state.size, state.contentSize, state.bound)
+      !shouldStartDrag(
+        evt.velocity,
+        state.size,
+        state.contentSize,
+        state.contentInset,
+        state.bound
+      )
     ) {
       return false;
     }
@@ -111,9 +138,10 @@ const Pad: React.FC<
         <PadInner
           pannable={pannable}
           size={size}
+          bound={bound}
+          contentInset={contentInset}
           pagingEnabled={pagingEnabled}
           directionalLockEnabled={directionalLockEnabled}
-          bound={bound}
           onScroll={onScroll}
           onStartDragging={onStartDragging}
           onEndDragging={onEndDragging}
@@ -145,16 +173,17 @@ function shouldStartDrag(
   velocity: Point,
   size: Size,
   cSize: Size,
+  cInset: Inset,
   bound: Record<XY, Bound>
 ): boolean {
-  const [x, width]: [XY, WH] =
+  const [x, width, left, right]: [XY, WH, LT, RB] =
     Math.abs(velocity.y) < Math.abs(velocity.x)
-      ? ['x', 'width']
-      : ['y', 'height'];
+      ? ['x', 'width', 'left', 'right']
+      : ['y', 'height', 'top', 'bottom'];
 
   if (bound[x] !== 0) {
     return true;
   }
 
-  return size[width] < cSize[width];
+  return size[width] < cInset[left] + cSize[width] + cInset[right];
 }

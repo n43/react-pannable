@@ -1,4 +1,15 @@
-import { XY, Point, Size, Rect, Align, Bound, WH } from '../interfaces';
+import {
+  XY,
+  WH,
+  Point,
+  Size,
+  Rect,
+  Align,
+  Bound,
+  Inset,
+  LT,
+  RB,
+} from '../interfaces';
 
 function getAcc(rate: number, vel: Point): Point {
   const r = Math.sqrt(vel.x * vel.x + vel.y * vel.y);
@@ -29,11 +40,13 @@ export function getAdjustedContentOffset(
   offset: Point,
   size: Size,
   cSize: Size,
+  cInset: Inset,
   bound: Record<XY, Bound>,
   paging: boolean
 ): Point {
   function calculate(x: XY) {
-    const width = x === 'x' ? 'width' : 'height';
+    const [width, left, right]: [WH, LT, RB] =
+      x === 'x' ? ['width', 'left', 'right'] : ['height', 'top', 'bottom'];
     const sizeWidth = size[width];
     const offsetX = offset[x];
 
@@ -41,7 +54,10 @@ export function getAdjustedContentOffset(
       return offsetX;
     }
 
-    let minOffsetX = Math.min(sizeWidth - cSize[width], 0);
+    let minOffsetX = Math.min(
+      sizeWidth - (cInset[left] + cSize[width] + cInset[right]),
+      0
+    );
 
     if (paging && sizeWidth > 0) {
       minOffsetX = sizeWidth * Math.ceil(minOffsetX / sizeWidth);
@@ -64,13 +80,16 @@ export function getAdjustedContentOffset(
 
 export function getAdjustedBounceOffset(
   offset: Point,
-  bound: Record<XY, Bound>,
   size: Size,
-  cSize: Size
+  cSize: Size,
+  cInset: Inset,
+  bound: Record<XY, Bound>
 ): Point {
   function calculate(x: XY) {
-    const [width, height]: [WH, WH] =
-      x === 'x' ? ['width', 'height'] : ['height', 'width'];
+    const [width, height, left, right]: [WH, WH, LT, RB] =
+      x === 'x'
+        ? ['width', 'height', 'left', 'right']
+        : ['height', 'width', 'top', 'bottom'];
     const offsetX = offset[x];
     const boundX = bound[x];
 
@@ -78,7 +97,10 @@ export function getAdjustedBounceOffset(
       return offsetX;
     }
 
-    const minOffsetX = Math.min(size[width] - cSize[width], 0);
+    const minOffsetX = Math.min(
+      size[width] - (cInset[left] + cSize[width] + cInset[right]),
+      0
+    );
     const maxDist = 0.5 * Math.min(size[width], size[height]);
 
     if (0 < offsetX) {
