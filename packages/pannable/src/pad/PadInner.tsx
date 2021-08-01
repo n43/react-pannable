@@ -22,14 +22,6 @@ import React, {
   useCallback,
 } from 'react';
 
-const backgroundStyle: React.CSSProperties = {
-  position: 'absolute',
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-};
-
 export type PadInnerProps = {
   pannable: PannableState;
   size: Size;
@@ -180,13 +172,8 @@ const PadInner: React.FC<PadInnerProps> = React.memo((props) => {
     }
   }, [scrollTo]);
 
-  let backgroundLayer = renderBackground(state, methodsRef.current);
-
-  if (backgroundLayer !== null) {
-    backgroundLayer = <div style={backgroundStyle}>{backgroundLayer}</div>;
-  }
-
-  let overlayLayer = renderOverlay(state, methodsRef.current);
+  const backgroundLayer = renderBackground(state, methodsRef.current);
+  const overlayLayer = renderOverlay(state, methodsRef.current);
 
   let contentLayer =
     typeof children === 'function'
