@@ -2,102 +2,74 @@ import PadContext from './PadContext';
 import { XY, RC, WH, Rect, Size } from '../interfaces';
 import { useIsomorphicLayoutEffect } from '../utils/hooks';
 import { getItemVisibleRect, needsRender } from '../utils/visible';
-import { isEqualToSize, isNumber } from '../utils/geometry';
+import { isEqualToSize } from '../utils/geometry';
 import React, { useContext, useMemo, useRef } from 'react';
+
+function itemOnResize() {}
 
 export interface GridItemProps {
   forceRender?: boolean;
 }
+const Item = React.memo<GridItemProps>((props) => null);
 
-type GridLayoutOptions = {
-  direction: XY;
-  size: Record<WH, number | null>;
-  spacing: Record<RC, number>;
-  itemSize: Size;
-  itemCount: number;
-};
-
-type GridLayoutItem = {
+export type GridLayoutItem = {
   rect: Rect;
   rowIndex: number;
   columnIndex: number;
   itemIndex: number;
 };
-
+export type GridLayout = {
+  size: Size;
+  count: Record<RC, number>;
+  layoutList: GridLayoutItem[];
+};
 export type GridLayoutAttrs = GridLayoutItem & {
   visibleRect: Rect;
   needsRender: boolean;
   Item: React.FC<GridItemProps>;
 };
 
-export type GridLayoutResult = {
-  size: Size;
-  count: Record<RC, number>;
-  layoutList: GridLayoutItem[];
-};
-
 export interface GridContentProps {
-  direction: XY;
   itemWidth: number;
   itemHeight: number;
   itemCount: number;
   renderItem: (attrs: GridLayoutAttrs) => React.ReactNode;
-  width?: number | null;
-  height?: number | null;
+  direction?: XY;
+  width?: number;
+  height?: number;
   rowSpacing?: number;
   columnSpacing?: number;
+  render?: (layout: GridLayout) => React.ReactNode;
 }
 
-const Item: React.FC<GridItemProps> = React.memo(() => null);
-function itemOnResize() {}
-
-const defaultGridContentProps: GridContentProps = {
-  direction: 'y',
-  itemWidth: 0,
-  itemHeight: 0,
-  itemCount: 0,
-  renderItem: () => null,
-  width: null,
-  height: null,
-  rowSpacing: 0,
-  columnSpacing: 0,
-};
-
-const GridContent: React.FC<
-  GridContentProps & React.ComponentProps<'div'>
-> = React.memo((props) => {
-  const context = useContext(PadContext);
+export const GridContent = React.memo<
+  React.ComponentProps<'div'> & GridContentProps
+>((props) => {
   const {
-    direction,
     itemWidth,
     itemHeight,
     itemCount,
     renderItem,
+    direction = 'y',
+    rowSpacing = 0,
+    columnSpacing = 0,
     width,
     height,
-    rowSpacing,
-    columnSpacing,
+    render,
     children,
     ...divProps
-  } = props as Required<GridContentProps> & React.ComponentProps<'div'>;
-  const fixedWidth = isNumber(width) ? width : context.width;
-  const fixedHeight = isNumber(height) ? height : context.height;
+  } = props;
+  const context = useContext(PadContext);
+
+  const fixedWidth = width ?? context.width;
+  const fixedHeight = height ?? context.height;
   const layout = useMemo(
     () =>
       calculateLayout({
         direction,
-        size: {
-          width: fixedWidth,
-          height: fixedHeight,
-        },
-        spacing: {
-          row: rowSpacing,
-          column: columnSpacing,
-        },
-        itemSize: {
-          width: itemWidth,
-          height: itemHeight,
-        },
+        size: { width: fixedWidth, height: fixedHeight },
+        spacing: { row: rowSpacing, column: columnSpacing },
+        itemSize: { width: itemWidth, height: itemHeight },
         itemCount,
       }),
     [
@@ -111,16 +83,17 @@ const GridContent: React.FC<
       itemCount,
     ]
   );
-  const sizeRef = useRef<Size | null>(null);
+
+  const prevSizeRef = useRef<Size>();
   const delegate = { onResize: context.onResize };
   const delegateRef = useRef(delegate);
   delegateRef.current = delegate;
 
   useIsomorphicLayoutEffect(() => {
-    const size = sizeRef.current;
-    sizeRef.current = layout.size;
+    const prevSize = prevSizeRef.current;
+    prevSizeRef.current = layout.size;
 
-    if (!isEqualToSize(size, layout.size)) {
+    if (!isEqualToSize(prevSize, layout.size)) {
       delegateRef.current.onResize(layout.size);
     }
   }, [layout.size]);
@@ -128,21 +101,22 @@ const GridContent: React.FC<
   function buildItem(attrs: GridLayoutAttrs): React.ReactNode {
     const { rect, itemIndex, visibleRect, needsRender, Item } = attrs;
     let forceRender = false;
-    let element = renderItem(attrs);
+    let elem = renderItem(attrs);
 
-    let key: React.ReactText = 'GridContent_' + itemIndex;
+    let key: React.Key = 'GridContent_' + itemIndex;
 
-    if (React.isValidElement(element) && element.type === Item) {
-      const itemProps: GridItemProps = element.props;
+    if (React.isValidElement(elem) && elem.type === Item) {
+      if (elem.key) {
+        key = elem.key;
+      }
+
+      const itemProps: GridItemProps = elem.props;
 
       if (itemProps.forceRender !== undefined) {
         forceRender = itemProps.forceRender;
       }
-      if (element.key) {
-        key = element.key;
-      }
 
-      element = element.props.children;
+      elem = elem.props.children;
     }
 
     if (!needsRender && !forceRender) {
@@ -162,13 +136,13 @@ const GridContent: React.FC<
         key={key}
         value={{
           ...context,
-          width: null,
-          height: null,
+          width: itemWidth,
+          height: itemHeight,
           visibleRect,
           onResize: itemOnResize,
         }}
       >
-        <div style={itemStyle}>{element}</div>
+        <div style={itemStyle}>{elem}</div>
       </PadContext.Provider>
     );
   }
@@ -182,8 +156,8 @@ const GridContent: React.FC<
     })
   );
 
-  if (typeof children === 'function') {
-    children(layout);
+  if (render) {
+    render(layout);
   }
 
   const divStyle = useMemo(() => {
@@ -209,7 +183,15 @@ const GridContent: React.FC<
   return <div {...divProps}>{items}</div>;
 });
 
-function calculateLayout(options: GridLayoutOptions): GridLayoutResult {
+export default GridContent;
+
+function calculateLayout(options: {
+  direction: XY;
+  size: Partial<Size>;
+  spacing: Record<RC, number>;
+  itemSize: Size;
+  itemCount: number;
+}): GridLayout {
   const { direction, size, spacing, itemSize, itemCount } = options;
 
   const [x, y, width, height, row, column]: [XY, XY, WH, WH, RC, RC] =
@@ -221,9 +203,9 @@ function calculateLayout(options: GridLayoutOptions): GridLayoutResult {
   let sizeHeight = 0;
   let countRow = 0;
   let countColumn = 0;
-  const layoutList = [];
+  const layoutList: GridLayoutItem[] = [];
 
-  if (typeof sizeWidth !== 'number') {
+  if (sizeWidth === undefined) {
     countColumn = itemCount;
 
     if (itemSize[width] === 0) {
@@ -282,19 +264,15 @@ function calculateLayout(options: GridLayoutOptions): GridLayoutResult {
         [row + 'Index']: rowIndex,
         [column + 'Index']: columnIndex,
         itemIndex,
-      });
+      } as GridLayoutItem);
     }
 
     sizeHeight += itemSize[height];
   }
 
   return {
-    size: { [width]: sizeWidth, [height]: sizeHeight },
-    count: { [row]: countRow, [column]: countColumn },
+    size: { [width]: sizeWidth, [height]: sizeHeight } as Size,
+    count: { [row]: countRow, [column]: countColumn } as Record<RC, number>,
     layoutList,
-  } as GridLayoutResult;
+  };
 }
-
-GridContent.defaultProps = defaultGridContentProps;
-
-export default GridContent;

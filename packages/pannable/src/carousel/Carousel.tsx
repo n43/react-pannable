@@ -1,76 +1,94 @@
-import { CarouselScrollTo, CarouselEvent } from './carouselReducer';
+import {
+  CarouselScrollTo,
+  CarouselState,
+  CarouselEvent,
+  CarouselMethods,
+} from './carouselReducer';
 import CarouselInner from './CarouselInner';
-import Loop from './Loop';
-import Pad, { defaultPadProps, PadProps } from '../pad/Pad';
 import GridContent, { GridLayoutAttrs } from '../pad/GridContent';
+import Loop from './Loop';
+import Pad from '../pad/Pad';
 import { XY } from '../interfaces';
-import React, { useMemo, useRef, useState, useCallback } from 'react';
+import { useIsomorphicLayoutEffect } from '../utils/hooks';
+import React, { useRef, useCallback } from 'react';
 
-export interface CarouselProps extends PadProps {
-  direction?: XY;
+export interface CarouselProps {
   itemCount: number;
   renderItem: (attrs: GridLayoutAttrs) => React.ReactNode;
+  direction?: XY;
   loop?: boolean;
   autoplayEnabled?: boolean;
   autoplayInterval?: number;
   onActiveIndexChange?: (evt: CarouselEvent) => void;
   scrollToIndex?: CarouselScrollTo | null;
+  render?: (state: CarouselState, methods: CarouselMethods) => React.ReactNode;
 }
 
-const defaultCarouselProps: CarouselProps = {
-  direction: 'x',
-  loop: true,
-  autoplayEnabled: true,
-  autoplayInterval: 5000,
-  itemCount: 0,
-  renderItem: () => null,
-  onActiveIndexChange: () => {},
-  scrollToIndex: null,
-  ...defaultPadProps,
-  pagingEnabled: true,
-  directionalLockEnabled: true,
-};
-
-const Carousel: React.FC<
-  CarouselProps & Omit<React.ComponentProps<'div'>, 'onScroll'>
-> = React.memo((props) => {
+export const Carousel = React.memo<
+  Omit<React.ComponentProps<typeof Pad>, 'render'> & CarouselProps
+>((props) => {
   const {
-    direction,
-    loop,
-    autoplayEnabled,
-    autoplayInterval,
     itemCount,
     renderItem,
+    direction = 'x',
+    loop = true,
+    autoplayEnabled = true,
+    autoplayInterval = 5000,
     onActiveIndexChange,
     scrollToIndex,
+    render,
     children,
     ...padProps
-  } = props as Required<CarouselProps> &
-    Omit<React.ComponentProps<'div'>, 'onScroll'>;
-  const { width, height, renderOverlay, onMouseEnter, onMouseLeave } = padProps;
-  const [autoplay, setAutoplay] = useState(false);
+  } = props;
+  const {
+    width,
+    height,
+    pagingEnabled = true,
+    directionalLockEnabled = true,
+    renderOverlay,
+    onMouseEnter,
+    onMouseLeave,
+  } = padProps;
+  const methodsRef = useRef<CarouselMethods>();
   const delegate = { onMouseEnter, onMouseLeave };
   const delegateRef = useRef(delegate);
   delegateRef.current = delegate;
 
   const padOnMouseEnter = useCallback((evt) => {
-    setAutoplay(false);
+    const methods = methodsRef.current;
+
+    if (methods) {
+      methods.play(false);
+    }
 
     if (delegateRef.current.onMouseEnter) {
       delegateRef.current.onMouseEnter(evt);
     }
   }, []);
   const padOnMouseLeave = useCallback((evt) => {
-    setAutoplay(true);
+    const methods = methodsRef.current;
+
+    if (methods) {
+      methods.play(true);
+    }
 
     if (delegateRef.current.onMouseLeave) {
       delegateRef.current.onMouseLeave(evt);
     }
   }, []);
 
-  useMemo(() => {
-    setAutoplay(autoplayEnabled);
-  }, [autoplayEnabled]);
+  useIsomorphicLayoutEffect(() => {
+    if (scrollToIndex) {
+      const methods = methodsRef.current;
+
+      if (methods) {
+        methods.scrollToIndex(scrollToIndex);
+      }
+    }
+  }, [scrollToIndex]);
+
+  padProps.pagingEnabled = pagingEnabled;
+  padProps.directionalLockEnabled = directionalLockEnabled;
 
   if (autoplayEnabled) {
     padProps.onMouseEnter = padOnMouseEnter;
@@ -78,26 +96,29 @@ const Carousel: React.FC<
   }
 
   if (direction === 'x') {
-    padProps.boundY = 0;
+    padProps.boundY = padProps.boundY ?? 0;
   } else {
-    padProps.boundX = 0;
+    padProps.boundX = padProps.boundX ?? 0;
   }
 
   padProps.renderOverlay = (pad, methods) => (
     <>
       <CarouselInner
         pad={pad}
+        padMethods={methods}
         direction={direction}
         loop={loop}
-        autoplayEnabled={autoplay}
+        autoplayEnabled={autoplayEnabled}
         autoplayInterval={autoplayInterval}
         itemCount={itemCount}
         onActiveIndexChange={onActiveIndexChange}
-        onAdjust={methods._scrollTo}
-        scrollToIndex={scrollToIndex}
-        children={children}
+        render={(state, methods) => {
+          methodsRef.current = methods;
+
+          return render ? render(state, methods) : children;
+        }}
       />
-      {renderOverlay(pad, methods)}
+      {renderOverlay ? renderOverlay(pad, methods) : null}
     </>
   );
 
@@ -123,7 +144,5 @@ const Carousel: React.FC<
 
   return <Pad {...padProps}>{content}</Pad>;
 });
-
-Carousel.defaultProps = defaultCarouselProps;
 
 export default Carousel;

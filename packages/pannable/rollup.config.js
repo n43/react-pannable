@@ -27,6 +27,7 @@ export default [
       commonjs(),
       replace({
         'process.env.NODE_ENV': JSON.stringify('development'),
+        preventAssignment: true,
       }),
     ],
   },
@@ -49,6 +50,7 @@ export default [
       commonjs(),
       replace({
         'process.env.NODE_ENV': JSON.stringify('production'),
+        preventAssignment: true,
       }),
       terser({
         compress: {

@@ -1,11 +1,12 @@
 import { PadState, PadEvent, PadMethods, PadScrollTo } from './padReducer';
 import PadInner from './PadInner';
+import { PannableState } from '../pannableReducer';
+import Pannable, { PannableEvent } from '../Pannable';
 import { XY, WH, LT, RB, Point, Size, Bound, Inset } from '../interfaces';
-import Pannable, { defaultPannableProps, PannableProps } from '../Pannable';
+import { useIsomorphicLayoutEffect } from '../utils/hooks';
 import React, { useMemo, useCallback, useRef } from 'react';
-import { PannableState } from 'pannableReducer';
 
-export interface PadProps extends PannableProps {
+export interface PadProps {
   width: number;
   height: number;
   pagingEnabled?: boolean;
@@ -24,46 +25,24 @@ export interface PadProps extends PannableProps {
   onResizeContent?: (evt: Size) => void;
   renderBackground?: (state: PadState, methods: PadMethods) => React.ReactNode;
   renderOverlay?: (state: PadState, methods: PadMethods) => React.ReactNode;
-  scrollTo?: PadScrollTo | null;
+  render?: (state: PadState, methods: PadMethods) => React.ReactNode;
+  scrollTo?: PadScrollTo;
 }
 
-export const defaultPadProps: PadProps = {
-  width: 0,
-  height: 0,
-  boundX: 1,
-  boundY: 1,
-  contentInsetTop: 0,
-  contentInsetRight: 0,
-  contentInsetBottom: 0,
-  contentInsetLeft: 0,
-  pagingEnabled: false,
-  directionalLockEnabled: false,
-  onScroll: () => {},
-  onStartDragging: () => {},
-  onEndDragging: () => {},
-  onStartDecelerating: () => {},
-  onEndDecelerating: () => {},
-  onResizeContent: () => {},
-  renderBackground: () => null,
-  renderOverlay: () => null,
-  scrollTo: null,
-  ...defaultPannableProps,
-};
-
-const Pad: React.FC<
-  PadProps & Omit<React.ComponentProps<'div'>, 'onScroll'>
-> = React.memo((props) => {
+export const Pad = React.memo<
+  Omit<React.ComponentProps<typeof Pannable>, 'onScroll' | 'render'> & PadProps
+>((props) => {
   const {
     width,
     height,
-    boundX,
-    boundY,
-    contentInsetTop,
-    contentInsetRight,
-    contentInsetBottom,
-    contentInsetLeft,
-    pagingEnabled,
-    directionalLockEnabled,
+    boundX = 1,
+    boundY = 1,
+    contentInsetTop = 0,
+    contentInsetRight = 0,
+    contentInsetBottom = 0,
+    contentInsetLeft = 0,
+    pagingEnabled = false,
+    directionalLockEnabled = false,
     onScroll,
     onStartDragging,
     onEndDragging,
@@ -72,11 +51,11 @@ const Pad: React.FC<
     onResizeContent,
     renderBackground,
     renderOverlay,
+    render,
     scrollTo,
     children,
     ...pannableProps
-  } = props as Required<PadProps> &
-    Omit<React.ComponentProps<'div'>, 'onScroll'>;
+  } = props;
   const size = useMemo(() => ({ width, height }), [width, height]);
   const bound = useMemo(() => ({ x: boundX, y: boundY }), [boundX, boundY]);
   const contentInset = useMemo(
@@ -89,11 +68,16 @@ const Pad: React.FC<
     [contentInsetTop, contentInsetRight, contentInsetBottom, contentInsetLeft]
   );
   const stateRef = useRef<PadState>();
+  const methodsRef = useRef<PadMethods>();
   const delegate = { shouldStart: pannableProps.shouldStart };
   const delegateRef = useRef(delegate);
   delegateRef.current = delegate;
 
-  const pannableShouldStart = useCallback((evt) => {
+  const pannableShouldStart = useCallback((evt: PannableEvent) => {
+    if (delegateRef.current.shouldStart) {
+      return delegateRef.current.shouldStart(evt);
+    }
+
     const state = stateRef.current;
 
     if (!state) {
@@ -111,8 +95,18 @@ const Pad: React.FC<
       return false;
     }
 
-    return delegateRef.current.shouldStart(evt);
+    return true;
   }, []);
+
+  useIsomorphicLayoutEffect(() => {
+    if (scrollTo) {
+      const methods = methodsRef.current;
+
+      if (methods) {
+        methods.scrollTo(scrollTo);
+      }
+    }
+  }, [scrollTo]);
 
   const pannableStyle = useMemo(() => {
     const style: React.CSSProperties = {
@@ -129,12 +123,13 @@ const Pad: React.FC<
     return style;
   }, [size, pannableProps.style]);
 
-  pannableProps.shouldStart = pannableShouldStart;
   pannableProps.style = pannableStyle;
+  pannableProps.shouldStart = pannableShouldStart;
 
   return (
-    <Pannable {...pannableProps}>
-      {(pannable: PannableState) => (
+    <Pannable
+      {...pannableProps}
+      render={(pannable: PannableState) => (
         <PadInner
           pannable={pannable}
           size={size}
@@ -150,22 +145,17 @@ const Pad: React.FC<
           onResizeContent={onResizeContent}
           renderBackground={renderBackground}
           renderOverlay={renderOverlay}
-          scrollTo={scrollTo}
-        >
-          {(state: PadState, methods: PadMethods) => {
+          render={(state, methods) => {
             stateRef.current = state;
+            methodsRef.current = methods;
 
-            return typeof children === 'function'
-              ? children(state, methods)
-              : children;
+            return render ? render(state, methods) : children;
           }}
-        </PadInner>
+        />
       )}
-    </Pannable>
+    />
   );
 });
-
-Pad.defaultProps = defaultPadProps;
 
 export default Pad;
 

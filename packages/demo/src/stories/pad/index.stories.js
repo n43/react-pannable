@@ -38,7 +38,7 @@ export const Overview = () => {
     600,
     'props'
   );
-  const enabled = boolean('enabled', true, 'props');
+  const disabled = boolean('disabled', false, 'props');
   const pagingEnabled = boolean('pagingEnabled', false, 'props');
   const directionalLockEnabled = boolean(
     'directionalLockEnabled',
@@ -127,8 +127,10 @@ export const Overview = () => {
         exceeds the bounds of the content.
       </div>
       <div className="overview-content">
-        <AutoResizing width={padWidth} height={padHeight}>
-          {({ width, height }) => (
+        <AutoResizing
+          width={padWidth}
+          height={padHeight}
+          render={({ width, height }) => (
             <Pad
               width={width}
               height={height}
@@ -140,7 +142,7 @@ export const Overview = () => {
               contentInsetLeft={contentInsetLeft}
               pagingEnabled={pagingEnabled}
               directionalLockEnabled={directionalLockEnabled}
-              enabled={enabled}
+              disabled={disabled}
               scrollTo={scrollTo}
               onStartDragging={onStartDragging}
               onEndDragging={onEndDragging}
@@ -156,7 +158,7 @@ export const Overview = () => {
               </ItemContent>
             </Pad>
           )}
-        </AutoResizing>
+        />
       </div>
     </div>
   );
@@ -189,8 +191,9 @@ export const LayoutWithAutoResizingContent = () => {
         automatically resizes when the data change.
       </div>
       <div className="overview-content">
-        <AutoResizing height={500}>
-          {({ width, height }) => (
+        <AutoResizing
+          height={500}
+          render={({ width, height }) => (
             <Pad width={width} height={height} boundX={0}>
               <ItemContent
                 autoResizing
@@ -202,7 +205,7 @@ export const LayoutWithAutoResizingContent = () => {
               </ItemContent>
             </Pad>
           )}
-        </AutoResizing>
+        />
       </div>
     </div>
   );
@@ -244,8 +247,9 @@ export const LayoutWithGridContent = () => {
         items that display the actual content.
       </div>
       <div className="overview-content">
-        <AutoResizing height={500}>
-          {({ width, height }) => (
+        <AutoResizing
+          height={500}
+          render={({ width, height }) => (
             <Pad width={width} height={height} boundX={0} boundY={0}>
               <GridContent
                 width={contentWidth === null ? width : contentWidth}
@@ -266,7 +270,7 @@ export const LayoutWithGridContent = () => {
               />
             </Pad>
           )}
-        </AutoResizing>
+        />
       </div>
     </div>
   );
@@ -311,8 +315,9 @@ export const LayoutWithListContent = () => {
         the items that display the actual content.
       </div>
       <div className="overview-content">
-        <AutoResizing height={500}>
-          {({ width, height }) => {
+        <AutoResizing
+          height={500}
+          render={({ width, height }) => {
             const listWidth = contentWidth === null ? width : contentWidth;
             const listHeight = contentHeight === null ? height : contentHeight;
 
@@ -366,7 +371,7 @@ export const LayoutWithListContent = () => {
               </Pad>
             );
           }}
-        </AutoResizing>
+        />
       </div>
     </div>
   );
@@ -386,8 +391,9 @@ export const LayoutWithMultipleNestedContent = () => {
       <div className="overview-h1">Multiple Nested Content</div>
       <div className="overview-desc"></div>
       <div className="overview-content">
-        <AutoResizing height={500}>
-          {({ width, height }) => (
+        <AutoResizing
+          height={500}
+          render={({ width, height }) => (
             <Pad width={width} height={height} boundX={0}>
               <ListContent
                 width={width}
@@ -398,8 +404,8 @@ export const LayoutWithMultipleNestedContent = () => {
                 renderItem={({ itemIndex, Item }) => {
                   if (itemIndex === 0) {
                     return (
-                      <Item hash={contentForIC}>
-                        <ItemContent width={width}>
+                      <Item hash={`ItemContent_${contentForIC}`}>
+                        <ItemContent>
                           <div className="pad-intro">{contentForIC}</div>
                         </ItemContent>
                       </Item>
@@ -408,58 +414,49 @@ export const LayoutWithMultipleNestedContent = () => {
 
                   if (itemIndex === 1) {
                     return (
-                      <Item hash="AutoResizingContent">
-                        <ItemContent width={width} autoResizing>
-                          <div className="pad-intro">{contentForGEC}</div>
-                        </ItemContent>
-                      </Item>
+                      <ItemContent autoResizing>
+                        <div className="pad-intro">{contentForGEC}</div>
+                      </ItemContent>
                     );
                   }
 
                   if (itemIndex === 2) {
                     return (
-                      <Item hash="GridContent">
-                        <GridContent
-                          width={width}
-                          direction="y"
-                          itemWidth={100}
-                          itemHeight={100}
-                          itemCount={itemCountForGC}
-                          renderItem={({ itemIndex, Item }) => (
-                            <Item>
-                              <img src={svgCircle} className="pad-circle" />
-                              <div className="pad-griditem">{itemIndex}</div>
-                            </Item>
-                          )}
-                        />
-                      </Item>
+                      <GridContent
+                        width={width}
+                        direction="y"
+                        itemWidth={100}
+                        itemHeight={100}
+                        itemCount={itemCountForGC}
+                        renderItem={({ itemIndex }) => (
+                          <>
+                            <img src={svgCircle} className="pad-circle" />
+                            <div className="pad-griditem">{itemIndex}</div>
+                          </>
+                        )}
+                      />
                     );
                   }
 
                   if (itemIndex === 3) {
                     return (
-                      <Item hash="ListContent">
-                        <ListContent
-                          width={width}
-                          direction="y"
-                          itemCount={itemCountForLC}
-                          renderItem={({ itemIndex, Item }) => (
-                            <Item hash={String(itemIndex)}>
-                              <ItemContent width={width}>
-                                <div
-                                  style={{
-                                    width: '100%',
-                                    height: `${itemIndex + 3}em`,
-                                  }}
-                                  className="pad-listitem"
-                                >
-                                  {itemIndex + 1} kg
-                                </div>
-                              </ItemContent>
-                            </Item>
-                          )}
-                        />
-                      </Item>
+                      <ListContent
+                        direction="y"
+                        itemCount={itemCountForLC}
+                        renderItem={({ itemIndex }) => (
+                          <ItemContent>
+                            <div
+                              style={{
+                                width: '100%',
+                                height: `${itemIndex + 3}em`,
+                              }}
+                              className="pad-listitem"
+                            >
+                              {itemIndex + 1} kg
+                            </div>
+                          </ItemContent>
+                        )}
+                      />
                     );
                   }
 
@@ -469,7 +466,7 @@ export const LayoutWithMultipleNestedContent = () => {
               />
             </Pad>
           )}
-        </AutoResizing>
+        />
       </div>
     </div>
   );

@@ -1,44 +1,44 @@
+import { LoopState } from './loopReducer';
 import LoopInner from './LoopInner';
 import { XY } from '../interfaces';
 import { PadState, PadMethods } from '../pad/padReducer';
-import Pad, { defaultPadProps, PadProps } from '../pad/Pad';
+import Pad from '../pad/Pad';
 import React from 'react';
 
-export interface LoopProps extends PadProps {
+export interface LoopProps {
   direction: XY;
+  render?: (state: LoopState) => React.ReactNode;
 }
 
-const defaultLoopProps: LoopProps = {
-  direction: 'x',
-  ...defaultPadProps,
-  directionalLockEnabled: true,
-};
+export const Loop = React.memo<
+  Omit<React.ComponentProps<typeof Pad>, 'render'> & LoopProps
+>((props) => {
+  const { direction = 'x', render, children, ...padProps } = props;
+  const { directionalLockEnabled = true } = padProps;
 
-const Loop: React.FC<
-  LoopProps & Omit<React.ComponentProps<'div'>, 'onScroll'>
-> = React.memo((props) => {
-  const { direction, children, ...padProps } = props as Required<LoopProps> &
-    Omit<React.ComponentProps<'div'>, 'onScroll'>;
+  padProps.directionalLockEnabled = directionalLockEnabled;
 
   if (direction === 'x') {
-    padProps.boundX = -1;
+    padProps.boundX = padProps.boundX ?? -1;
   } else {
-    padProps.boundY = -1;
+    padProps.boundY = padProps.boundY ?? -1;
   }
 
   return (
-    <Pad {...padProps}>
-      {(pad: PadState, methods: PadMethods) => (
+    <Pad
+      {...padProps}
+      render={(pad: PadState, methods: PadMethods) => (
         <LoopInner
           pad={pad}
-          onAdjust={methods._scrollTo}
+          padMethods={methods}
           direction={direction}
-          children={children}
+          render={(state) => {
+            return render ? render(state) : children;
+          }}
         />
       )}
-    </Pad>
+    />
   );
 });
 
-Loop.defaultProps = defaultLoopProps;
 export default Loop;

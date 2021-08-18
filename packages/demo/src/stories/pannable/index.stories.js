@@ -16,10 +16,10 @@ export default {
 };
 
 export const DraggableNotes = () => {
-  const panEnabled = boolean('Drag Enabled', true);
+  const panDisabled = boolean('Drag Disabled', false);
   const cancelsOut = boolean('Cancels when Dragged Out the Container', true);
 
-  const [enabled, setEnabled] = useState(true);
+  const [disabled, setDisabled] = useState(false);
   const [drag, setDrag] = useState(null);
   const [boxSize, setBoxSize] = useState({ width: 400, height: 600 });
   const points = {
@@ -29,7 +29,7 @@ export const DraggableNotes = () => {
   const pointsRef = useRef();
   pointsRef.current = points;
 
-  const onBoxResize = useCallback(size => {
+  const onBoxResize = useCallback((size) => {
     setBoxSize(size);
   }, []);
 
@@ -38,7 +38,7 @@ export const DraggableNotes = () => {
     []
   );
 
-  const onStart = useCallback(evt => {
+  const onStart = useCallback((evt) => {
     const key = getDraggableKey(evt.target);
     const startPoint = pointsRef.current[key][0];
 
@@ -47,7 +47,7 @@ export const DraggableNotes = () => {
   }, []);
 
   const onMove = useCallback(
-    evt => {
+    (evt) => {
       if (!drag) {
         return;
       }
@@ -62,13 +62,13 @@ export const DraggableNotes = () => {
     [drag]
   );
 
-  const onEnd = useCallback(evt => {
+  const onEnd = useCallback((evt) => {
     setDrag(null);
     console.log('onEnd', evt);
   }, []);
 
   const onCancel = useCallback(
-    evt => {
+    (evt) => {
       setDrag(null);
 
       if (drag) {
@@ -78,20 +78,20 @@ export const DraggableNotes = () => {
         setPoint(point);
       }
 
-      setEnabled(true);
+      setDisabled(false);
       console.log('onCancel', evt);
     },
     [drag]
   );
 
   useMemo(() => {
-    setEnabled(panEnabled);
-  }, [panEnabled]);
+    setDisabled(panDisabled);
+  }, [panDisabled]);
 
   const dragPoint = drag ? points[drag.key][0] : null;
 
   useMemo(() => {
-    if (cancelsOut && enabled && dragPoint) {
+    if (cancelsOut && !disabled && dragPoint) {
       const maxPoint = {
         x: boxSize.width - 200,
         y: boxSize.height - 200,
@@ -103,10 +103,10 @@ export const DraggableNotes = () => {
         dragPoint.x > maxPoint.x ||
         dragPoint.y > maxPoint.y
       ) {
-        setEnabled(false);
+        setDisabled(true);
       }
     }
-  }, [cancelsOut, enabled, dragPoint, boxSize]);
+  }, [cancelsOut, disabled, dragPoint, boxSize]);
 
   return (
     <div className="overview-wrapper">
@@ -119,7 +119,7 @@ export const DraggableNotes = () => {
       <div className="overview-content">
         <AutoResizing height={600} onResize={onBoxResize}>
           <Pannable
-            enabled={enabled}
+            disabled={disabled}
             shouldStart={shouldStart}
             onStart={onStart}
             onMove={onMove}
@@ -189,16 +189,16 @@ export const AdjustableSticker = () => {
     rotate: 0,
   });
   const [drag, setDrag] = useState(null);
-  const [enabled, setEnabled] = useState(true);
+  const [disabled, setDisabled] = useState(false);
   const transformRef = useRef();
   transformRef.current = transform;
 
   const onDone = useCallback(() => {
-    setEnabled(false);
+    setDisabled(true);
   }, []);
 
   const onEdit = useCallback(() => {
-    setEnabled(true);
+    setDisabled(false);
   }, []);
 
   const shouldStart = useCallback(({ target }) => !!getDragAction(target), []);
@@ -218,21 +218,21 @@ export const AdjustableSticker = () => {
       const { action, startTransform } = drag;
 
       if (action === 'translate') {
-        setTransform(prevTransform => ({
+        setTransform((prevTransform) => ({
           ...prevTransform,
           translateX: startTransform.translateX + translation.x,
           translateY: startTransform.translateY + translation.y,
         }));
       }
       if (action === 'scale') {
-        setTransform(prevTransform => ({
+        setTransform((prevTransform) => ({
           ...prevTransform,
           width: Math.max(100, startTransform.width + translation.x),
           height: Math.max(100, startTransform.height + translation.y),
         }));
       }
       if (action === 'rotate') {
-        setTransform(prevTransform => ({
+        setTransform((prevTransform) => ({
           ...prevTransform,
           rotate: calculateRotate(startTransform, translation),
         }));
@@ -255,7 +255,7 @@ export const AdjustableSticker = () => {
       </div>
       <div className="overview-content">
         <Pannable
-          enabled={enabled}
+          disabled={disabled}
           shouldStart={shouldStart}
           onStart={onStart}
           onMove={onMove}
@@ -268,7 +268,11 @@ export const AdjustableSticker = () => {
           data-dragbox="dragbox"
         >
           <SvgSticker className="pan-sticker-image" />
-          {enabled ? (
+          {disabled ? (
+            <div onClick={onEdit} className="pan-sticker-edit">
+              Edit
+            </div>
+          ) : (
             <Fragment>
               <SvgPan
                 data-action="translate"
@@ -280,10 +284,6 @@ export const AdjustableSticker = () => {
                 Done
               </div>
             </Fragment>
-          ) : (
-            <div onClick={onEdit} className="pan-sticker-edit">
-              Edit
-            </div>
           )}
         </Pannable>
       </div>

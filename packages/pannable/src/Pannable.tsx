@@ -1,9 +1,9 @@
 import reducer, {
   initialPannableState,
-  PannableEvent,
+  PannableState,
 } from './pannableReducer';
 import { Point } from './interfaces';
-import { useIsomorphicLayoutEffect, usePrevious } from './utils/hooks';
+import { useIsomorphicLayoutEffect } from './utils/hooks';
 import StyleSheet from './utils/StyleSheet';
 import subscribeEvent from './utils/subscribeEvent';
 import React, { useMemo, useRef, useReducer } from 'react';
@@ -11,270 +11,301 @@ import React, { useMemo, useRef, useReducer } from 'react';
 const supportsTouch =
   typeof window !== undefined ? 'ontouchstart' in window : false;
 
+const MIN_START_DISTANCE = 0;
+
+export type PannableEvent = {
+  target: EventTarget;
+  translation: Point;
+  velocity: Point;
+  interval: number;
+};
+
 export interface PannableProps {
-  enabled?: boolean;
+  disabled?: boolean;
   shouldStart?: (evt: PannableEvent) => boolean;
   onStart?: (evt: PannableEvent) => void;
   onMove?: (evt: PannableEvent) => void;
   onEnd?: (evt: PannableEvent) => void;
   onCancel?: (evt: PannableEvent) => void;
+  render?: (state: PannableState) => React.ReactNode;
 }
 
-export const defaultPannableProps: PannableProps = {
-  enabled: true,
-  shouldStart: () => true,
-  onStart: () => {},
-  onMove: () => {},
-  onEnd: () => {},
-  onCancel: () => {},
-};
+export const Pannable = React.memo<React.ComponentProps<'div'> & PannableProps>(
+  (props) => {
+    const {
+      disabled,
+      shouldStart,
+      onStart,
+      onMove,
+      onEnd,
+      onCancel,
+      render,
+      children,
+      ...divProps
+    } = props;
+    const [state, dispatch] = useReducer(reducer, initialPannableState);
+    const prevStateRef = useRef(state);
+    const elemRef = useRef<HTMLDivElement>(null);
+    const delegate = { shouldStart, onStart, onMove, onEnd, onCancel };
+    const delegateRef = useRef(delegate);
+    delegateRef.current = delegate;
 
-const Pannable: React.FC<
-  PannableProps & React.ComponentProps<'div'>
-> = React.memo((props) => {
-  const {
-    enabled,
-    shouldStart,
-    onStart,
-    onMove,
-    onEnd,
-    onCancel,
-    children,
-    ...divProps
-  } = props as Required<PannableProps> & React.ComponentProps<'div'>;
-  const [state, dispatch] = useReducer(reducer, initialPannableState);
-  const prevState = usePrevious(state);
-  const elemRef = useRef<HTMLDivElement>(null);
-  const delegate = { shouldStart, onStart, onMove, onEnd, onCancel };
-  const delegateRef = useRef(delegate);
-  delegateRef.current = delegate;
+    const isMoving = !!state.translation;
 
-  const isMoving = !!state.translation;
+    useIsomorphicLayoutEffect(() => {
+      const prevState = prevStateRef.current;
+      prevStateRef.current = state;
 
-  useMemo(() => {
-    dispatch({
-      type: 'setEnabled',
-      payload: { enabled },
-    });
-  }, [enabled]);
-
-  useIsomorphicLayoutEffect(() => {
-    if (prevState.translation !== state.translation) {
-      if (state.translation) {
-        const evt: PannableEvent = {
-          translation: state.translation,
-          velocity: state.velocity!,
-          interval: state.interval!,
-          target: state.target!,
+      if (state.target && !state.translation) {
+        const translation = {
+          x: state.movePoint.x - state.startPoint.x,
+          y: state.movePoint.y - state.startPoint.y,
         };
+        const dist = Math.sqrt(
+          Math.pow(translation.x, 2) + Math.pow(translation.y, 2)
+        );
 
-        if (prevState.translation) {
-          delegateRef.current.onMove(evt);
-        } else {
-          delegateRef.current.onStart(evt);
-        }
-      } else if (prevState.translation) {
-        const evt: PannableEvent = {
-          translation: prevState.translation,
-          velocity: prevState.velocity!,
-          interval: prevState.interval!,
-          target: prevState.target!,
-        };
+        if (dist > MIN_START_DISTANCE) {
+          const evt: PannableEvent = {
+            target: state.target,
+            translation,
+            velocity: state.velocity!,
+            interval: state.interval!,
+          };
 
-        if (state.enabled) {
-          delegateRef.current.onEnd(evt);
-        } else {
-          delegateRef.current.onCancel(evt);
+          if (delegateRef.current.shouldStart) {
+            if (delegateRef.current.shouldStart(evt)) {
+              dispatch({ type: 'start' });
+            }
+          } else {
+            dispatch({ type: 'start' });
+          }
         }
       }
-    }
-  }, [state]);
+      if (prevState.translation !== state.translation) {
+        if (state.translation) {
+          const evt: PannableEvent = {
+            target: state.target!,
+            translation: state.translation,
+            velocity: state.velocity!,
+            interval: state.interval!,
+          };
 
-  useIsomorphicLayoutEffect(() => {
-    if (!state.enabled) {
-      return;
-    }
-
-    const elemNode = elemRef.current;
-
-    if (!elemNode) {
-      return;
-    }
-
-    const track = (target: EventTarget, point: Point) =>
-      dispatch({
-        type: 'track',
-        payload: { target, point },
-      });
-
-    const move = (point: Point) =>
-      dispatch({
-        type: 'move',
-        payload: {
-          point,
-          shouldStart: delegateRef.current.shouldStart,
-        },
-      });
-
-    const end = () => dispatch({ type: 'end', payload: null });
-
-    if (state.target) {
-      if (supportsTouch) {
-        const onTouchMove = (evt: TouchEvent) => {
-          if (isMoving && evt.cancelable) {
-            evt.preventDefault();
-            evt.stopImmediatePropagation();
-          }
-
-          if (evt.touches.length === 1) {
-            const touchEvent = evt.touches[0];
-
-            move({ x: touchEvent.pageX, y: touchEvent.pageY });
+          if (prevState.translation) {
+            if (delegateRef.current.onMove) {
+              delegateRef.current.onMove(evt);
+            }
           } else {
-            end();
+            if (delegateRef.current.onStart) {
+              delegateRef.current.onStart(evt);
+            }
           }
-        };
-        const onTouchEnd = (evt: TouchEvent) => {
-          if (isMoving && evt.cancelable) {
-            evt.preventDefault();
-            evt.stopImmediatePropagation();
-          }
+        } else if (prevState.translation) {
+          const evt: PannableEvent = {
+            target: prevState.target!,
+            translation: prevState.translation,
+            velocity: prevState.velocity!,
+            interval: prevState.interval!,
+          };
 
-          end();
-        };
-
-        const unsubscribeTouchMove = subscribeEvent(
-          elemNode,
-          'touchmove',
-          onTouchMove
-        );
-        const unsubscribeTouchEnd = subscribeEvent(
-          elemNode,
-          'touchend',
-          onTouchEnd
-        );
-        const unsubscribeTouchCancel = subscribeEvent(
-          elemNode,
-          'touchcancel',
-          onTouchEnd
-        );
-
-        return () => {
-          unsubscribeTouchMove();
-          unsubscribeTouchEnd();
-          unsubscribeTouchCancel();
-        };
-      } else {
-        const onMouseMove = (evt: MouseEvent) => {
-          if (isMoving) {
-            evt.preventDefault();
-            evt.stopImmediatePropagation();
-          }
-
-          if (evt.buttons === 1) {
-            move({ x: evt.pageX, y: evt.pageY });
+          if (state.cancelled) {
+            if (delegateRef.current.onCancel) {
+              delegateRef.current.onCancel(evt);
+            }
           } else {
+            if (delegateRef.current.onEnd) {
+              delegateRef.current.onEnd(evt);
+            }
+          }
+        }
+      }
+    }, [state]);
+
+    useIsomorphicLayoutEffect(() => {
+      if (disabled) {
+        if (state.target) {
+          dispatch({ type: 'reset' });
+        }
+        return;
+      }
+
+      const elemNode = elemRef.current;
+
+      if (!elemNode) {
+        return;
+      }
+
+      const track = (target: EventTarget, point: Point) => {
+        dispatch({
+          type: 'track',
+          payload: { target, point },
+        });
+      };
+
+      const move = (point: Point) => {
+        dispatch({
+          type: 'move',
+          payload: { point },
+        });
+      };
+
+      const end = () => {
+        dispatch({ type: 'end', payload: null });
+      };
+
+      if (state.target) {
+        if (supportsTouch) {
+          const onTouchMove = (evt: TouchEvent) => {
+            if (isMoving && evt.cancelable) {
+              evt.preventDefault();
+              evt.stopImmediatePropagation();
+            }
+
+            if (evt.touches.length === 1) {
+              const touchEvent = evt.touches[0];
+
+              move({ x: touchEvent.pageX, y: touchEvent.pageY });
+            } else {
+              end();
+            }
+          };
+          const onTouchEnd = (evt: TouchEvent) => {
+            if (isMoving && evt.cancelable) {
+              evt.preventDefault();
+              evt.stopImmediatePropagation();
+            }
+
             end();
-          }
-        };
-        const onMouseUp = (evt: MouseEvent) => {
-          if (isMoving) {
-            evt.preventDefault();
-            evt.stopImmediatePropagation();
-          }
+          };
 
-          end();
-        };
+          const unsubscribeTouchMove = subscribeEvent(
+            elemNode,
+            'touchmove',
+            onTouchMove
+          );
+          const unsubscribeTouchEnd = subscribeEvent(
+            elemNode,
+            'touchend',
+            onTouchEnd
+          );
+          const unsubscribeTouchCancel = subscribeEvent(
+            elemNode,
+            'touchcancel',
+            onTouchEnd
+          );
 
-        const body = document.body;
+          return () => {
+            unsubscribeTouchMove();
+            unsubscribeTouchEnd();
+            unsubscribeTouchCancel();
+          };
+        } else {
+          const onMouseMove = (evt: MouseEvent) => {
+            if (isMoving) {
+              evt.preventDefault();
+              evt.stopImmediatePropagation();
+            }
 
-        const unsubscribeMouseMove = subscribeEvent(
-          body,
-          'mousemove',
-          onMouseMove
-        );
-        const unsubscribeMouseUp = subscribeEvent(body, 'mouseup', onMouseUp);
+            if (evt.buttons === 1) {
+              move({ x: evt.pageX, y: evt.pageY });
+            } else {
+              end();
+            }
+          };
+          const onMouseUp = (evt: MouseEvent) => {
+            if (isMoving) {
+              evt.preventDefault();
+              evt.stopImmediatePropagation();
+            }
 
-        return () => {
-          unsubscribeMouseMove();
-          unsubscribeMouseUp();
-        };
-      }
-    } else {
-      if (supportsTouch) {
-        const onTouchStart = (evt: TouchEvent) => {
-          if (evt.touches.length === 1) {
-            const touchEvent = evt.touches[0];
+            end();
+          };
 
-            track(touchEvent.target, {
-              x: touchEvent.pageX,
-              y: touchEvent.pageY,
-            });
-          }
-        };
+          const body = document.body;
 
-        const unsubscribeTouchStart = subscribeEvent(
-          elemNode,
-          'touchstart',
-          onTouchStart
-        );
+          const unsubscribeMouseMove = subscribeEvent(
+            body,
+            'mousemove',
+            onMouseMove
+          );
+          const unsubscribeMouseUp = subscribeEvent(body, 'mouseup', onMouseUp);
 
-        return () => {
-          unsubscribeTouchStart();
-        };
+          return () => {
+            unsubscribeMouseMove();
+            unsubscribeMouseUp();
+          };
+        }
       } else {
-        const onMouseDown = (evt: MouseEvent) => {
-          if (evt.buttons === 1 && evt.target) {
-            track(evt.target, { x: evt.pageX, y: evt.pageY });
-          }
-        };
+        if (supportsTouch) {
+          const onTouchStart = (evt: TouchEvent) => {
+            if (evt.touches.length === 1) {
+              const touchEvent = evt.touches[0];
 
-        const unsubscribeMouseDown = subscribeEvent(
-          elemNode,
-          'mousedown',
-          onMouseDown
-        );
+              track(touchEvent.target, {
+                x: touchEvent.pageX,
+                y: touchEvent.pageY,
+              });
+            }
+          };
 
-        return () => {
-          unsubscribeMouseDown();
-        };
+          const unsubscribeTouchStart = subscribeEvent(
+            elemNode,
+            'touchstart',
+            onTouchStart
+          );
+
+          return () => {
+            unsubscribeTouchStart();
+          };
+        } else {
+          const onMouseDown = (evt: MouseEvent) => {
+            if (evt.buttons === 1 && evt.target) {
+              track(evt.target, { x: evt.pageX, y: evt.pageY });
+            }
+          };
+
+          const unsubscribeMouseDown = subscribeEvent(
+            elemNode,
+            'mousedown',
+            onMouseDown
+          );
+
+          return () => {
+            unsubscribeMouseDown();
+          };
+        }
       }
-    }
-  }, [state.enabled, state.target, isMoving, dispatch]);
+    }, [disabled, state.target, isMoving]);
 
-  const divStyle = useMemo(() => {
-    const style: React.CSSProperties = {};
+    const divStyle = useMemo(() => {
+      const style: React.CSSProperties = {};
 
-    if (isMoving) {
-      Object.assign(
-        style,
-        StyleSheet.create({
-          touchAction: 'none',
-          pointerEvents: 'none',
-          userSelectNone: true,
-        })
-      );
-    }
+      if (isMoving) {
+        Object.assign(
+          style,
+          StyleSheet.create({
+            touchAction: 'none',
+            pointerEvents: 'none',
+            userSelectNone: true,
+          })
+        );
+      }
 
-    if (divProps.style) {
-      Object.assign(style, divProps.style);
-    }
+      if (divProps.style) {
+        Object.assign(style, divProps.style);
+      }
 
-    return style;
-  }, [isMoving, divProps.style]);
+      return style;
+    }, [isMoving, divProps.style]);
 
-  divProps.style = divStyle;
+    divProps.style = divStyle;
 
-  const element: React.ReactNode =
-    typeof children === 'function' ? children(state) : children;
-
-  return (
-    <div {...divProps} ref={elemRef}>
-      {element}
-    </div>
-  );
-});
-
-Pannable.defaultProps = defaultPannableProps;
+    return (
+      <div {...divProps} ref={elemRef}>
+        {render ? render(state) : children}
+      </div>
+    );
+  }
+);
 
 export default Pannable;

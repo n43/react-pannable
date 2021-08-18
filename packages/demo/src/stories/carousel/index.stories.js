@@ -64,8 +64,8 @@ export const LoopDemo = () => {
         Loop component used to play a number of looping items in sequence.
       </div>
       <div className="overview-content">
-        <AutoResizing>
-          {({ width }) => {
+        <AutoResizing
+          render={({ width }) => {
             const height = Math.ceil((width * 8) / 15.0);
 
             return (
@@ -86,7 +86,7 @@ export const LoopDemo = () => {
               </Loop>
             );
           }}
-        </AutoResizing>
+        />
       </div>
     </div>
   );
@@ -143,8 +143,8 @@ export const HorizontalCarousel = () => {
         Carousel component used to play a number of looping items in sequence.
       </div>
       <div className="overview-content">
-        <AutoResizing>
-          {({ width }) => {
+        <AutoResizing
+          render={({ width }) => {
             const height = Math.ceil((width * 8) / 15.0);
 
             return (
@@ -158,8 +158,7 @@ export const HorizontalCarousel = () => {
                 itemCount={list.length}
                 renderItem={renderItem}
                 scrollToIndex={scrollToIndex}
-              >
-                {({ activeIndex, itemCount }) => (
+                render={({ activeIndex, itemCount }) => (
                   <HorizontalIndicator
                     activeIndex={activeIndex}
                     itemCount={itemCount}
@@ -168,10 +167,10 @@ export const HorizontalCarousel = () => {
                     onGoto={onIndicatorGoto}
                   />
                 )}
-              </Carousel>
+              />
             );
           }}
-        </AutoResizing>
+        />
       </div>
     </div>
   );

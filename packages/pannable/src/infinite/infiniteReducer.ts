@@ -1,6 +1,12 @@
-import { XY, Action, Align } from '../interfaces';
+import { ListLayout } from '../pad/ListContent';
 import { initialPadState, PadScrollTo, PadState } from '../pad/padReducer';
+import { XY, Action, Align, Rect } from '../interfaces';
 import { Reducer } from 'react';
+
+export type InfiniteLayout = {
+  box?: ListLayout;
+  body?: ListLayout;
+};
 
 export type InfiniteScrollTo = {
   index: number;
@@ -8,22 +14,26 @@ export type InfiniteScrollTo = {
   animated: boolean;
 };
 
+export type InfiniteMethods = {
+  scrollToIndex: (params: InfiniteScrollTo) => void;
+};
+
 export type InfiniteState = {
+  pad: PadState;
   scroll: InfiniteScrollTo | null;
   scrollTo: PadScrollTo | null;
-  pad: PadState;
 };
 
 export const initialInfiniteState: InfiniteState = {
+  pad: initialPadState,
   scroll: null,
   scrollTo: null,
-  pad: initialPadState,
 };
 
 const reducer: Reducer<InfiniteState, Action> = (state, action) => {
   switch (action.type) {
-    case 'syncProps':
-      return syncPropsReducer(state, action);
+    case 'setState':
+      return setStateReducer(state, action);
     case 'scrollToIndex':
       return scrollToIndexReducer(state, action);
     case 'scrollEnd':
@@ -37,19 +47,25 @@ const reducer: Reducer<InfiniteState, Action> = (state, action) => {
 
 export default reducer;
 
-const syncPropsReducer: Reducer<InfiniteState, Action> = (state, action) => {
+const setStateReducer: Reducer<
+  InfiniteState,
+  Action<Partial<InfiniteState>>
+> = (state, action) => {
   return {
     ...state,
-    ...action.payload.props,
+    ...action.payload,
   };
 };
 
-const scrollToIndexReducer: Reducer<InfiniteState, Action> = (
-  state,
-  action
-) => {
-  const { rect } = action.payload;
-  const { index, align, animated } = action.payload.value;
+const scrollToIndexReducer: Reducer<
+  InfiniteState,
+  Action<{ params: InfiniteScrollTo; layout: InfiniteLayout }>
+> = (state, action) => {
+  const {
+    params: { index, align, animated },
+    layout,
+  } = action.payload!;
+  const rect = calculateRectForIndex(index, layout);
 
   return {
     ...state,
@@ -65,11 +81,11 @@ const scrollEndReducer: Reducer<InfiniteState, Action> = (state, action) => {
   };
 };
 
-const scrollRecalculateReducer: Reducer<InfiniteState, Action> = (
-  state,
-  action
-) => {
-  const { rect } = action.payload;
+const scrollRecalculateReducer: Reducer<
+  InfiniteState,
+  Action<{ layout: InfiniteLayout }>
+> = (state, action) => {
+  const { layout } = action.payload!;
   const { scroll } = state;
 
   if (!scroll) {
@@ -78,6 +94,28 @@ const scrollRecalculateReducer: Reducer<InfiniteState, Action> = (
 
   return scrollToIndexReducer(state, {
     type: 'scrollToIndex',
-    payload: { value: scroll, rect },
+    payload: { params: scroll, layout },
   });
 };
+
+function calculateRectForIndex(index: number, layout: InfiniteLayout): Rect {
+  const { box, body } = layout;
+  let rect: Rect = { x: 0, y: 0, width: 0, height: 0 };
+
+  if (box) {
+    rect = box.layoutList[1].rect;
+  }
+  if (body) {
+    index = Math.max(0, Math.min(index, body.layoutList.length - 1));
+    const attrs = body.layoutList[index];
+
+    rect = {
+      x: rect.x + attrs.rect.x,
+      y: rect.y + attrs.rect.y,
+      width: attrs.rect.width,
+      height: attrs.rect.height,
+    };
+  }
+
+  return rect;
+}

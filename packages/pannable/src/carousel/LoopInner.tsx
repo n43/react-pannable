@@ -1,30 +1,31 @@
-import reducer, { initialLoopState } from './loopReducer';
-import { PadState, PadScrollTo } from '../pad/padReducer';
+import reducer, { initialLoopState, LoopState } from './loopReducer';
+import { PadState, PadMethods } from '../pad/padReducer';
 import ListContent from '../pad/ListContent';
 import { XY } from '../interfaces';
 import { useIsomorphicLayoutEffect } from '../utils/hooks';
-import React, { useMemo, useReducer, useRef } from 'react';
+import React, { useReducer, useRef } from 'react';
 
 export interface LoopInnerProps {
   pad: PadState;
+  padMethods: PadMethods;
   direction: XY;
-  onAdjust: (scrollTo: PadScrollTo) => void;
+  render: (state: LoopState) => React.ReactNode;
 }
 
-const LoopInner: React.FC<LoopInnerProps> = React.memo(props => {
-  const { pad, onAdjust, direction, children } = props;
+export const LoopInner = React.memo<LoopInnerProps>((props) => {
+  const { pad, padMethods, direction, render } = props;
   const [state, dispatch] = useReducer(reducer, initialLoopState);
-  const delegate = { onAdjust };
+  const delegate = { scrollTo: padMethods.scrollTo };
   const delegateRef = useRef(delegate);
   delegateRef.current = delegate;
 
-  useMemo(() => {
-    dispatch({ type: 'syncProps', payload: { props: { pad, direction } } });
+  useIsomorphicLayoutEffect(() => {
+    dispatch({ type: 'setState', payload: { pad, direction } });
   }, [pad, direction]);
 
   useIsomorphicLayoutEffect(() => {
     if (state.scrollTo) {
-      delegateRef.current.onAdjust(state.scrollTo);
+      delegateRef.current.scrollTo(state.scrollTo);
     }
   }, [state.scrollTo]);
 
@@ -37,7 +38,7 @@ const LoopInner: React.FC<LoopInnerProps> = React.memo(props => {
       renderItem={({ Item, itemIndex }) => {
         return (
           <Item key={itemIndex + state.loopOffset} hash="Loop" forceRender>
-            {typeof children === 'function' ? children(state) : children}
+            {render(state)}
           </Item>
         );
       }}

@@ -1,4 +1,4 @@
-import Loop from './Loop';
-import Carousel from './Carousel';
-
-export { Loop, Carousel };
+export * from './loopReducer';
+export * from './Loop';
+export * from './carouselReducer';
+export * from './Carousel';

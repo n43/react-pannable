@@ -6,24 +6,24 @@ export type LoopState = {
   loopCount: number;
   loopOffset: number;
   loopWidth: number;
-  scrollTo: PadScrollTo | null;
-  pad: PadState;
   direction: XY;
+  pad: PadState;
+  scrollTo: PadScrollTo | null;
 };
 
 export const initialLoopState: LoopState = {
   loopCount: 2,
   loopOffset: 0,
   loopWidth: 0,
-  scrollTo: null,
-  pad: initialPadState,
   direction: 'x',
+  pad: initialPadState,
+  scrollTo: null,
 };
 
 const reducer: Reducer<LoopState, Action> = (state, action) => {
   switch (action.type) {
-    case 'syncProps':
-      return validateReducer(syncPropsReducer(state, action), action);
+    case 'setState':
+      return validateReducer(setStateReducer(state, action), action);
     default:
       return state;
   }
@@ -31,14 +31,17 @@ const reducer: Reducer<LoopState, Action> = (state, action) => {
 
 export default reducer;
 
-const syncPropsReducer: Reducer<LoopState, Action> = (state, action) => {
+const setStateReducer: Reducer<LoopState, Action<Partial<LoopState>>> = (
+  state,
+  action
+) => {
   return {
     ...state,
-    ...action.payload.props,
+    ...action.payload,
   };
 };
 
-const validateReducer: Reducer<LoopState, Action> = (state, action) => {
+const validateReducer: Reducer<LoopState, Action> = (state) => {
   const { loopCount, loopWidth, loopOffset, direction } = state;
   const { size, contentSize, contentOffset } = state.pad;
 

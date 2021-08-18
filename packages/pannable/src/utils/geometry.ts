@@ -3,7 +3,7 @@ import { Size } from '../interfaces';
 export function isEqualToSize(
   s1: Size | undefined | null,
   s2: Size | undefined | null
-) {
+): boolean {
   if (!s1 || !s2) {
     return false;
   }
@@ -15,8 +15,4 @@ export function isEqualToSize(
   }
 
   return true;
-}
-
-export function isNumber(n: number | null | undefined) {
-  return n !== null && n !== undefined && !isNaN(n) && isFinite(n);
 }

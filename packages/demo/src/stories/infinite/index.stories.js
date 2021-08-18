@@ -92,8 +92,8 @@ export const Overview = () => {
         Infinite component used to display a long list of data.
       </div>
       <div className="overview-content infinite-wrapper">
-        <AutoResizing>
-          {({ width, height }) => (
+        <AutoResizing
+          render={({ width, height }) => (
             <Infinite
               width={width}
               height={height}
@@ -139,7 +139,7 @@ export const Overview = () => {
               scrollToIndex={scrollToIndex}
             />
           )}
-        </AutoResizing>
+        />
       </div>
     </div>
   );

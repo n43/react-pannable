@@ -1,3 +1,2 @@
-import Infinite from './Infinite';
-
-export { Infinite };
+export * from './infiniteReducer';
+export * from './Infinite';

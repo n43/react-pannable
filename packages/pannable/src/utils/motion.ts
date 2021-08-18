@@ -202,8 +202,6 @@ export function calculateOffsetForRect(
         alignX = 0.5;
       } else if (alignX === 'end') {
         alignX = 1;
-      } else if (typeof alignX !== 'number' || isNaN(alignX)) {
-        alignX = 0;
       }
 
       offsetX += alignX * delta;

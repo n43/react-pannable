@@ -24,7 +24,7 @@ export const Overview = () => {
   );
   const wrapperStyle = object('Wrapper Style', { paddingTop: 20 });
 
-  const onResize = useCallback(size => {
+  const onResize = useCallback((size) => {
     console.log('onResize', size);
   }, []);
 
@@ -36,15 +36,18 @@ export const Overview = () => {
         automatically when its parent node's size changes.
       </div>
       <div style={wrapperStyle} className="overview-content ar-wrapper">
-        <AutoResizing width={arWidth} height={arHeight} onResize={onResize}>
-          {({ width, height }) => (
+        <AutoResizing
+          width={arWidth}
+          height={arHeight}
+          onResize={onResize}
+          render={({ width, height }) => (
             <div style={{ width, height }} className="ar-box">
               <div className="ar-title">
                 width: {width} ; height: {height} ;
               </div>
             </div>
           )}
-        </AutoResizing>
+        />
       </div>
     </div>
   );

@@ -1,13 +1,13 @@
 import {
   XY,
-  Point,
   Size,
-  Rect,
-  Align,
   Time,
   Bound,
   Action,
   Inset,
+  Point,
+  Rect,
+  Align,
 } from '../interfaces';
 import { initialPannableState, PannableState } from '../pannableReducer';
 import {
@@ -22,7 +22,7 @@ import { Reducer } from 'react';
 const DECELERATION_RATE_STRONG = 0.025;
 const DECELERATION_RATE_WEAK = 0.0025;
 
-export type Deceleration = {
+type Deceleration = {
   endOffset: Point;
   rate: number;
   duration: number;
@@ -30,17 +30,9 @@ export type Deceleration = {
   points: Record<XY, number[]>;
 };
 
-export type Drag = {
+type Drag = {
   startOffset: Point;
   direction: Point;
-};
-
-export type PadScrollTo = {
-  offset?: Point;
-  point?: Point;
-  rect?: Rect;
-  align?: Record<XY, Align> | Align;
-  animated?: boolean;
 };
 
 export type PadEvent = {
@@ -53,8 +45,16 @@ export type PadEvent = {
   decelerating: boolean;
 };
 
+export type PadScrollTo = {
+  offset?: Point;
+  point?: Point;
+  rect?: Rect;
+  align?: Record<XY, Align> | Align;
+  animated?: boolean;
+};
+
 export type PadMethods = {
-  _scrollTo: (params: PadScrollTo) => void;
+  scrollTo: (params: PadScrollTo) => void;
 };
 
 export type PadState = {
@@ -87,8 +87,8 @@ export const initialPadState: PadState = {
 
 const reducer: Reducer<PadState, Action> = (state, action) => {
   switch (action.type) {
-    case 'syncProps':
-      return validateReducer(syncPropsReducer(state, action), action);
+    case 'setState':
+      return validateReducer(setStateReducer(state, action), action);
     case 'dragStart':
       return dragStartReducer(state, action);
     case 'dragMove':
@@ -108,14 +108,17 @@ const reducer: Reducer<PadState, Action> = (state, action) => {
 
 export default reducer;
 
-const syncPropsReducer: Reducer<PadState, Action> = (state, action) => {
+const setStateReducer: Reducer<PadState, Action<Partial<PadState>>> = (
+  state,
+  action
+) => {
   return {
     ...state,
-    ...action.payload.props,
+    ...action.payload,
   };
 };
 
-const validateReducer: Reducer<PadState, Action> = (state, action) => {
+const validateReducer: Reducer<PadState, Action> = (state) => {
   const {
     size,
     contentSize,
@@ -241,7 +244,7 @@ const validateReducer: Reducer<PadState, Action> = (state, action) => {
   return state;
 };
 
-const dragStartReducer: Reducer<PadState, Action> = (state, action) => {
+const dragStartReducer: Reducer<PadState, Action> = (state) => {
   const { contentOffset, directionalLockEnabled } = state;
   const { velocity } = state.pannable;
 
@@ -272,7 +275,7 @@ const dragStartReducer: Reducer<PadState, Action> = (state, action) => {
   };
 };
 
-const dragMoveReducer: Reducer<PadState, Action> = (state, action) => {
+const dragMoveReducer: Reducer<PadState, Action> = (state) => {
   const { contentOffset, drag, size, contentSize, contentInset, bound } = state;
   const { translation, interval } = state.pannable;
 
@@ -305,7 +308,7 @@ const dragMoveReducer: Reducer<PadState, Action> = (state, action) => {
   };
 };
 
-const dragEndReducer: Reducer<PadState, Action> = (state, action) => {
+const dragEndReducer: Reducer<PadState, Action> = (state) => {
   const { contentOffset, contentVelocity, size, pagingEnabled } = state;
 
   const decelerationRate = pagingEnabled
@@ -334,7 +337,7 @@ const dragEndReducer: Reducer<PadState, Action> = (state, action) => {
   };
 };
 
-const dragCancelReducer: Reducer<PadState, Action> = (state, action) => {
+const dragCancelReducer: Reducer<PadState, Action> = (state) => {
   const { contentOffset, contentVelocity, drag, size, pagingEnabled } = state;
 
   if (!drag) {
@@ -364,7 +367,7 @@ const dragCancelReducer: Reducer<PadState, Action> = (state, action) => {
   };
 };
 
-const decelerateReducer: Reducer<PadState, Action> = (state, action) => {
+const decelerateReducer: Reducer<PadState, Action> = (state) => {
   const { deceleration } = state;
 
   if (!deceleration) {
@@ -382,15 +385,18 @@ const decelerateReducer: Reducer<PadState, Action> = (state, action) => {
   };
 };
 
-const scrollToReducer: Reducer<PadState, Action> = (state, action) => {
+const scrollToReducer: Reducer<PadState, Action<PadScrollTo>> = (
+  state,
+  action
+) => {
   const { drag, contentOffset, size } = state;
   const {
     offset = { x: 0, y: 0 },
     point,
     rect,
-    align,
-    animated,
-  } = action.payload.value;
+    align = 0,
+    animated = false,
+  } = action.payload!;
   let nextRect = rect;
   const nextAnimated = drag ? false : animated;
 

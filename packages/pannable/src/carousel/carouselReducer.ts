@@ -12,32 +12,41 @@ export type CarouselScrollTo = {
   animated: boolean;
 };
 
+export type CarouselMethods = {
+  scrollToIndex: (params: CarouselScrollTo) => void;
+  play: (playing: boolean) => void;
+};
+
 export type CarouselState = {
-  activeIndex: number;
-  scrollTo: PadScrollTo | null;
   pad: PadState;
+  activeIndex: number;
   direction: XY;
   loop: boolean;
   itemCount: number;
+  scrollTo: PadScrollTo | null;
+  playing: boolean;
 };
 
 export const initialCarouselState: CarouselState = {
-  activeIndex: 0,
-  scrollTo: null,
   pad: initialPadState,
+  activeIndex: 0,
   direction: 'x',
   loop: true,
   itemCount: 0,
+  scrollTo: null,
+  playing: false,
 };
 
 const reducer: Reducer<CarouselState, Action> = (state, action) => {
   switch (action.type) {
-    case 'syncProps':
-      return validateReducer(syncPropsReducer(state, action), action);
+    case 'setState':
+      return validateReducer(setStateReducer(state, action), action);
     case 'scrollToIndex':
       return scrollToIndexReducer(state, action);
     case 'next':
       return nextReducer(state, action);
+    case 'play':
+      return playReducer(state, action);
     default:
       return state;
   }
@@ -45,10 +54,13 @@ const reducer: Reducer<CarouselState, Action> = (state, action) => {
 
 export default reducer;
 
-const syncPropsReducer: Reducer<CarouselState, Action> = (state, action) => {
+const setStateReducer: Reducer<
+  CarouselState,
+  Action<Partial<CarouselState>>
+> = (state, action) => {
   return {
     ...state,
-    ...action.payload.props,
+    ...action.payload,
   };
 };
 
@@ -62,24 +74,24 @@ const validateReducer: Reducer<CarouselState, Action> = (state, action) => {
     direction
   );
 
-  if (activeIndex !== nextActiveIndex) {
-    return {
-      ...state,
-      activeIndex: nextActiveIndex,
-    };
+  if (activeIndex === nextActiveIndex) {
+    return state;
   }
 
-  return state;
+  return {
+    ...state,
+    activeIndex: nextActiveIndex,
+  };
 };
 
-const scrollToIndexReducer: Reducer<CarouselState, Action> = (
+const scrollToIndexReducer: Reducer<CarouselState, Action<CarouselScrollTo>> = (
   state,
   action
 ) => {
   const { activeIndex, itemCount, direction, loop } = state;
   const { contentOffset, size } = state.pad;
-  const { animated } = action.payload.value;
-  let { index } = action.payload.value;
+  const { animated } = action.payload!;
+  let { index } = action.payload!;
 
   if (typeof index === 'function') {
     index = index({ activeIndex, itemCount });
@@ -110,8 +122,18 @@ const nextReducer: Reducer<CarouselState, Action> = (state, action) => {
 
   return scrollToIndexReducer(state, {
     type: 'scrollToIndex',
-    payload: { value: { index: nextActiveIndex, animated } },
+    payload: { index: nextActiveIndex, animated },
   });
+};
+
+const playReducer: Reducer<CarouselState, Action<boolean>> = (
+  state,
+  action
+) => {
+  return {
+    ...state,
+    playing: action.payload!,
+  };
 };
 
 function calculateActiveIndex(

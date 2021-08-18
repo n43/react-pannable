@@ -1,94 +1,101 @@
 import reducer, {
   initialCarouselState,
-  CarouselScrollTo,
   CarouselEvent,
+  CarouselState,
+  CarouselMethods,
 } from './carouselReducer';
-import { PadState, PadScrollTo } from '../pad/padReducer';
+import { PadState, PadMethods } from '../pad/padReducer';
 import { XY } from '../interfaces';
-import { useIsomorphicLayoutEffect, usePrevious } from '../utils/hooks';
-import React, { useMemo, useEffect, useReducer, useRef } from 'react';
+import { useIsomorphicLayoutEffect } from '../utils/hooks';
+import React, { useReducer, useRef } from 'react';
 
 export interface CarouselInnerProps {
   pad: PadState;
+  padMethods: PadMethods;
   direction: XY;
   loop: boolean;
   autoplayEnabled: boolean;
   autoplayInterval: number;
   itemCount: number;
-  onActiveIndexChange: (evt: CarouselEvent) => void;
-  onAdjust: (scrollTo: PadScrollTo) => void;
-  scrollToIndex: CarouselScrollTo | null;
+  onActiveIndexChange?: (evt: CarouselEvent) => void;
+  render: (state: CarouselState, methods: CarouselMethods) => React.ReactNode;
 }
 
-const CarouselInner: React.FC<CarouselInnerProps> = React.memo(props => {
+export const CarouselInner = React.memo<CarouselInnerProps>((props) => {
   const {
     pad,
+    padMethods,
     direction,
     loop,
     autoplayEnabled,
     autoplayInterval,
     itemCount,
     onActiveIndexChange,
-    onAdjust,
-    scrollToIndex,
-    children,
+    render,
   } = props;
   const [state, dispatch] = useReducer(reducer, initialCarouselState);
-  const prevState = usePrevious(state);
-  const delegate = { onActiveIndexChange, onAdjust };
+  const prevStateRef = useRef(state);
+  const delegate = { onActiveIndexChange, scrollTo: padMethods.scrollTo };
   const delegateRef = useRef(delegate);
   delegateRef.current = delegate;
 
-  useMemo(() => {
+  const methodsRef = useRef<CarouselMethods>({
+    scrollToIndex(params) {
+      dispatch({ type: 'scrollToIndex', payload: params });
+    },
+    play(playing) {
+      dispatch({ type: 'play', payload: playing });
+    },
+  });
+
+  useIsomorphicLayoutEffect(() => {
     dispatch({
-      type: 'syncProps',
-      payload: { props: { pad, direction, loop, itemCount } },
+      type: 'setState',
+      payload: { pad, direction, loop, itemCount },
     });
   }, [pad, direction, loop, itemCount]);
 
   useIsomorphicLayoutEffect(() => {
+    const prevState = prevStateRef.current;
+    prevStateRef.current = state;
+
     if (prevState.activeIndex !== state.activeIndex) {
       const evt: CarouselEvent = {
         activeIndex: state.activeIndex,
         itemCount: state.itemCount,
       };
 
-      delegateRef.current.onActiveIndexChange(evt);
+      if (delegateRef.current.onActiveIndexChange) {
+        delegateRef.current.onActiveIndexChange(evt);
+      }
     }
   }, [state]);
 
   useIsomorphicLayoutEffect(() => {
     if (state.scrollTo) {
-      delegateRef.current.onAdjust(state.scrollTo);
+      delegateRef.current.scrollTo(state.scrollTo);
     }
   }, [state.scrollTo]);
 
-  useEffect(() => {
-    if (scrollToIndex) {
-      dispatch({ type: 'scrollToIndex', payload: { value: scrollToIndex } });
-    }
-  }, [scrollToIndex]);
-
-  useEffect(() => {
-    if (!autoplayEnabled || state.pad.drag || state.pad.deceleration) {
+  useIsomorphicLayoutEffect(() => {
+    if (!state.playing) {
       return;
     }
 
-    const timer = setTimeout(() => {
+    const timer = setInterval(() => {
       dispatch({ type: 'next', payload: { animated: true } });
     }, autoplayInterval);
 
     return () => {
-      clearTimeout(timer);
+      clearInterval(timer);
     };
-  }, [
-    autoplayEnabled,
-    autoplayInterval,
-    state.pad.drag,
-    state.pad.deceleration,
-  ]);
+  }, [state.playing, autoplayInterval]);
 
-  return <>{typeof children === 'function' ? children(state) : children}</>;
+  useIsomorphicLayoutEffect(() => {
+    methodsRef.current.play(autoplayEnabled && !state.pad.drag);
+  }, [autoplayEnabled, state.pad.drag]);
+
+  return <>{render(state, methodsRef.current)}</>;
 });
 
 export default CarouselInner;

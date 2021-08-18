@@ -1,45 +1,52 @@
 import reducer, {
   initialInfiniteState,
-  InfiniteScrollTo,
+  InfiniteState,
+  InfiniteLayout,
+  InfiniteMethods,
 } from './infiniteReducer';
-import { Rect } from '../interfaces';
-import { PadState, PadScrollTo } from '../pad/padReducer';
-import { useIsomorphicLayoutEffect, usePrevious } from '../utils/hooks';
-import React, { useMemo, useEffect, useReducer, useRef } from 'react';
+import { PadMethods, PadState } from '../pad/padReducer';
+import { useIsomorphicLayoutEffect } from '../utils/hooks';
+import React, { useMemo, useReducer, useRef } from 'react';
 
 export interface InfiniteInnerProps {
   pad: PadState;
-  calculateRectForIndex: (index: number) => Rect;
-  onAdjust: (scrollTo: PadScrollTo) => void;
-  scrollToIndex: InfiniteScrollTo | null;
+  padMethods: PadMethods;
+  layout: InfiniteLayout;
+  render: (state: InfiniteState, methods: InfiniteMethods) => React.ReactNode;
 }
 
-const InfiniteInner: React.FC<InfiniteInnerProps> = React.memo(props => {
-  const {
-    pad,
-    scrollToIndex,
-    calculateRectForIndex,
-    onAdjust,
-    children,
-  } = props;
+export const InfiniteInner = React.memo<InfiniteInnerProps>((props) => {
+  const { pad, padMethods, layout, render } = props;
   const [state, dispatch] = useReducer(reducer, initialInfiniteState);
-  const prevState = usePrevious(state);
-  const delegate = { onAdjust, calculateRectForIndex };
+  const prevStateRef = useRef(state);
+  const layoutRef = useRef(layout);
+  const delegate = { scrollTo: padMethods.scrollTo };
   const delegateRef = useRef(delegate);
   delegateRef.current = delegate;
 
+  const methodsRef = useRef<InfiniteMethods>({
+    scrollToIndex(params) {
+      dispatch({
+        type: 'scrollToIndex',
+        payload: { params, layout: layoutRef.current },
+      });
+    },
+  });
+
   useMemo(() => {
-    dispatch({ type: 'syncProps', payload: { props: { pad } } });
+    dispatch({ type: 'setState', payload: { pad } });
   }, [pad]);
 
   useIsomorphicLayoutEffect(() => {
+    const prevState = prevStateRef.current;
+    prevStateRef.current = state;
+
     if (state.scroll) {
       if (prevState.pad.contentSize !== state.pad.contentSize) {
-        const rect = delegateRef.current.calculateRectForIndex(
-          state.scroll.index
-        );
-
-        dispatch({ type: 'scrollRecalculate', payload: { rect } });
+        dispatch({
+          type: 'scrollRecalculate',
+          payload: { layout: layoutRef.current },
+        });
       }
       if (prevState.pad.deceleration !== state.pad.deceleration) {
         if (!state.pad.deceleration) {
@@ -47,28 +54,15 @@ const InfiniteInner: React.FC<InfiniteInnerProps> = React.memo(props => {
         }
       }
     }
-  });
+  }, [state]);
 
   useIsomorphicLayoutEffect(() => {
     if (state.scrollTo) {
-      delegateRef.current.onAdjust(state.scrollTo);
+      delegateRef.current.scrollTo(state.scrollTo);
     }
   }, [state.scrollTo]);
 
-  useEffect(() => {
-    if (scrollToIndex) {
-      const rect = delegateRef.current.calculateRectForIndex(
-        scrollToIndex.index
-      );
-
-      dispatch({
-        type: 'scrollToIndex',
-        payload: { value: scrollToIndex, rect },
-      });
-    }
-  }, [scrollToIndex]);
-
-  return <>{typeof children === 'function' ? children(state) : children}</>;
+  return <>{render(state, methodsRef.current)}</>;
 });
 
 export default InfiniteInner;

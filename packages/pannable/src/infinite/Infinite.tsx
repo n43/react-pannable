@@ -1,102 +1,86 @@
-import { InfiniteScrollTo } from './infiniteReducer';
+import {
+  InfiniteScrollTo,
+  InfiniteState,
+  InfiniteLayout,
+  InfiniteMethods,
+} from './infiniteReducer';
 import InfiniteInner from './InfiniteInner';
-import { XY, Rect } from '../interfaces';
-import Pad, { defaultPadProps, PadProps } from '../pad/Pad';
-import ListContent, {
-  ListLayoutAttrs,
-  ListLayoutResult,
-} from '../pad/ListContent';
-import React, { useRef, useCallback } from 'react';
+import ListContent, { ListLayoutAttrs } from '../pad/ListContent';
+import Pad from '../pad/Pad';
+import { XY } from '../interfaces';
+import { useIsomorphicLayoutEffect } from '../utils/hooks';
+import React, { useRef } from 'react';
 
-type InfiniteLayout = {
-  box?: ListLayoutResult;
-  body?: ListLayoutResult;
-};
-
-export interface InfiniteProps extends PadProps {
-  direction?: XY;
+export interface InfiniteProps {
   itemCount: number;
   renderItem: (attrs: ListLayoutAttrs) => React.ReactNode;
+  direction?: XY;
   spacing?: number;
   estimatedItemWidth?: number | ((itemIndex: number) => number);
   estimatedItemHeight?: number | ((itemIndex: number) => number);
   renderHeader?: (attrs: ListLayoutAttrs) => React.ReactNode;
   renderFooter?: (attrs: ListLayoutAttrs) => React.ReactNode;
   scrollToIndex?: InfiniteScrollTo | null;
+  render?: (state: InfiniteState, methods: InfiniteMethods) => React.ReactNode;
 }
 
-const defaultInfiniteProps: InfiniteProps = {
-  direction: 'y',
-  spacing: 0,
-  itemCount: 0,
-  estimatedItemWidth: 0,
-  estimatedItemHeight: 0,
-  renderItem: () => null,
-  renderHeader: () => null,
-  renderFooter: () => null,
-  scrollToIndex: null,
-  ...defaultPadProps,
-  directionalLockEnabled: true,
-};
-
-const Infinite: React.FC<
-  InfiniteProps & Omit<React.ComponentProps<'div'>, 'onScroll'>
-> = React.memo((props) => {
+export const Infinite = React.memo<
+  Omit<React.ComponentProps<typeof Pad>, 'render'> & InfiniteProps
+>((props) => {
   const {
-    direction,
-    spacing,
     itemCount,
-    estimatedItemWidth,
-    estimatedItemHeight,
     renderItem,
+    direction = 'y',
+    spacing = 0,
+    estimatedItemWidth = 0,
+    estimatedItemHeight = 0,
     renderHeader,
     renderFooter,
     scrollToIndex,
+    render,
     children,
     ...padProps
-  } = props as Required<InfiniteProps> &
-    Omit<React.ComponentProps<'div'>, 'onScroll'>;
-  const { width, height, renderOverlay } = padProps;
-  const listRef = useRef<InfiniteLayout>({});
+  } = props;
+  const {
+    width,
+    height,
+    renderOverlay,
+    directionalLockEnabled = true,
+  } = padProps;
+  const layoutRef = useRef<InfiniteLayout>({});
+  const methodsRef = useRef<InfiniteMethods>();
 
-  const calculateRectForIndex = useCallback((index: number): Rect => {
-    const { box, body } = listRef.current;
-    let rect: Rect = { x: 0, y: 0, width: 0, height: 0 };
+  useIsomorphicLayoutEffect(() => {
+    if (scrollToIndex) {
+      const methods = methodsRef.current;
 
-    if (box) {
-      rect = box.layoutList[1].rect;
+      if (methods) {
+        methods.scrollToIndex(scrollToIndex);
+      }
     }
-    if (body) {
-      index = Math.max(0, Math.min(index, body.layoutList.length - 1));
-      const attrs = body.layoutList[index];
+  }, [scrollToIndex]);
 
-      rect = {
-        x: rect.x + attrs.rect.x,
-        y: rect.y + attrs.rect.y,
-        width: attrs.rect.width,
-        height: attrs.rect.height,
-      };
-    }
-
-    return rect;
-  }, []);
+  padProps.directionalLockEnabled = directionalLockEnabled;
 
   if (direction === 'x') {
-    padProps.boundY = 0;
+    padProps.boundY = padProps.boundY ?? 0;
   } else {
-    padProps.boundX = 0;
+    padProps.boundX = padProps.boundX ?? 0;
   }
 
   padProps.renderOverlay = (pad, methods) => (
     <>
       <InfiniteInner
         pad={pad}
-        scrollToIndex={scrollToIndex}
-        calculateRectForIndex={calculateRectForIndex}
-        onAdjust={methods._scrollTo}
-        children={children}
+        padMethods={methods}
+        layout={layoutRef.current}
+        render={(state, methods) => {
+          methodsRef.current = methods;
+
+          return render ? render(state, methods) : children;
+        }}
       />
-      {renderOverlay(pad, methods)}
+      {renderOverlay ? renderOverlay(pad, methods) : null}
     </>
   );
 
@@ -111,10 +95,10 @@ const Infinite: React.FC<
           const { itemIndex, Item } = attrs;
 
           if (itemIndex === 0) {
-            return renderHeader(attrs);
+            return renderHeader ? renderHeader(attrs) : null;
           }
           if (itemIndex === 2) {
-            return renderFooter(attrs);
+            return renderFooter ? renderFooter(attrs) : null;
           }
 
           return (
@@ -128,22 +112,21 @@ const Infinite: React.FC<
                 estimatedItemWidth={estimatedItemWidth}
                 estimatedItemHeight={estimatedItemHeight}
                 renderItem={renderItem}
-              >
-                {(layout: ListLayoutResult) => {
-                  listRef.current.body = layout;
+                render={(layout) => {
+                  layoutRef.current.body = layout;
+                  return null;
                 }}
-              </ListContent>
+              />
             </Item>
           );
         }}
-      >
-        {(layout: ListLayoutResult) => {
-          listRef.current.box = layout;
+        render={(layout) => {
+          layoutRef.current.box = layout;
+          return null;
         }}
-      </ListContent>
+      />
     </Pad>
   );
 });
 
-Infinite.defaultProps = defaultInfiniteProps;
 export default Infinite;
