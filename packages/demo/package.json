@@ -7,14 +7,14 @@
     "normalize.css": "^8.0.1",
     "react": "^16.8.4",
     "react-dom": "^16.8.4",
-    "react-pannable": "^6.0.0"
+    "react-pannable": "^6.0.1"
   },
   "devDependencies": {
     "@babel/core": "^7.15.0",
-    "@storybook/addon-knobs": "^6.1.17",
-    "@storybook/addon-storysource": "^6.1.17",
-    "@storybook/react": "^6.1.17",
-    "@storybook/storybook-deployer": "^2.8.10",
+    "@storybook/addon-knobs": "6.1.17",
+    "@storybook/addon-storysource": "6.1.17",
+    "@storybook/react": "6.1.17",
+    "@storybook/storybook-deployer": "2.8.10",
     "babel-loader": "^8.1.0",
     "webpack": "^5.50.0"
   },

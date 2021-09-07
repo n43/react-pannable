@@ -78,7 +78,11 @@ export const AutoResizing = React.memo(
     }, [fixedSize, calculateSize]);
 
     const divStyle = useMemo(() => {
-      const style: React.CSSProperties = { width: '100%', height: '100%' };
+      const style: React.CSSProperties = {
+        width: '100%',
+        height: '100%',
+        flex: '1 0 auto',
+      };
 
       if (width !== undefined) {
         style.width = width;
