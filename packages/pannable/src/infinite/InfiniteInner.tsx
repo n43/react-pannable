@@ -26,9 +26,9 @@ export const InfiniteInner = React.memo<InfiniteInnerProps>((props) => {
   delegateRef.current = padMethods;
 
   const methodsRef = useRef<InfiniteMethods>({
-    scrollToIndex(params) {
+    scrollTo(params) {
       dispatch({
-        type: 'scrollToIndex',
+        type: 'scrollTo',
         payload: { params, layout: layoutRef.current },
       });
     },

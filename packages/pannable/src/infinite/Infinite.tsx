@@ -20,12 +20,12 @@ export interface InfiniteProps {
   estimatedItemHeight?: number | ((itemIndex: number) => number);
   renderHeader?: (attrs: ListLayoutAttrs) => React.ReactNode;
   renderFooter?: (attrs: ListLayoutAttrs) => React.ReactNode;
-  scrollToIndex?: InfiniteScrollTo | null;
+  scrollTo?: InfiniteScrollTo | null;
   render?: (state: InfiniteState, methods: InfiniteMethods) => React.ReactNode;
 }
 
 export const Infinite = React.memo<
-  Omit<React.ComponentProps<typeof Pad>, 'render'> & InfiniteProps
+  Omit<React.ComponentProps<typeof Pad>, 'render' | 'scrollTo'> & InfiniteProps
 >((props) => {
   const {
     itemCount,
@@ -36,7 +36,7 @@ export const Infinite = React.memo<
     estimatedItemHeight = 0,
     renderHeader,
     renderFooter,
-    scrollToIndex,
+    scrollTo,
     render,
     children,
     ...padProps
@@ -51,14 +51,14 @@ export const Infinite = React.memo<
   const methodsRef = useRef<InfiniteMethods>();
 
   useIsomorphicLayoutEffect(() => {
-    if (scrollToIndex) {
+    if (scrollTo) {
       const methods = methodsRef.current;
 
       if (methods) {
-        methods.scrollToIndex(scrollToIndex);
+        methods.scrollTo(scrollTo);
       }
     }
-  }, [scrollToIndex]);
+  }, [scrollTo]);
 
   padProps.directionalLockEnabled = directionalLockEnabled;
 

@@ -26,7 +26,7 @@ export interface PadProps {
   renderBackground?: (state: PadState, methods: PadMethods) => React.ReactNode;
   renderOverlay?: (state: PadState, methods: PadMethods) => React.ReactNode;
   render?: (state: PadState, methods: PadMethods) => React.ReactNode;
-  scrollTo?: PadScrollTo;
+  scrollTo?: PadScrollTo | null;
 }
 
 export const Pad = React.memo<

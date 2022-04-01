@@ -8,14 +8,13 @@ export type InfiniteLayout = {
   body?: ListLayout;
 };
 
-export type InfiniteScrollTo = {
-  index: number;
-  align: Record<XY, Align> | Align;
-  animated: boolean;
+export type InfiniteScrollTo = PadScrollTo & {
+  index?: number;
+  reverseRect?: Rect;
 };
 
 export type InfiniteMethods = {
-  scrollToIndex: (params: InfiniteScrollTo) => void;
+  scrollTo: (params: InfiniteScrollTo) => void;
 };
 
 export type InfiniteState = {
@@ -34,8 +33,8 @@ const reducer: Reducer<InfiniteState, Action> = (state, action) => {
   switch (action.type) {
     case 'setState':
       return setStateReducer(state, action);
-    case 'scrollToIndex':
-      return scrollToIndexReducer(state, action);
+    case 'scrollTo':
+      return scrollToReducer(state, action);
     case 'scrollEnd':
       return scrollEndReducer(state, action);
     case 'scrollRecalculate':
@@ -57,20 +56,24 @@ const setStateReducer: Reducer<
   };
 };
 
-const scrollToIndexReducer: Reducer<
+const scrollToReducer: Reducer<
   InfiniteState,
   Action<{ params: InfiniteScrollTo; layout: InfiniteLayout }>
 > = (state, action) => {
-  const {
-    params: { index, align, animated },
-    layout,
-  } = action.payload!;
-  const rect = calculateRectForIndex(index, layout);
+  const { params, layout } = action.payload!;
+  const nextScrollTo = { ...params };
+  const { index, reverseRect } = params;
+
+  if (index !== undefined) {
+    nextScrollTo.rect = calculateRectForIndex(index, layout);
+  } else if (reverseRect !== undefined) {
+    nextScrollTo.rect = calculateRectForReverseRect(reverseRect, layout);
+  }
 
   return {
     ...state,
-    scrollTo: { rect, align, animated },
-    scroll: state.scroll || { index, align, animated },
+    scrollTo: nextScrollTo,
+    scroll: state.scroll || params,
   };
 };
 
@@ -92,8 +95,8 @@ const scrollRecalculateReducer: Reducer<
     return state;
   }
 
-  return scrollToIndexReducer(state, {
-    type: 'scrollToIndex',
+  return scrollToReducer(state, {
+    type: 'scrollTo',
     payload: { params: scroll, layout },
   });
 };
@@ -102,7 +105,7 @@ function calculateRectForIndex(index: number, layout: InfiniteLayout): Rect {
   const { box, body } = layout;
   let rect: Rect = { x: 0, y: 0, width: 0, height: 0 };
 
-  if (box) {
+  if (box && box.layoutList[1]) {
     rect = box.layoutList[1].rect;
   }
   if (body) {
@@ -115,6 +118,21 @@ function calculateRectForIndex(index: number, layout: InfiniteLayout): Rect {
       width: attrs.rect.width,
       height: attrs.rect.height,
     };
+  }
+
+  return rect;
+}
+
+function calculateRectForReverseRect(
+  rrect: Rect,
+  layout: InfiniteLayout
+): Rect {
+  const { box } = layout;
+  let rect: Rect = { x: 0, y: 0, width: rrect.width, height: rrect.height };
+
+  if (box) {
+    rect.x = box.size.width - rect.width - rrect.x;
+    rect.y = box.size.height - rect.height - rrect.y;
   }
 
   return rect;
