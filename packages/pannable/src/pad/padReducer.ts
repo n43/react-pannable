@@ -55,6 +55,7 @@ export type PadScrollTo = {
 
 export type PadMethods = {
   scrollTo: (params: PadScrollTo) => void;
+  setBound: (fn: (state: PadState) => Record<XY, Bound>) => void;
 };
 
 export type PadState = {
@@ -101,6 +102,8 @@ const reducer: Reducer<PadState, Action> = (state, action) => {
       return validateReducer(decelerateReducer(state, action), action);
     case 'scrollTo':
       return validateReducer(scrollToReducer(state, action), action);
+    case 'setBound':
+      return validateReducer(setBoundReducer(state, action), action);
     default:
       return state;
   }
@@ -385,6 +388,18 @@ const decelerateReducer: Reducer<PadState, Action> = (state) => {
   };
 };
 
+const setBoundReducer: Reducer<PadState, Action<Record<XY, Bound>>> = (
+  state,
+  action
+) => {
+  const bound = action.payload!;
+
+  return {
+    ...state,
+    bound,
+  };
+};
+
 const scrollToReducer: Reducer<PadState, Action<PadScrollTo>> = (
   state,
   action
@@ -575,7 +590,7 @@ export function createDeceleration(
   if (sm) {
     vm = (startVelocity.x * s.x + startVelocity.y * s.y) / sm;
 
-    let vh = Math.sqrt(0.5 * Math.pow(vm, 2) + rate * sm);
+    let vh = Math.sqrt(Math.pow(vm, 2) / 2 + rate * sm);
     let th = (vh - vm) / rate;
 
     if (th < 0) {

@@ -95,8 +95,8 @@ function getAdjustedContentOffsetForLoop(
     direction === 'y' ? ['height', 'y', 'x'] : ['width', 'x', 'y'];
 
   const sizeWidth = size[width];
-  const maxOffsetX = 0.5 * (sizeWidth - loopWidth * (loopCount - 1));
-  const minOffsetX = 0.5 * (sizeWidth - loopWidth * (loopCount + 1));
+  const maxOffsetX = (sizeWidth - loopWidth * (loopCount - 1)) / 2;
+  const minOffsetX = (sizeWidth - loopWidth * (loopCount + 1)) / 2;
   let offsetX = offset[x];
   let delta = 0;
 

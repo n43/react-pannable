@@ -20,8 +20,12 @@ export const LoopInner = React.memo<LoopInnerProps>((props) => {
   delegateRef.current = delegate;
 
   useIsomorphicLayoutEffect(() => {
-    dispatch({ type: 'setState', payload: { pad, direction } });
-  }, [pad, direction]);
+    dispatch({ type: 'setState', payload: { pad } });
+  }, [pad]);
+
+  useIsomorphicLayoutEffect(() => {
+    dispatch({ type: 'setState', payload: { direction } });
+  }, [direction]);
 
   useIsomorphicLayoutEffect(() => {
     if (state.scrollTo) {

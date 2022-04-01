@@ -68,6 +68,9 @@ export const PadInner = React.memo<PadInnerProps>((props) => {
     scrollTo(params) {
       dispatch({ type: 'scrollTo', payload: params });
     },
+    setBound(fn) {
+      dispatch({ type: 'setBound', payload: fn(prevStateRef.current) });
+    },
   });
 
   const contentOnResize = useCallback((contentSize: Size) => {
@@ -75,10 +78,13 @@ export const PadInner = React.memo<PadInnerProps>((props) => {
   }, []);
 
   useIsomorphicLayoutEffect(() => {
+    dispatch({ type: 'setState', payload: { pannable } });
+  }, [pannable]);
+
+  useIsomorphicLayoutEffect(() => {
     dispatch({
       type: 'setState',
       payload: {
-        pannable,
         size,
         bound,
         contentInset,
@@ -86,14 +92,7 @@ export const PadInner = React.memo<PadInnerProps>((props) => {
         directionalLockEnabled,
       },
     });
-  }, [
-    pannable,
-    size,
-    bound,
-    contentInset,
-    pagingEnabled,
-    directionalLockEnabled,
-  ]);
+  }, [size, bound, contentInset, pagingEnabled, directionalLockEnabled]);
 
   useIsomorphicLayoutEffect(() => {
     const prevState = prevStateRef.current;

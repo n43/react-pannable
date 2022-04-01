@@ -101,7 +101,7 @@ export function getAdjustedBounceOffset(
       size[width] - (cInset[left] + cSize[width] + cInset[right]),
       0
     );
-    const maxDist = 0.5 * Math.min(size[width], size[height]);
+    const maxDist = Math.min(size[width], size[height]) / 2;
 
     if (0 < offsetX) {
       if (boundX === 0) {
@@ -163,7 +163,7 @@ export function getDecelerationEndOffset(
       offsetX = size[width] * delta;
     } else {
       if (accXY[x]) {
-        offsetX += 0.5 * velocityX * (velocityX / accXY[x]);
+        offsetX += (velocityX * (velocityX / accXY[x])) / 2;
       }
     }
 

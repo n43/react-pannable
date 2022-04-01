@@ -22,8 +22,8 @@ export function needsRender(rect: Rect, vRect: Rect): boolean {
     const width = x === 'x' ? 'width' : 'height';
 
     return (
-      vRect[x] - 0.25 * vRect[width] <= rect[x] + rect[width] &&
-      rect[x] <= vRect[x] + 1.25 * vRect[width]
+      vRect[x] - vRect[width] / 4 <= rect[x] + rect[width] &&
+      rect[x] <= vRect[x] + (vRect[width] * 5) / 4
     );
   }
 

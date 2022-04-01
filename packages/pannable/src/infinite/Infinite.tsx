@@ -71,6 +71,7 @@ export const Infinite = React.memo<
   padProps.renderOverlay = (pad, methods) => (
     <>
       <InfiniteInner
+        direction={direction}
         pad={pad}
         padMethods={methods}
         layout={layoutRef.current}

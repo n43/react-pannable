@@ -49,11 +49,12 @@ export const CarouselInner = React.memo<CarouselInnerProps>((props) => {
   });
 
   useIsomorphicLayoutEffect(() => {
-    dispatch({
-      type: 'setState',
-      payload: { pad, direction, loop, itemCount },
-    });
-  }, [pad, direction, loop, itemCount]);
+    dispatch({ type: 'setState', payload: { pad } });
+  }, [pad]);
+
+  useIsomorphicLayoutEffect(() => {
+    dispatch({ type: 'setState', payload: { direction, loop, itemCount } });
+  }, [direction, loop, itemCount]);
 
   useIsomorphicLayoutEffect(() => {
     const prevState = prevStateRef.current;

@@ -70,7 +70,7 @@ const scrollToIndexReducer: Reducer<
   return {
     ...state,
     scrollTo: { rect, align, animated },
-    scroll: animated ? { index, align, animated } : null,
+    scroll: state.scroll || { index, align, animated },
   };
 };
 

@@ -81,18 +81,17 @@ export const AutoResizing = React.memo(
       const style: React.CSSProperties = {
         width: '100%',
         height: '100%',
-        flex: '1 0 auto',
       };
+
+      if (divProps.style) {
+        Object.assign(style, divProps.style);
+      }
 
       if (width !== undefined) {
         style.width = width;
       }
       if (height !== undefined) {
         style.height = height;
-      }
-
-      if (divProps.style) {
-        Object.assign(style, divProps.style);
       }
 
       return style;

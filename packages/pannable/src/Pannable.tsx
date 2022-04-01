@@ -9,7 +9,7 @@ import subscribeEvent from './utils/subscribeEvent';
 import React, { useMemo, useRef, useReducer } from 'react';
 
 const supportsTouch =
-  typeof window !== undefined ? 'ontouchstart' in window : false;
+  typeof window !== 'undefined' ? 'ontouchstart' in window : false;
 
 const MIN_START_DISTANCE = 0;
 
@@ -206,7 +206,7 @@ export const Pannable = React.memo<React.ComponentProps<'div'> & PannableProps>(
               evt.stopImmediatePropagation();
             }
 
-            if (evt.buttons === 1) {
+            if (evt.buttons === undefined || evt.buttons === 1) {
               move({ x: evt.pageX, y: evt.pageY });
             } else {
               end();
@@ -259,7 +259,10 @@ export const Pannable = React.memo<React.ComponentProps<'div'> & PannableProps>(
           };
         } else {
           const onMouseDown = (evt: MouseEvent) => {
-            if (evt.buttons === 1 && evt.target) {
+            if (
+              evt.target &&
+              (evt.buttons === undefined || evt.buttons === 1)
+            ) {
               track(evt.target, { x: evt.pageX, y: evt.pageY });
             }
           };
