@@ -5,7 +5,7 @@ import reducer, {
   InfiniteMethods,
 } from './infiniteReducer';
 import { PadMethods, PadState } from '../pad/padReducer';
-import { Bound, XY } from '../interfaces';
+import { XY } from '../interfaces';
 import { useIsomorphicLayoutEffect } from '../utils/hooks';
 import React, { useMemo, useReducer, useRef } from 'react';
 
@@ -18,7 +18,7 @@ export interface InfiniteInnerProps {
 }
 
 export const InfiniteInner = React.memo<InfiniteInnerProps>((props) => {
-  const { direction, pad, padMethods, layout, render } = props;
+  const { pad, padMethods, layout, render } = props;
   const [state, dispatch] = useReducer(reducer, initialInfiniteState);
   const prevStateRef = useRef(state);
   const layoutRef = useRef(layout);
@@ -65,28 +65,6 @@ export const InfiniteInner = React.memo<InfiniteInnerProps>((props) => {
       delegateRef.current.scrollTo(state.scrollTo);
     }
   }, [state.scrollTo]);
-
-  useIsomorphicLayoutEffect(() => {
-    if (!state.scroll) {
-      return;
-    }
-
-    let prevBound: Record<XY, Bound>;
-
-    delegateRef.current.setBound((padState) => {
-      prevBound = padState.bound;
-
-      return direction === 'x'
-        ? { x: -1, y: prevBound.y }
-        : { x: prevBound.x, y: -1 };
-    });
-
-    return () => {
-      if (prevBound) {
-        delegateRef.current.setBound(() => prevBound);
-      }
-    };
-  }, [state.scroll, direction]);
 
   return <>{render(state, methodsRef.current)}</>;
 });

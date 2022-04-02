@@ -68,12 +68,12 @@ export const Infinite = React.memo<
     padProps.boundX = padProps.boundX ?? 0;
   }
 
-  padProps.renderOverlay = (pad, methods) => (
+  padProps.renderOverlay = (pad, padMethods) => (
     <>
       <InfiniteInner
         direction={direction}
         pad={pad}
-        padMethods={methods}
+        padMethods={padMethods}
         layout={layoutRef.current}
         render={(state, methods) => {
           methodsRef.current = methods;
@@ -81,7 +81,7 @@ export const Infinite = React.memo<
           return render ? render(state, methods) : children;
         }}
       />
-      {renderOverlay ? renderOverlay(pad, methods) : null}
+      {renderOverlay ? renderOverlay(pad, padMethods) : null}
     </>
   );
 

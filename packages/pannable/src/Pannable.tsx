@@ -178,18 +178,20 @@ export const Pannable = React.memo<React.ComponentProps<'div'> & PannableProps>(
             end();
           };
 
+          const body = document.body;
+
           const unsubscribeTouchMove = subscribeEvent(
-            elemNode,
+            body,
             'touchmove',
             onTouchMove
           );
           const unsubscribeTouchEnd = subscribeEvent(
-            elemNode,
+            body,
             'touchend',
             onTouchEnd
           );
           const unsubscribeTouchCancel = subscribeEvent(
-            elemNode,
+            body,
             'touchcancel',
             onTouchEnd
           );

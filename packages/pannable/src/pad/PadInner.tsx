@@ -68,9 +68,6 @@ export const PadInner = React.memo<PadInnerProps>((props) => {
     scrollTo(params) {
       dispatch({ type: 'scrollTo', payload: params });
     },
-    setBound(fn) {
-      dispatch({ type: 'setBound', payload: fn(prevStateRef.current) });
-    },
   });
 
   const contentOnResize = useCallback((contentSize: Size) => {
