@@ -49,12 +49,13 @@ export const InfiniteInner = React.memo<InfiniteInnerProps>((props) => {
           payload: { layout: layoutRef.current },
         });
       } else {
-        if (!state.pad.deceleration) {
-          if (!state.scroll.animated || prevState.pad.deceleration) {
-            setTimeout(() => {
-              dispatch({ type: 'scrollEnd' });
-            }, 0);
-          }
+        if (
+          !(state.scroll.animated === 1 || state.scroll.animated === true) ||
+          (prevState.pad.deceleration && !state.pad.deceleration)
+        ) {
+          setTimeout(() => {
+            dispatch({ type: 'scrollEnd' });
+          }, 0);
         }
       }
     }
