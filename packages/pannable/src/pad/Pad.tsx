@@ -17,6 +17,7 @@ export interface PadProps {
   contentInsetRight?: number;
   contentInsetBottom?: number;
   contentInsetLeft?: number;
+  contentStyle?: React.CSSProperties;
   onScroll?: (evt: PadEvent) => void;
   onStartDragging?: (evt: PadEvent) => void;
   onEndDragging?: (evt: PadEvent) => void;
@@ -35,14 +36,15 @@ export const Pad = React.memo<
   const {
     width,
     height,
+    pagingEnabled = false,
+    directionalLockEnabled = false,
     boundX = 1,
     boundY = 1,
     contentInsetTop = 0,
     contentInsetRight = 0,
     contentInsetBottom = 0,
     contentInsetLeft = 0,
-    pagingEnabled = false,
-    directionalLockEnabled = false,
+    contentStyle,
     onScroll,
     onStartDragging,
     onEndDragging,
@@ -74,28 +76,29 @@ export const Pad = React.memo<
   delegateRef.current = delegate;
 
   const pannableShouldStart = useCallback((evt: PannableEvent) => {
+    let flag = true;
+
     if (delegateRef.current.shouldStart) {
-      return delegateRef.current.shouldStart(evt);
+      flag = delegateRef.current.shouldStart(evt);
     }
 
-    const state = stateRef.current;
+    if (flag) {
+      const state = stateRef.current;
 
-    if (!state) {
-      return false;
-    }
-    if (
-      !shouldStartDrag(
-        evt.velocity,
-        state.size,
-        state.contentSize,
-        state.contentInset,
-        state.bound
-      )
-    ) {
-      return false;
+      if (state) {
+        flag = shouldStartDrag(
+          evt.velocity,
+          state.size,
+          state.contentSize,
+          state.contentInset,
+          state.bound
+        );
+      } else {
+        flag = false;
+      }
     }
 
-    return true;
+    return flag;
   }, []);
 
   useIsomorphicLayoutEffect(() => {
@@ -133,10 +136,11 @@ export const Pad = React.memo<
         <PadInner
           pannable={pannable}
           size={size}
-          bound={bound}
-          contentInset={contentInset}
           pagingEnabled={pagingEnabled}
           directionalLockEnabled={directionalLockEnabled}
+          bound={bound}
+          contentInset={contentInset}
+          contentStyle={contentStyle}
           onScroll={onScroll}
           onStartDragging={onStartDragging}
           onEndDragging={onEndDragging}

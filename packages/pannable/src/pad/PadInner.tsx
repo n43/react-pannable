@@ -6,22 +6,30 @@ import reducer, {
   PadMethods,
 } from './padReducer';
 import { PannableState } from '../pannableReducer';
-import { XY, Size, Bound, Inset } from '../interfaces';
+import { XY, Size, Bound, Inset, Point } from '../interfaces';
 import {
   requestAnimationFrame,
   cancelAnimationFrame,
 } from '../utils/animationFrame';
-import StyleSheet from '../utils/StyleSheet';
 import { useIsomorphicLayoutEffect } from '../utils/hooks';
 import React, { useMemo, useReducer, useRef, useCallback } from 'react';
+
+function convertTransformTranslate(translate: Point): React.CSSProperties {
+  return {
+    WebkitTransform: `translate3d(${translate.x}px, ${translate.y}px, 0)`,
+    msTransform: `translate(${translate.x}px, ${translate.y}px)`,
+    transform: `translate3d(${translate.x}px, ${translate.y}px, 0)`,
+  };
+}
 
 export interface PadInnerProps {
   pannable: PannableState;
   size: Size;
-  bound: Record<XY, Bound>;
-  contentInset: Inset;
   pagingEnabled: boolean;
   directionalLockEnabled: boolean;
+  bound: Record<XY, Bound>;
+  contentInset: Inset;
+  contentStyle?: React.CSSProperties;
   onScroll?: (evt: PadEvent) => void;
   onStartDragging?: (evt: PadEvent) => void;
   onEndDragging?: (evt: PadEvent) => void;
@@ -37,10 +45,11 @@ export const PadInner = React.memo<PadInnerProps>((props) => {
   const {
     pannable,
     size,
-    bound,
-    contentInset,
     pagingEnabled,
     directionalLockEnabled,
+    bound,
+    contentInset,
+    contentStyle,
     onScroll,
     onStartDragging,
     onEndDragging,
@@ -176,19 +185,20 @@ export const PadInner = React.memo<PadInnerProps>((props) => {
     : null;
   const contentLayer = render(state, methodsRef.current);
 
-  const contentStyle = useMemo(
+  const style = useMemo(
     () =>
-      StyleSheet.create({
+      ({
+        willChange: 'transform',
+        overflow: 'hidden',
         position: 'absolute',
         left: state.contentInset.left,
         top: state.contentInset.top,
         width: state.contentSize.width,
         height: state.contentSize.height,
-        transformTranslate: state.contentOffset,
-        willChange: 'transform',
-        overflow: 'hidden',
-      }),
-    [state.contentOffset, state.contentSize, state.contentInset]
+        ...convertTransformTranslate(state.contentOffset),
+        ...contentStyle,
+      } as React.CSSProperties),
+    [state.contentOffset, state.contentSize, state.contentInset, contentStyle]
   );
 
   const contextValue = useMemo(
@@ -207,7 +217,7 @@ export const PadInner = React.memo<PadInnerProps>((props) => {
   return (
     <>
       {backgroundLayer}
-      <div style={contentStyle}>
+      <div style={style}>
         <PadContext.Provider value={contextValue}>
           {contentLayer}
         </PadContext.Provider>

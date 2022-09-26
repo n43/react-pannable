@@ -4,7 +4,6 @@ import reducer, {
 } from './pannableReducer';
 import { Point } from './interfaces';
 import { useIsomorphicLayoutEffect } from './utils/hooks';
-import StyleSheet from './utils/StyleSheet';
 import subscribeEvent from './utils/subscribeEvent';
 import React, { useMemo, useRef, useReducer } from 'react';
 
@@ -20,9 +19,19 @@ export type PannableEvent = {
   interval: number;
 };
 
+export type PannableTrackEvent = {
+  target: EventTarget;
+  translation: Point | null;
+  velocity: Point;
+  interval: number;
+};
+
 export interface PannableProps {
   disabled?: boolean;
   shouldStart?: (evt: PannableEvent) => boolean;
+  onTrackStart?: (evt: PannableTrackEvent) => void;
+  onTrackEnd?: (evt: PannableTrackEvent) => void;
+  onTrackCancel?: (evt: PannableTrackEvent) => void;
   onStart?: (evt: PannableEvent) => void;
   onMove?: (evt: PannableEvent) => void;
   onEnd?: (evt: PannableEvent) => void;
@@ -35,6 +44,9 @@ export const Pannable = React.memo<React.ComponentProps<'div'> & PannableProps>(
     const {
       disabled,
       shouldStart,
+      onTrackStart,
+      onTrackEnd,
+      onTrackCancel,
       onStart,
       onMove,
       onEnd,
@@ -46,84 +58,115 @@ export const Pannable = React.memo<React.ComponentProps<'div'> & PannableProps>(
     const [state, dispatch] = useReducer(reducer, initialPannableState);
     const prevStateRef = useRef(state);
     const elemRef = useRef<HTMLDivElement>(null);
-    const delegate = { shouldStart, onStart, onMove, onEnd, onCancel };
-    const delegateRef = useRef(delegate);
-    delegateRef.current = delegate;
 
+    const isTracking = !!state.target;
     const isMoving = !!state.translation;
 
     useIsomorphicLayoutEffect(() => {
       const prevState = prevStateRef.current;
       prevStateRef.current = state;
 
-      if (state.target && !state.translation) {
-        const translation = {
-          x: state.movePoint.x - state.startPoint.x,
-          y: state.movePoint.y - state.startPoint.y,
-        };
-        const dist = Math.sqrt(
-          Math.pow(translation.x, 2) + Math.pow(translation.y, 2)
-        );
-
-        if (dist > MIN_START_DISTANCE) {
-          const evt: PannableEvent = {
-            target: state.target,
-            translation,
-            velocity: state.velocity!,
-            interval: state.interval!,
-          };
-
-          if (delegateRef.current.shouldStart) {
-            if (delegateRef.current.shouldStart(evt)) {
-              dispatch({ type: 'start' });
-            }
-          } else {
-            dispatch({ type: 'start' });
-          }
-        }
-      }
-      if (prevState.translation !== state.translation) {
-        if (state.translation) {
-          const evt: PannableEvent = {
-            target: state.target!,
-            translation: state.translation,
-            velocity: state.velocity!,
-            interval: state.interval!,
-          };
-
+      if (state.target === null) {
+        if (prevState.target) {
           if (prevState.translation) {
-            if (delegateRef.current.onMove) {
-              delegateRef.current.onMove(evt);
-            }
-          } else {
-            if (delegateRef.current.onStart) {
-              delegateRef.current.onStart(evt);
+            const evt: PannableEvent = {
+              target: prevState.target,
+              translation: prevState.translation,
+              velocity: prevState.velocity,
+              interval: prevState.interval,
+            };
+
+            if (state.cancelled) {
+              if (onCancel) {
+                onCancel(evt);
+              }
+            } else {
+              if (onEnd) {
+                onEnd(evt);
+              }
             }
           }
-        } else if (prevState.translation) {
-          const evt: PannableEvent = {
-            target: prevState.target!,
+
+          const trackEvt: PannableTrackEvent = {
+            target: prevState.target,
             translation: prevState.translation,
-            velocity: prevState.velocity!,
-            interval: prevState.interval!,
+            velocity: prevState.velocity,
+            interval: prevState.interval,
           };
 
           if (state.cancelled) {
-            if (delegateRef.current.onCancel) {
-              delegateRef.current.onCancel(evt);
+            if (onTrackCancel) {
+              onTrackCancel(trackEvt);
             }
           } else {
-            if (delegateRef.current.onEnd) {
-              delegateRef.current.onEnd(evt);
+            if (onTrackEnd) {
+              onTrackEnd(trackEvt);
+            }
+          }
+        }
+      } else {
+        if (prevState.target === null) {
+          const trackEvt: PannableTrackEvent = {
+            target: state.target,
+            translation: state.translation,
+            velocity: state.velocity,
+            interval: state.interval,
+          };
+
+          if (onTrackStart) {
+            onTrackStart(trackEvt);
+          }
+        }
+
+        if (state.translation === null) {
+          const translation = {
+            x: state.movePoint.x - state.startPoint.x,
+            y: state.movePoint.y - state.startPoint.y,
+          };
+          const dist = Math.sqrt(
+            Math.pow(translation.x, 2) + Math.pow(translation.y, 2)
+          );
+
+          if (dist > MIN_START_DISTANCE) {
+            const evt: PannableEvent = {
+              target: state.target,
+              translation,
+              velocity: state.velocity,
+              interval: state.interval,
+            };
+
+            if (shouldStart) {
+              if (shouldStart(evt)) {
+                dispatch({ type: 'start' });
+              }
+            } else {
+              dispatch({ type: 'start' });
+            }
+          }
+        } else {
+          const evt: PannableEvent = {
+            target: state.target,
+            translation: state.translation,
+            velocity: state.velocity,
+            interval: state.interval,
+          };
+
+          if (prevState.translation === null) {
+            if (onStart) {
+              onStart(evt);
+            }
+          } else if (prevState.translation !== state.translation) {
+            if (onMove) {
+              onMove(evt);
             }
           }
         }
       }
-    }, [state]);
+    });
 
     useIsomorphicLayoutEffect(() => {
       if (disabled) {
-        if (state.target) {
+        if (isTracking) {
           dispatch({ type: 'reset' });
         }
         return;
@@ -136,28 +179,22 @@ export const Pannable = React.memo<React.ComponentProps<'div'> & PannableProps>(
       }
 
       const track = (target: EventTarget, point: Point) => {
-        dispatch({
-          type: 'track',
-          payload: { target, point },
-        });
+        dispatch({ type: 'track', payload: { target, point } });
       };
 
       const move = (point: Point) => {
-        dispatch({
-          type: 'move',
-          payload: { point },
-        });
+        dispatch({ type: 'move', payload: { point } });
       };
 
       const end = () => {
         dispatch({ type: 'end', payload: null });
       };
 
-      if (state.target) {
+      if (isTracking) {
         if (supportsTouch) {
           const onTouchMove = (evt: TouchEvent) => {
             if (isMoving && evt.cancelable) {
-              evt.preventDefault();
+              // evt.preventDefault();
               evt.stopImmediatePropagation();
             }
 
@@ -171,7 +208,7 @@ export const Pannable = React.memo<React.ComponentProps<'div'> & PannableProps>(
           };
           const onTouchEnd = (evt: TouchEvent) => {
             if (isMoving && evt.cancelable) {
-              evt.preventDefault();
+              // evt.preventDefault();
               evt.stopImmediatePropagation();
             }
 
@@ -249,15 +286,20 @@ export const Pannable = React.memo<React.ComponentProps<'div'> & PannableProps>(
               });
             }
           };
+          const onContextMenu = (evt: MouseEvent) => {
+            evt.preventDefault();
+          };
 
           const unsubscribeTouchStart = subscribeEvent(
             elemNode,
             'touchstart',
             onTouchStart
           );
+          window.addEventListener('contextmenu', onContextMenu);
 
           return () => {
             unsubscribeTouchStart();
+            window.removeEventListener('contextmenu', onContextMenu);
           };
         } else {
           const onMouseDown = (evt: MouseEvent) => {
@@ -280,20 +322,20 @@ export const Pannable = React.memo<React.ComponentProps<'div'> & PannableProps>(
           };
         }
       }
-    }, [disabled, state.target, isMoving]);
+    }, [disabled, isTracking, isMoving]);
 
     const divStyle = useMemo(() => {
       const style: React.CSSProperties = {};
 
       if (isMoving) {
-        Object.assign(
-          style,
-          StyleSheet.create({
-            touchAction: 'none',
-            pointerEvents: 'none',
-            userSelectNone: true,
-          })
-        );
+        Object.assign(style, {
+          touchAction: 'none',
+          pointerEvents: 'none',
+          WebkitUserSelect: 'none',
+          MozUserSelect: 'none',
+          msUserSelect: 'none',
+          userSelect: 'none',
+        });
       }
 
       if (divProps.style) {

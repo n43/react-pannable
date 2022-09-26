@@ -10,6 +10,7 @@ type Hash = string | number;
 export interface ListItemProps {
   forceRender?: boolean;
   hash?: Hash;
+  style?: React.CSSProperties;
 }
 const Item = React.memo<ListItemProps>((props) => null);
 
@@ -119,6 +120,13 @@ export const ListContent = React.memo<
 
     let key: React.Key = `ListContent_` + itemIndex;
     let hash: Hash | null = null;
+    const itemStyle: React.CSSProperties = {
+      position: 'absolute',
+      left: rect.x,
+      top: rect.y,
+      width: rect.width,
+      height: rect.height,
+    };
 
     if (React.isValidElement(element) && element.type === Item) {
       if (element.key) {
@@ -132,6 +140,9 @@ export const ListContent = React.memo<
       }
       if (itemProps.hash !== undefined) {
         hash = itemProps.hash;
+      }
+      if (itemProps.style !== undefined) {
+        Object.assign(itemStyle, itemProps.style);
       }
 
       element = element.props.children;
@@ -152,14 +163,6 @@ export const ListContent = React.memo<
     if (skipRender) {
       return null;
     }
-
-    const itemStyle: React.CSSProperties = {
-      position: 'absolute',
-      left: rect.x,
-      top: rect.y,
-      width: rect.width,
-      height: rect.height,
-    };
 
     const contextValue = { ...context };
 
@@ -185,9 +188,11 @@ export const ListContent = React.memo<
     }
 
     return (
-      <PadContext.Provider key={key} value={contextValue}>
-        <div style={itemStyle}>{element}</div>
-      </PadContext.Provider>
+      <div key={key} style={itemStyle}>
+        <PadContext.Provider value={contextValue}>
+          {element}
+        </PadContext.Provider>
+      </div>
     );
   }
 

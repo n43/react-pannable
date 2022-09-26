@@ -1,6 +1,6 @@
 import { ListLayout } from '../pad/ListContent';
 import { initialPadState, PadScrollTo, PadState } from '../pad/padReducer';
-import { XY, Action, Align, Rect } from '../interfaces';
+import { Action, Rect } from '../interfaces';
 import { Reducer } from 'react';
 
 export type InfiniteLayout = {

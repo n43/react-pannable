@@ -22,6 +22,8 @@ export interface InfiniteProps {
   renderFooter?: (attrs: ListLayoutAttrs) => React.ReactNode;
   scrollTo?: InfiniteScrollTo | null;
   render?: (state: InfiniteState, methods: InfiniteMethods) => React.ReactNode;
+  infiniteStyle?: React.CSSProperties;
+  bodyStyle?: React.CSSProperties;
 }
 
 export const Infinite = React.memo<
@@ -38,6 +40,8 @@ export const Infinite = React.memo<
     renderFooter,
     scrollTo,
     render,
+    infiniteStyle,
+    bodyStyle,
     children,
     ...padProps
   } = props;
@@ -92,6 +96,7 @@ export const Infinite = React.memo<
         height={height}
         direction={direction}
         itemCount={3}
+        style={infiniteStyle}
         renderItem={(attrs) => {
           const { itemIndex, Item } = attrs;
 
@@ -103,7 +108,7 @@ export const Infinite = React.memo<
           }
 
           return (
-            <Item forceRender>
+            <Item forceRender style={bodyStyle}>
               <ListContent
                 width={width}
                 height={height}
@@ -112,6 +117,7 @@ export const Infinite = React.memo<
                 itemCount={itemCount}
                 estimatedItemWidth={estimatedItemWidth}
                 estimatedItemHeight={estimatedItemHeight}
+                style={bodyStyle}
                 renderItem={renderItem}
                 render={(layout) => {
                   layoutRef.current.body = layout;

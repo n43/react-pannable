@@ -113,6 +113,7 @@ const startReducer: Reducer<PannableState, Action> = (state) => {
     ...state,
     translation: { x: 0, y: 0 },
     startPoint: movePoint,
+    cancelled: true,
   };
 };
 
